@@ -8,7 +8,7 @@ type AsyncHandler = (
 
 const asyncHandler = (handler: AsyncHandler) =>
   (req: Request, res: Response, next: NextFunction) => {
-    Promise.resolve(handler(req, res, next).catch(next));
+    Promise.resolve(handler(req, res, next)).catch(next);
   }
 
 export { asyncHandler };
