@@ -1,6 +1,6 @@
 import express from "express";
 import { ENV } from "./config/env";
-import { connectDB } from "./infrastructure/db/dbConnect";
+import { connectDB } from "./infrastructure/db/mongoose/dbConnect";
 import mongoose from "mongoose";
 const app = express();
 
