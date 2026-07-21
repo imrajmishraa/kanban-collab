@@ -18,4 +18,6 @@ export const ENV = {
   MONGODB_URI: getEnv("MONGODB_URI"),
   REDIS_URL: getEnv("REDIS_URL"),
   JWT_SECRET: getEnv("JWT_SECRET"),
+  JWT_REFRESH_SECRET: getEnv("JWT_REFRESH_SECRET"),
+  LOG_LEVEL: getEnv("LOG_LEVEL")
 } as const;
