@@ -7,7 +7,10 @@ import cors from 'cors';
 import helmet from 'helmet';
 import mongoSanitize from 'express-mongo-sanitize';
 import connectDB from '../../infrastructure/db/mongoose/dbConnect';
-import authRoutes from './routes/auth/auth.route';
+import cookieParser from "cookie-parser";
+
+import healthzRoute from './routes/healthz/healthz.route';
+import authRoute from './routes/auth/auth.route';
 
 import { logger } from '../../infrastructure/logging/logger';
 import { ENV } from '../../config/env';
@@ -39,25 +42,13 @@ app.use(cors({
 
 // Request parsers
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Sanitization to prevent NoSQL injection
 app.use(mongoSanitize());
 
-// Inline cookie parsing middleware to extract refresh token
-app.use((req: any, _res: Response, next: NextFunction) => {
-  const cookies: { [key: string]: string } = {};
-  const cookieHeader = req.headers.cookie;
-  if (cookieHeader) {
-    cookieHeader.split(';').forEach((cookie: string) => {
-      const [name, ...valueParts] = cookie.split('=');
-      if (name && valueParts.length > 0) {
-        cookies[name.trim()] = decodeURIComponent(valueParts.join('='));
-      }
-    });
-  }
-  req.cookies = cookies;
-  next();
-});
+// Cookie parsing middleware
+app.use(cookieParser());
 
 // Logging HTTP Requests
 app.use((req: Request, _res: Response, next: NextFunction) => {
@@ -66,30 +57,48 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
 });
 
 // Liveness Check
-app.get('/healthz', (_req: Request, res: Response) => {
+app.get('/', (_req: Request, res: Response) => {
   res.status(200).send('OK');
 });
 
-// Readiness Check
-app.get('/readyz', async (_req: Request, res: Response) => {
-  const mongoose = require('mongoose');
-  const isMongoReady = mongoose.connection.readyState === 1;
-
-  if (isMongoReady) {
-    return res.status(200).json({ status: 'ready', mongo: 'connected' });
-  } else {
-    return res.status(503).json({ status: 'unready', mongo: 'disconnected' });
-  }
-});
-
-// Routing
-app.use('/api/v1/auth', authRoutes);
-
+// Routes
+app.use('/api/v1', healthzRoute);
+app.use("/api/v1/auth", authRoute);
 
 // Global Error Handler
 app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-  logger.error('Unhandled server error:', err);
-  res.status(500).json({ success: false, error: 'Internal Server Error' });
+  const statusCode = err.statusCode || 500;
+  const isOperational = err.isOperational ?? false;
+
+  // 1. Handle Known Operational Errors (Validation failures, 400s, 401s, 404s, etc.)
+  if (isOperational) {
+    logger.warn({
+      statusCode,
+      message: err.message,
+      errors: err.errors,
+    }, `Operational Error [${statusCode}]: ${err.message}`);
+
+    return res.status(statusCode).json({
+      success: false,
+      message: err.message,
+      errors: err.errors || null,
+      data: err.data || null,
+    });
+  }
+
+  // 2. Handle Unexpected Internal System Errors (500s)
+  logger.error(
+    {
+      err,
+      stack: err.stack,
+    },
+    "Unhandled server error",
+  );
+
+  return res.status(500).json({
+    success: false,
+    message: 'Internal Server Error'
+  });
 });
 
 // Start Server if not imported for testing
