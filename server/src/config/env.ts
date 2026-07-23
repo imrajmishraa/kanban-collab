@@ -1,17 +1,31 @@
 import "dotenv/config";
+import { missingEnvVariable, invalidEnvVariable } from "../shared/errors/handler/env";
 
 function getEnv(name: string): string {
-  const value = process.env[name];
+  const value = process.env[name]?.trim();
 
   if (!value) {
-    throw new Error(`Missing environment variable: ${name}`);
+    throw missingEnvVariable(name);
   }
 
   return value;
 }
 
+function getNumberEnv(name: string): number {
+  const value = getEnv(name);
+  const number = Number(value);
+
+  if (Number.isNaN(number)) {
+    throw invalidEnvVariable(name, value);
+  }
+
+  return number;
+}
+
+
 export const ENV = {
-  PORT: Number(process.env.PORT) || 5000,
+  PORT: process.env.PORT || getNumberEnv("PORT") || 5000,
+  WS_PORT: process.env.WS_PORT ||getNumberEnv('WS_PORT') ||123,
   HOST: process.env.HOST ?? "localhost",
   NODE_ENV: process.env.NODE_ENV ?? "development",
 
