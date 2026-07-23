@@ -1,4 +1,4 @@
-import { ApiError } from "../../../shared/utils/ApiError.js";
+import { ApiError } from "../../../shared/utils/ApiError";
 
 export const handleRedisError = (err: unknown): ApiError | null => {
   if (!(err instanceof Error)) {
