@@ -1,7 +1,8 @@
 import { ApiError } from "../utils/ApiError";
-
+import { handleMongooseError } from "./handler/mongoose";
 import { handleZodError } from "./handler/zod";
 import { handleRedisError } from "./handler/redis";
+import { internalServerError } from "./handler/custom";
 
 export const normalizeError = (err: unknown): ApiError => {
   if (err instanceof ApiError) {
@@ -9,8 +10,8 @@ export const normalizeError = (err: unknown): ApiError => {
   }
 
   return (
-    handleZodError(err) ??
+    handleMongooseError(err) ??
     handleRedisError(err) ??
-    new ApiError(500, "Internal Server Error")
+    internalServerError()
   );
 };
