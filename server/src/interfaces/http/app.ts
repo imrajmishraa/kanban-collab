@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import healthzRoute from './routes/healthz/healthz.route';
 import authRoute from './routes/auth/auth.route';
 import { logger } from '../../infrastructure/logging/logger';
+import { errorHandler } from './middleware/errorHandler';
 
 const app = express();
 
@@ -57,40 +58,7 @@ app.use('/api/v1', healthzRoute);
 app.use("/api/v1/auth", authRoute);
 
 // Global Error Handler
-app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-  const statusCode = err.statusCode || 500;
-  const isOperational = err.isOperational ?? false;
-
-  // 1. Handle Known Operational Errors (Validation failures, 400s, 401s, 404s, etc.)
-  if (isOperational) {
-    logger.warn({
-      statusCode,
-      message: err.message,
-      errors: err.errors,
-    }, `Operational Error [${statusCode}]: ${err.message}`);
-
-    return res.status(statusCode).json({
-      success: false,
-      message: err.message,
-      errors: err.errors || null,
-      data: err.data || null,
-    });
-  }
-
-  // 2. Handle Unexpected Internal System Errors (500s)
-  logger.error(
-    {
-      err,
-      stack: err.stack,
-    },
-    "Unhandled server error",
-  );
-
-  return res.status(500).json({
-    success: false,
-    message: 'Internal Server Error'
-  });
-});
+app.use(errorHandler);
 
 
 export { app };
