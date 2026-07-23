@@ -11,25 +11,27 @@ export interface AuthenticatedRequest extends Request {
   };
 }
 
+
 export const authenticateJWT = asyncHandler(
   async (req: AuthenticatedRequest, res, next) => {
     const authHeaders = req.headers.authorization;
 
+
     if (!authHeaders || !authHeaders.startsWith("Bearer ")) {
-      throw missingAccessTokenError;
+      throw missingAccessTokenError();
     }
 
     const parts = authHeaders.split(" ");
 
     if (parts.length !== 2 || parts[0] !== "Bearer") {
-      throw missingAccessTokenError;
+      throw missingAccessTokenError();
     }
 
     const token = parts[1];
     const decoded = verifyAccessToken(token);
 
     if (!decoded) {
-      throw expiredAccessTokenError;
+      throw expiredAccessTokenError();
     }
 
     req.user = {
