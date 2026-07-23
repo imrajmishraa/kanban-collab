@@ -1,1 +1,1 @@
-export const DB_NAME = "kanban-colab";
+export const DB_NAME = "kanban";
