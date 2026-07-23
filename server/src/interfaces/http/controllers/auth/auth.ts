@@ -4,7 +4,7 @@ import { UserModel, SessionModel } from '../../../../infrastructure/db/mongoose/
 import { hashPassword, comparePassword } from '../../../../infrastructure/security/hash';
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../../../../infrastructure/security/token';
 import { logger } from '../../../../infrastructure/logging/logger';
-import { existingUserError, invaidEmailOrPasswordError, userNotExistError, somethingWentWrongError } from '../../../../shared/errors/auth/custom';
+import { existingUserError, invaidEmailOrPasswordError, userNotExistError } from '../../../../shared/errors/auth/custom';
 import { internalServerError } from '../../../../shared/errors/handler/custom';
 import { invalidRefreshTokenError, missingRefreshTokenError, expiredRefreshTokenError } from '../../../../shared/errors/auth/refreshToken';
 import { ApiResponse } from '../../../../shared/utils/ApiResponse';
@@ -33,12 +33,12 @@ const refresh = asyncHandler(async (req, res) => {
     const rawRefreshToken = cookies.refreshToken;
 
     if (!rawRefreshToken) {
-      throw missingRefreshTokenError;
+      throw missingRefreshTokenError();
     }
 
     const decoded = verifyRefreshToken(rawRefreshToken);
     if (!decoded) {
-      throw invalidRefreshTokenError;
+      throw invalidRefreshTokenError();
     }
 
     const oldTokenHash = hashToken(rawRefreshToken);
@@ -61,7 +61,7 @@ const refresh = asyncHandler(async (req, res) => {
     // Token rotation
     const user = await UserModel.findById(decoded.userId);
     if (!user) {
-      throw userNotExistError;
+      throw userNotExistError();
     }
 
 
@@ -101,7 +101,7 @@ const refresh = asyncHandler(async (req, res) => {
     )
   } catch (error) {
     logger.error('Refresh token error:', error);
-    throw internalServerError;
+    throw internalServerError();
   }
 });
 
@@ -112,7 +112,7 @@ const register = asyncHandler(async (req, res) => {
 
     const existingUser = await UserModel.findOne({ email });
     if (existingUser) {
-      throw existingUserError;
+      throw existingUserError();
     }
 
     const passwordHash = await hashPassword(password);
@@ -137,7 +137,7 @@ const register = asyncHandler(async (req, res) => {
   } catch (error) {
     logger.error('Registration error:', error);
     console.log(error);
-    throw internalServerError;
+    throw internalServerError();
   }
 });
 
@@ -148,12 +148,12 @@ const login = asyncHandler(async (req, res) => {
 
     const user = await UserModel.findOne({ email });
     if (!user) {
-      throw invaidEmailOrPasswordError;
+      throw invaidEmailOrPasswordError();
     }
 
     const isMatch = await comparePassword(password, user.passwordHash);
     if (!isMatch) {
-      throw invaidEmailOrPasswordError;
+      throw invaidEmailOrPasswordError();
     }
 
     const accessToken = signAccessToken({
@@ -202,26 +202,20 @@ const login = asyncHandler(async (req, res) => {
     );
   } catch (error) {
     logger.error('Login error:', error);
-    throw internalServerError;
+    throw internalServerError();
   }
 })
 
 
 const logout = asyncHandler(async (req, res) => {
-  console.log("cookies", req.cookies);
-  console.log("refresh", req.cookies?.refreshToken);
   try {
     const rawRefreshToken = req.cookies?.refreshToken;
-    console.log(rawRefreshToken);
-
 
     if (rawRefreshToken) {
-      console.log("before delete");
       const tokenHash = hashToken(rawRefreshToken);
       await SessionModel.deleteOne({
         refreshTokenHash: tokenHash
       });
-      console.log("after delete");
     }
 
     res.clearCookie("refreshToken", {
@@ -235,8 +229,7 @@ const logout = asyncHandler(async (req, res) => {
     );
   } catch (error) {
     logger.error({ err: error }, "Unhandled server error");
-    console.error(error);
-    throw error;
+    throw internalServerError();
   }
 });
 
