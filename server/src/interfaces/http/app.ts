@@ -1,22 +1,13 @@
-import dotenv from 'dotenv';
-// Load environment variables first
-dotenv.config();
-
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import mongoSanitize from 'express-mongo-sanitize';
-import connectDB from '../../infrastructure/db/mongoose/dbConnect';
 import cookieParser from "cookie-parser";
-
 import healthzRoute from './routes/healthz/healthz.route';
 import authRoute from './routes/auth/auth.route';
-
 import { logger } from '../../infrastructure/logging/logger';
-import { ENV } from '../../config/env';
 
 const app = express();
-const PORT = ENV.PORT || 3000;
 
 // Security Middlewares
 app.use(helmet({
@@ -101,13 +92,5 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   });
 });
 
-// Start Server if not imported for testing
-if (ENV.NODE_ENV !== 'test') {
-  connectDB().then(() => {
-    app.listen(PORT, () => {
-      logger.info(`Express REST Server running on port ${PORT}`);
-    });
-  });
-}
 
 export { app };
