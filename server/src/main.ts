@@ -47,7 +47,7 @@ import healthzRouter from "./interfaces/http/routes/healthz/healthz.route";
 app.use("/api/v1/", healthzRouter);
 
 // Error Middleware (Must be last)
-import { errorHandler } from "./interfaces/http/middleware/errors";
+import { errorHandler } from "./interfaces/http/middleware/errorHandler";
 app.use(errorHandler);
 
 export { app };
