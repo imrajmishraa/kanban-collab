@@ -1,53 +1,66 @@
-import express from "express";
+import mongoose from "mongoose";
+
 import { ENV } from "./config/env";
 import { connectDB } from "./infrastructure/db/mongoose/dbConnect";
-import mongoose from "mongoose";
-const app = express();
+import { logger } from "./infrastructure/logging/logger";
+import { app } from "./interfaces/http/app";
 
-async function startServer() {
+let isShuttingDown = false;
+
+mongoose.connection.on("disconnected", () => {
+  if (isShuttingDown) {
+    logger.info("MongoDB disconnected gracefully.");
+  } else {
+    logger.warn("MongoDB disconnected unexpectedly.");
+  }
+});
+
+async function startServer(): Promise<void> {
   try {
-    // Verify database connection
-    await connectDB().catch((err) => {
-      console.log("⁉️MongoDB connection error", err);
-    });
+    // Connect to MongoDB
+    await connectDB();
 
-    console.log("✅ Connected to MongoDB");
-
+    // Start HTTP server
     const server = app.listen(ENV.PORT, () => {
-      console.log(`🚀Server running on ${ENV.PORT}`);
+      logger.info(`🚀 Express REST Server running on port ${ENV.PORT}`);
     });
 
-    process.on("SIGINT", async () => {
-      console.log("⏳Stopping server...");
-      await mongoose.disconnect();
-      console.log("⚠️Database disconnected!");
+    // Graceful shutdown
+    const shutdown = async (signal: string): Promise<void> => {
+      if (isShuttingDown) return;
 
-      server.close(async () => {
-        console.log("⌛️Server closed");
-        process.exit(0);
+      isShuttingDown = true;
+      logger.info(`${signal} received. Shutting down server...`);
+
+      server.close(async (err) => {
+        if (err) {
+          logger.error({ err }, "Error while closing HTTP server");
+          process.exit(1);
+        }
+
+        try {
+          await mongoose.disconnect();
+          logger.info("MongoDB connection closed.");
+          logger.info("Server shutdown completed.");
+          process.exit(0);
+        } catch (err) {
+          logger.error({ err }, "Error while disconnecting MongoDB");
+          process.exit(1);
+        }
       });
+    };
+
+    process.on("SIGINT", () => {
+      void shutdown("SIGINT");
+    });
+
+    process.on("SIGTERM", () => {
+      void shutdown("SIGTERM");
     });
   } catch (err) {
-    console.error(err);
+    logger.fatal({ err }, "Failed to start server");
     process.exit(1);
   }
 }
 
-startServer();
-
-// connection checkup
-app.get("/", (req, res) => {
-  res.send("Hello");
-});
-
-// import routes
-import healthzRouter from "./interfaces/http/routes/healthz/healthz.route";
-
-// managed routes
-app.use("/api/v1/", healthzRouter);
-
-// Error Middleware (Must be last)
-import { errorHandler } from "./interfaces/http/middleware/errorHandler";
-app.use(errorHandler);
-
-export { app };
+void startServer();
