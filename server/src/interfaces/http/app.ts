@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import mongoSanitize from 'express-mongo-sanitize';
 import cookieParser from "cookie-parser";
 import healthzRoute from './routes/healthz/healthz.route';
+import kanbanRoute from './routes/kanban/kanban.routes'
 import authRoute from './routes/auth/auth.route';
 import { logger } from '../../infrastructure/logging/logger';
 import { errorHandler } from './middleware/errorHandler';
@@ -56,6 +57,7 @@ app.get('/', (_req: Request, res: Response) => {
 // Routes
 app.use('/api/v1', healthzRoute);
 app.use("/api/v1/auth", authRoute);
+app.use("/api/v1", kanbanRoute);
 
 // Global Error Handler
 app.use(errorHandler);
