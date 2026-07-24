@@ -28,7 +28,8 @@ export const ENV = {
   WS_PORT: process.env.WS_PORT ||getNumberEnv('WS_PORT') ||123,
   HOST: process.env.HOST ?? "localhost",
   NODE_ENV: process.env.NODE_ENV ?? "development",
-
+  ORIGIN_URL: process.env.ORIGIN_URL || "http:localhost",
+  
   MONGODB_URI: getEnv("MONGODB_URI"),
   REDIS_URL: getEnv("REDIS_URL"),
   JWT_SECRET: getEnv("JWT_SECRET"),
