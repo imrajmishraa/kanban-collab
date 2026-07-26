@@ -1,38 +1,55 @@
 import "dotenv/config";
-import { missingEnvVariable, invalidEnvVariable } from "../shared/errors/handler/env";
 
-function getEnv(name: string): string {
-  const value = process.env[name]?.trim();
+import { z } from "zod";
 
-  if (!value) {
-    throw missingEnvVariable(name);
+const envSchema = z.object({
+  PORT: z.coerce.number().int().positive().default(5000),
+
+  WS_PORT: z.coerce.number().int().positive().default(1234),
+
+  WS_MAX_PAYLOAD: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(1024 * 1024),
+
+  HOST: z.string().default("localhost"),
+
+  NODE_ENV: z
+    .enum(["development", "production", "test"])
+    .default("development"),
+
+  ORIGIN_URL: z.url().default("http://localhost"),
+
+  MONGODB_URI: z.string().min(1),
+
+  REDIS_URL: z.string().min(1),
+
+  JWT_SECRET: z.string().min(1),
+
+  JWT_REFRESH_SECRET: z.string().min(1),
+
+  LOG_LEVEL: z.enum([
+    "fatal",
+    "error",
+    "warn",
+    "info",
+    "debug",
+    "trace",
+    "silent",
+  ]),
+});
+
+const parsed = envSchema.safeParse(process.env);
+
+if (!parsed.success) {
+  console.error("\n❌ Invalid environment configuration:\n");
+
+  for (const issue of parsed.error.issues) {
+    console.error(`• ${issue.path.join(".")}: ${issue.message}`);
   }
 
-  return value;
+  process.exit(1);
 }
 
-function getNumberEnv(name: string): number {
-  const value = getEnv(name);
-  const number = Number(value);
-
-  if (Number.isNaN(number)) {
-    throw invalidEnvVariable(name, value);
-  }
-
-  return number;
-}
-
-
-export const ENV = {
-  PORT: process.env.PORT || getNumberEnv("PORT") || 5000,
-  WS_PORT: process.env.WS_PORT ||getNumberEnv('WS_PORT') ||123,
-  HOST: process.env.HOST ?? "localhost",
-  NODE_ENV: process.env.NODE_ENV ?? "development",
-  ORIGIN_URL: process.env.ORIGIN_URL || "http:localhost",
-  
-  MONGODB_URI: getEnv("MONGODB_URI"),
-  REDIS_URL: getEnv("REDIS_URL"),
-  JWT_SECRET: getEnv("JWT_SECRET"),
-  JWT_REFRESH_SECRET: getEnv("JWT_REFRESH_SECRET"),
-  LOG_LEVEL: getEnv("LOG_LEVEL")
-} as const;
+export const ENV = parsed.data;
