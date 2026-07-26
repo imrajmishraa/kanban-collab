@@ -1,9 +1,12 @@
+import type { IncomingMessage } from "http";
+import type { Duplex } from "stream";
+
 import { WebSocketServer } from "ws";
+
 import { authenticate } from "../middlewares/authenticate";
 import { authorize } from "../middlewares/authorize";
+import { parseUpgradeRequest } from "../utils/parseRequest";
 import { rejectUpgrade } from "./rejectUpgrade";
-import { IncomingMessage } from "http";
-import { Duplex } from "stream";
 
 export async function handleUpgrade(
   request: IncomingMessage,
@@ -12,9 +15,18 @@ export async function handleUpgrade(
   wss: WebSocketServer,
 ): Promise<void> {
   try {
-    const { userId, boardId } = await authenticate(request);
+    const { pathname, token, boardId } = parseUpgradeRequest(request);
+
+    const { userId } = await authenticate(request);
 
     await authorize(userId, boardId);
+
+    // Optional: attach parsed/authenticated data for downstream handlers
+    Object.assign(request, {
+      pathname,
+      userId,
+      boardId,
+    });
 
     wss.handleUpgrade(request, socket, head, (ws) => {
       wss.emit("connection", ws, request);
@@ -30,8 +42,14 @@ export async function handleUpgrade(
           rejectUpgrade(socket, 403, "Forbidden");
           return;
 
+        case "Missing request URL.":
+        case "Invalid request URL.":
+        case "Missing 'token' query parameter.":
+        case "Missing 'boardId' query parameter.":
+          rejectUpgrade(socket, 400, "Bad Request");
+          return;
+
         case "Missing access token.":
-        case "Missing boardId.":
         case "Invalid or expired access token.":
           rejectUpgrade(socket, 401, "Unauthorized");
           return;
