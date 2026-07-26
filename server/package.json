@@ -7,7 +7,7 @@
     "build": "tsc",
     "start": "node dist/interfaces/http/app.js",
     "dev": "nodemon --watch src -e ts --exec ts-node src/main.ts",
-    "dev:ws": "nodemon --watch src -e ts --exec ts-node src/interfaces/websocket/servers/y-ws-server.ts",
+    "dev:ws": "nodemon --watch src -e ts --exec ts-node src/interfaces/websockets/servers/server.ts",
     "test": "jest --detectOpenHandles --forceExit"
   },
   "dependencies": {
