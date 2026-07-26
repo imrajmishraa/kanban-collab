@@ -3,6 +3,7 @@ import { WebSocketServer } from "ws";
 import { ENV } from "../../../config/env";
 import { logger } from "../../../infrastructure/logging/logger";
 import { handleUpgrade } from "./upgrade";
+import { websocketConfig } from "../config";
 
 const server = http.createServer((_req, res) => {
   res.writeHead(200, {
@@ -14,6 +15,8 @@ const server = http.createServer((_req, res) => {
 
 const wss = new WebSocketServer({
   noServer: true,
+  maxPayload: websocketConfig.maxPayload,
+  perMessageDeflate: websocketConfig.perMessageDeflate,
 });
 
 // Runtime server errors.
