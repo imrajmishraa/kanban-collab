@@ -4,6 +4,10 @@ import { ENV } from "./config/env";
 import { connectDB } from "./infrastructure/db/mongoose/dbConnect";
 import { logger } from "./infrastructure/logging/logger";
 import { app } from "./interfaces/http/app";
+import {
+  startWebSocketServer,
+  stopWebSocketServer,
+} from "./interfaces/websockets/servers/server";
 
 let isShuttingDown = false;
 
@@ -25,6 +29,9 @@ async function startServer(): Promise<void> {
       logger.info(`🚀 Express REST Server running on port ${ENV.PORT}`);
     });
 
+    // connect to websocket server
+    await startWebSocketServer();
+
     // Graceful shutdown
     const shutdown = async (signal: string): Promise<void> => {
       if (isShuttingDown) return;
@@ -39,6 +46,8 @@ async function startServer(): Promise<void> {
         }
 
         try {
+          await stopWebSocketServer();
+
           await mongoose.disconnect();
           logger.info("MongoDB connection closed.");
           logger.info("Server shutdown completed.");
