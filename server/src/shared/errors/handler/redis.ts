@@ -1,21 +1,34 @@
-import { ApiError } from "../../../shared/utils/ApiError";
+import { ERROR_MESSAGE } from "../../constants/error";
+import { HTTP_STATUS } from "../../constants/http";
+import { ApiError } from "../../utils/ApiError";
 
-export const handleRedisError = (err: unknown): ApiError | null => {
+export function handleRedisError(err: unknown): ApiError | null {
   if (!(err instanceof Error)) {
     return null;
   }
 
-  switch ((err as NodeJS.ErrnoException).code) {
+  const error = err as NodeJS.ErrnoException;
+
+  switch (error.code) {
     case "ECONNREFUSED":
-      return new ApiError(503, "Redis connection refused.");
+      return new ApiError(
+        HTTP_STATUS.SERVICE_UNAVAILABLE,
+        ERROR_MESSAGE.REDIS_CONNECTION_REFUSED,
+      );
 
     case "ETIMEDOUT":
-      return new ApiError(503, "Redis connection timed out.");
+      return new ApiError(
+        HTTP_STATUS.SERVICE_UNAVAILABLE,
+        ERROR_MESSAGE.REDIS_CONNECTION_TIMEOUT,
+      );
 
     case "ECONNRESET":
-      return new ApiError(503, "Redis connection was reset.");
+      return new ApiError(
+        HTTP_STATUS.SERVICE_UNAVAILABLE,
+        ERROR_MESSAGE.REDIS_CONNECTION_RESET,
+      );
 
     default:
       return null;
   }
-};
+}
