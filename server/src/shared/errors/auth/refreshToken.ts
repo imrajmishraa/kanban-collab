@@ -1,10 +1,31 @@
-import { ApiError } from '../../utils/ApiError';
+import { HTTP_STATUS } from "../../constants/http";
+import { ERROR_MESSAGE } from "../../constants/error";
+import { ApiError } from "../../utils/ApiError";
 
-export const invalidRefreshTokenError = () =>
-  new ApiError(401, "Invalid refresh token");
+export function invalidRefreshTokenError(): ApiError {
+  return new ApiError(
+    HTTP_STATUS.UNAUTHORIZED,
+    ERROR_MESSAGE.INVALID_REFRESH_TOKEN,
+  );
+}
 
-export const expiredRefreshTokenError = () =>
-  new ApiError(401, 'Security breach warning: refresh token already used')
+export function expiredRefreshTokenError(): ApiError {
+  return new ApiError(
+    HTTP_STATUS.UNAUTHORIZED,
+    ERROR_MESSAGE.REFRESH_TOKEN_EXPIRED,
+  );
+}
 
-export const missingRefreshTokenError = () =>
-  new ApiError(401, 'Refresh token missing');
+export function missingRefreshTokenError(): ApiError {
+  return new ApiError(
+    HTTP_STATUS.UNAUTHORIZED,
+    ERROR_MESSAGE.REFRESH_TOKEN_MISSING,
+  );
+}
+
+export function refreshTokenReuseDetectedError(): ApiError {
+  return new ApiError(
+    HTTP_STATUS.UNAUTHORIZED,
+    ERROR_MESSAGE.REFRESH_TOKEN_REUSE_DETECTED,
+  );
+}
