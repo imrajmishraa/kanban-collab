@@ -15,7 +15,7 @@ export function handleJwtError(err: unknown): ApiError | null {
   if (err instanceof jwt.JsonWebTokenError) {
     return new ApiError(
       HTTP_STATUS.UNAUTHORIZED,
-      ERROR_MESSAGE.INVALID_ACCESS_TOKEN,
+      ERROR_MESSAGE.ACCESS_TOKEN_INVALID,
     );
   }
 
