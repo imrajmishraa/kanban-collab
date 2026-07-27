@@ -1,7 +1,8 @@
-import { type Request } from 'express';
-import { asyncHandler} from '../../../shared/utils/asyncHandler'
-import { verifyAccessToken } from '../../../infrastructure/security/token';
-import { expiredAccessTokenError, missingAccessTokenError } from '../../../shared/errors/auth/accessToken';
+import { type Request } from "express";
+
+import { asyncHandler } from "../../../shared/utils/asyncHandler";
+import { verifyAccessToken } from "../../../infrastructure/security/token";
+import { missingAccessTokenError } from "../../../shared/errors/auth/accessToken";
 
 export interface AuthenticatedRequest extends Request {
   user?: {
@@ -11,28 +12,21 @@ export interface AuthenticatedRequest extends Request {
   };
 }
 
-
 export const authenticateJWT = asyncHandler(
-  async (req: AuthenticatedRequest, res, next) => {
-    const authHeaders = req.headers.authorization;
+  async (req: AuthenticatedRequest, _res, next) => {
+    const authorization = req.headers.authorization;
 
-
-    if (!authHeaders || !authHeaders.startsWith("Bearer ")) {
+    if (!authorization) {
       throw missingAccessTokenError();
     }
 
-    const parts = authHeaders.split(" ");
+    const [scheme, token] = authorization.split(" ");
 
-    if (parts.length !== 2 || parts[0] !== "Bearer") {
+    if (scheme !== "Bearer" || !token) {
       throw missingAccessTokenError();
     }
 
-    const token = parts[1];
     const decoded = verifyAccessToken(token);
-
-    if (!decoded) {
-      throw expiredAccessTokenError();
-    }
 
     req.user = {
       userId: decoded.userId,
