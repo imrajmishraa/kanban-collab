@@ -22,6 +22,7 @@ export const ERROR_MESSAGE = {
   REFRESH_TOKEN_EXPIRED: "Refresh token has expired.",
   REFRESH_TOKEN_MISSING: "Refresh token is missing.",
   REFRESH_TOKEN_REUSE_DETECTED: "Refresh token reuse detected.",
+  REFRESH_TOKEN_NOT_ACTIVE: "Refresh token is not active yet.",
 
   // Authentication
   EMAIL_ALREADY_EXISTS: "Email already exists.",
@@ -54,6 +55,7 @@ export const ERROR_MESSAGE = {
 
   // Board
   BOARD_NOT_FOUND: "Board not found.",
+  BOARD_ID_REQUIRED: "Board ID is required.",
   BOARD_ACCESS_DENIED: "Access to this board is denied.",
   GUEST_CANNOT_MODIFY_BOARD: "Guests are not allowed to modify boards.",
   BOARD_ID_AND_QUERY_REQUIRED:
