@@ -51,4 +51,26 @@ export const ERROR_MESSAGE = {
   RATE_LIMIT_CHAT: "You're sending messages too quickly.",
   RATE_LIMIT_OTP: "OTP request limit exceeded. Please try again later.",
   RATE_LIMIT_GENERIC: "Too many requests. Please try again later.",
+
+  // Board
+  BOARD_NOT_FOUND: "Board not found.",
+  BOARD_ACCESS_DENIED: "Access to this board is denied.",
+  GUEST_CANNOT_MODIFY_BOARD: "Guests are not allowed to modify boards.",
+  BOARD_ID_AND_QUERY_REQUIRED:
+    "Both 'boardId' and query parameters are required.",
+
+  // Workspace
+  CREATE_WORKSPACE_FAILED: "Failed to create workspace.",
+  ADMIN_ACCESS_REQUIRED: "Admin privileges are required.",
+  WORKSPACE_ID_REQUIRED: "Workspace ID is required.",
+  USER_ALREADY_WORKSPACE_MEMBER: "User is already a member of this workspace.",
+  WORKSPACE_MEMBER_REQUIRED: "You must be a member of this workspace.",
+
+  // Card
+  CARD_NOT_FOUND: "Card not found.",
+
+  // File Upload
+  WORKSPACE_ACCESS_DENIED: "You do not have access to this workspace.",
+  ATTACHMENT_FIELDS_REQUIRED: "fileName, fileType, and cardId are required.",
+  GUEST_CANNOT_UPLOAD_ATTACHMENT: "Guests cannot upload attachments.",
 } as const;
