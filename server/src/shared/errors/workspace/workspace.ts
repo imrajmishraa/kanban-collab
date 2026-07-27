@@ -34,7 +34,7 @@ export function userAlreadyWorkspaceMemberError(): ApiError {
   );
 }
 
-export function workspaceMemberRequiredError(): ApiError {
+export function notWorkspaceMemberError(): ApiError {
   return new ApiError(
     HTTP_STATUS.FORBIDDEN,
     ERROR_MESSAGE.WORKSPACE_MEMBER_REQUIRED,
