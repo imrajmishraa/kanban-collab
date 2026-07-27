@@ -1,13 +1,17 @@
 import mongoose from "mongoose";
+import http from "http";
 
 import { ENV } from "./config/env";
 import { connectDB } from "./infrastructure/db/mongoose/dbConnect";
 import { logger } from "./infrastructure/logging/logger";
 import { app } from "./interfaces/http/app";
+
 import {
   startWebSocketServer,
   stopWebSocketServer,
 } from "./interfaces/websockets/servers/server";
+
+let httpServer: ReturnType<typeof http.createServer>;
 
 let isShuttingDown = false;
 
@@ -19,57 +23,82 @@ mongoose.connection.on("disconnected", () => {
   }
 });
 
-async function startServer(): Promise<void> {
+async function shutdown(signal: string): Promise<void> {
+  if (isShuttingDown) return;
+
+  isShuttingDown = true;
+
+  logger.info({ signal }, "Graceful shutdown started");
+
+  const timeout = setTimeout(() => {
+    logger.fatal("Forced shutdown after timeout");
+
+    process.exit(1);
+  }, 10000);
+
   try {
-    // Connect to MongoDB
-    await connectDB();
+    await stopWebSocketServer();
 
-    // Start HTTP server
-    const server = app.listen(ENV.PORT, () => {
-      logger.info(`🚀 Express REST Server running on port ${ENV.PORT}`);
-    });
-
-    // connect to websocket server
-    await startWebSocketServer();
-
-    // Graceful shutdown
-    const shutdown = async (signal: string): Promise<void> => {
-      if (isShuttingDown) return;
-
-      isShuttingDown = true;
-      logger.info(`${signal} received. Shutting down server...`);
-
-      server.close(async (err) => {
-        if (err) {
-          logger.error({ err }, "Error while closing HTTP server");
-          process.exit(1);
-        }
-
-        try {
-          await stopWebSocketServer();
-
-          await mongoose.disconnect();
-          logger.info("MongoDB connection closed.");
-          logger.info("Server shutdown completed.");
-          process.exit(0);
-        } catch (err) {
-          logger.error({ err }, "Error while disconnecting MongoDB");
-          process.exit(1);
-        }
+    if (httpServer) {
+      await new Promise<void>((resolve) => {
+        httpServer.close(() => {
+          resolve();
+        });
       });
-    };
+    }
 
-    process.on("SIGINT", () => {
-      void shutdown("SIGINT");
-    });
+    await mongoose.disconnect();
 
-    process.on("SIGTERM", () => {
-      void shutdown("SIGTERM");
-    });
-  } catch (err) {
-    logger.fatal({ err }, "Failed to start server");
+    clearTimeout(timeout);
+
+    logger.info("Shutdown completed");
+
+    process.exit(0);
+  } catch (error) {
+    logger.fatal({ error }, "Shutdown failed");
+
     process.exit(1);
   }
 }
+
+async function startServer(): Promise<void> {
+  try {
+    await connectDB();
+
+    httpServer = http.createServer(app);
+
+    await startWebSocketServer(httpServer);
+
+    httpServer.listen(ENV.PORT, () => {
+      logger.info(
+        {
+          port: ENV.PORT,
+          environment: ENV.NODE_ENV,
+        },
+        "Server started",
+      );
+    });
+  } catch (error) {
+    logger.fatal({ error }, "Server startup failed");
+
+    process.exit(1);
+  }
+}
+
+process.on("SIGINT", () => void shutdown("SIGINT"));
+
+process.on("SIGTERM", () => void shutdown("SIGTERM"));
+
+process.on("uncaughtException", (error) => {
+  logger.fatal({ error }, "Uncaught exception");
+
+  process.exit(1);
+});
+
+process.on("unhandledRejection", (reason) => {
+  logger.fatal({ reason }, "Unhandled rejection");
+
+  process.exit(1);
+});
 
 void startServer();
