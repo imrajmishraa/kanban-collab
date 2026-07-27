@@ -1,14 +1,17 @@
-import { Request, Response } from "express";
-import { asyncHandler } from "../../../shared/utils/asyncHandler";
+import { Request, Response, NextFunction } from "express";
 
-export const notFoundHandler = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
-    res.status(404).json({
-      success: false,
-      error: {
-        code: "NOT_FOUND",
-        message: `Cannot ${req.method} ${req.originalUrl}`,
-      },
-    });
-  }
-);
+import { ApiError } from "../../../shared/utils/ApiError";
+import { HTTP_STATUS } from "../../../shared/constants/http";
+import { ERROR_MESSAGE } from "../../../shared/constants/error";
+
+export function notFoundHandler(
+  req: Request,
+  _res: Response,
+  next: NextFunction,
+): void {
+  next(
+    new ApiError(HTTP_STATUS.NOT_FOUND, ERROR_MESSAGE.NOT_FOUND, [
+      `Cannot ${req.method} ${req.originalUrl}`,
+    ]),
+  );
+}
