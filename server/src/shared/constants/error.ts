@@ -11,10 +11,10 @@ export const ERROR_MESSAGE = {
   INVALID_OBJECT_ID: "Invalid Object ID",
   DUPLICATE_RESOURCE: "Duplicate resource",
 
-  // Access Token
-  INVALID_ACCESS_TOKEN: "Invalid access token.",
-  ACCESS_TOKEN_EXPIRED: "Access token has expired.",
-  ACCESS_TOKEN_MISSING: "Access token is missing.",
+  // Authentication
+  ACCESS_TOKEN_INVALID: "Invalid access token.",
+  ACCESS_TOKEN_EXPIRED: "Access token expired.",
+  ACCESS_TOKEN_MISSING: "Access token missing.",
   ACCESS_TOKEN_NOT_ACTIVE: "Access token is not active yet.",
 
   // Refresh Token

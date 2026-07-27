@@ -5,7 +5,7 @@ import { ApiError } from "../../utils/ApiError";
 export function invalidAccessTokenError(): ApiError {
   return new ApiError(
     HTTP_STATUS.UNAUTHORIZED,
-    ERROR_MESSAGE.INVALID_ACCESS_TOKEN,
+    ERROR_MESSAGE.ACCESS_TOKEN_INVALID,
   );
 }
 
