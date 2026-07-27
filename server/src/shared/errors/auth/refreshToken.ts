@@ -29,3 +29,10 @@ export function refreshTokenReuseDetectedError(): ApiError {
     ERROR_MESSAGE.REFRESH_TOKEN_REUSE_DETECTED,
   );
 }
+
+export function refreshTokenNotActiveError(): ApiError {
+  return new ApiError(
+    HTTP_STATUS.UNAUTHORIZED,
+    ERROR_MESSAGE.REFRESH_TOKEN_NOT_ACTIVE,
+  );
+}
