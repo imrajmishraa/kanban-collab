@@ -3,10 +3,21 @@ import type { Duplex } from "stream";
 
 import { WebSocketServer } from "ws";
 
+import { logger } from "../../../infrastructure/logging/logger";
+
+import { HTTP_STATUS } from "../../../shared/constants/http";
+import { ApiError } from "../../../shared/utils/ApiError";
+
 import { authenticate } from "../middlewares/authenticate";
 import { authorize } from "../middlewares/authorize";
 import { parseUpgradeRequest } from "../utils/parseRequest";
 import { rejectUpgrade } from "./rejectUpgrade";
+
+interface AuthenticatedRequest extends IncomingMessage {
+  pathname?: string;
+  userId?: string;
+  boardId?: string;
+}
 
 export async function handleUpgrade(
   request: IncomingMessage,
@@ -15,47 +26,35 @@ export async function handleUpgrade(
   wss: WebSocketServer,
 ): Promise<void> {
   try {
-    const { pathname, token, boardId } = parseUpgradeRequest(request);
+    const { pathname, boardId } = parseUpgradeRequest(request);
 
     const { userId } = await authenticate(request);
 
     await authorize(userId, boardId);
 
-    // Optional: attach parsed/authenticated data for downstream handlers
-    Object.assign(request, {
-      pathname,
-      userId,
-      boardId,
-    });
+    const upgradedRequest = request as AuthenticatedRequest;
+
+    upgradedRequest.pathname = pathname;
+    upgradedRequest.userId = userId;
+    upgradedRequest.boardId = boardId;
 
     wss.handleUpgrade(request, socket, head, (ws) => {
-      wss.emit("connection", ws, request);
+      wss.emit("connection", ws, upgradedRequest);
     });
   } catch (error) {
-    if (error instanceof Error) {
-      switch (error.message) {
-        case "Board not found.":
-          rejectUpgrade(socket, 404, "Not Found");
-          return;
-
-        case "Forbidden.":
-          rejectUpgrade(socket, 403, "Forbidden");
-          return;
-
-        case "Missing request URL.":
-        case "Invalid request URL.":
-        case "Missing 'token' query parameter.":
-        case "Missing 'boardId' query parameter.":
-          rejectUpgrade(socket, 400, "Bad Request");
-          return;
-
-        case "Missing access token.":
-        case "Invalid or expired access token.":
-          rejectUpgrade(socket, 401, "Unauthorized");
-          return;
-      }
+    if (error instanceof ApiError) {
+      rejectUpgrade(socket, error.statusCode);
+      return;
     }
 
-    rejectUpgrade(socket, 500, "Internal Server Error");
+    logger.error(
+      {
+        err: error,
+        url: request.url,
+      },
+      "Unexpected error during WebSocket upgrade.",
+    );
+
+    rejectUpgrade(socket, HTTP_STATUS.INTERNAL_SERVER_ERROR);
   }
 }
