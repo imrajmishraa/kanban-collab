@@ -1,53 +1,116 @@
 import http from "http";
-import { WebSocketServer } from "ws";
+import type { Server } from "http";
+import { WebSocketServer, WebSocket } from "ws";
+
 import { ENV } from "../../../config/env";
 import { logger } from "../../../infrastructure/logging/logger";
-import { handleUpgrade } from "./upgrade";
-import { websocketConfig } from "../config";
 
-const server = http.createServer((_req, res) => {
-  res.writeHead(200, {
-    "Content-Type": "text/plain",
+import { handleUpgrade } from "./upgrade";
+import { websocketConfig } from "../../../config/websocket";
+
+let server: Server | null = null;
+
+let wss: WebSocketServer | null = null;
+
+const connectedClients = new Set<WebSocket>();
+
+function createWebSocketServer(): WebSocketServer {
+  const websocketServer = new WebSocketServer({
+    noServer: true,
+
+    maxPayload: websocketConfig.maxPayload,
+
+    perMessageDeflate: websocketConfig.perMessageDeflate,
   });
 
-  res.end("WebSocket Collaboration Server Running\n");
-});
+  websocketServer.on("connection", (socket) => {
+    connectedClients.add(socket);
 
-const wss = new WebSocketServer({
-  noServer: true,
-  maxPayload: websocketConfig.maxPayload,
-  perMessageDeflate: websocketConfig.perMessageDeflate,
-});
+    logger.info(
+      {
+        activeConnections: connectedClients.size,
+      },
+      "WebSocket client connected",
+    );
 
-// Runtime server errors.
-server.on("error", (error) => {
-  logger.error(error, "WebSocket server encountered an error.");
-});
+    socket.on("close", () => {
+      connectedClients.delete(socket);
 
-// Handle HTTP → WebSocket upgrades.
-server.on("upgrade", (request, socket, head) => {
-  void handleUpgrade(request, socket, head, wss);
-});
+      logger.info(
+        {
+          activeConnections: connectedClients.size,
+        },
+        "WebSocket client disconnected",
+      );
+    });
 
-//  Starts the WebSocket server.
-export function startWebSocketServer(): Promise<void> {
+    socket.on("error", (error) => {
+      logger.error(
+        {
+          error,
+        },
+        "WebSocket client error",
+      );
+    });
+  });
+
+  websocketServer.on("error", (error) => {
+    logger.error(
+      {
+        error,
+      },
+      "WebSocket server error",
+    );
+  });
+
+  return websocketServer;
+}
+
+function createHttpServer(): Server {
+  const httpServer = http.createServer((_req, res) => {
+    res.writeHead(200, {
+      "Content-Type": "text/plain",
+    });
+
+    res.end("WebSocket Collaboration Server Running\n");
+  });
+
+  return httpServer;
+}
+
+export async function startWebSocketServer(
+  _httpServer?: Server,
+): Promise<void> {
   return new Promise((resolve, reject) => {
-    const onStartupError = (error: Error): void => {
-      logger.fatal(error, "Failed to start WebSocket server.");
+    server = createHttpServer();
+
+    wss = createWebSocketServer();
+
+    server.on("upgrade", (request, socket, head) => {
+      void handleUpgrade(request, socket, head, wss!);
+    });
+
+    const startupErrorHandler = (error: Error): void => {
+      logger.fatal(
+        {
+          error,
+        },
+        "Failed to start WebSocket server",
+      );
 
       reject(error);
     };
 
-    server.once("error", onStartupError);
+    server.once("error", startupErrorHandler);
 
     server.listen(ENV.WS_PORT, () => {
-      server.off("error", onStartupError);
+      server?.off("error", startupErrorHandler);
 
       logger.info(
         {
           port: ENV.WS_PORT,
         },
-        `WebSocket server listening on port ${ENV.WS_PORT}`,
+        "WebSocket server started",
       );
 
       resolve();
@@ -55,25 +118,50 @@ export function startWebSocketServer(): Promise<void> {
   });
 }
 
-// Gracefully shuts down the WebSocket server.
-export function stopWebSocketServer(): Promise<void> {
-  return new Promise((resolve, reject) => {
-    logger.info("Stopping WebSocket server...");
+export async function stopWebSocketServer(): Promise<void> {
+  if (!server || !wss) {
+    return;
+  }
 
-    wss.close();
+  logger.info("Stopping WebSocket server...");
 
-    server.close((error) => {
+  // Close active clients
+
+  for (const client of connectedClients) {
+    client.close(1001, "Server shutting down");
+  }
+
+  connectedClients.clear();
+
+  await new Promise<void>((resolve) => {
+    wss!.close(() => {
+      logger.info("WebSocket connections closed");
+
+      resolve();
+    });
+  });
+
+  await new Promise<void>((resolve, reject) => {
+    server!.close((error) => {
       if (error) {
-        logger.error(error, "Failed to stop WebSocket server.");
+        logger.error(
+          {
+            error,
+          },
+          "Failed to close WebSocket HTTP server",
+        );
 
         reject(error);
 
         return;
       }
 
-      logger.info("WebSocket server stopped.");
-
       resolve();
     });
   });
+
+  server = null;
+  wss = null;
+
+  logger.info("WebSocket server stopped successfully");
 }
