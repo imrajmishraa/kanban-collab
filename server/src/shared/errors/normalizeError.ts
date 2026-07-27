@@ -3,14 +3,18 @@ import { ApiError } from "../utils/ApiError";
 import { internalServerError } from "./handler/custom";
 import { handleJwtError } from "./handler/jwt";
 import { handleMongooseError } from "./handler/mongoose";
+import { handleMulterError } from "./handler/multer";
 import { handleRedisError } from "./handler/redis";
 import { handleZodError } from "./handler/zod";
 
-const handlers = Object.freeze([
+type ErrorHandler = (err: unknown) => ApiError | null;
+
+const handlers: readonly ErrorHandler[] = Object.freeze([
   handleMongooseError,
-  handleRedisError,
   handleZodError,
   handleJwtError,
+  handleMulterError,
+  handleRedisError,
 ]);
 
 export function normalizeError(err: unknown): ApiError {
@@ -19,10 +23,10 @@ export function normalizeError(err: unknown): ApiError {
   }
 
   for (const handler of handlers) {
-    const normalized = handler(err);
+    const normalizedError = handler(err);
 
-    if (normalized) {
-      return normalized;
+    if (normalizedError) {
+      return normalizedError;
     }
   }
 
