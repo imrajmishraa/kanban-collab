@@ -23,3 +23,11 @@ export function boardIdAndQueryParametersRequiredError(): ApiError {
     ERROR_MESSAGE.BOARD_ID_AND_QUERY_REQUIRED,
   );
 }
+
+export function boardIdRequiredError(): ApiError {
+  return new ApiError(HTTP_STATUS.BAD_REQUEST, "Board ID is required.");
+}
+
+export function invalidBoardIdError(): ApiError {
+  return new ApiError(HTTP_STATUS.BAD_REQUEST, ERROR_MESSAGE.INVALID_OBJECT_ID);
+}
