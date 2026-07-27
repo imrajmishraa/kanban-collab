@@ -1,16 +1,25 @@
-import { Duplex } from "stream";
+import type { Duplex } from "stream";
 
+import { STATUS_CODES } from "http";
 
-export function rejectUpgrade(
-  socket: Duplex,
-  statusCode: number,
-  reason: string,
-): void {
-  if (socket.writable) {
-    socket.write(
-      `HTTP/1.1 ${statusCode} ${reason}\r\n` + "Connection: close\r\n" + "\r\n",
-    );
+export function rejectUpgrade(socket: Duplex, statusCode: number): void {
+  const reason = STATUS_CODES[statusCode] ?? "Unknown Error";
+
+  try {
+    if (socket.writable && !socket.destroyed) {
+      socket.write(
+        [
+          `HTTP/1.1 ${statusCode} ${reason}`,
+          "Connection: close",
+          "Content-Length: 0",
+          "",
+          "",
+        ].join("\r\n"),
+      );
+    }
+  } finally {
+    if (!socket.destroyed) {
+      socket.destroy();
+    }
   }
-
-  socket.destroy();
 }
