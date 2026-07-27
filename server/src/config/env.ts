@@ -19,25 +19,19 @@ const envSchema = z.object({
     .enum(["development", "production", "test"])
     .default("development"),
 
-  ORIGIN_URL: z.url().default("http://localhost"),
+  CLIENT_URL: z.url().default("http://localhost:3000"),
 
   MONGODB_URI: z.string().min(1),
 
   REDIS_URL: z.string().min(1),
 
-  JWT_SECRET: z.string().min(1),
+  JWT_SECRET: z.string().min(32),
 
-  JWT_REFRESH_SECRET: z.string().min(1),
+  JWT_REFRESH_SECRET: z.string().min(32),
 
-  LOG_LEVEL: z.enum([
-    "fatal",
-    "error",
-    "warn",
-    "info",
-    "debug",
-    "trace",
-    "silent",
-  ]),
+  LOG_LEVEL: z
+    .enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"])
+    .default("info"),
 });
 
 const parsed = envSchema.safeParse(process.env);
