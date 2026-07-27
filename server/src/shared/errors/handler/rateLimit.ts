@@ -1,25 +1,39 @@
-import { ApiError } from "../../../shared/utils/ApiError";
+import { ERROR_MESSAGE } from "../../constants/error";
+import { HTTP_STATUS } from "../../constants/http";
+import { ApiError } from "../../utils/ApiError";
 
-export const handleRateLimitError = (
+export function rateLimitError(
   type: "login" | "signup" | "chat" | "otp" | "api",
-) => {
+): ApiError {
   switch (type) {
     case "login":
       return new ApiError(
-        429,
-        "Too many login attempts. Try again in 15 minutes.",
+        HTTP_STATUS.TOO_MANY_REQUESTS,
+        ERROR_MESSAGE.RATE_LIMIT_LOGIN,
       );
 
     case "signup":
-      return new ApiError(429, "Too many accounts created from this IP.");
+      return new ApiError(
+        HTTP_STATUS.TOO_MANY_REQUESTS,
+        ERROR_MESSAGE.RATE_LIMIT_SIGNUP,
+      );
 
     case "chat":
-      return new ApiError(429, "You're sending messages too quickly.");
+      return new ApiError(
+        HTTP_STATUS.TOO_MANY_REQUESTS,
+        ERROR_MESSAGE.RATE_LIMIT_CHAT,
+      );
 
     case "otp":
-      return new ApiError(429, "OTP request limit exceeded.");
+      return new ApiError(
+        HTTP_STATUS.TOO_MANY_REQUESTS,
+        ERROR_MESSAGE.RATE_LIMIT_OTP,
+      );
 
     default:
-      return new ApiError(429, "Too many requests.");
+      return new ApiError(
+        HTTP_STATUS.TOO_MANY_REQUESTS,
+        ERROR_MESSAGE.RATE_LIMIT_GENERIC,
+      );
   }
-};
+}
