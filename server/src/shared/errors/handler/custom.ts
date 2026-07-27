@@ -8,3 +8,7 @@ export function internalServerError(): ApiError {
     ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
   );
 }
+
+export function invalidObjectIdError(): ApiError {
+  return new ApiError(HTTP_STATUS.BAD_REQUEST, ERROR_MESSAGE.INVALID_OBJECT_ID);
+}
