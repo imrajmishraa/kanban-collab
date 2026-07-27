@@ -1,10 +1,31 @@
-import { ApiError } from '../../utils/ApiError';
+import { HTTP_STATUS } from "../../constants/http";
+import { ERROR_MESSAGE } from "../../constants/error";
+import { ApiError } from "../../utils/ApiError";
 
-export const invalidAccessTokenError = () =>
-  new ApiError(401, 'Unauthorized: Access token invalid')
+export function invalidAccessTokenError(): ApiError {
+  return new ApiError(
+    HTTP_STATUS.UNAUTHORIZED,
+    ERROR_MESSAGE.INVALID_ACCESS_TOKEN,
+  );
+}
 
-export const missingAccessTokenError = () =>
-  new ApiError(401, 'Unauthorized: Access token missing');
+export function expiredAccessTokenError(): ApiError {
+  return new ApiError(
+    HTTP_STATUS.UNAUTHORIZED,
+    ERROR_MESSAGE.ACCESS_TOKEN_EXPIRED,
+  );
+}
 
-export const expiredAccessTokenError = () =>
-  new ApiError(401, "Unauthorized: Access token expired");
+export function missingAccessTokenError(): ApiError {
+  return new ApiError(
+    HTTP_STATUS.UNAUTHORIZED,
+    ERROR_MESSAGE.ACCESS_TOKEN_MISSING,
+  );
+}
+
+export function accessTokenNotActiveError(): ApiError {
+  return new ApiError(
+    HTTP_STATUS.UNAUTHORIZED,
+    ERROR_MESSAGE.ACCESS_TOKEN_NOT_ACTIVE,
+  );
+}
