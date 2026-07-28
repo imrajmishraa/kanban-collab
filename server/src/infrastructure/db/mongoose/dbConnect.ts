@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { logger } from '../../logging/logger';
-import { DB_NAME } from "../../../shared/constants/constants";
+import { DB_NAME } from "../../../shared/constants/DB";
 import { ENV } from "../../../config/env";
 
 
