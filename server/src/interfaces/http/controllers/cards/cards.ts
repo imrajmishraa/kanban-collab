@@ -5,7 +5,7 @@ import { ApiResponse } from "../../../../shared/utils/ApiResponse";
 import { Types } from "mongoose";
 import { logger } from "../../../../infrastructure/logging/logger";
 import { internalServerError } from "../../../../shared/errors/handler/custom";
-import { boardNotFoundError, guestNotCreateBoards } from "../../../../shared/errors/board/board";
+import { boardNotFoundError, guestCannotModifyBoardError } from "../../../../shared/errors/board/board";
 import { notWorkspaceMemberError } from "../../../../shared/errors/workspace/workspace";
 import { cardNotFoundError } from "../../../../shared/errors/card/card";
 
@@ -33,7 +33,7 @@ const createCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
         (m) => m.userId.toString() === userId,
       );
       if (!member || member.role === "guest") {
-        throw guestNotCreateBoards();
+        throw guestCannotModifyBoardError();
       }
 
       const card = await CardModel.create({
@@ -102,7 +102,7 @@ const moveCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
         (m) => m.userId.toString() === userId,
       );
       if (!member || member.role === "guest") {
-        throw guestNotCreateBoards();
+        throw guestCannotModifyBoardError();
       }
 
       const sourceCol = card.columnId;
