@@ -5,7 +5,7 @@ import { ApiResponse } from "../../../../shared/utils/ApiResponse";
 import { Types } from "mongoose";
 import { logger } from "../../../../infrastructure/logging/logger";
 import { internalServerError } from "../../../../shared/errors/handler/custom";
-import { boardNotFoundError, guestNotCreateBoards } from "../../../../shared/errors/board/board";
+import { boardNotFoundError, guestCannotModifyBoardError } from "../../../../shared/errors/board/board";
 import { notWorkspaceMemberError } from "../../../../shared/errors/workspace/workspace";
 
 
@@ -33,7 +33,7 @@ const createColumn = asyncHandler(async (req: AuthenticatedRequest, res) => {
     const member = workspace.members.find(m => m.userId.toString() === userId);
 
      if (!member || member.role === 'guest') {
-        throw guestNotCreateBoards();
+        throw guestCannotModifyBoardError();
      }
 
      const column = await ColumnModel.create({
@@ -61,5 +61,3 @@ const createColumn = asyncHandler(async (req: AuthenticatedRequest, res) => {
 });
 
 export { createColumn };
-
-
