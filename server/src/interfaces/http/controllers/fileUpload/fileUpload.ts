@@ -5,7 +5,7 @@ import { ApiResponse } from "../../../../shared/utils/ApiResponse";
 import { Types } from "mongoose";
 import { logger } from "../../../../infrastructure/logging/logger";
 import { internalServerError } from "../../../../shared/errors/handler/custom";
-import { attachmentsRequiredError, forbiddenWorkspaceError, guestCanNotUploadError } from "../../../../shared/errors/fileUpload/fileUpload";
+import { attachmentsRequiredError, forbiddenWorkspaceError, guestCannotUploadError } from "../../../../shared/errors/fileUpload/fileUpload";
 import { boardNotFoundError } from "../../../../shared/errors/board/board";
 import { cardNotFoundError } from "../../../../shared/errors/card/card";
 
@@ -40,7 +40,7 @@ const signUpload = asyncHandler(async (req: AuthenticatedRequest, res) => {
         (m) => m.userId.toString() === userId,
       );
       if (!member || member.role === "guest") {
-        throw guestCanNotUploadError();
+        throw guestCannotUploadError();
       }
 
       // Generate mock signed URL
