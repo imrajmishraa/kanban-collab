@@ -5,7 +5,7 @@ import { WorkspaceModel } from "../../../../infrastructure/db/mongoose/schemas";
 import { logger } from "../../../../infrastructure/logging/logger";
 import { ApiResponse } from "../../../../shared/utils/ApiResponse";
 import { internalServerError } from "../../../../shared/errors/handler/custom";
-import { userAlreadyMemberError, userEmailNotExistError, verifyAdminError } from "../../../../shared/errors/workspace/workspace";
+import { userAlreadyWorkspaceMemberError, userNotFoundError, adminAccessRequiredError } from "../../../../shared/errors/workspace/workspace";
 
 const createWorkspace = asyncHandler(
   async (req: AuthenticatedRequest, res) => {
@@ -18,8 +18,8 @@ const createWorkspace = asyncHandler(
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/(^-|-$)/g, "");
 
-      const uniqueSlug = `${slug}-${Date.now().toString().slice(-4)}`; 
-      
+      const uniqueSlug = `${slug}-${Date.now().toString().slice(-4)}`;
+
       const workspace = await WorkspaceModel.create({
         name,
         slug: uniqueSlug,
@@ -32,7 +32,7 @@ const createWorkspace = asyncHandler(
 
        return res.status(201).json(
         new ApiResponse(201, 'Workspace created successfully', {
-            data: workspace 
+            data: workspace
         })
        );
     } catch (error) {
@@ -48,7 +48,7 @@ const listWorkspaces = asyncHandler(async (req: AuthenticatedRequest, res) => {
         const workspaces = await WorkspaceModel.find({
           "members.userId": new Types.ObjectId(userId),
         });
-        
+
         return res.status(200).json(
           new ApiResponse(200, "Workspaces fetched successfully", {
             data: workspaces,
@@ -76,13 +76,13 @@ const addWorkspaceMember = asyncHandler(async (req: AuthenticatedRequest, res) =
 
 
     if (!workspace) {
-      throw verifyAdminError();
+      throw adminAccessRequiredError();
     }
 
     // Add member directly for this setup
     const userToAdd = await WorkspaceModel.db.model("User").findOne({ email });
     if (!userToAdd) {
-      throw userEmailNotExistError();
+      throw userNotFoundError();
     }
 
     // Check if already a member
@@ -90,7 +90,7 @@ const addWorkspaceMember = asyncHandler(async (req: AuthenticatedRequest, res) =
       m.userId.equals(userToAdd._id),
     );
     if (isMember) {
-      throw userAlreadyMemberError();
+      throw userAlreadyWorkspaceMemberError();
     }
 
     workspace.members.push({ userId: userToAdd._id, role: role || "member" });
