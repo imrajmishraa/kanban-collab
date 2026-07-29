@@ -4,7 +4,7 @@ import { UserModel, SessionModel } from '../../../../infrastructure/db/mongoose/
 import { hashPassword, comparePassword } from '../../../../infrastructure/security/hash';
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../../../../infrastructure/security/token';
 import { logger } from '../../../../infrastructure/logging/logger';
-import { existingUserError, invaidEmailOrPasswordError, userNotExistError } from '../../../../shared/errors/auth/custom';
+import { existingUserError, invalidEmailOrPasswordError, userNotFoundError } from '../../../../shared/errors/auth/custom';
 import { internalServerError } from '../../../../shared/errors/handler/custom';
 import { invalidRefreshTokenError, missingRefreshTokenError, expiredRefreshTokenError } from '../../../../shared/errors/auth/refreshToken';
 import { ApiResponse } from '../../../../shared/utils/ApiResponse';
@@ -61,7 +61,7 @@ const refresh = asyncHandler(async (req, res) => {
     // Token rotation
     const user = await UserModel.findById(decoded.userId);
     if (!user) {
-      throw userNotExistError();
+      throw userNotFoundError();
     }
 
 
@@ -148,12 +148,12 @@ const login = asyncHandler(async (req, res) => {
 
     const user = await UserModel.findOne({ email });
     if (!user) {
-      throw invaidEmailOrPasswordError();
+      throw invalidEmailOrPasswordError();
     }
 
     const isMatch = await comparePassword(password, user.passwordHash);
     if (!isMatch) {
-      throw invaidEmailOrPasswordError();
+      throw invalidEmailOrPasswordError();
     }
 
     const accessToken = signAccessToken({
