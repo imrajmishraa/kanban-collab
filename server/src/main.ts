@@ -1,5 +1,5 @@
-import mongoose from "mongoose";
 import http from "http";
+import mongoose from "mongoose";
 
 import { ENV } from "./config/env";
 import { connectDB } from "./infrastructure/db/mongoose/dbConnect";
@@ -9,96 +9,197 @@ import { app } from "./interfaces/http/app";
 import {
   startWebSocketServer,
   stopWebSocketServer,
-} from "./interfaces/websockets/servers/server";
+} from "./interfaces/websockets/server/server";
 
-let httpServer: ReturnType<typeof http.createServer>;
+let httpServer: http.Server | null = null;
 
-let isShuttingDown = false;
+let shuttingDown = false;
+
+/**
+ * Starts the complete backend.
+ */
+async function bootstrap(): Promise<void> {
+  try {
+    logger.info("Starting Kanban Collaboration Server...");
+
+    /*
+     * Database
+     */
+    await connectDB();
+
+    /*
+     * HTTP Server
+     */
+    httpServer = http.createServer(app);
+
+    /*
+     * WebSocket Server
+     */
+    await startWebSocketServer(httpServer);
+
+    /*
+     * Start listening
+     */
+    await new Promise<void>((resolve, reject) => {
+      httpServer!.once("error", reject);
+
+      httpServer!.listen(ENV.PORT, () => {
+        httpServer!.off("error", reject);
+
+        logger.info(
+          {
+            port: ENV.PORT,
+            environment: ENV.NODE_ENV,
+          },
+          "HTTP & WebSocket server started successfully.",
+        );
+
+        resolve();
+      });
+    });
+  } catch (error) {
+    logger.fatal(
+      {
+        err: error,
+      },
+      "Application bootstrap failed.",
+    );
+
+    process.exit(1);
+  }
+}
+
+/**
+ * Gracefully shuts down the application.
+ */
+async function shutdown(signal: string): Promise<void> {
+  if (shuttingDown) {
+    return;
+  }
+
+  shuttingDown = true;
+
+  logger.info(
+    {
+      signal,
+    },
+    "Graceful shutdown initiated.",
+  );
+
+  try {
+    /*
+     * Stop WebSocket server and collaboration infrastructure.
+     */
+    await stopWebSocketServer();
+
+    /*
+     * Stop HTTP server.
+     */
+    if (httpServer) {
+      await new Promise<void>((resolve, reject) => {
+        httpServer!.close((err?: Error) => {
+          if (err) {
+            reject(err);
+
+            return;
+          }
+
+          resolve();
+        });
+      });
+
+      logger.info("HTTP server stopped.");
+    }
+
+    /*
+     * Disconnect MongoDB.
+     */
+    await mongoose.disconnect();
+
+    logger.info("MongoDB disconnected.");
+
+    logger.info("Shutdown completed successfully.");
+
+    process.exit(0);
+  } catch (error) {
+    logger.fatal(
+      {
+        err: error,
+      },
+      "Shutdown failed.",
+    );
+
+    process.exit(1);
+  }
+}
+
+/*
+|--------------------------------------------------------------------------
+| MongoDB Events
+|--------------------------------------------------------------------------
+*/
+
+mongoose.connection.on("connected", () => {
+  logger.info("MongoDB connected.");
+});
 
 mongoose.connection.on("disconnected", () => {
-  if (isShuttingDown) {
+  if (shuttingDown) {
     logger.info("MongoDB disconnected gracefully.");
   } else {
     logger.warn("MongoDB disconnected unexpectedly.");
   }
 });
 
-async function shutdown(signal: string): Promise<void> {
-  if (isShuttingDown) return;
+mongoose.connection.on("error", (error) => {
+  logger.error(
+    {
+      err: error,
+    },
+    "MongoDB connection error.",
+  );
+});
 
-  isShuttingDown = true;
+/*
+|--------------------------------------------------------------------------
+| Process Events
+|--------------------------------------------------------------------------
+*/
 
-  logger.info({ signal }, "Graceful shutdown started");
+process.once("SIGINT", () => {
+  void shutdown("SIGINT");
+});
 
-  const timeout = setTimeout(() => {
-    logger.fatal("Forced shutdown after timeout");
-
-    process.exit(1);
-  }, 10000);
-
-  try {
-    await stopWebSocketServer();
-
-    if (httpServer) {
-      await new Promise<void>((resolve) => {
-        httpServer.close(() => {
-          resolve();
-        });
-      });
-    }
-
-    await mongoose.disconnect();
-
-    clearTimeout(timeout);
-
-    logger.info("Shutdown completed");
-
-    process.exit(0);
-  } catch (error) {
-    logger.fatal({ error }, "Shutdown failed");
-
-    process.exit(1);
-  }
-}
-
-async function startServer(): Promise<void> {
-  try {
-    await connectDB();
-
-    httpServer = http.createServer(app);
-
-    await startWebSocketServer(httpServer);
-
-    httpServer.listen(ENV.PORT, () => {
-      logger.info(
-        {
-          port: ENV.PORT,
-          environment: ENV.NODE_ENV,
-        },
-        "Server started",
-      );
-    });
-  } catch (error) {
-    logger.fatal({ error }, "Server startup failed");
-
-    process.exit(1);
-  }
-}
-
-process.on("SIGINT", () => void shutdown("SIGINT"));
-
-process.on("SIGTERM", () => void shutdown("SIGTERM"));
+process.once("SIGTERM", () => {
+  void shutdown("SIGTERM");
+});
 
 process.on("uncaughtException", (error) => {
-  logger.fatal({ error }, "Uncaught exception");
+  logger.fatal(
+    {
+      err: error,
+    },
+    "Uncaught exception.",
+  );
 
-  process.exit(1);
+  void shutdown("uncaughtException");
 });
 
 process.on("unhandledRejection", (reason) => {
-  logger.fatal({ reason }, "Unhandled rejection");
+  logger.fatal(
+    {
+      reason,
+    },
+    "Unhandled promise rejection.",
+  );
 
-  process.exit(1);
+  void shutdown("unhandledRejection");
 });
 
-void startServer();
+/*
+|--------------------------------------------------------------------------
+| Application Entry
+|--------------------------------------------------------------------------
+*/
+
+void bootstrap();
