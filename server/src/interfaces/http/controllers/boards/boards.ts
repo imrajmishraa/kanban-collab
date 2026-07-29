@@ -5,7 +5,7 @@ import { ApiResponse } from "../../../../shared/utils/ApiResponse";
 import { Types } from "mongoose";
 import { logger } from "../../../../infrastructure/logging/logger";
 import { notWorkspaceMemberError, workspaceIdRequiredError } from "../../../../shared/errors/workspace/workspace";
-import { boardNotFoundError, boardWorkspaceAccessDeniedError, guestNotCreateBoards } from "../../../../shared/errors/board/board";
+import { boardNotFoundError, boardAccessDeniedError, guestCannotModifyBoardError } from "../../../../shared/errors/board/board";
 import { internalServerError } from "../../../../shared/errors/handler/custom";
 
 
@@ -13,32 +13,32 @@ const createBoard = asyncHandler(async (req: AuthenticatedRequest, res ) => {
   try {
     const { workspaceId, name, backgroundColor, visibility } = req.body;
     const userId = req.user!.userId;
-  
+
     // Verify workspace membership
     const workspace = await WorkspaceModel.findOne({
       _id: workspaceId,
       "members.userId": new Types.ObjectId(userId),
     });
-  
+
     if(!workspace) {
       throw notWorkspaceMemberError();
     }
-  
+
       const member = workspace.members.find(
         (m) => m.userId.toString() === userId,
       );
-  
+
       if(!member|| member.role === 'guest') {
-          throw guestNotCreateBoards();
+          throw guestCannotModifyBoardError();
       }
-  
+
       const board = await BoardModel.create({
         workspaceId: new Types.ObjectId(userId),
         name,
         backgroundColor: backgroundColor || "#2b6cb0",
         visibility: visibility || 'workspace'
       });
-  
+
       logger.info({ boardId: board._id, workspaceId }, "Board created");
       return res.status(201).json(
           new ApiResponse(201, 'Board created successfully', {
@@ -105,7 +105,7 @@ const getBoardDetails = asyncHandler(
 
 
       if (!workspace) {
-        throw boardWorkspaceAccessDeniedError();
+        throw boardAccessDeniedError();
       }
 
       const columns = await ColumnModel.find({ boardId: board._id }).sort({ orderIndex: 1});
