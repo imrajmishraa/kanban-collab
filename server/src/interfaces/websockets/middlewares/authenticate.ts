@@ -1,6 +1,9 @@
 import type { IncomingMessage } from "http";
 
 import { verifyAccessToken } from "../../../infrastructure/security/token";
+import { expiredAccessTokenError, missingAccessTokenError } from "../../../shared/errors/auth/accessToken";
+import { boardIdRequiredError } from "../../../shared/errors/board/board";
+import { InvalidWebSocketRequestError } from "../../../shared/errors/websocket/websocket";
 
 export interface AuthenticatedSocketContext {
   userId: string;
@@ -10,23 +13,29 @@ export interface AuthenticatedSocketContext {
 export async function authenticate(
   request: IncomingMessage,
 ): Promise<AuthenticatedSocketContext> {
-  const url = new URL(request.url ?? "", "http://localhost");
+  let url: URL;
+
+  try {
+    url = new URL(request.url ?? "", "http://localhost");
+  } catch {
+    throw InvalidWebSocketRequestError();
+  }
 
   const token = url.searchParams.get("token");
   const boardId = url.searchParams.get("boardId");
 
   if (!token) {
-    throw new Error("Missing access token.");
+    throw missingAccessTokenError();
   }
 
   if (!boardId) {
-    throw new Error("Missing boardId.");
+    throw boardIdRequiredError();
   }
 
   const payload = verifyAccessToken(token);
 
   if (!payload) {
-    throw new Error("Invalid or expired access token.");
+    throw expiredAccessTokenError();
   }
 
   return {
