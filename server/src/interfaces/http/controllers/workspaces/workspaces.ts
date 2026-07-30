@@ -108,7 +108,7 @@ const addWorkspaceMember = asyncHandler(async (req: AuthenticatedRequest, res) =
     );
   } catch (error) {
     logger.error({ err: error }, "Add workspace member error");
-    throw internalServerError;
+    throw internalServerError();
   }
 
 });
