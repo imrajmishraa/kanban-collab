@@ -33,7 +33,7 @@ const createBoard = asyncHandler(async (req: AuthenticatedRequest, res ) => {
       }
 
       const board = await BoardModel.create({
-        workspaceId: new Types.ObjectId(userId),
+        workspaceId: new Types.ObjectId(workspaceId),
         name,
         backgroundColor: backgroundColor || "#2b6cb0",
         visibility: visibility || 'workspace'
@@ -124,7 +124,7 @@ const getBoardDetails = asyncHandler(
                         description: card.description,
                         orderIndex: card.orderIndex,
                         dueDate: card.dueDate,
-                        lebels: card.labels,
+                        labels: card.labels,
                         checkLists: card.checklists
                     }))
         };
