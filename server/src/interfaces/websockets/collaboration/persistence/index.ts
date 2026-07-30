@@ -2,7 +2,9 @@ import { setPersistence } from "y-websocket/bin/utils";
 
 import { logger } from "../../../../infrastructure/logging/logger";
 
-import { persistence } from "./mongoPersistence";
+import { persistence } from "../persistence/mongoPersistence";
+export type { DocumentPersistence } from "./documentPersistence";
+
 
 let configured = false;
 
