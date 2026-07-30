@@ -55,7 +55,7 @@ const refresh = asyncHandler(async (req, res) => {
       res.clearCookie("refreshToken", {
         ...getCookieOptions(),
       });
-      throw expiredRefreshTokenError;
+      throw expiredRefreshTokenError();
     }
 
     // Token rotation
