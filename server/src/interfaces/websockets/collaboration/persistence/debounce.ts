@@ -1,44 +1,93 @@
 type AsyncTask = () => Promise<void>;
 
-export class Debouncer {
-  private readonly timers = new Map<string, NodeJS.Timeout>();
+interface PendingTask {
+  timer: NodeJS.Timeout;
+  task: AsyncTask;
+}
 
-  debounce(key: string, delay: number, task: AsyncTask): void {
-    const existing = this.timers.get(key);
+export class Debouncer {
+  private readonly tasks = new Map<string, PendingTask>();
+
+  /**
+   * Schedules a task.
+   * If another task with the same key exists,
+   * it is replaced.
+   */
+  public debounce(key: string, delay: number, task: AsyncTask): void {
+    const existing = this.tasks.get(key);
 
     if (existing) {
-      clearTimeout(existing);
+      clearTimeout(existing.timer);
     }
 
-    const timeout = setTimeout(async () => {
-      this.timers.delete(key);
+    const timer = setTimeout(async () => {
+      this.tasks.delete(key);
 
       try {
         await task();
       } catch {
-        // Caller is responsible for logging.
+        // caller is responsible for logging
       }
     }, delay);
 
-    this.timers.set(key, timeout);
+    this.tasks.set(key, {
+      timer,
+      task,
+    });
   }
 
-  cancel(key: string): void {
-    const timer = this.timers.get(key);
+  //  Cancels a pending task.
+  public cancel(key: string): void {
+    const pending = this.tasks.get(key);
 
-    if (!timer) {
+    if (!pending) {
       return;
     }
 
-    clearTimeout(timer);
-    this.timers.delete(key);
+    clearTimeout(pending.timer);
+    this.tasks.delete(key);
   }
 
-  clear(): void {
-    for (const timer of this.timers.values()) {
+  // Immediately executes one pending task.
+  public async flush(key: string): Promise<void> {
+    const pending = this.tasks.get(key);
+
+    if (!pending) {
+      return;
+    }
+
+    clearTimeout(pending.timer);
+    this.tasks.delete(key);
+
+    await pending.task();
+  }
+
+  //  Immediately executes every pending task.
+  //  Used during graceful shutdown.
+  public async flushAll(): Promise<void> {
+    const pendingTasks = [...this.tasks.entries()];
+
+    this.tasks.clear();
+
+    await Promise.all(
+      pendingTasks.map(async ([, pending]) => {
+        clearTimeout(pending.timer);
+
+        try {
+          await pending.task();
+        } catch {
+          // Caller is responsible for logging.
+        }
+      }),
+    );
+  }
+
+  //  Cancels all pending tasks without executing them.
+  public cancelAll(): void {
+    for (const { timer } of this.tasks.values()) {
       clearTimeout(timer);
     }
 
-    this.timers.clear();
+    this.tasks.clear();
   }
 }
