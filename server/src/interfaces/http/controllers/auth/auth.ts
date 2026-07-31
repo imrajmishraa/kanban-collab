@@ -5,8 +5,8 @@ import { hashPassword, comparePassword } from '../../../../infrastructure/securi
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../../../../infrastructure/security/token';
 import { authLogger } from "../../../../infrastructure/logging/childLogger";
 import { existingUserError, invalidEmailOrPasswordError, userNotFoundError } from '../../../../shared/errors/auth/custom';
-import { internalServerError } from '../../../../shared/errors/handler/custom';
-import { invalidRefreshTokenError, missingRefreshTokenError, expiredRefreshTokenError } from '../../../../shared/errors/auth/refreshToken';
+
+import { missingRefreshTokenError, expiredRefreshTokenError } from '../../../../shared/errors/auth/refreshToken';
 import { ApiResponse } from '../../../../shared/utils/ApiResponse';
 import { ENV } from '../../../../config/env';
 import { CookieOptions } from 'express';
