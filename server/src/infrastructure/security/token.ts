@@ -18,6 +18,7 @@ import {
   invalidRefreshTokenError,
   refreshTokenNotActiveError,
 } from "../../shared/errors/auth/refreshToken";
+import crypto from "crypto";
 
 const JWT_SECRET = ENV.JWT_SECRET;
 const JWT_REFRESH_SECRET = ENV.JWT_REFRESH_SECRET;
@@ -47,10 +48,17 @@ export function signAccessToken(
 export function signRefreshToken(
   payload: Omit<RefreshTokenPayload, "iat" | "exp">,
 ): string {
-  return jwt.sign(payload, JWT_REFRESH_SECRET, {
-    algorithm: "HS256",
-    expiresIn: REFRESH_TOKEN_EXPIRES_IN,
-  });
+  return jwt.sign(
+    {
+      ...payload,
+      jti: crypto.randomUUID(),
+    },
+    JWT_REFRESH_SECRET,
+    {
+      algorithm: "HS256",
+      expiresIn: REFRESH_TOKEN_EXPIRES_IN,
+    },
+  );
 }
 
 export function verifyAccessToken(token: string): AccessTokenPayload {
