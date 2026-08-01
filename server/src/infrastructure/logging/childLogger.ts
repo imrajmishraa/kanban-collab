@@ -4,6 +4,10 @@ export const httpLogger = logger.child({
   module: "http",
 });
 
+export const boardControllerLogger = httpLogger.child({
+  controller: "board",
+});
+
 export const authLogger = logger.child({
   module: "auth",
 });
