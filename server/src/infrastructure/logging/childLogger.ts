@@ -8,6 +8,10 @@ export const boardControllerLogger = httpLogger.child({
   controller: "board",
 });
 
+export const workspaceControllerLogger = httpLogger.child({
+  controller: "workspace",
+});
+
 export const authLogger = logger.child({
   module: "auth",
 });
