@@ -3,17 +3,16 @@ import { asyncHandler } from "../../../../shared/utils/asyncHandler";
 import { ColumnModel, BoardModel, WorkspaceModel } from "../../../../infrastructure/db/mongoose/schemas";
 import { ApiResponse } from "../../../../shared/utils/ApiResponse";
 import { Types } from "mongoose";
-import { logger } from "../../../../infrastructure/logging/logger";
-import { internalServerError } from "../../../../shared/errors/handler/custom";
+import { columnControllerLogger } from "../../../../infrastructure/logging/childLogger";
+
 import { boardNotFoundError, guestCannotModifyBoardError } from "../../../../shared/errors/board/board";
 import { notWorkspaceMemberError } from "../../../../shared/errors/workspace/workspace";
 
 
 const createColumn = asyncHandler(async (req: AuthenticatedRequest, res) => {
+  const { boardId, name, orderIndex } = req.body;
+  const userId = req.user!.userId;
    try {
-     const { boardId, name, orderIndex } = req.body;
-     const userId = req.user!.userId;
-
      const board = await BoardModel.findById(boardId);
 
      if (!board) {
@@ -42,7 +41,14 @@ const createColumn = asyncHandler(async (req: AuthenticatedRequest, res) => {
        orderIndex: orderIndex || 0,
      });
 
-    logger.info({ columnId: column._id, boardId }, "Column created");
+    columnControllerLogger.info(
+      {
+        columnId: column._id,
+        boardId,
+        userId,
+      },
+      "Column created",
+    );
 
     return res.status(201).json(
         new ApiResponse(201, 'Column created successfully', {
@@ -55,8 +61,15 @@ const createColumn = asyncHandler(async (req: AuthenticatedRequest, res) => {
         })
     );
    } catch (error) {
-    logger.error({ err: error }, "Create column error");
-    throw internalServerError();
+   columnControllerLogger.error(
+     {
+       err: error,
+       boardId,
+       userId,
+     },
+     "Failed to create column",
+   );
+    throw error;
    }
 });
 

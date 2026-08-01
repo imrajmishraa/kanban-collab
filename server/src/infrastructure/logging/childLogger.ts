@@ -16,6 +16,10 @@ export const cardControllerLogger = httpLogger.child({
   controller: "card",
 });
 
+export const columnControllerLogger = httpLogger.child({
+  controller: "column",
+});
+
 export const authLogger = logger.child({
   module: "auth",
 });
