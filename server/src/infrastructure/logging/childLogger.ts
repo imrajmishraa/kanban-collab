@@ -12,6 +12,10 @@ export const workspaceControllerLogger = httpLogger.child({
   controller: "workspace",
 });
 
+export const cardControllerLogger = httpLogger.child({
+  controller: "card",
+});
+
 export const authLogger = logger.child({
   module: "auth",
 });
