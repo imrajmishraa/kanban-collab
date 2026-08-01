@@ -3,16 +3,17 @@ import { asyncHandler } from "../../../../shared/utils/asyncHandler";
 import { BoardModel, CardModel, ColumnModel, WorkspaceModel } from "../../../../infrastructure/db/mongoose/schemas";
 import { ApiResponse } from "../../../../shared/utils/ApiResponse";
 import { Types } from "mongoose";
-import { logger } from "../../../../infrastructure/logging/logger";
+
+import { boardControllerLogger } from "../../../../infrastructure/logging/childLogger";
 import { notWorkspaceMemberError, workspaceIdRequiredError } from "../../../../shared/errors/workspace/workspace";
 import { boardNotFoundError, boardAccessDeniedError, guestCannotModifyBoardError } from "../../../../shared/errors/board/board";
 import { internalServerError } from "../../../../shared/errors/handler/custom";
 
 
 const createBoard = asyncHandler(async (req: AuthenticatedRequest, res ) => {
+  const { workspaceId, name, backgroundColor, visibility } = req.body;
+  const userId = req.user!.userId;
   try {
-    const { workspaceId, name, backgroundColor, visibility } = req.body;
-    const userId = req.user!.userId;
 
     // Verify workspace membership
     const workspace = await WorkspaceModel.findOne({
@@ -39,22 +40,36 @@ const createBoard = asyncHandler(async (req: AuthenticatedRequest, res ) => {
         visibility: visibility || 'workspace'
       });
 
-      logger.info({ boardId: board._id, workspaceId }, "Board created");
+      boardControllerLogger.info(
+        {
+          boardId: board._id,
+          workspaceId,
+          userId,
+        },
+        "Board created",
+      );
       return res.status(201).json(
           new ApiResponse(201, 'Board created successfully', {
               data: board
           })
       )
   } catch (error) {
-    logger.error({ err: error }, "Create board error");
-    throw internalServerError();
+    boardControllerLogger.error(
+      {
+        err: error,
+        userId,
+        workspaceId,
+      },
+      "Create board failed",
+    );
+    throw error;
   }
 });
 
 const listBoards = asyncHandler(async (req: AuthenticatedRequest, res) => {
-    try {
-      const { workspaceId } = req.query;
-      const userId = req.user!.userId;
+  const { workspaceId } = req.query;
+  const userId = req.user!.userId;  
+  try {
 
       if (!workspaceId) {
         throw workspaceIdRequiredError();
@@ -75,22 +90,37 @@ const listBoards = asyncHandler(async (req: AuthenticatedRequest, res) => {
       });
 
 
+      boardControllerLogger.info(
+        {
+          workspaceId,
+          userId,
+          boardCount: boards.length,
+        },
+        "Boards listed",
+      );
       return res.status(200).json(
         new ApiResponse(200, "fetched listBoards successfully", {
           data: { boards },
         }),
       );
     } catch (error) {
-        logger.error({ err: error }, "List boards error");
-        throw internalServerError();
+        boardControllerLogger.error(
+          {
+            err: error,
+            workspaceId,
+            userId,
+          },
+          "List boards failed",
+        );
+        throw error;
     }
 });
 
 const getBoardDetails = asyncHandler(
   async (req: AuthenticatedRequest, res) => {
-    try {
+     const userId = req.user!.userId;
       const { id } = req.params;
-      const userId = req.user!.userId;
+     try {     
 
       const board = await BoardModel.findById(id);
       if (!board) {
@@ -130,6 +160,14 @@ const getBoardDetails = asyncHandler(
         };
       });
 
+      boardControllerLogger.info(
+        {
+          boardId: board._id,
+          workspaceId: board.workspaceId,
+          userId,
+        },
+        "Board details retrieved",
+      );
       return res.status(200).json(
         new ApiResponse(200, "Fetched board details", {
           data: {
@@ -142,8 +180,15 @@ const getBoardDetails = asyncHandler(
         }),
       );
     } catch (error) {
-        logger.error({ err: error }, "Get board details error");
-        throw internalServerError();
+        boardControllerLogger.error(
+          {
+            err: error,
+            boardId: req.params.id,
+            userId,
+          },
+          "Get board details failed",
+        );
+        throw error;
     }
   },
 );
