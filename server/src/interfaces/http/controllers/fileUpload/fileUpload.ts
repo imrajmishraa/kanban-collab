@@ -3,18 +3,17 @@ import { asyncHandler } from "../../../../shared/utils/asyncHandler";
 import { WorkspaceModel, BoardModel, CardModel } from "../../../../infrastructure/db/mongoose/schemas";
 import { ApiResponse } from "../../../../shared/utils/ApiResponse";
 import { Types } from "mongoose";
-import { logger } from "../../../../infrastructure/logging/logger";
-import { internalServerError } from "../../../../shared/errors/handler/custom";
+import { fileUploadControllerLogger } from "../../../../infrastructure/logging/childLogger";
+
 import { attachmentsRequiredError, forbiddenWorkspaceError, guestCannotUploadError } from "../../../../shared/errors/fileUpload/fileUpload";
 import { boardNotFoundError } from "../../../../shared/errors/board/board";
 import { cardNotFoundError } from "../../../../shared/errors/card/card";
 
 
 const signUpload = asyncHandler(async (req: AuthenticatedRequest, res) => {
-    try {
-      const { fileName, fileType, cardId } = req.body;
-      const userId = req.user!.userId;
-
+   const { fileName, fileType, cardId } = req.body;
+   const userId = req.user!.userId;  
+  try {
       if (!fileName || !fileType || !cardId) {
         throw attachmentsRequiredError();
       }
@@ -48,6 +47,14 @@ const signUpload = asyncHandler(async (req: AuthenticatedRequest, res) => {
       const uploadUrl = `https://enterprise-kanban-uploads.s3.amazonaws.com/${mockKey}?AWSAccessKeyId=mock&Expires=123&Signature=mock`;
       const fileUrl = `https://enterprise-kanban-uploads.s3.amazonaws.com/${mockKey}`;
 
+      fileUploadControllerLogger.info(
+        {
+          userId,
+          fileName,
+        },
+        "S3 upload URL signed",
+      );
+      
       return res.status(200).json(
         new ApiResponse(200, "File uploaded successfully", {
           data: {
@@ -57,8 +64,14 @@ const signUpload = asyncHandler(async (req: AuthenticatedRequest, res) => {
         }),
       );
     } catch (error) {
-      logger.error("Sign S3 upload error:", error);
-      throw internalServerError();
+      fileUploadControllerLogger.error(
+        {
+          err: error,
+          userId,
+        },
+        "Failed to sign S3 upload",
+      );
+      throw error;
     }
 });
 
