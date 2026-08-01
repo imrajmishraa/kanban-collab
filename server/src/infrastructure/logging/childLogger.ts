@@ -24,6 +24,10 @@ export const searchControllerLogger = httpLogger.child({
     controller: "search"
 });
 
+export const fileUploadControllerLogger = httpLogger.child({
+    controller: "file upload"
+})
+
 export const authLogger = logger.child({
   module: "auth",
 });
