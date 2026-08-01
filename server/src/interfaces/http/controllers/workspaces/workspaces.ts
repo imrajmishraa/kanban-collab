@@ -2,16 +2,15 @@ import { asyncHandler } from "../../../../shared/utils/asyncHandler";
 import { AuthenticatedRequest } from "../../middleware/auth.middleware";
 import { Types } from "mongoose";
 import { WorkspaceModel } from "../../../../infrastructure/db/mongoose/schemas";
-import { logger } from "../../../../infrastructure/logging/logger";
+import { workspaceControllerLogger } from "../../../../infrastructure/logging/childLogger";
 import { ApiResponse } from "../../../../shared/utils/ApiResponse";
-import { internalServerError } from "../../../../shared/errors/handler/custom";
 import { userAlreadyWorkspaceMemberError, userNotFoundError, adminAccessRequiredError } from "../../../../shared/errors/workspace/workspace";
 
 const createWorkspace = asyncHandler(
   async (req: AuthenticatedRequest, res) => {
+    const { name, description } = req.body;
+    const userId = req.user!.userId;
     try {
-      const { name, description } = req.body;
-      const userId = req.user!.userId;
 
       const slug = name
         .toLowerCase()
@@ -28,7 +27,10 @@ const createWorkspace = asyncHandler(
         members: [{ userId: new Types.ObjectId(userId), role: "admin" }],
       });
 
-      logger.info({ workspaceId: workspace._id, userId }, "Workspace created");
+      workspaceControllerLogger.info(
+        { workspaceId: workspace._id, userId },
+        "Workspace created",
+      );
 
        return res.status(201).json(
         new ApiResponse(201, 'Workspace created successfully', {
@@ -36,35 +38,51 @@ const createWorkspace = asyncHandler(
         })
        );
     } catch (error) {
-      logger.error({ err: error }, "Failed to create workspace");
-      throw internalServerError();
+      workspaceControllerLogger.error(
+        {
+          err: error,
+          userId,
+        },
+        "Failed to create workspace",
+      );
+      throw error;
     }
   },
 );
 
 const listWorkspaces = asyncHandler(async (req: AuthenticatedRequest, res) => {
-    try {
-        const userId = req.user!.userId;
+        const userId = req.user!.userId;  
+  try {
         const workspaces = await WorkspaceModel.find({
           "members.userId": new Types.ObjectId(userId),
         });
 
+        workspaceControllerLogger.info(
+          {
+            userId,
+            workspaceCount: workspaces.length,
+          },
+          "Workspaces retrieved",
+        );
         return res.status(200).json(
           new ApiResponse(200, "Workspaces fetched successfully", {
             data: workspaces,
           }),
         );
     } catch (error) {
-        logger.error({ err: error }, "List workspaces error:");
-        throw internalServerError();
+      workspaceControllerLogger.error(
+        { err: error },
+        "Failed to list workspaces",
+      );
+        throw error;
     }
 });
 
 const addWorkspaceMember = asyncHandler(async (req: AuthenticatedRequest, res) => {
+  const { id } = req.params;
+  const { email, role } = req.body;
+  const userId = req.user!.userId;
   try {
-    const { id } = req.params;
-    const { email, role } = req.body;
-    const userId = req.user!.userId;
 
     // Verify active user is admin in this workspace
     const workspace = await WorkspaceModel.findOne({
@@ -96,10 +114,14 @@ const addWorkspaceMember = asyncHandler(async (req: AuthenticatedRequest, res) =
     workspace.members.push({ userId: userToAdd._id, role: role || "member" });
     await workspace.save();
 
-    logger.info(
-      { workspaceId: id, newUserId: userToAdd._id },
-      "Member added to workspace",
-    );
+   workspaceControllerLogger.info(
+     {
+       workspaceId: id,
+       userId, // the authenticated user performing the action
+       newUserId: userToAdd._id, // the member being added
+     },
+     "Member added to workspace",
+   );
 
     return res.status(200).json(
       new ApiResponse(200, "Member added successfuly", {
@@ -107,8 +129,15 @@ const addWorkspaceMember = asyncHandler(async (req: AuthenticatedRequest, res) =
       }),
     );
   } catch (error) {
-    logger.error({ err: error }, "Add workspace member error");
-    throw internalServerError();
+    workspaceControllerLogger.error(
+      {
+        err: error,
+        workspaceId: id,
+        userId,
+      },
+      "Failed to add workspace member",
+    );
+    throw error;
   }
 
 });
