@@ -7,7 +7,7 @@ import { Types } from "mongoose";
 import { boardControllerLogger } from "../../../../infrastructure/logging/childLogger";
 import { notWorkspaceMemberError, workspaceIdRequiredError } from "../../../../shared/errors/workspace/workspace";
 import { boardNotFoundError, boardAccessDeniedError, guestCannotModifyBoardError } from "../../../../shared/errors/board/board";
-import { internalServerError } from "../../../../shared/errors/handler/custom";
+
 
 
 const createBoard = asyncHandler(async (req: AuthenticatedRequest, res ) => {
