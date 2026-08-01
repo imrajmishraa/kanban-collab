@@ -3,17 +3,16 @@ import { asyncHandler } from "../../../../shared/utils/asyncHandler";
 import { ActivityLogModel, BoardModel, CardModel, WorkspaceModel } from "../../../../infrastructure/db/mongoose/schemas";
 import { ApiResponse } from "../../../../shared/utils/ApiResponse";
 import { Types } from "mongoose";
-import { logger } from "../../../../infrastructure/logging/logger";
-import { internalServerError } from "../../../../shared/errors/handler/custom";
+import { cardControllerLogger } from "../../../../infrastructure/logging/childLogger";
 import { boardNotFoundError, guestCannotModifyBoardError } from "../../../../shared/errors/board/board";
 import { notWorkspaceMemberError } from "../../../../shared/errors/workspace/workspace";
 import { cardNotFoundError } from "../../../../shared/errors/card/card";
 
 
 const createCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
-    try {
-      const { columnId, boardId, title, orderIndex } = req.body;
-      const userId = req.user!.userId;
+  const { columnId, boardId, title, orderIndex } = req.body;
+  const userId = req.user!.userId;  
+  try {
 
       const board = await BoardModel.findById(boardId);
       if (!board) {
@@ -53,7 +52,15 @@ const createCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
         details: { cardId: card._id, cardTitle: card.title },
       });
 
-      logger.info({ cardId: card._id, boardId }, "Card created");
+      cardControllerLogger.info(
+        {
+          cardId: card._id,
+          boardId,
+          columnId,
+          userId,
+        },
+        "Card created",
+      );
 
       return res.status(201).json(
         new ApiResponse(201, "Card created successfully", {
@@ -68,17 +75,23 @@ const createCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
         }),
       );
     } catch (error) {
-      logger.error("Create card error:", error);
-      throw internalServerError();
+      cardControllerLogger.error(
+        {
+          err: error,
+          boardId,
+          userId,
+        },
+        "Failed to create card",
+      );
+      throw error;
     }
 });
 
 const moveCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
-    try {
-      const { id } = req.params;
-      const { targetColumnId, targetOrderIndex } = req.body;
-      const userId = req.user!.userId;
-
+  const { id } = req.params;
+  const { targetColumnId, targetOrderIndex } = req.body;
+  const userId = req.user!.userId;  
+  try {
       const card = await CardModel.findById(id);
       if (!card) {
         throw cardNotFoundError();
@@ -123,13 +136,29 @@ const moveCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
         },
       });
 
-      logger.info({ cardId: card._id, targetColumnId }, "Card moved");
+      cardControllerLogger.info(
+        {
+          cardId: card._id,
+          boardId: req.params,
+          sourceColumnId: sourceCol,
+          targetColumnId: targetColumnId,
+          userId,
+        },
+        "Card moved",
+      );
       return res
         .status(200)
         .json(new ApiResponse(200, "Card moved successfully.", { data: null }));
     } catch (error) {
-      logger.error("Move card error:", error);
-      throw internalServerError();
+      cardControllerLogger.error(
+        {
+          err: error,
+          userId,
+          targetColumnId,
+        },
+        "Failed to move card",
+      );
+      throw error;
     }
 });
 
