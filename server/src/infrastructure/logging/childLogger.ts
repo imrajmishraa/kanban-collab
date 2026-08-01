@@ -20,6 +20,10 @@ export const columnControllerLogger = httpLogger.child({
   controller: "column",
 });
 
+export const searchControllerLogger = httpLogger.child({
+    controller: "search"
+});
+
 export const authLogger = logger.child({
   module: "auth",
 });

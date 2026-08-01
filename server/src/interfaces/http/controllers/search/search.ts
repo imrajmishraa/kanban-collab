@@ -3,17 +3,16 @@ import { asyncHandler } from "../../../../shared/utils/asyncHandler";
 import { WorkspaceModel, BoardModel, CardModel } from "../../../../infrastructure/db/mongoose/schemas";
 import { ApiResponse } from "../../../../shared/utils/ApiResponse";
 import { Types } from "mongoose";
-import { logger } from "../../../../infrastructure/logging/logger";
-import { internalServerError } from "../../../../shared/errors/handler/custom";
+import { searchControllerLogger } from "../../../../infrastructure/logging/childLogger";
+
 import { forbiddenWorkspaceError } from "../../../../shared/errors/fileUpload/fileUpload";
 import { boardIdAndQueryParametersRequiredError, boardNotFoundError } from "../../../../shared/errors/board/board";
 
 
 const searchCards = asyncHandler(async (req: AuthenticatedRequest, res) => {
+  const { boardId, q } = req.query;
+  const userId = req.user!.userId;
     try {
-      const { boardId, q } = req.query;
-      const userId = req.user!.userId;
-
       if (!boardId || !q) {
         throw boardIdAndQueryParametersRequiredError();
       }
@@ -39,6 +38,16 @@ const searchCards = asyncHandler(async (req: AuthenticatedRequest, res) => {
         $text: { $search: q as string },
       });
 
+      searchControllerLogger.info(
+        {
+          userId,
+          workspaceId: workspace._id,
+          query: q,
+          resultCount: cards.length,
+        },
+        "Card search completed",
+      );
+      
       return res.status(200).json(
         new ApiResponse(200, "result..", {
           data: {
@@ -51,8 +60,8 @@ const searchCards = asyncHandler(async (req: AuthenticatedRequest, res) => {
         }),
       );
     } catch (error) {
-      logger.error("Search cards error:", { err: error });
-      throw internalServerError();
+      searchControllerLogger.error({ err: error }, "Failed to search cards");
+      throw error;
     }
 });
 
