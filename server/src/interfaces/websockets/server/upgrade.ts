@@ -3,7 +3,7 @@ import type { Duplex } from "stream";
 
 import { WebSocketServer } from "ws";
 
-import { logger } from "../../../infrastructure/logging/logger";
+import { websocketAuthLogger } from "../../../infrastructure/logging/childLogger";
 
 import { HTTP_STATUS } from "../../../shared/constants/http";
 import { ApiError } from "../../../shared/utils/ApiError";
@@ -25,9 +25,8 @@ export async function handleUpgrade(
   head: Buffer,
   wss: WebSocketServer,
 ): Promise<void> {
+  const { pathname, boardId } = parseUpgradeRequest(request);
   try {
-    const { pathname, boardId } = parseUpgradeRequest(request);
-
     const { userId } = await authenticate(request);
 
     await authorize(userId, boardId);
@@ -38,23 +37,42 @@ export async function handleUpgrade(
     upgradedRequest.userId = userId;
     upgradedRequest.boardId = boardId;
 
+    websocketAuthLogger.info(
+      {
+        userId,
+        boardId,
+        pathname,
+      },
+      "WebSocket upgrade authorized",
+    );
     wss.handleUpgrade(request, socket, head, (ws) => {
       wss.emit("connection", ws, upgradedRequest);
     });
   } catch (error) {
     if (error instanceof ApiError) {
+      websocketAuthLogger.warn(
+        {
+          statusCode: error.statusCode,
+          url: request.url,
+          boardId,
+          message: error.message,
+        },
+        "WebSocket upgrade rejected",
+      );
+
       rejectUpgrade(socket, error.statusCode);
       return;
     }
 
-    logger.error(
+    websocketAuthLogger.error(
       {
         err: error,
         url: request.url,
+        pathname,
+        boardId,
       },
-      "Unexpected error during WebSocket upgrade.",
+      "Unexpected WebSocket upgrade failure",
     );
-
     rejectUpgrade(socket, HTTP_STATUS.INTERNAL_SERVER_ERROR);
   }
 }
