@@ -5,17 +5,7 @@ import { logger } from '../../../../infrastructure/logging/logger';
 import { persistence } from "../persistence/mongoPersistence";
 import { bindRedisSync } from "../persistence/redisSync";
 import { cleanupRedisRoom } from "../persistence/redisSync";
-
-export interface ManagedDocument {
-  readonly name: string;
-  readonly doc: Y.Doc;
-  readonly createdAt: Date;
-  updatedAt: Date;
-  lastAccessedAt: Date;
-  connectionCount: number;
-  loaded: boolean;
-  destroyed: boolean;
-}
+import { ManagedDocument } from './types';
 
 
 class DocumentManager {
