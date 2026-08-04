@@ -2,7 +2,7 @@ import type { WebSocket } from "ws";
 
 import { logger } from "../../../../infrastructure/logging/logger";
 
-import type { ManagedDocument } from "./documentManager";
+import type { ManagedDocument } from "./types";
 import {
   CollaborationMessage,
   type CollaborationMessageType,
