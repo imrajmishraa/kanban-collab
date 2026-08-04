@@ -1,8 +1,15 @@
 import type { WebSocket } from "ws";
+import * as Y from 'yjs';
+
 
 export interface CollaborationClient {
   id: string;
   socket: WebSocket;
+}
+
+export interface DecodedUpdate {
+  type: number;
+  update?: Uint8Array;
 }
 
 export interface AwarenessState {
@@ -12,4 +19,15 @@ export interface AwarenessState {
   cursor?: {
     cardId?: string;
   };
+}
+
+export interface ManagedDocument {
+  readonly name: string;
+  readonly doc: Y.Doc;
+  readonly createdAt: Date;
+  updatedAt: Date;
+  lastAccessedAt: Date;
+  connectionCount: number;
+  loaded: boolean;
+  destroyed: boolean;
 }
