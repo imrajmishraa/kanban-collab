@@ -2,10 +2,7 @@ import * as Y from "yjs";
 
 import { logger } from "../../../../infrastructure/logging/logger";
 
-export interface DecodedUpdate {
-  type: number;
-  update?: Uint8Array;
-}
+import { DecodedUpdate } from "./types";
 
 export class UpdateDecoder {
   // Decodes incoming Yjs binary messages.
