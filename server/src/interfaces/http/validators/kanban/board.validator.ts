@@ -10,48 +10,18 @@ const boardVisibility = ["private", "public", "workspace"] as const;
 const hexColorRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
 
 export const boardParamsSchema = z.object({
-  params: z.object({
-    boardId: objectIdSchema,
-  }),
+  boardId: objectIdSchema,
 });
 
-const createBoardBodySchema = z.object({
-  workspaceId: objectIdSchema,
+export const createBoardSchema = {
+  body: z.object({
+    workspaceId: objectIdSchema,
 
-  name: z
-    .string()
-    .trim()
-    .min(3, "Board name must be at least 3 characters.")
-    .max(100, "Board name cannot exceed 100 characters."),
-
-  description: z
-    .string()
-    .trim()
-    .max(500, "Description cannot exceed 500 characters.")
-    .optional(),
-
-  backgroundColor: z
-    .string()
-    .regex(hexColorRegex, "Invalid background color.")
-    .optional(),
-
-  coverImageUrl: z.string().trim().url("Invalid cover image URL.").optional(),
-
-  visibility: z.enum(boardVisibility).optional(),
-});
-
-export const createBoardSchema = z.object({
-  body: createBoardBodySchema,
-});
-
-const updateBoardBodySchema = z
-  .object({
     name: z
       .string()
       .trim()
       .min(3, "Board name must be at least 3 characters.")
-      .max(100, "Board name cannot exceed 100 characters.")
-      .optional(),
+      .max(100, "Board name cannot exceed 100 characters."),
 
     description: z
       .string()
@@ -67,17 +37,48 @@ const updateBoardBodySchema = z
     coverImageUrl: z.string().trim().url("Invalid cover image URL.").optional(),
 
     visibility: z.enum(boardVisibility).optional(),
-  })
-  .refine((body) => Object.keys(body).length > 0, {
-    message: "At least one field must be provided for update.",
-  });
+  }),
+};
 
-export const updateBoardSchema = z.object({
-  params: boardParamsSchema.shape.params,
-  body: updateBoardBodySchema,
-});
 
-export const boardQuerySchema = z.object({
+export const updateBoardSchema = {
+  params: boardParamsSchema,
+
+  body: z
+    .object({
+      name: z
+        .string()
+        .trim()
+        .min(3, "Board name must be at least 3 characters.")
+        .max(100, "Board name cannot exceed 100 characters.")
+        .optional(),
+
+      description: z
+        .string()
+        .trim()
+        .max(500, "Description cannot exceed 500 characters.")
+        .optional(),
+
+      backgroundColor: z
+        .string()
+        .regex(hexColorRegex, "Invalid background color.")
+        .optional(),
+
+      coverImageUrl: z
+        .string()
+        .trim()
+        .url("Invalid cover image URL.")
+        .optional(),
+
+      visibility: z.enum(boardVisibility).optional(),
+    })
+    .refine((body) => Object.keys(body).length > 0, {
+      message: "At least one field must be provided for update.",
+    }),
+};
+
+
+export const boardQuerySchema = {
   query: z.object({
     workspaceId: objectIdSchema,
 
@@ -89,4 +90,4 @@ export const boardQuerySchema = z.object({
 
     search: z.string().trim().max(100).optional(),
   }),
-});
+};
