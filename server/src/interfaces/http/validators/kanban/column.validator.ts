@@ -11,7 +11,7 @@ export const columnParamsSchema = z.object({
   }),
 });
 
-export const createColumnSchema = z.object({
+export const createColumnSchema = {
   body: z.object({
     boardId: objectIdSchema,
 
@@ -26,7 +26,7 @@ export const createColumnSchema = z.object({
       .int()
       .min(0, "Order index must be greater than or equal to 0."),
   }),
-});
+};
 
 const updateColumnBodySchema = z
   .object({
