@@ -6,6 +6,11 @@ import { createCard, moveCard } from '../../controllers/cards/cards';
 import { searchCards } from '../../controllers/search/search';
 import { signUpload } from '../../controllers/fileUpload/fileUpload';
 import { authenticateJWT } from '../../middleware/auth.middleware';
+import { createWorkspaceSchema, updateWorkspaceSchema } from '../../validators/kanban/workspace.validator';
+import { validateSchema } from '../../middleware/validate.middleware';
+import { boardParamsSchema, boardQuerySchema, createBoardSchema, updateBoardSchema } from '../../validators/kanban/board.validator';
+import { createCardSchema, moveCardSchema } from '../../validators/kanban/card.validator';
+import { createColumnSchema } from '../../validators/kanban/column.validator';
 
 
 const router = Router();
@@ -14,22 +19,43 @@ const router = Router();
 router.use(authenticateJWT);
 
 // Workspaces
-router.post('/workspaces', createWorkspace);
+router.post(
+  "/workspaces",
+  validateSchema(createWorkspaceSchema),
+  createWorkspace,
+);
 router.get('/workspaces', listWorkspaces);
-router.post('/workspaces/:id/members', addWorkspaceMember);
+router.post(
+  "/workspaces/:id/members",
+  validateSchema(updateWorkspaceSchema),
+  addWorkspaceMember,
+);
 
 
 // Boards
-router.post('/boards', createBoard);
-router.get('/boards', listBoards);
-router.get('/boards/:id', getBoardDetails);
+router.post('/boards',validateSchema(createBoardSchema), createBoard);
+// todo
+router.patch(
+  "/:boardId",
+  authenticateJWT,
+  validateSchema(updateBoardSchema),
+//   updateBoard,
+);
+router.get("/boards", validateSchema(boardQuerySchema), listBoards);
+router.get(
+  "/boards/:boardId",
+  validateSchema({
+    params: boardParamsSchema,
+  }),
+  getBoardDetails,
+);
 
 // Columns
-router.post("/columns", createColumn);
+router.post("/columns", validateSchema(createColumnSchema), createColumn);
 
 // Cards
-router.post('/cards', createCard);
-router.patch('/cards/:id/move', moveCard);
+router.post("/cards", validateSchema(createCardSchema), createCard);
+router.patch("/cards/:id/move", validateSchema(moveCardSchema), moveCard);
 
 // Attachments
 router.post('/attachments/presign', signUpload);
