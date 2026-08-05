@@ -28,8 +28,10 @@ export const createColumnSchema = {
   }),
 };
 
-const updateColumnBodySchema = z
-  .object({
+export const updateColumnSchema = {
+  params: columnParamsSchema,
+
+  body: z.object({
     name: z
       .string()
       .trim()
@@ -45,12 +47,9 @@ const updateColumnBodySchema = z
   })
   .refine((body) => Object.keys(body).length > 0, {
     message: "At least one field must be provided for update.",
-  });
+  })
+};
 
-export const updateColumnSchema = z.object({
-  params: columnParamsSchema.shape.params,
-  body: updateColumnBodySchema,
-});
 
 export const moveColumnSchema = z.object({
   params: columnParamsSchema.shape.params,
