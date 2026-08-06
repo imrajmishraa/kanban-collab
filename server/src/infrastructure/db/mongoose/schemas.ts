@@ -43,7 +43,7 @@ const WorkspaceSchema = new Schema<IWorkspace>({
   ownerId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   members: [{
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    role: { type: String, enum: ['admin', 'member', 'guest'], default: 'member' }
+    role: { type: String, enum: ['admin', 'member', 'guest', 'owner'], default: 'member' }
   }]
 }, { timestamps: true });
 
