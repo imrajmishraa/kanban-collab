@@ -9,6 +9,21 @@ export function createWorkspaceError(): ApiError {
   );
 }
 
+export function cannotModifyWorkspaceError(): ApiError {
+  return new ApiError(
+    HTTP_STATUS.UNAUTHORIZED,
+    ERROR_MESSAGE.ADMIN_OR_OWNER_ACCESS_REQUIRED,
+  );
+}
+
+
+export function cannotDeleteWorkspaceError(): ApiError {
+  return new ApiError(
+    HTTP_STATUS.FORBIDDEN,
+    ERROR_MESSAGE.ADMIN_OR_OWNER_ACCESS_REQUIRED,
+  );
+}
+
 export function adminAccessRequiredError(): ApiError {
   return new ApiError(
     HTTP_STATUS.FORBIDDEN,
