@@ -38,7 +38,7 @@ export interface IWorkspace extends Document {
 
 const WorkspaceSchema = new Schema<IWorkspace>({
   name: { type: String, required: true, trim: true },
-  slug: { type: String, required: true, unique: true, lowercase: true, trim: true },
+  slug: { type: String, required: true, unique: true, lowercase: true, trim: true, index: true },
   description: { type: String },
   ownerId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   members: [{
