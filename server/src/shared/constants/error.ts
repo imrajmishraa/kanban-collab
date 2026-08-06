@@ -64,6 +64,7 @@ export const ERROR_MESSAGE = {
   // Workspace
   CREATE_WORKSPACE_FAILED: "Failed to create workspace.",
   ADMIN_ACCESS_REQUIRED: "Admin privileges are required.",
+  ADMIN_OR_OWNER_ACCESS_REQUIRED: "Admin or owner privileges are required.",
   WORKSPACE_ID_REQUIRED: "Workspace ID is required.",
   USER_ALREADY_WORKSPACE_MEMBER: "User is already a member of this workspace.",
   WORKSPACE_MEMBER_REQUIRED: "You must be a member of this workspace.",
