@@ -1,3 +1,4 @@
+import { permanentlyDeleteWorkspace } from "../application/workspaces/permanentlyDeleteWorkspace";
 import { WorkspaceModel } from "../infrastructure/db/mongoose/schemas";
 import { workspaceJobSchedulerLogger } from "../infrastructure/logging/childLogger";
 
@@ -27,6 +28,7 @@ export const workspaceDeletionJob = async (): Promise<void> => {
       );
 
       // Permanent deletion
+      await permanentlyDeleteWorkspace(workspace._id.toString());
     }  
   } catch (error) {
      workspaceJobSchedulerLogger.error(
