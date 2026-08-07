@@ -10,6 +10,7 @@ import {
   startWebSocketServer,
   stopWebSocketServer,
 } from "./interfaces/websockets/server/server";
+import { startCronJobs } from "./infrastructure/scheduler/cron";
 
 let httpServer: http.Server | null = null;
 
@@ -26,6 +27,11 @@ async function bootstrap(): Promise<void> {
      * Database
      */
     await connectDB();
+
+    /*
+     * Cron job setup
+     */
+    startCronJobs();
 
     /*
      * HTTP Server
