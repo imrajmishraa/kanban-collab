@@ -68,6 +68,9 @@ export const ERROR_MESSAGE = {
   WORKSPACE_ID_REQUIRED: "Workspace ID is required.",
   USER_ALREADY_WORKSPACE_MEMBER: "User is already a member of this workspace.",
   WORKSPACE_MEMBER_REQUIRED: "You must be a member of this workspace.",
+  WORKSPACE_NOT_FOUND: "Workspace not found",
+  WORKSPACE_DELETION_FAILED: "Workspace deletion failed",
+  WORKSPACE_DELETION_ALREADY_STARTED: "Workspace deletion already scheduled",
 
   // Card
   CARD_NOT_FOUND: "Card not found.",
