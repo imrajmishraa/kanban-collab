@@ -4,6 +4,14 @@ export const httpLogger = logger.child({
   module: "http",
 });
 
+export const schedulerLogger = logger.child({
+  module: "cron",
+});
+
+export const workspaceJobSchedulerLogger = schedulerLogger.child({
+  job: "workspace"
+})
+
 export const boardControllerLogger = httpLogger.child({
   controller: "board",
 });
