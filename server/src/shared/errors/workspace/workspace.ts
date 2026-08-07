@@ -9,11 +9,32 @@ export function createWorkspaceError(): ApiError {
   );
 }
 
+export function workspaceNotFoundError(): ApiError {
+  return new ApiError(
+    HTTP_STATUS.NOT_FOUND,
+    ERROR_MESSAGE.WORKSPACE_NOT_FOUND
+  )
+}
+
 export function cannotModifyWorkspaceError(): ApiError {
   return new ApiError(
     HTTP_STATUS.UNAUTHORIZED,
     ERROR_MESSAGE.ADMIN_OR_OWNER_ACCESS_REQUIRED,
   );
+}
+
+export function workspaceAlreadyPendingDeletionError(): ApiError {
+  return new ApiError(
+    HTTP_STATUS.UNPROCESSABLE_ENTITY,
+    ERROR_MESSAGE.WORKSPACE_DELETION_ALREADY_STARTED,
+  );
+}
+
+export function workspaceDeletionFailedError(): ApiError {
+  return new ApiError(
+    HTTP_STATUS.FORBIDDEN,
+    ERROR_MESSAGE.WORKSPACE_DELETION_FAILED
+  )
 }
 
 
