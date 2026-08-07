@@ -10,7 +10,7 @@ export const startCronJobs = (): void => {
     } catch (error) {
       schedulerLogger.error(
         { err: error },
-        "Workspace deletion cron job failed",
+        "Scheduled workspace deletion job failed",
       );
     }
   });
