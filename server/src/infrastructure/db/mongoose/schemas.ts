@@ -26,26 +26,95 @@ export const UserModel = model<IUser>('User', UserSchema);
 // ==========================================
 // 2. WORKSPACE
 // ==========================================
+export type WorkspaceStatus = "active" | "deletion_pending";
+
 export interface IWorkspace extends Document {
   name: string;
   slug: string;
   description?: string;
+
   ownerId: Types.ObjectId;
-  members: { userId: Types.ObjectId; role: 'admin' | 'member' | 'guest' }[];
+
+  members: {
+    userId: Types.ObjectId;
+    role: "admin" | "member" | "guest" | "owner";
+  }[];
+
+  // Workspace lifecycle
+  status: WorkspaceStatus;
+  deletionRequestedAt: Date | null;
+  deletionScheduledFor: Date | null;
+
   createdAt: Date;
   updatedAt: Date;
 }
 
-const WorkspaceSchema = new Schema<IWorkspace>({
-  name: { type: String, required: true, trim: true },
-  slug: { type: String, required: true, unique: true, lowercase: true, trim: true, index: true },
-  description: { type: String },
-  ownerId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  members: [{
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    role: { type: String, enum: ['admin', 'member', 'guest', 'owner'], default: 'member' }
-  }]
-}, { timestamps: true });
+const WorkspaceSchema = new Schema<IWorkspace>(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    slug: {
+      type: String,
+      required: true,
+      lowercase: true,
+      trim: true,
+      index: true,
+      unique: true,
+    },
+
+    description: {
+      type: String,
+    },
+
+    ownerId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
+    members: [
+      {
+        userId: {
+          type: Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+
+        role: {
+          type: String,
+          enum: ["admin", "member", "guest", "owner"],
+          default: "member",
+        },
+      },
+    ],
+
+    // Workspace lifecycle
+    status: {
+      type: String,
+      enum: ["active", "deletion_pending"],
+      default: "active",
+      index: true,
+    },
+
+    deletionRequestedAt: {
+      type: Date,
+      default: null,
+    },
+
+    deletionScheduledFor: {
+      type: Date,
+      default: null,
+      index: true,
+    },
+  },
+  {
+    timestamps: true,
+  },
+);
 
 WorkspaceSchema.index({ 'members.userId': 1 });
 export const WorkspaceModel = model<IWorkspace>('Workspace', WorkspaceSchema);
@@ -65,7 +134,12 @@ export interface IBoard extends Document {
 }
 
 const BoardSchema = new Schema<IBoard>({
-  workspaceId: { type: Schema.Types.ObjectId, ref: 'Workspace', required: true },
+  workspaceId: {
+  type: Schema.Types.ObjectId,
+  ref: "Workspace",
+  required: true,
+  index: true,
+  },
   name: { type: String, required: true, trim: true },
   description: { type: String },
   backgroundColor: { type: String, default: '#2b6cb0' },
@@ -73,13 +147,13 @@ const BoardSchema = new Schema<IBoard>({
   visibility: { type: String, enum: ['private', 'public', 'workspace'], default: 'workspace' }
 }, { timestamps: true });
 
-BoardSchema.index({ workspaceId: 1 });
 export const BoardModel = model<IBoard>('Board', BoardSchema);
 
 // ==========================================
 // 4. COLUMN
 // ==========================================
 export interface IColumn extends Document {
+  workspaceId: Types.ObjectId;
   boardId: Types.ObjectId;
   name: string;
   orderIndex: number;
@@ -87,11 +161,34 @@ export interface IColumn extends Document {
   updatedAt: Date;
 }
 
-const ColumnSchema = new Schema<IColumn>({
-  boardId: { type: Schema.Types.ObjectId, ref: 'Board', required: true },
-  name: { type: String, required: true, trim: true },
-  orderIndex: { type: Number, required: true }
-}, { timestamps: true });
+const ColumnSchema = new Schema<IColumn>(
+  {
+    workspaceId: {
+      type: Schema.Types.ObjectId,
+      ref: "Workspace",
+      required: true,
+      index: true,
+    },
+
+    boardId: {
+      type: Schema.Types.ObjectId,
+      ref: "Board",
+      required: true,
+    },
+
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    orderIndex: {
+      type: Number,
+      required: true,
+    },
+  },
+  { timestamps: true },
+);
 
 ColumnSchema.index({ boardId: 1, orderIndex: 1 });
 export const ColumnModel = model<IColumn>('Column', ColumnSchema);
@@ -100,6 +197,7 @@ export const ColumnModel = model<IColumn>('Column', ColumnSchema);
 // 5. CARD
 // ==========================================
 export interface ICard extends Document {
+  workspaceId: Types.ObjectId;
   columnId: Types.ObjectId;
   boardId: Types.ObjectId;
   title: string;
@@ -115,25 +213,38 @@ export interface ICard extends Document {
   updatedAt: Date;
 }
 
-const CardSchema = new Schema<ICard>({
-  columnId: { type: Schema.Types.ObjectId, ref: 'Column', required: true },
-  boardId: { type: Schema.Types.ObjectId, ref: 'Board', required: true },
-  title: { type: String, required: true, trim: true },
-  description: { type: String, default: '' },
-  orderIndex: { type: Number, required: true },
-  dueDate: { type: Date },
-  members: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-  labels: [{ type: String }],
-  checklists: [{
-    title: { type: String, required: true },
-    isCompleted: { type: Boolean, default: false }
-  }],
-  customFieldValues: [{
-    fieldId: { type: String, required: true },
-    value: { type: Schema.Types.Mixed }
-  }],
-  isArchived: { type: Boolean, default: false }
-}, { timestamps: true });
+const CardSchema = new Schema<ICard>(
+  {
+    workspaceId: {
+      type: Schema.Types.ObjectId,
+      ref: "Workspace",
+      required: true,
+      index: true,
+    },
+    columnId: { type: Schema.Types.ObjectId, ref: "Column", required: true },
+    boardId: { type: Schema.Types.ObjectId, ref: "Board", required: true },
+    title: { type: String, required: true, trim: true },
+    description: { type: String, default: "" },
+    orderIndex: { type: Number, required: true },
+    dueDate: { type: Date },
+    members: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    labels: [{ type: String }],
+    checklists: [
+      {
+        title: { type: String, required: true },
+        isCompleted: { type: Boolean, default: false },
+      },
+    ],
+    customFieldValues: [
+      {
+        fieldId: { type: String, required: true },
+        value: { type: Schema.Types.Mixed },
+      },
+    ],
+    isArchived: { type: Boolean, default: false },
+  },
+  { timestamps: true },
+);
 
 CardSchema.index({ columnId: 1, orderIndex: 1 });
 CardSchema.index({ boardId: 1 });
@@ -144,6 +255,7 @@ export const CardModel = model<ICard>('Card', CardSchema);
 // 6. COMMENT
 // ==========================================
 export interface IComment extends Document {
+  workspaceId: Types.ObjectId;
   cardId: Types.ObjectId;
   userId: Types.ObjectId;
   text: string;
@@ -151,11 +263,20 @@ export interface IComment extends Document {
   updatedAt: Date;
 }
 
-const CommentSchema = new Schema<IComment>({
-  cardId: { type: Schema.Types.ObjectId, ref: 'Card', required: true },
-  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  text: { type: String, required: true }
-}, { timestamps: true });
+const CommentSchema = new Schema<IComment>(
+  {
+    workspaceId: {
+      type: Schema.Types.ObjectId,
+      ref: "Workspace",
+      required: true,
+      index: true,
+    },
+    cardId: { type: Schema.Types.ObjectId, ref: "Card", required: true },
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    text: { type: String, required: true },
+  },
+  { timestamps: true },
+);
 
 CommentSchema.index({ cardId: 1, createdAt: -1 });
 export const CommentModel = model<IComment>('Comment', CommentSchema);
@@ -164,6 +285,7 @@ export const CommentModel = model<IComment>('Comment', CommentSchema);
 // 7. ACTIVITY LOG
 // ==========================================
 export interface IActivityLog extends Document {
+  workspaceId: Types.ObjectId;
   boardId: Types.ObjectId;
   userId: Types.ObjectId;
   actionType: string;
@@ -172,12 +294,21 @@ export interface IActivityLog extends Document {
   updatedAt: Date;
 }
 
-const ActivityLogSchema = new Schema<IActivityLog>({
-  boardId: { type: Schema.Types.ObjectId, ref: 'Board', required: true },
-  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  actionType: { type: String, required: true }, // e.g. CARD_MOVE, CARD_CREATE, etc.
-  details: { type: Schema.Types.Mixed, required: true }
-}, { timestamps: true });
+const ActivityLogSchema = new Schema<IActivityLog>(
+  {
+    workspaceId: {
+      type: Schema.Types.ObjectId,
+      ref: "Workspace",
+      required: true,
+      index: true,
+    },
+    boardId: { type: Schema.Types.ObjectId, ref: "Board", required: true },
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    actionType: { type: String, required: true }, // e.g. CARD_MOVE, CARD_CREATE, etc.
+    details: { type: Schema.Types.Mixed, required: true },
+  },
+  { timestamps: true },
+);
 
 ActivityLogSchema.index({ boardId: 1, createdAt: -1 });
 export const ActivityLogModel = model<IActivityLog>('ActivityLog', ActivityLogSchema);
@@ -214,15 +345,42 @@ export const SessionModel = model<ISession>('Session', SessionSchema);
 // 9. YJS DOCUMENT UPDATES (For Binary CRDT persistence)
 // ==========================================
 export interface IYjsUpdate extends Document {
-  docName: string; // matches room ID/board ID
-  update: Buffer;  // raw Uint8Array binary data
+  workspaceId: Types.ObjectId;
+  boardId: Types.ObjectId;
+  docName: string;
+  update: Buffer;
   createdAt: Date;
   updatedAt: Date;
 }
 
-const YjsUpdateSchema = new Schema<IYjsUpdate>({
-  docName: { type: String, required: true, unique: true },
-  update: { type: Buffer, required: true }
-}, { timestamps: true });
+const YjsUpdateSchema = new Schema<IYjsUpdate>(
+  {
+    workspaceId: {
+      type: Schema.Types.ObjectId,
+      ref: "Workspace",
+      required: true,
+      index: true,
+    },
+
+    boardId: {
+      type: Schema.Types.ObjectId,
+      ref: "Board",
+      required: true,
+      index: true,
+    },
+
+    docName: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+
+    update: {
+      type: Buffer,
+      required: true,
+    },
+  },
+  { timestamps: true },
+);
 
 export const YjsUpdateModel = model<IYjsUpdate>('YjsUpdate', YjsUpdateSchema);
