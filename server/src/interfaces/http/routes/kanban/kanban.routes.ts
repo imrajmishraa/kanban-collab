@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createWorkspace, listWorkspaces, addWorkspaceMember } from '../../controllers/workspaces/workspaces';
+import { createWorkspace, listWorkspaces, addWorkspaceMember, deleteWorkspace } from '../../controllers/workspaces/workspaces';
 import { createBoard, listBoards, getBoardDetails } from "../../controllers/boards/boards";
 import { createColumn  } from '../../controllers/columns/columns';
 import { createCard, moveCard } from '../../controllers/cards/cards';
@@ -18,49 +18,85 @@ const router = Router();
 // Protect all routes with JWT Auth
 router.use(authenticateJWT);
 
-// Workspaces
-router.post(
-  "/workspaces",
-  validateSchema(createWorkspaceSchema),
-  createWorkspace,
-);
-router.get('/workspaces', listWorkspaces);
-router.post(
-  "/workspaces/:id/members",
-  validateSchema(updateWorkspaceSchema),
-  addWorkspaceMember,
-);
+  /* 
+    Workspaces 
+  */ 
+//  create new workspace
+  router.post(
+    "/workspaces",
+    validateSchema(createWorkspaceSchema),
+    createWorkspace,
+  );
+
+  // get workspace lists
+  router.get('/workspaces', listWorkspaces);
+
+  // add members to workspace
+  router.post(
+    "/workspaces/:id/members",
+    validateSchema(updateWorkspaceSchema),
+    addWorkspaceMember,
+  );
+
+  // delete workspace 
+  router.delete("/workspaces/:id", deleteWorkspace);
 
 
-// Boards
-router.post('/boards',validateSchema(createBoardSchema), createBoard);
-// todo
-router.patch(
-  "/:boardId",
-  authenticateJWT,
-  validateSchema(updateBoardSchema),
-//   updateBoard,
-);
-router.get("/boards", validateSchema(boardQuerySchema), listBoards);
-router.get(
-  "/boards/:boardId",
-  validateSchema({
-    params: boardParamsSchema,
-  }),
-  getBoardDetails,
-);
+  /*
+    Boards
+  */ 
+  // create new board
+    router.post('/boards',validateSchema(createBoardSchema), createBoard);
+  
+    // update board
+  router.patch(
+    "/:boardId",
+    authenticateJWT,
+    validateSchema(updateBoardSchema),
+    //   updateBoard,
+  );
 
-// Columns
-router.post("/columns", validateSchema(createColumnSchema), createColumn);
+  // get lists of boards
+  router.get("/boards", validateSchema(boardQuerySchema), listBoards);
 
-// Cards
-router.post("/cards", validateSchema(createCardSchema), createCard);
-router.patch("/cards/:id/move", validateSchema(moveCardSchema), moveCard);
+  // get boards by id
+  router.get(
+    "/boards/:boardId",
+    validateSchema({
+      params: boardParamsSchema,
+    }),
+    getBoardDetails,
+  );
 
-// Attachments
-router.post('/attachments/presign', signUpload);
+  /*
+    Columns
+  */ 
 
-// Search
-router.get('/cards/search', searchCards);
+  // Create new column
+  router.post("/columns", validateSchema(createColumnSchema), createColumn);
+
+  /*
+  Cards
+  */ 
+ 
+  // Create new card
+  router.post("/cards", validateSchema(createCardSchema), createCard);
+  
+  // move the card
+  router.patch("/cards/:id/move", validateSchema(moveCardSchema), moveCard);
+
+  /*
+  Attachments
+  */ 
+
+  // upload doc
+  router.post('/attachments/presign', signUpload);
+
+  /*
+    Search
+  */ 
+
+  // search cards 
+  router.get('/cards/search', searchCards);
 
 export default router;
