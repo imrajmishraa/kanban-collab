@@ -79,4 +79,9 @@ export const ERROR_MESSAGE = {
   WORKSPACE_ACCESS_DENIED: "You do not have access to this workspace.",
   ATTACHMENT_FIELDS_REQUIRED: "fileName, fileType, and cardId are required.",
   GUEST_CANNOT_UPLOAD_ATTACHMENT: "Guests cannot upload attachments.",
+
+  // websocket
+  WEBSOCKET_INVALID_COLLABORATION_MESSAGE: "Invalid collaboration message.",
+  WEBSOCKET_EMPTY_COLLABORATION_MESSAGE:
+    "Cannot decode an empty collaboration message.",
 } as const;
