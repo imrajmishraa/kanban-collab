@@ -7,9 +7,9 @@ export interface CollaborationClient {
   socket: WebSocket;
 }
 
-export interface DecodedUpdate {
+export interface DecodedMessage {
   type: number;
-  update?: Uint8Array;
+  payload?: Uint8Array;
 }
 
 export interface AwarenessState {
