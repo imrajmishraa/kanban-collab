@@ -9,8 +9,8 @@ export const schedulerLogger = logger.child({
 });
 
 export const workspaceJobSchedulerLogger = schedulerLogger.child({
-  job: "workspace"
-})
+  job: "workspace",
+});
 
 export const boardControllerLogger = httpLogger.child({
   controller: "board",
@@ -29,12 +29,12 @@ export const columnControllerLogger = httpLogger.child({
 });
 
 export const searchControllerLogger = httpLogger.child({
-    controller: "search"
+  controller: "search",
 });
 
 export const fileUploadControllerLogger = httpLogger.child({
-    controller: "file upload"
-})
+  controller: "file upload",
+});
 
 export const authLogger = logger.child({
   module: "auth",
