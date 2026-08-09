@@ -7,81 +7,114 @@ import type { WebSocket } from "ws";
 import { yjsLogger } from "../../../../infrastructure/logging/childLogger";
 
 import { CollaborationMessage } from "./protocol";
-import { updateDecoder } from "./updateDecoder";
+import { collaborationMessageEncoder } from "./collaborationMessageEncoder";
 
 export class SyncProtocol {
   /**
-   * Handles an incoming Yjs synchronization message.
+   * Handles an incoming Yjs synchronization payload.
    *
-   * Top-level collaboration message:
+   * The top-level collaboration message type has already
+   * been decoded by MessageHandler.
    *
-   *   0 -> Sync
+   * This class is responsible only for the Yjs sync protocol:
    *
-   * Sync protocol message:
+   * - Sync Step 1
+   * - Sync Step 2
+   * - Update
    *
-   *   0 -> Sync Step 1
-   *   1 -> Sync Step 2
-   *   2 -> Update
-   *
-   * The actual synchronization semantics are delegated
-   * to the official Yjs synchronization protocol.
+   * Client routing and document lifecycle remain outside
+   * this protocol implementation.
    */
-  public handle(socket: WebSocket, document: Y.Doc, message: Uint8Array): void {
-    try {
-      const decoded = updateDecoder.decode(message);
-
-      if (decoded.type !== CollaborationMessage.Sync) {
-        throw new Error(
-          `Invalid synchronization message type: ${decoded.type}`,
-        );
-      }
-
-      if (!decoded.payload || decoded.payload.length === 0) {
-        throw new Error("Synchronization message contains no payload.");
-      }
-
-      yjsLogger.debug(
+  public handle(socket: WebSocket, document: Y.Doc, payload: Uint8Array): void {
+    if (payload.length === 0) {
+      yjsLogger.warn(
         {
-          bytes: message.length,
+          bytes: payload.length,
         },
-        "Handling Yjs synchronization message.",
+        "Received empty Yjs synchronization payload.",
       );
 
-      /**
-       * updateDecoder removes the top-level collaboration
-       * message type. The remaining bytes contain the
-       * actual Yjs sync protocol message.
-       */
-      const decoder = decoding.createDecoder(decoded.payload);
+      return;
+    }
 
+    try {
+      yjsLogger.debug(
+        {
+          bytes: payload.length,
+        },
+        "Processing Yjs synchronization payload.",
+      );
+
+      /*
+       * Decode the Yjs synchronization payload.
+       */
+      const decoder = decoding.createDecoder(payload);
+
+      /*
+       * y-protocols/sync writes any required response
+       * into this encoder.
+       */
       const encoder = encoding.createEncoder();
 
-      /**
-       * Re-add the top-level collaboration message type
-       * before writing a protocol response.
-       */
-      encoding.writeVarUint(encoder, CollaborationMessage.Sync);
-
-      /**
-       * Delegate Sync Step 1, Sync Step 2, and Update
-       * handling to y-protocols/sync.
+      /*
+       * Delegate synchronization semantics to the
+       * official Yjs synchronization protocol.
+       *
+       * This handles:
+       *
+       *   Sync Step 1
+       *   Sync Step 2
+       *   Update
        */
       ySyncProtocol.readSyncMessage(decoder, encoder, document, socket);
 
-      /**
-       * If only the top-level message type exists,
-       * no response was generated.
+      /*
+       * No response means there is nothing to send
+       * back to this client.
        */
-      if (encoding.length(encoder) <= 1) {
+      if (encoding.length(encoder) === 0) {
+        yjsLogger.debug(
+          {
+            bytes: payload.length,
+          },
+          "Yjs synchronization produced no response.",
+        );
+
         return;
       }
 
-      const response = encoding.toUint8Array(encoder);
+      const syncResponse = encoding.toUint8Array(encoder);
+
+      /*
+       * Wrap the Yjs synchronization response inside
+       * the application's top-level collaboration protocol.
+       *
+       * [CollaborationMessage.Sync][Yjs sync payload]
+       */
+      const response = collaborationMessageEncoder.encode(
+        CollaborationMessage.Sync,
+        syncResponse,
+      );
+
+      /*
+       * Never attempt to send through a closed socket.
+       */
+      if (socket.readyState !== socket.OPEN) {
+        yjsLogger.warn(
+          {
+            readyState: socket.readyState,
+          },
+          "Cannot send Yjs synchronization response because WebSocket is not open.",
+        );
+
+        return;
+      }
 
       socket.send(response);
 
       yjsLogger.debug(
         {
+          payloadBytes: syncResponse.length,
           bytes: response.length,
         },
         "Sent Yjs synchronization response.",
@@ -90,9 +123,9 @@ export class SyncProtocol {
       yjsLogger.error(
         {
           err: error,
-          bytes: message.length,
+          bytes: payload.length,
         },
-        "Failed to handle Yjs synchronization message.",
+        "Failed to process Yjs synchronization payload.",
       );
 
       throw error;
