@@ -1,68 +1,77 @@
 import { randomUUID } from "node:crypto";
-
 import type WebSocket from "ws";
 
+import { websocketLogger } from "../../../../infrastructure/logging/childLogger";
+
 export interface ManagedConnection {
-  id: string;
-  socket: WebSocket;
-  userId: string;
-  boardId: string;
-  ip: string;
-  connectedAt: Date;
+  readonly id: string;
+  readonly socket: WebSocket;
+  readonly userId: string;
+  readonly boardId: string;
+  readonly ip: string;
+
+  readonly connectedAt: Date;
   lastSeen: Date;
 }
 
 export class ConnectionRegistry {
   // connectionId -> ManagedConnection
-  private readonly connections = new Map<
-    string,
-    ManagedConnection
-  >();
+  private readonly connections = new Map<string, ManagedConnection>();
 
-  // socket -> connectionId
-  private readonly socketIndex = new WeakMap<
-    WebSocket,
-    string
-  >();
+  // WebSocket -> connectionId
+  private readonly socketIndex = new WeakMap<WebSocket, string>();
 
   // boardId -> connectionIds
-  private readonly boardIndex = new Map<
-    string,
-    Set<string>
-  >();
+  private readonly boardIndex = new Map<string, Set<string>>();
 
   // userId -> connectionIds
-  private readonly userIndex = new Map<
-    string,
-    Set<string>
-  >();
+  private readonly userIndex = new Map<string, Set<string>>();
 
-  //  Registers a new connection.
+  /**
+   * Registers a new WebSocket connection.
+   */
   public register(
     socket: WebSocket,
     userId: string,
     boardId: string,
     ip: string,
   ): ManagedConnection {
+    const now = new Date();
+
     const connection: ManagedConnection = {
       id: randomUUID(),
       socket,
       userId,
       boardId,
       ip,
-      connectedAt: new Date(),
-      lastSeen: new Date(),
+      connectedAt: now,
+      lastSeen: now,
     };
 
     this.connections.set(connection.id, connection);
     this.socketIndex.set(socket, connection.id);
+
     this.addIndex(this.boardIndex, boardId, connection.id);
+
     this.addIndex(this.userIndex, userId, connection.id);
+
+    websocketLogger.debug(
+      {
+        connectionId: connection.id,
+        userId,
+        boardId,
+        ip,
+        activeConnections: this.connections.size,
+      },
+      "WebSocket connection registered.",
+    );
 
     return connection;
   }
 
-  // Removes a connection.
+  /**
+   * Removes a WebSocket connection and all related indexes.
+   */
   public unregister(socket: WebSocket): void {
     const connection = this.getBySocket(socket);
 
@@ -71,89 +80,68 @@ export class ConnectionRegistry {
     }
 
     this.connections.delete(connection.id);
+    this.socketIndex.delete(socket);
 
-    this.removeIndex(
-      this.boardIndex,
-      connection.boardId,
-      connection.id,
-    );
+    this.removeIndex(this.boardIndex, connection.boardId, connection.id);
 
-    this.removeIndex(
-      this.userIndex,
-      connection.userId,
-      connection.id,
+    this.removeIndex(this.userIndex, connection.userId, connection.id);
+
+    websocketLogger.debug(
+      {
+        connectionId: connection.id,
+        userId: connection.userId,
+        boardId: connection.boardId,
+        activeConnections: this.connections.size,
+      },
+      "WebSocket connection unregistered.",
     );
   }
 
-  //  Returns a connection by socket.
-  public getBySocket(
-    socket: WebSocket,
-  ): ManagedConnection | undefined {
-    const id = this.socketIndex.get(socket);
+  /**
+   * Returns a connection associated with a WebSocket.
+   */
+  public getBySocket(socket: WebSocket): ManagedConnection | undefined {
+    const connectionId = this.socketIndex.get(socket);
 
-    if (!id) {
+    if (!connectionId) {
       return undefined;
     }
 
-    return this.connections.get(id);
-  }
-
-  // Returns a connection by id.
-  public get(
-    connectionId: string,
-  ): ManagedConnection | undefined {
     return this.connections.get(connectionId);
   }
 
-  // Returns every active connection.
+  /**
+   * Returns a connection by its ID.
+   */
+  public get(connectionId: string): ManagedConnection | undefined {
+    return this.connections.get(connectionId);
+  }
+
+  /**
+   * Returns all active WebSocket connections.
+   */
   public getConnections(): readonly ManagedConnection[] {
     return [...this.connections.values()];
   }
 
-  //  Returns all connections in a board.
-  public getBoardConnections(
-    boardId: string,
-  ): readonly ManagedConnection[] {
-    const ids = this.boardIndex.get(boardId);
-
-    if (!ids) {
-      return [];
-    }
-
-    return [...ids]
-      .map((id) => this.connections.get(id))
-      .filter(
-        (
-          connection,
-        ): connection is ManagedConnection =>
-          connection !== undefined,
-      );
+  /**
+   * Returns all active connections belonging to a board.
+   */
+  public getBoardConnections(boardId: string): readonly ManagedConnection[] {
+    return this.getIndexedConnections(this.boardIndex, boardId);
   }
 
-  // Returns every connection belonging to a user.
-  public getUserConnections(
-    userId: string,
-  ): readonly ManagedConnection[] {
-    const ids = this.userIndex.get(userId);
-
-    if (!ids) {
-      return [];
-    }
-
-    return [...ids]
-      .map((id) => this.connections.get(id))
-      .filter(
-        (
-          connection,
-        ): connection is ManagedConnection =>
-          connection !== undefined,
-      );
+  /**
+   * Returns all active connections belonging to a user.
+   */
+  public getUserConnections(userId: string): readonly ManagedConnection[] {
+    return this.getIndexedConnections(this.userIndex, userId);
   }
 
-  // Updates last activity timestamp.
-  public updateLastSeen(
-    socket: WebSocket,
-  ): void {
+  /**
+   * Updates the last activity timestamp for a connection.
+   */
+  public updateLastSeen(socket: WebSocket): void {
     const connection = this.getBySocket(socket);
 
     if (!connection) {
@@ -163,62 +151,112 @@ export class ConnectionRegistry {
     connection.lastSeen = new Date();
   }
 
-  // Returns number of active connections.
+  /**
+   * Returns the number of active WebSocket connections.
+   */
   public getConnectionCount(): number {
     return this.connections.size;
   }
 
-  //  Returns number of active boards.
+  /**
+   * Returns the number of boards with active connections.
+   */
   public getBoardCount(): number {
     return this.boardIndex.size;
   }
 
-  // Returns number of connected users.
+  /**
+   * Returns the number of users with active connections.
+   */
   public getUserCount(): number {
     return this.userIndex.size;
   }
 
-  // Removes every connection.
+  /**
+   * Removes every active connection and clears all indexes.
+   *
+   * Intended for graceful shutdown and testing.
+   */
   public clear(): void {
+    for (const connection of this.connections.values()) {
+      this.socketIndex.delete(connection.socket);
+    }
+
     this.connections.clear();
     this.boardIndex.clear();
     this.userIndex.clear();
+
+    websocketLogger.info("WebSocket connection registry cleared.");
   }
 
+  /**
+   * Adds a connection ID to an index.
+   */
   private addIndex(
     index: Map<string, Set<string>>,
     key: string,
     connectionId: string,
   ): void {
-    let set = index.get(key);
+    let connectionIds = index.get(key);
 
-    if (!set) {
-      set = new Set();
-
-      index.set(key, set);
+    if (!connectionIds) {
+      connectionIds = new Set<string>();
+      index.set(key, connectionIds);
     }
 
-    set.add(connectionId);
+    connectionIds.add(connectionId);
   }
 
+  /**
+   * Removes a connection ID from an index.
+   */
   private removeIndex(
     index: Map<string, Set<string>>,
     key: string,
     connectionId: string,
   ): void {
-    const set = index.get(key);
+    const connectionIds = index.get(key);
 
-    if (!set) {
+    if (!connectionIds) {
       return;
     }
 
-    set.delete(connectionId);
+    connectionIds.delete(connectionId);
 
-    if (set.size === 0) {
+    if (connectionIds.size === 0) {
       index.delete(key);
     }
   }
+
+  /**
+   * Resolves connection IDs from an index
+   * into their active connection objects.
+   */
+  private getIndexedConnections(
+    index: Map<string, Set<string>>,
+    key: string,
+  ): readonly ManagedConnection[] {
+    const connectionIds = index.get(key);
+
+    if (!connectionIds) {
+      return [];
+    }
+
+    const connections: ManagedConnection[] = [];
+
+    for (const connectionId of connectionIds) {
+      const connection = this.connections.get(connectionId);
+
+      if (connection) {
+        connections.push(connection);
+      }
+    }
+
+    return connections;
+  }
 }
 
-// Singleton registry.
+/**
+ * Singleton connection registry.
+ */
 export const connectionRegistry = new ConnectionRegistry();
