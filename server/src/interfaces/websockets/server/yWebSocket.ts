@@ -1,115 +1,333 @@
-import { WebSocketServer } from "ws";
+import { randomUUID } from "node:crypto";
 
-import { setupWSConnection } from "y-websocket/bin/utils";
+import * as encoding from "lib0/encoding";
+import * as ySyncProtocol from "y-protocols/sync";
+import type { WebSocketServer } from "ws";
 
-import { logger } from "../../../infrastructure/logging/logger";
+import { yjsLogger } from "../../../infrastructure/logging/childLogger";
 
 import { WS_CLOSE_CODE } from "../../../shared/constants/websocket";
 import type { AuthenticatedRequest } from "../../../shared/types/request";
 
-import { connectionRegistry } from "../collaboration/lifecycle/connectionRegistry";
 import {
   initializeHeartbeat,
   markAlive,
   type HeartbeatConnection,
 } from "../collaboration/heartbeat/heartbeat";
 
+import { documentManager } from "../collaboration/yjs/documentManager";
+import { messageHandler } from "../collaboration/yjs/messageHandler";
+import { CollaborationMessage } from "../collaboration/yjs/protocol";
+import type { CollaborationClient } from "../collaboration/yjs/types";
+
+import { connectionRegistry } from "../collaboration/lifecycle/connectionRegistry";
+
 export function registerYWebSocket(wss: WebSocketServer): void {
-  wss.on("connection", (ws, request) => {
+  wss.on("connection", async (ws, request) => {
     const req = request as AuthenticatedRequest;
 
     const { userId, boardId } = req;
 
+    /*
+     * ---------------------------------------------------------
+     * Validate authenticated WebSocket context
+     * ---------------------------------------------------------
+     */
+
     if (!userId || !boardId) {
-      logger.warn(
+      yjsLogger.warn(
+        {
+          url: request.url,
+        },
         "Missing authenticated WebSocket context. Closing connection.",
       );
 
-      ws.close(
-        WS_CLOSE_CODE.INTERNAL_ERROR,
-        "Authentication context missing",
-      );
+      ws.close(WS_CLOSE_CODE.INTERNAL_ERROR, "Authentication context missing");
 
       return;
     }
 
-    const ip = request.socket.remoteAddress ?? "unknown";
+    const remoteAddress = request.socket.remoteAddress ?? "unknown";
 
-    connectionRegistry.register(
-      ws,
-      userId,
-      boardId,
-      ip,
-    );
+    const clientId = randomUUID();
 
-    const socket = ws as HeartbeatConnection;
+    /*
+     * The board currently acts as the Yjs document name.
+     */
+    const documentName = boardId;
 
-    initializeHeartbeat(socket);
-
-    socket.on("pong", () => {
-      markAlive(socket);
-      connectionRegistry.updateLastSeen(socket);
-    });
+    let client: CollaborationClient | undefined;
+    let registered = false;
 
     try {
-      setupWSConnection(ws, request);
+      /*
+       * ---------------------------------------------------------
+       * Register connection
+       * ---------------------------------------------------------
+       */
 
-      logger.info(
+      connectionRegistry.register(ws, userId, boardId, remoteAddress);
+
+      registered = true;
+
+      /*
+       * ---------------------------------------------------------
+       * Initialize heartbeat
+       * ---------------------------------------------------------
+       */
+
+      const heartbeatSocket = ws as HeartbeatConnection;
+
+      initializeHeartbeat(heartbeatSocket);
+
+      heartbeatSocket.on("pong", () => {
+        markAlive(heartbeatSocket);
+
+        connectionRegistry.updateLastSeen(heartbeatSocket);
+      });
+
+      /*
+       * ---------------------------------------------------------
+       * Load or create collaborative document
+       * ---------------------------------------------------------
+       */
+
+      const document = await documentManager.getOrCreate(documentName);
+
+      /*
+       * ---------------------------------------------------------
+       * Register collaboration client
+       * ---------------------------------------------------------
+       */
+
+      client = {
+        id: clientId,
+        socket: ws,
+        userId,
+      };
+
+      const added = documentManager.addClient(documentName, client);
+
+      if (!added) {
+        throw new Error("Failed to register collaboration client.");
+      }
+
+      /*
+       * ---------------------------------------------------------
+       * Send initial Yjs synchronization
+       *
+       * Top-level collaboration protocol:
+       *
+       *   0 -> Sync
+       *
+       * Yjs synchronization protocol:
+       *
+       *   Sync Step 1
+       *   Sync Step 2
+       *   Update
+       * ---------------------------------------------------------
+       */
+
+      const encoder = encoding.createEncoder();
+
+      encoding.writeVarUint(encoder, CollaborationMessage.Sync);
+
+      ySyncProtocol.writeSyncStep1(encoder, document.doc);
+
+      const initialSync = encoding.toUint8Array(encoder);
+
+      if (ws.readyState === ws.OPEN) {
+        ws.send(initialSync);
+      }
+
+      yjsLogger.info(
         {
+          documentName,
           userId,
-          boardId,
-          remoteAddress: ip,
+          clientId,
+          connections: document.connectionCount,
+          bytes: initialSync.length,
+          remoteAddress,
           url: request.url,
         },
-        "Yjs WebSocket connection established.",
+        "Yjs collaboration connection established.",
       );
+
+      /*
+       * ---------------------------------------------------------
+       * Incoming WebSocket messages
+       * ---------------------------------------------------------
+       */
+
+      ws.on("message", (data, isBinary) => {
+        if (!isBinary) {
+          yjsLogger.warn(
+            {
+              documentName,
+              userId,
+              clientId,
+            },
+            "Rejected non-binary collaboration message.",
+          );
+
+          return;
+        }
+
+        if (!client) {
+          yjsLogger.warn(
+            {
+              documentName,
+              userId,
+              clientId,
+            },
+            "Received collaboration message without client.",
+          );
+
+          return;
+        }
+
+        let message: Buffer;
+
+        /*
+         * ws RawData can be:
+         *
+         *   Buffer
+         *   ArrayBuffer
+         *   Buffer[]
+         *
+         * Normalize everything to Buffer before
+         * passing it to the collaboration layer.
+         */
+
+        if (Buffer.isBuffer(data)) {
+          message = data;
+        } else if (data instanceof ArrayBuffer) {
+          message = Buffer.from(new Uint8Array(data));
+        } else {
+          message = Buffer.concat(data);
+        }
+
+        if (message.length === 0) {
+          yjsLogger.warn(
+            {
+              documentName,
+              userId,
+              clientId,
+            },
+            "Received empty collaboration message.",
+          );
+
+          return;
+        }
+
+        /*
+         * Delegate protocol processing.
+         *
+         * yWebSocket does not understand Sync,
+         * Awareness, or Update messages itself.
+         */
+        messageHandler.handleMessage(ws, document, message);
+
+        connectionRegistry.updateLastSeen(ws);
+      });
+
+      /*
+       * ---------------------------------------------------------
+       * Connection close
+       * ---------------------------------------------------------
+       */
+
+      ws.on("close", (code, reason) => {
+        if (client) {
+          documentManager.removeClient(documentName, client.id);
+        }
+
+        if (registered) {
+          connectionRegistry.unregister(ws);
+          registered = false;
+        }
+
+        yjsLogger.info(
+          {
+            documentName,
+            userId,
+            clientId,
+            code,
+            reason: reason.toString(),
+            connections: document.connectionCount,
+            remoteAddress,
+          },
+          "Yjs collaboration connection closed.",
+        );
+
+        /*
+         * The document is intentionally NOT destroyed here.
+         *
+         * It remains available for other clients and can
+         * later be removed by the idle-document cleanup
+         * lifecycle.
+         */
+      });
+
+      /*
+       * ---------------------------------------------------------
+       * Socket error
+       * ---------------------------------------------------------
+       */
+
+      ws.on("error", (error) => {
+        yjsLogger.error(
+          {
+            err: error,
+            documentName,
+            userId,
+            clientId,
+            remoteAddress,
+          },
+          "Yjs collaboration WebSocket error.",
+        );
+      });
     } catch (error) {
-      logger.error(
+      /*
+       * ---------------------------------------------------------
+       * Connection initialization failure
+       * ---------------------------------------------------------
+       */
+
+      yjsLogger.error(
         {
           err: error,
+          documentName,
           userId,
           boardId,
-          remoteAddress: ip,
+          clientId,
+          remoteAddress,
           url: request.url,
         },
-        "Failed to initialize Yjs WebSocket connection.",
+        "Failed to initialize Yjs collaboration connection.",
       );
 
-      connectionRegistry.unregister(ws);
+      /*
+       * Remove collaboration client if it was registered.
+       */
+      if (client) {
+        documentManager.removeClient(documentName, client.id);
+      }
 
-      ws.close(
-        WS_CLOSE_CODE.INTERNAL_ERROR,
-        "Internal Server Error",
-      );
+      /*
+       * Remove global connection registry entry.
+       */
+      if (registered) {
+        connectionRegistry.unregister(ws);
+        registered = false;
+      }
 
-      return;
+      /*
+       * Close the socket if it is still usable.
+       */
+      if (ws.readyState === ws.OPEN || ws.readyState === ws.CONNECTING) {
+        ws.close(WS_CLOSE_CODE.INTERNAL_ERROR, "Internal Server Error");
+      }
     }
-
-    ws.on("close", (code, reason) => {
-      connectionRegistry.unregister(ws);
-
-      logger.info(
-        {
-          userId,
-          boardId,
-          remoteAddress: ip,
-          code,
-          reason: reason.toString(),
-        },
-        "Yjs WebSocket connection closed.",
-      );
-    });
-
-    ws.on("error", (error) => {
-      logger.error(
-        {
-          err: error,
-          userId,
-          boardId,
-          remoteAddress: ip,
-        },
-        "Yjs WebSocket connection error.",
-      );
-    });
   });
 }
