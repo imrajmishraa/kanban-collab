@@ -1,49 +1,74 @@
+import * as yAwarenessProtocol from "y-protocols/awareness";
 import type { WebSocket } from "ws";
 
-import { logger } from "../../../../infrastructure/logging/logger";
+import { yjsLogger } from "../../../../infrastructure/logging/childLogger";
 
-import type { ManagedDocument } from "./documentManager";
+import type { ManagedDocument } from "./types";
 
 export class AwarenessProtocol {
   /**
-   * Handles Yjs awareness messages.
+   * Handles an incoming Yjs awareness update.
+   *
+   * The top-level collaboration message type has already
+   * been removed by MessageHandler.
+   *
+   * This class is responsible for:
+   *
+   * 1. Validating the awareness payload.
+   * 2. Applying the update to the document awareness state.
+   * 3. Using the WebSocket as the update origin.
+   *
+   * Awareness is ephemeral and must not be persisted.
    */
   public handle(
     socket: WebSocket,
     document: ManagedDocument,
-    message: Buffer,
+    message: Uint8Array,
   ): void {
+    if (message.length === 0) {
+      yjsLogger.warn(
+        {
+          documentName: document.name,
+        },
+        "Received empty awareness update.",
+      );
+
+      return;
+    }
+
     try {
-      logger.debug(
+      yjsLogger.debug(
         {
           documentName: document.name,
           bytes: message.length,
         },
-        "Processing awareness message.",
+        "Processing Yjs awareness update.",
       );
 
-      /**
-       * Future flow:
-       *
-       * Buffer
-       *   |
-       *   v
-       * Decode awareness update
-       *   |
-       *   v
-       * Update awareness state
-       *   |
-       *   v
-       * Broadcast to connected clients
-       */
+      yAwarenessProtocol.applyAwarenessUpdate(
+        document.awareness,
+        message,
+        socket,
+      );
+
+      yjsLogger.debug(
+        {
+          documentName: document.name,
+          bytes: message.length,
+        },
+        "Applied Yjs awareness update.",
+      );
     } catch (error) {
-      logger.error(
+      yjsLogger.error(
         {
           err: error,
           documentName: document.name,
+          bytes: message.length,
         },
-        "Failed to process awareness message.",
+        "Failed to process Yjs awareness update.",
       );
+
+      throw error;
     }
   }
 }
