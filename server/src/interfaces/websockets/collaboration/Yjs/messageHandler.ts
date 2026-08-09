@@ -1,106 +1,140 @@
 import type { WebSocket } from "ws";
 
-import { logger } from "../../../../infrastructure/logging/logger";
+import { yjsLogger } from "../../../../infrastructure/logging/childLogger";
 
+import { awarenessProtocol } from "./awarenessProtocol";
+import { CollaborationMessage } from "./protocol";
+import { syncProtocol } from "./syncProtocol";
 import type { ManagedDocument } from "./types";
-import {
-  CollaborationMessage,
-  type CollaborationMessageType,
-} from "./protocol";
+import { collaborationMessageDecoder } from "./collaborationMessageDecoder";
 
 export class MessageHandler {
-  // Entry point for every incoming WebSocket message.
+  /**
+   * Entry point for every incoming WebSocket
+   * collaboration message.
+   *
+   * Responsibilities:
+   *
+   * 1. Decode the top-level collaboration message.
+   * 2. Identify the protocol.
+   * 3. Delegate the payload to the appropriate
+   *    protocol handler.
+   *
+   * This class does not implement Yjs synchronization
+   * or awareness semantics itself.
+   */
   public handleMessage(
     socket: WebSocket,
     document: ManagedDocument,
     message: Buffer,
   ): void {
+    if (message.length === 0) {
+      yjsLogger.warn(
+        {
+          documentName: document.name,
+        },
+        "Received empty collaboration message.",
+      );
+
+      return;
+    }
+
     try {
-      if (message.length === 0) {
-        logger.warn(
-          {
-            documentName: document.name,
-          },
-          "Received empty collaboration message.",
-        );
+      const decoded = collaborationMessageDecoder.decode(message);
 
-        return;
-      }
+      const payloadBytes = decoded.payload?.length ?? 0;
 
-      /**
-       * Yjs protocol uses the first byte
-       * to identify the message type.
-       */
+      yjsLogger.debug(
+        {
+          documentName: document.name,
+          messageType: decoded.type,
+          bytes: message.length,
+          payloadBytes,
+        },
+        "Received collaboration message.",
+      );
 
-      const messageType = message.readUInt8(0) as CollaborationMessageType;
-
-      switch (messageType) {
+      switch (decoded.type) {
         case CollaborationMessage.Sync:
-          this.handleSync(socket, document, message);
+          this.handleSync(socket, document, decoded.payload);
           break;
 
         case CollaborationMessage.Awareness:
-          this.handleAwareness(socket, document, message);
+          this.handleAwareness(socket, document, decoded.payload);
           break;
 
         default:
-          this.handleUnknown(document, messageType);
+          this.handleUnknown(document, decoded.type);
       }
     } catch (error) {
-      logger.error(
+      yjsLogger.error(
         {
           err: error,
           documentName: document.name,
+          bytes: message.length,
         },
         "Failed to process collaboration message.",
       );
     }
   }
 
-  //  Handles synchronization protocol messages.
-  public handleSync(
+  /**
+   * Delegates a synchronization payload to the
+   * Yjs synchronization protocol.
+   */
+  private handleSync(
     socket: WebSocket,
     document: ManagedDocument,
-    message: Buffer,
+    payload?: Uint8Array,
   ): void {
-    logger.debug(
-      {
-        documentName: document.name,
-        bytes: message.length,
-      },
-      "Received synchronization message.",
-    );
+    if (!payload || payload.length === 0) {
+      yjsLogger.warn(
+        {
+          documentName: document.name,
+        },
+        "Received synchronization message without payload.",
+      );
 
-    // TODO:
-    // syncProtocol.handle(...)
+      return;
+    }
+
+    syncProtocol.handle(socket, document.doc, payload);
   }
 
-  // Handles awareness protocol messages.
-  public handleAwareness(
+  /**
+   * Delegates an awareness payload to the
+   * Yjs awareness protocol.
+   */
+  private handleAwareness(
     socket: WebSocket,
     document: ManagedDocument,
-    message: Buffer,
+    payload?: Uint8Array,
   ): void {
-    logger.debug(
-      {
-        documentName: document.name,
-        bytes: message.length,
-      },
-      "Received awareness message.",
-    );
+    if (!payload || payload.length === 0) {
+      yjsLogger.warn(
+        {
+          documentName: document.name,
+        },
+        "Received awareness message without payload.",
+      );
 
-    // TODO:
-    // awarenessProtocol.handle(...)
+      return;
+    }
+
+    awarenessProtocol.handle(socket, document, payload);
   }
 
-  // Handles unsupported protocol messages.
-  public handleUnknown(document: ManagedDocument, messageType: number): void {
-    logger.warn(
+  /**
+   * Handles unsupported top-level collaboration
+   * message types.
+   */
+  private handleUnknown(document: ManagedDocument, messageType: number): void {
+    yjsLogger.warn(
       {
         documentName: document.name,
         messageType,
       },
-      "Received unknown collaboration message.",
+      "Received unknown collaboration message type.",
     );
   }
 }
