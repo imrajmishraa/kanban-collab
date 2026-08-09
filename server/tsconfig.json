@@ -2,13 +2,20 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "CommonJS",
+
     "rewriteRelativeImportExtensions": true,
     "erasableSyntaxOnly": true,
     "verbatimModuleSyntax": false,
-    "noEmit": true,
+
+    "outDir": "./dist",
+    "rootDir": ".",
+
     "strict": true,
     "skipLibCheck": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+
+    "types": ["node"]
   },
-  "include": ["src"]
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist", "test"]
 }
