@@ -9,22 +9,42 @@ import { bindRedisSync, cleanupRedisRoom } from "../persistence/redisSync";
 import type { CollaborationClient, ManagedDocument } from "./types";
 
 class DocumentManager {
-  // In-memory registry of active collaborative documents.
+  /**
+   * Active in-memory collaborative documents.
+   */
   private readonly documents = new Map<string, ManagedDocument>();
 
-  // Returns true if the document is already loaded.
+  /**
+   * Tracks documents that are currently being created.
+   *
+   * This prevents two simultaneous connections from creating
+   * two different Y.Doc instances for the same document.
+   */
+  private readonly pendingDocuments = new Map<
+    string,
+    Promise<ManagedDocument>
+  >();
+
+  /**
+   * Returns true if the document is already loaded.
+   */
   public has(documentName: string): boolean {
     return this.documents.has(documentName);
   }
 
-  // Returns a managed document if present.
+  /**
+   * Returns a managed document if present.
+   */
   public get(documentName: string): ManagedDocument | undefined {
     return this.documents.get(documentName);
   }
 
   /**
-   * Returns an existing collaborative document or
-   * creates a new one if it doesn't exist.
+   * Returns an existing collaborative document or creates
+   * a new one if it does not exist.
+   *
+   * Concurrent calls for the same document share the same
+   * creation promise.
    */
   public async getOrCreate(documentName: string): Promise<ManagedDocument> {
     const existing = this.documents.get(documentName);
@@ -35,16 +55,83 @@ class DocumentManager {
       return existing;
     }
 
-    yjsLogger.info({ documentName }, "Creating collaborative document.");
+    const pending = this.pendingDocuments.get(documentName);
+
+    if (pending) {
+      return pending;
+    }
+
+    const creationPromise = this.createDocument(documentName);
+
+    this.pendingDocuments.set(documentName, creationPromise);
+
+    try {
+      return await creationPromise;
+    } finally {
+      this.pendingDocuments.delete(documentName);
+    }
+  }
+
+  /**
+   * Creates and registers a collaborative document.
+   *
+   * This method should only be called through getOrCreate().
+   */
+  private async createDocument(documentName: string): Promise<ManagedDocument> {
+    /*
+     * Another request may have registered the document
+     * between getOrCreate() and this method executing.
+     */
+    const existing = this.documents.get(documentName);
+
+    if (existing && !existing.destroyed) {
+      this.touch(documentName);
+
+      return existing;
+    }
+
+    yjsLogger.info(
+      {
+        documentName,
+      },
+      "Creating collaborative document.",
+    );
 
     const document = new Y.Doc();
     const awareness = new Awareness(document);
 
-    await persistence.bindState(documentName, document);
+    try {
+      /*
+       * Load persisted Yjs state before registering the
+       * document as active.
+       */
+      await persistence.bindState(documentName, document);
 
-    bindRedisSync(documentName, document);
+      /*
+       * Attach Redis synchronization only after the
+       * document has successfully loaded.
+       */
+      bindRedisSync(documentName, document);
 
-    return this.register(documentName, document, awareness);
+      return this.register(documentName, document, awareness);
+    } catch (error) {
+      /*
+       * If initialization fails, do not leave an unusable
+       * Y.Doc / Awareness instance behind.
+       */
+      awareness.destroy();
+      document.destroy();
+
+      yjsLogger.error(
+        {
+          err: error,
+          documentName,
+        },
+        "Failed to create collaborative document.",
+      );
+
+      throw error;
+    }
   }
 
   /**
@@ -64,6 +151,13 @@ class DocumentManager {
         },
         "Collaborative document is already registered.",
       );
+
+      /*
+       * The caller created a duplicate document.
+       * Clean it up because the existing document is authoritative.
+       */
+      awareness.destroy();
+      document.destroy();
 
       return existing;
     }
@@ -99,7 +193,9 @@ class DocumentManager {
     return managed;
   }
 
-  // Removes a document from memory.
+  /**
+   * Removes a document from memory.
+   */
   public unregister(documentName: string): boolean {
     const removed = this.documents.delete(documentName);
 
@@ -116,7 +212,9 @@ class DocumentManager {
     return removed;
   }
 
-  // Updates the last access timestamp.
+  /**
+   * Updates the last access timestamp.
+   */
   public touch(documentName: string): void {
     const managed = this.documents.get(documentName);
 
@@ -130,20 +228,31 @@ class DocumentManager {
     managed.updatedAt = now;
   }
 
-  // Returns every active document.
+  /**
+   * Returns every active document.
+   */
   public list(): readonly ManagedDocument[] {
     return [...this.documents.values()];
   }
 
-  // Returns the number of active collaborative documents.
+  /**
+   * Returns the number of active collaborative documents.
+   */
   public count(): number {
     return this.documents.size;
   }
 
-  // Clears the registry.
-  // Intended for shutdown/testing.
+  /**
+   * Clears the registry.
+   *
+   * Intended for shutdown/testing.
+   *
+   * This deliberately does not await persistence or Redis
+   * cleanup because clear() is synchronous.
+   */
   public clear(): void {
     this.documents.clear();
+    this.pendingDocuments.clear();
 
     yjsLogger.info("Collaborative document registry cleared.");
   }
@@ -304,27 +413,41 @@ class DocumentManager {
     );
 
     try {
-      // Flush pending MongoDB writes.
+      /*
+       * Flush pending MongoDB writes.
+       */
       await persistence.writeState(documentName, managed.doc);
 
-      // Remove Redis subscription.
+      /*
+       * Remove Redis subscription.
+       */
       await cleanupRedisRoom(documentName);
 
-      // Remove connected clients.
+      /*
+       * Remove connected clients.
+       */
       managed.clients.clear();
       managed.connectionCount = 0;
 
-      // Destroy awareness state.
+      /*
+       * Destroy awareness state.
+       */
       managed.awareness.destroy();
 
-      // Destroy Yjs document.
+      /*
+       * Destroy Yjs document.
+       */
       managed.doc.destroy();
 
-      // Mark as destroyed.
+      /*
+       * Mark as destroyed.
+       */
       managed.destroyed = true;
       managed.loaded = false;
 
-      // Remove from registry.
+      /*
+       * Remove from registry.
+       */
       this.unregister(documentName);
 
       yjsLogger.info(

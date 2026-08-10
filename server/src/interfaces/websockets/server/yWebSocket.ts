@@ -15,12 +15,14 @@ import {
   type HeartbeatConnection,
 } from "../collaboration/heartbeat/heartbeat";
 
+import { connectionRegistry } from "../collaboration/lifecycle/connectionRegistry";
+
 import { documentManager } from "../collaboration/yjs/documentManager";
 import { messageHandler } from "../collaboration/yjs/messageHandler";
+import { updateBroadcaster } from "../collaboration/yjs/updateBroadcaster";
+
 import { CollaborationMessage } from "../collaboration/yjs/protocol";
 import type { CollaborationClient } from "../collaboration/yjs/types";
-
-import { connectionRegistry } from "../collaboration/lifecycle/connectionRegistry";
 
 export function registerYWebSocket(wss: WebSocketServer): void {
   wss.on("connection", async (ws, request) => {
@@ -96,6 +98,16 @@ export function registerYWebSocket(wss: WebSocketServer): void {
 
       /*
        * ---------------------------------------------------------
+       * Attach Yjs update broadcaster.
+       *
+       * The broadcaster attaches exactly once per Y.Doc.
+       * ---------------------------------------------------------
+       */
+
+      updateBroadcaster.attach(document);
+
+      /*
+       * ---------------------------------------------------------
        * Register collaboration client
        * ---------------------------------------------------------
        */
@@ -116,15 +128,13 @@ export function registerYWebSocket(wss: WebSocketServer): void {
        * ---------------------------------------------------------
        * Send initial Yjs synchronization
        *
-       * Top-level collaboration protocol:
+       * Application protocol:
        *
-       *   0 -> Sync
+       *   CollaborationMessage.Sync
        *
-       * Yjs synchronization protocol:
+       * Yjs protocol:
        *
        *   Sync Step 1
-       *   Sync Step 2
-       *   Update
        * ---------------------------------------------------------
        */
 
@@ -195,8 +205,7 @@ export function registerYWebSocket(wss: WebSocketServer): void {
          *   ArrayBuffer
          *   Buffer[]
          *
-         * Normalize everything to Buffer before
-         * passing it to the collaboration layer.
+         * Normalize everything to Buffer.
          */
 
         if (Buffer.isBuffer(data)) {
@@ -222,10 +231,8 @@ export function registerYWebSocket(wss: WebSocketServer): void {
 
         /*
          * Delegate protocol processing.
-         *
-         * yWebSocket does not understand Sync,
-         * Awareness, or Update messages itself.
          */
+
         messageHandler.handleMessage(ws, document, message);
 
         connectionRegistry.updateLastSeen(ws);
@@ -261,11 +268,10 @@ export function registerYWebSocket(wss: WebSocketServer): void {
         );
 
         /*
-         * The document is intentionally NOT destroyed here.
+         * The document itself is intentionally not destroyed.
          *
-         * It remains available for other clients and can
-         * later be removed by the idle-document cleanup
-         * lifecycle.
+         * Idle document lifecycle is responsible for eventually
+         * releasing inactive documents.
          */
       });
 
@@ -310,6 +316,7 @@ export function registerYWebSocket(wss: WebSocketServer): void {
       /*
        * Remove collaboration client if it was registered.
        */
+
       if (client) {
         documentManager.removeClient(documentName, client.id);
       }
@@ -317,6 +324,7 @@ export function registerYWebSocket(wss: WebSocketServer): void {
       /*
        * Remove global connection registry entry.
        */
+
       if (registered) {
         connectionRegistry.unregister(ws);
         registered = false;
@@ -325,6 +333,7 @@ export function registerYWebSocket(wss: WebSocketServer): void {
       /*
        * Close the socket if it is still usable.
        */
+
       if (ws.readyState === ws.OPEN || ws.readyState === ws.CONNECTING) {
         ws.close(WS_CLOSE_CODE.INTERNAL_ERROR, "Internal Server Error");
       }
