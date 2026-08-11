@@ -14,6 +14,7 @@ export const cardParamsSchema = z.object({
 export const createCardSchema = {
   body: z.object({
     columnId: objectIdSchema,
+    boardId: objectIdSchema,
 
     title: z
       .string()
@@ -26,6 +27,8 @@ export const createCardSchema = {
       .trim()
       .max(10000, "Description cannot exceed 10000 characters.")
       .optional(),
+
+    orderIndex: z.number().int().min(0).optional(),
 
     dueDate: z.string().datetime("Invalid due date.").optional(),
 
@@ -40,12 +43,14 @@ export const createCardSchema = {
           .max(50, "Label cannot exceed 50 characters."),
       )
       .optional(),
-})  
+  }),
 };
 
 
 export const updateCardSchema = {
-  params: cardParamsSchema,
+  params: z.object({
+    id: objectIdSchema,
+  }),
 
   body: z.object({
     title: z
@@ -85,22 +90,26 @@ export const updateCardSchema = {
 
 
 export const moveCardSchema = {
-  params: cardParamsSchema,
+  params: z.object({
+    id: objectIdSchema,
+  }),
 
   body: z.object({
-    destinationColumnId: objectIdSchema,
+    targetColumnId: objectIdSchema,
 
-    orderIndex: z
+    targetOrderIndex: z
       .number()
       .int()
       .min(0, "Order index must be greater than or equal to 0."),
   }),
 };
 
-export const archiveCardSchema = z.object({
-  params: cardParamsSchema.shape.params,
+export const archiveCardSchema = {
+  params: z.object({
+    id: objectIdSchema,
+  }),
 
   body: z.object({
     isArchived: z.boolean(),
   }),
-});
+};
