@@ -36,6 +36,8 @@ app.use(
         connectSrc: [
           "'self'",
           ENV.CLIENT_URL,
+          "ws:",
+          "wss:",
           "wss://collaboration.enterprise.com",
         ],
       },
