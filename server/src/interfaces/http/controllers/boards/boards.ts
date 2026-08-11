@@ -116,13 +116,74 @@ const listBoards = asyncHandler(async (req: AuthenticatedRequest, res) => {
     }
 });
 
+const updateBoard = asyncHandler(async (req: AuthenticatedRequest, res) => {
+  const boardId = req.params.boardId || req.params.id;
+  const { name, description, backgroundColor, coverImageUrl, visibility } = req.body;
+  const userId = req.user!.userId;
+  try {
+    const board = await BoardModel.findById(boardId);
+    if (!board) {
+      throw boardNotFoundError();
+    }
+
+    const workspace = await WorkspaceModel.findOne({
+      _id: board.workspaceId,
+      "members.userId": new Types.ObjectId(userId),
+    });
+
+    if (!workspace) {
+      throw boardAccessDeniedError();
+    }
+
+    const member = workspace.members.find(
+      (m) => m.userId.toString() === userId,
+    );
+
+    if (!member || member.role === "guest") {
+      throw guestCannotModifyBoardError();
+    }
+
+    if (name !== undefined) board.name = name;
+    if (description !== undefined) board.description = description;
+    if (backgroundColor !== undefined) board.backgroundColor = backgroundColor;
+    if (coverImageUrl !== undefined) board.coverImageUrl = coverImageUrl;
+    if (visibility !== undefined) board.visibility = visibility;
+
+    await board.save();
+
+    boardControllerLogger.info(
+      {
+        boardId: board._id,
+        userId,
+      },
+      "Board updated",
+    );
+
+    return res.status(200).json(
+      new ApiResponse(200, "Board updated successfully", {
+        data: board,
+      }),
+    );
+  } catch (error) {
+    boardControllerLogger.error(
+      {
+        err: error,
+        boardId: req.params.boardId || req.params.id,
+        userId,
+      },
+      "Update board failed",
+    );
+    throw error;
+  }
+});
+
 const getBoardDetails = asyncHandler(
   async (req: AuthenticatedRequest, res) => {
      const userId = req.user!.userId;
-      const { id } = req.params;
+      const boardId = req.params.boardId || req.params.id;
      try {     
 
-      const board = await BoardModel.findById(id);
+      const board = await BoardModel.findById(boardId);
       if (!board) {
         throw boardNotFoundError();
       }
@@ -183,7 +244,7 @@ const getBoardDetails = asyncHandler(
         boardControllerLogger.error(
           {
             err: error,
-            boardId: req.params.id,
+            boardId: req.params.boardId || req.params.id,
             userId,
           },
           "Get board details failed",
@@ -193,4 +254,4 @@ const getBoardDetails = asyncHandler(
   },
 );
 
-export { createBoard, listBoards, getBoardDetails };
+export { createBoard, updateBoard, listBoards, getBoardDetails };
