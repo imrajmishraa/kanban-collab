@@ -358,14 +358,14 @@ const YjsUpdateSchema = new Schema<IYjsUpdate>(
     workspaceId: {
       type: Schema.Types.ObjectId,
       ref: "Workspace",
-      required: true,
+      required: false,
       index: true,
     },
 
     boardId: {
       type: Schema.Types.ObjectId,
       ref: "Board",
-      required: true,
+      required: false,
       index: true,
     },
 
