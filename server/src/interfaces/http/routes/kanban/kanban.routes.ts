@@ -1,12 +1,12 @@
 import { Router } from 'express';
-import { createWorkspace, listWorkspaces, addWorkspaceMember, deleteWorkspace } from '../../controllers/workspaces/workspaces';
-import { createBoard, listBoards, getBoardDetails } from "../../controllers/boards/boards";
+import { createWorkspace, listWorkspaces, addWorkspaceMember, updateWorkspace, deleteWorkspace } from '../../controllers/workspaces/workspaces';
+import { createBoard, updateBoard, listBoards, getBoardDetails } from "../../controllers/boards/boards";
 import { createColumn  } from '../../controllers/columns/columns';
 import { createCard, moveCard } from '../../controllers/cards/cards';
 import { searchCards } from '../../controllers/search/search';
 import { signUpload } from '../../controllers/fileUpload/fileUpload';
 import { authenticateJWT } from '../../middleware/auth.middleware';
-import { createWorkspaceSchema, updateWorkspaceSchema } from '../../validators/kanban/workspace.validator';
+import { createWorkspaceSchema, updateWorkspaceSchema, addWorkspaceMemberSchema } from '../../validators/kanban/workspace.validator';
 import { validateSchema } from '../../middleware/validate.middleware';
 import { boardParamsSchema, boardQuerySchema, createBoardSchema, updateBoardSchema } from '../../validators/kanban/board.validator';
 import { createCardSchema, moveCardSchema } from '../../validators/kanban/card.validator';
@@ -31,10 +31,17 @@ router.use(authenticateJWT);
   // get workspace lists
   router.get('/workspaces', listWorkspaces);
 
+  // update workspace
+  router.patch(
+    "/workspaces/:workspaceId",
+    validateSchema(updateWorkspaceSchema),
+    updateWorkspace,
+  );
+
   // add members to workspace
   router.post(
     "/workspaces/:id/members",
-    validateSchema(updateWorkspaceSchema),
+    validateSchema(addWorkspaceMemberSchema),
     addWorkspaceMember,
   );
 
@@ -46,14 +53,13 @@ router.use(authenticateJWT);
     Boards
   */ 
   // create new board
-    router.post('/boards',validateSchema(createBoardSchema), createBoard);
+    router.post('/boards', validateSchema(createBoardSchema), createBoard);
   
     // update board
   router.patch(
-    "/:boardId",
-    authenticateJWT,
+    "/boards/:boardId",
     validateSchema(updateBoardSchema),
-    //   updateBoard,
+    updateBoard,
   );
 
   // get lists of boards
