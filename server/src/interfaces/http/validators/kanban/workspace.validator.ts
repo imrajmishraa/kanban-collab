@@ -70,3 +70,14 @@ export const updateWorkspaceSchema = {
       message: "At least one field must be provided for update.",
     }),
 };
+
+export const addWorkspaceMemberSchema = {
+  params: z.object({
+    id: objectIdSchema,
+  }),
+
+  body: z.object({
+    email: z.string().email("Invalid email address"),
+    role: z.enum(["admin", "member", "guest", "owner"]).optional(),
+  }),
+};
