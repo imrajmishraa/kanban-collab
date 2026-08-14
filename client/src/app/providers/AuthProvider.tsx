@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 
-import { loginRequest, logoutRequest, refreshRequest } from "@/api/authApi";
+import { loginRequest, logoutRequest, refreshRequest, signUpRequest } from "@/api/authApi";
 
 import {
   clearAccessToken,
@@ -28,6 +28,11 @@ interface AuthContextValue {
   isAuthenticated: boolean;
   isLoading: boolean;
 
+  register: (
+    fullName: string,
+    email: string,
+    password: string,
+  ) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
 
   logout: () => Promise<void>;
@@ -115,6 +120,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [authenticate, clearAuthentication]);
 
   /**
+   * register with fullName, email and password.
+   */
+  const register = useCallback(
+    async (
+      fullName: string,
+      email: string,
+      password: string,
+    ): Promise<void> => {
+      const response = await signUpRequest({
+        fullName,
+        email,
+        password,
+      });
+
+      setUser(response.data.user);
+      setStatus("authenticated");
+    },
+    [],
+  );
+
+  /**
    * Login with email and password.
    */
   const login = useCallback(
@@ -193,6 +219,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       isLoading: status === "loading",
 
+      register,
       login,
       logout,
       refresh,
@@ -215,3 +242,4 @@ export function useAuth(): AuthContextValue {
 
   return context;
 }
+
