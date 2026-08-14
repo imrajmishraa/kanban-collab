@@ -1,16 +1,40 @@
 import type { ApiResponse } from "@/types/api";
 
-import type { LoginResponse, RefreshResponse } from "@/types/auth";
+import type {
+  RegisterResponse,
+  LoginResponse,
+  RefreshResponse,
+} from "@/types/auth";
 
 import { api } from "./client";
+
+export interface RegisterPayload {
+  fullName: string;
+  email: string;
+  password: string;
+}
 
 export interface LoginPayload {
   email: string;
   password: string;
 }
 
+
 interface NestedApiResponse<T> {
   data: T;
+}
+
+export async function signUpRequest(
+  payload: RegisterPayload,
+): Promise<ApiResponse<RegisterResponse>> {
+  const response = await api.post<
+    ApiResponse<NestedApiResponse<RegisterResponse>>
+  >("/auth/register", payload);
+
+  return {
+    ...response.data,
+    data: response.data.data.data,
+  };
 }
 
 export async function loginRequest(
