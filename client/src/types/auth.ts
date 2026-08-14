@@ -16,7 +16,9 @@ export interface RefreshResponse {
   user: AuthUser;
 }
 
-
+export interface RegisterResponse {
+  user: AuthUser;
+}
 
 
 export type AuthStatus = "loading" | "authenticated" | "unauthenticated";
