@@ -1,6 +1,6 @@
 import { Routes, Route } from 'react-router-dom'
-import LoginPage     from '@/features/auth/pages/LoginPage'
-import { RegisterPage } from '@/features/auth/pages/RegisterPage'
+import LoginPage from '@/features/auth/pages/LoginPage'
+import RegisterPage from '@/features/auth/pages/RegisterPage'
 import { DashboardPage } from '@/features/workspaces/pages/DashboardPage'
 import { WorkspacePage } from '@/features/workspaces/pages/WorkspacePage'
 import { BoardPage }     from '@/features/boards/pages/BoardPage'
