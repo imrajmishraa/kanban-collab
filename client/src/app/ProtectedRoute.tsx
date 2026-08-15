@@ -29,7 +29,11 @@ export default function ProtectedRoute() {
         to="/auth/login"
         replace
         state={{
-          from: location,
+          from: {
+            pathname: location.pathname,
+            search: location.search,
+            hash: location.hash,
+          },
         }}
       />
     );

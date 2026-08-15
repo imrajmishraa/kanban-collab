@@ -1,40 +1,55 @@
-import { Routes, Route } from 'react-router-dom'
-import LoginPage from '@/features/auth/pages/LoginPage'
-import RegisterPage from '@/features/auth/pages/RegisterPage'
-import { DashboardPage } from '@/features/workspaces/pages/DashboardPage'
-import { WorkspacePage } from '@/features/workspaces/pages/WorkspacePage'
-import { BoardPage }     from '@/features/boards/pages/BoardPage'
-import NotFoundPage   from '@/components/feedback/NotFoundPage'
-import LandingPage from "@/features/landing/LandingPage";
-import ProtectedRoute from './ProtectedRoute'
-import ProfilePage from '#components/layout/user/Profile'
-import SettingPage from '@components/layout/user/SettingPage'
-import FeaturesPage from '@/features/landing/FeaturesPage'
-import HowItWorksPage from '@/features/landing/HowItWorksPage'
-import GuestRoute from './GuestRoute'
+import { Route, Routes } from "react-router-dom";
 
-/**
- * Application routes.
- *
- * Auth-guarded routes live inside ProtectedRoute (to be wired later).
- * For now every route renders its placeholder page.
- */
+import ProtectedRoute from "./ProtectedRoute";
+import GuestRoute from "./GuestRoute";
+
+import PublicLayout from "./layouts/PublicLayout";
+import AppLayout from "./layouts/AppLayout";
+
+import NotFoundPage from "@/components/feedback/NotFoundPage";
+
+import FeaturesPage from "@/features/landing/FeaturesPage";
+import HowItWorksPage from "@/features/landing/HowItWorksPage";
+import LandingPage from "@/features/landing/LandingPage";
+
+import LoginPage from "@/features/auth/pages/LoginPage";
+import RegisterPage from "@/features/auth/pages/RegisterPage";
+
+import { BoardPage } from "@/features/boards/pages/BoardPage";
+import { DashboardPage } from "@/features/workspaces/pages/DashboardPage";
+import { WorkspacePage } from "@/features/workspaces/pages/WorkspacePage";
+
+import ProfilePage from "@/components/layout/user/Profile";
+import SettingPage from "@/components/layout/user/SettingPage";
+
 export function AppRouter() {
   return (
     <Routes>
       {/* Public */}
-      <Route path="/" element={<LandingPage />} />
+      <Route element={<PublicLayout />}>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/features" element={<FeaturesPage />} />
+        <Route path="/how-it-works" element={<HowItWorksPage />} />
 
-      {/* Guest only */}
+      {/* Guest */}
       <Route element={<GuestRoute />}>
-        <Route path="/auth/login" element={<LoginPage />} />
-        <Route path="/auth/register" element={<RegisterPage />} />
+          <Route path="/auth/login" element={<LoginPage />} />
+          <Route path="/auth/register" element={<RegisterPage />} />
+        </Route>
       </Route>
 
-      {/* Authenticated only */}
+      {/* Authenticated */}
       <Route element={<ProtectedRoute />}>
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/boards/:boardId" element={<BoardPage />} />
+        <Route element={<AppLayout />}>
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/setting" element={<SettingPage />} />
+
+          <Route path="/dashboard" element={<DashboardPage />} />
+
+          <Route path="/workspace/:workspaceId" element={<WorkspacePage />} />
+
+          <Route path="/boards/:boardId" element={<BoardPage />} />
+        </Route>
       </Route>
 
       {/* Not found */}
