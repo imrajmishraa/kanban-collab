@@ -3,16 +3,16 @@ import { Link, useNavigate } from "react-router-dom";
 
 import { useAuth } from "@/app/providers/AuthProvider";
 
-import SignUpForm from "@components/ui/auth/RegisterForm";
+import RegisterForm from "@components/ui/auth/RegisterForm";
 
-export default function SignUpPage() {
+export default function RegisterPage() {
   const { register } = useAuth();
   const navigate = useNavigate();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSignUp = async (
+  const handleRegister = async (
     fullName: string,
     email: string,
     password: string,
@@ -23,15 +23,17 @@ export default function SignUpPage() {
     try {
       await register(fullName, email, password);
 
-      navigate("/dashboard", {
+      navigate("/auth/login", {
         replace: true,
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Sign up failed:", error);
 
-      setError(
-        "Unable to create your account. Please check your details and try again.",
-      );
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("Unable to create your account. Please try again.");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -52,7 +54,7 @@ export default function SignUpPage() {
             </Link>
           </div>
 
-          {/* Card */}
+          {/* Authentication card */}
           <div className="border border-neutral-800 bg-[#101010]">
             <div className="border-b border-neutral-800 px-6 py-5 sm:px-8">
               <p className="mb-2 font-mono text-xs uppercase tracking-[0.2em] text-neutral-600">
@@ -68,23 +70,13 @@ export default function SignUpPage() {
               </p>
             </div>
 
-            {/* Error */}
-            {error && (
-              <div
-                role="alert"
-                aria-live="polite"
-                className="border-b border-rose-500/20 bg-rose-500/5 px-6 py-3 sm:px-8"
-              >
-                <p className="font-mono text-xs leading-5 text-rose-400">
-                  <span className="mr-2 text-rose-500">&gt;</span>
-                  {error}
-                </p>
-              </div>
-            )}
-
             {/* Form */}
             <div className="px-6 py-7 sm:px-8">
-              <SignUpForm onSubmit={handleSignUp} isSubmitting={isSubmitting} />
+              <RegisterForm
+                onSubmit={handleRegister}
+                isSubmitting={isSubmitting}
+                error={error}
+              />
             </div>
 
             {/* Login */}
