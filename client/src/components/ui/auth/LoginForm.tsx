@@ -1,89 +1,203 @@
 import { useState, type FormEventHandler } from "react";
 
+import { loginSchema, type LoginFormData } from "@/validations/auth.schema";
+
 interface LoginFormProps {
   onSubmit: (email: string, password: string) => Promise<void>;
   isSubmitting?: boolean;
-  error?: string | null;
+}
+
+interface LoginFormErrors {
+  email?: string;
+  password?: string;
 }
 
 export default function LoginForm({
   onSubmit,
   isSubmitting = false,
-  error = null,
 }: LoginFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const [errors, setErrors] = useState<LoginFormErrors>({});
+
+  const clearFieldError = (field: keyof LoginFormErrors) => {
+    setErrors((current) => {
+      if (!current[field]) {
+        return current;
+      }
+
+      const next = { ...current };
+
+      delete next[field];
+
+      return next;
+    });
+  };
+
   const handleSubmit: FormEventHandler<HTMLFormElement> = async (event) => {
     event.preventDefault();
 
-    await onSubmit(email.trim(), password);
+    const formData: LoginFormData = {
+      email,
+      password,
+    };
+
+    const result = loginSchema.safeParse(formData);
+
+    if (!result.success) {
+      const fieldErrors: LoginFormErrors = {};
+
+      for (const issue of result.error.issues) {
+        const field = issue.path[0];
+
+        if (field === "email" || field === "password") {
+          fieldErrors[field] = issue.message;
+        }
+      }
+
+      setErrors(fieldErrors);
+
+      return;
+    }
+
+    setErrors({});
+
+    const { email: validatedEmail, password: validatedPassword } = result.data;
+
+    await onSubmit(validatedEmail, validatedPassword);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} noValidate className="space-y-6">
       {/* Email */}
       <div className="space-y-2">
         <label
-          htmlFor="email"
-          className="block font-mono text-xs text-neutral-400"
+          htmlFor="login-email"
+          className="block font-mono text-xs text-(--text-secondary)"
         >
           Email
         </label>
 
         <input
-          id="email"
+          id="login-email"
           name="email"
           type="email"
           autoComplete="email"
           value={email}
-          onChange={(event) => setEmail(event.target.value)}
+          onChange={(event) => {
+            setEmail(event.target.value);
+            clearFieldError("email");
+          }}
           placeholder="you@example.com"
-          required
           disabled={isSubmitting}
-          className="h-11 w-full border border-neutral-700 bg-[#080808] px-3 font-mono text-sm text-neutral-100 outline-none transition-colors placeholder:text-neutral-700 focus:border-rose-500/70 disabled:cursor-not-allowed disabled:opacity-60"
+          aria-invalid={Boolean(errors.email)}
+          aria-describedby={errors.email ? "login-email-error" : undefined}
+          className={`h-11 w-full border bg-(--bg-root) px-3 font-mono text-sm text-(--text-primary) outline-none!
+          ring-0!
+          shadow-none!
+          transition-all
+          focus:outline-none!
+          focus:ring-0!
+          focus:shadow-none!
+          focus-visible:outline-none!
+          focus-visible:ring-0!
+          focus-visible:shadow-none! disabled:cursor-not-allowed disabled:opacity-60 ${
+            errors.email
+              ? "border-(--danger)"
+              : "border-(--border-strong) focus:border-(--brand)"
+          }`}
         />
+
+        {errors.email && (
+          <p
+            id="login-email-error"
+            className="font-mono text-xs leading-5 text-(--danger)"
+          >
+            <span className="mr-2">&gt;</span>
+            {errors.email}
+          </p>
+        )}
       </div>
 
       {/* Password */}
       <div className="space-y-2">
         <label
-          htmlFor="password"
-          className="block font-mono text-xs text-neutral-400"
+          htmlFor="login-password"
+          className="block font-mono text-xs text-(--text-secondary)"
         >
           Password
         </label>
 
         <input
-          id="password"
+          id="login-password"
           name="password"
           type="password"
           autoComplete="current-password"
           value={password}
-          onChange={(event) => setPassword(event.target.value)}
+          onChange={(event) => {
+            setPassword(event.target.value);
+            clearFieldError("password");
+          }}
           placeholder="••••••••"
-          required
           disabled={isSubmitting}
-          className="h-11 w-full border border-neutral-700 bg-[#080808] px-3 font-mono text-sm text-neutral-100 outline-none transition-colors placeholder:text-neutral-700 focus:border-rose-500/70 disabled:cursor-not-allowed disabled:opacity-60"
+          aria-invalid={Boolean(errors.password)}
+          aria-describedby={
+            errors.password ? "login-password-error" : undefined
+          }
+          className={`h-11 w-full border bg-(--bg-root) px-3 font-mono text-sm text-(--text-primary) outline-none!
+          ring-0!
+          shadow-none!
+          transition-all
+          focus:outline-none!
+          focus:ring-0!
+          focus:shadow-none!
+          focus-visible:outline-none!
+          focus-visible:ring-0!
+          focus-visible:shadow-none! disabled:cursor-not-allowed disabled:opacity-60 ${
+            errors.password
+              ? "border-(--danger)"
+              : "border-(--border-strong) focus:border-(--brand)"
+          }`}
         />
-      </div>
 
-      {/* API error */}
-      {error && (
-        <div
-          role="alert"
-          className="border border-rose-500/30 bg-rose-500/5 px-3 py-2.5 font-mono text-xs text-rose-400"
-        >
-          <span className="mr-2 text-rose-500">&gt;</span>
-          {error}
-        </div>
-      )}
+        {errors.password && (
+          <p
+            id="login-password-error"
+            className="font-mono text-xs leading-5 text-(--danger)"
+          >
+            <span className="mr-2">&gt;</span>
+            {errors.password}
+          </p>
+        )}
+      </div>
 
       {/* Submit */}
       <button
         type="submit"
         disabled={isSubmitting}
-        className="flex h-11 w-full items-center justify-center border border-rose-500/80 bg-rose-500/10 px-4 font-mono text-sm text-rose-400 transition-all hover:bg-rose-500/15 hover:text-rose-300 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
+        className="
+          flex h-11 w-full items-center justify-center
+          border border-(--brand)
+          bg-(--brand)/10
+          px-4
+          font-mono text-sm text-(--brand)
+          outline-none!
+          ring-0!
+          shadow-none!
+          transition-all
+          hover:bg-(--brand)/15
+          hover:text-(--brand)
+          focus:outline-none!
+          focus:ring-0!
+          focus:shadow-none!
+          focus-visible:outline-none!
+          focus-visible:ring-0!
+          focus-visible:shadow-none!
+          active:scale-[0.99]
+          disabled:cursor-not-allowed
+          disabled:opacity-50
+        "
       >
         {isSubmitting ? "[ Signing in... ]" : "[ Sign In ]"}
       </button>
