@@ -24,7 +24,7 @@ interface NestedApiResponse<T> {
   data: T;
 }
 
-export async function signUpRequest(
+export async function registerRequest(
   payload: RegisterPayload,
 ): Promise<ApiResponse<RegisterResponse>> {
   const response = await api.post<
