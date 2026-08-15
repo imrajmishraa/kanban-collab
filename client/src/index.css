@@ -1,11 +1,55 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* ============================================
-   Design Tokens — Kanban Collaboration
-   ============================================ */
+/* Tailwind v4 — Dark variant */
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Design Tokens — Kanban Collaboration */
 
 :root {
+  /* Light theme */
+  --bg-root: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-card: #f1f5f9;
+  --bg-elevated: #e2e8f0;
+
+  --border: rgba(15, 23, 42, 0.08);
+  --border-strong: rgba(15, 23, 42, 0.14);
+
+  --brand: #3b6fd4;
+  --brand-hover: #2f5db8;
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+
+  --success: #16a34a;
+  --warning: #d97706;
+  --danger: #dc2626;
+
+  --radius: 10px;
+  --shadow: 0 4px 24px rgba(15, 23, 42, 0.12);
+
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+
+  font-size: 15px;
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Dark theme */
+
+.dark {
   --bg-root: #080d16;
   --bg-surface: #0f172a;
   --bg-card: #1e293b;
@@ -25,87 +69,5 @@
   --warning: #f59e0b;
   --danger: #ef4444;
 
-  --radius: 10px;
   --shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
-
-  font-family:
-    "Inter",
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    sans-serif;
-
-  font-size: 15px;
-  line-height: 1.6;
-  letter-spacing: -0.01em;
-
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-}
-
-/* ============================================
-   Base
-   ============================================ */
-
-html,
-body {
-  height: 100%;
-  background-color: var(--bg-root);
-  color: var(--text-primary);
-}
-
-#root {
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-/* ============================================
-   Custom Scrollbars
-   ============================================ */
-
-::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(71, 85, 105, 0.7);
-  border-radius: 9999px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 0.9);
-}
-
-/* ============================================
-   Glassmorphism Utilities
-   ============================================ */
-
-.glass {
-  background: rgba(30, 41, 59, 0.65);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--border);
-}
-
-.glass-modal {
-  background: rgba(9, 13, 22, 0.88);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--border-strong);
-}
-
-/* ============================================
-   Focus visible
-   ============================================ */
-
-:focus-visible {
-  outline: 2px solid var(--brand);
-  outline-offset: 2px;
 }
