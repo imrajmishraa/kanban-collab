@@ -8,7 +8,12 @@ import {
   type ReactNode,
 } from "react";
 
-import { loginRequest, logoutRequest, refreshRequest, signUpRequest } from "@/api/authApi";
+import {
+  loginRequest,
+  logoutRequest,
+  refreshRequest,
+  registerRequest,
+} from "@/api/authApi";
 
 import {
   clearAccessToken,
@@ -128,14 +133,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
       email: string,
       password: string,
     ): Promise<void> => {
-      const response = await signUpRequest({
+      const response = await registerRequest({
         fullName,
         email,
         password,
       });
 
-      setUser(response.data.user);
-      setStatus("authenticated");
+      if (!response.success || !response.data) {
+        throw new Error(response.message || "Registration failed.");
+      }
     },
     [],
   );
@@ -224,7 +230,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       logout,
       refresh,
     }),
-    [status, user, accessToken, login, logout, refresh],
+    [status, user, accessToken, register, login, logout, refresh],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
