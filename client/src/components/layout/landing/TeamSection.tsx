@@ -28,7 +28,7 @@ export default function TeamSection() {
         </p>
 
         <Link
-          to="/auth/sign-in"
+          to="/dashboard"
           className="
             mt-9
             inline-flex
