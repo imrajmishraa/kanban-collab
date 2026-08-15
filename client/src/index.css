@@ -1,42 +1,82 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* Tailwind v4 — Dark variant */
-
-@custom-variant dark (&:where(.dark, .dark *));
-
-/* Design Tokens — Kanban Collaboration */
+/* ============================================================
+   Kanban Collaboration — Design System
+   ============================================================ */
 
 :root {
-  /* Light theme */
-  --bg-root: #f8fafc;
-  --bg-surface: #ffffff;
-  --bg-card: #f1f5f9;
-  --bg-elevated: #e2e8f0;
+  /* ------------------------------------------------------------
+     Backgrounds
+     ------------------------------------------------------------ */
 
-  --border: rgba(15, 23, 42, 0.08);
-  --border-strong: rgba(15, 23, 42, 0.14);
+  --bg-root: #090909;
+  --bg-surface: #0d0d0d;
+  --bg-card: #111111;
+  --bg-elevated: #161616;
 
-  --brand: #3b6fd4;
-  --brand-hover: #2f5db8;
+  /* ------------------------------------------------------------
+     Borders
+     ------------------------------------------------------------ */
 
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.14);
+  --border-subtle: rgba(255, 255, 255, 0.05);
 
-  --success: #16a34a;
-  --warning: #d97706;
-  --danger: #dc2626;
+  /* ------------------------------------------------------------
+     Brand
+     ------------------------------------------------------------ */
 
-  --radius: 10px;
-  --shadow: 0 4px 24px rgba(15, 23, 42, 0.12);
+  --brand: #ff2d5f;
+  --brand-hover: #ff4775;
+  --brand-muted: rgba(255, 45, 95, 0.12);
+  --brand-border: rgba(255, 45, 95, 0.65);
+
+  /* ------------------------------------------------------------
+     Text
+     ------------------------------------------------------------ */
+
+  --text-primary: #f4f4f5;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+  --text-subtle: #52525b;
+
+  /* ------------------------------------------------------------
+     Semantic
+     ------------------------------------------------------------ */
+
+  --success: #22c55e;
+  --warning: #eab308;
+  --danger: #ff4d67;
+
+  /* ------------------------------------------------------------
+     Layout
+     ------------------------------------------------------------ */
+
+  --radius: 0px;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+
+  /* ------------------------------------------------------------
+     Shadows
+     ------------------------------------------------------------ */
+
+  --shadow:
+    0 8px 30px rgba(0, 0, 0, 0.35);
+
+  /* ------------------------------------------------------------
+     Typography
+     ------------------------------------------------------------ */
 
   font-family:
-    "Inter",
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    sans-serif;
+    "JetBrains Mono",
+    "SFMono-Regular",
+    "SF Mono",
+    Menlo,
+    Monaco,
+    Consolas,
+    "Liberation Mono",
+    monospace;
 
   font-size: 15px;
   line-height: 1.6;
@@ -45,29 +85,197 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+
+  color-scheme: dark;
 }
 
-/* Dark theme */
+/* ============================================================
+   Dark Theme
+   ============================================================ */
 
 .dark {
-  --bg-root: #080d16;
-  --bg-surface: #0f172a;
-  --bg-card: #1e293b;
-  --bg-elevated: #263348;
+  --bg-root: #090909;
+  --bg-surface: #0d0d0d;
+  --bg-card: #111111;
+  --bg-elevated: #161616;
 
   --border: rgba(255, 255, 255, 0.08);
   --border-strong: rgba(255, 255, 255, 0.14);
+  --border-subtle: rgba(255, 255, 255, 0.05);
 
-  --brand: #4f86f7;
-  --brand-hover: #3b6fd4;
+  --brand: #ff2d5f;
+  --brand-hover: #ff4775;
+  --brand-muted: rgba(255, 45, 95, 0.12);
+  --brand-border: rgba(255, 45, 95, 0.65);
 
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --text-primary: #f4f4f5;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+  --text-subtle: #52525b;
 
   --success: #22c55e;
-  --warning: #f59e0b;
-  --danger: #ef4444;
+  --warning: #eab308;
+  --danger: #ff4d67;
 
-  --shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+  color-scheme: dark;
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+
+html,
+body {
+  min-height: 100%;
+  background-color: var(--bg-root);
+  color: var(--text-primary);
+}
+
+body {
+  margin: 0;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================================================
+   Selection
+   ============================================================ */
+
+::selection {
+  background: var(--brand);
+  color: #ffffff;
+}
+
+/* ============================================================
+   Scrollbars
+   ============================================================ */
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(113, 113, 122, 0.5);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(161, 161, 170, 0.7);
+}
+
+/* ============================================================
+   Focus
+   ============================================================ */
+
+:focus-visible {
+  outline: 1px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   Glass
+   ============================================================ */
+
+.glass {
+  background: rgba(17, 17, 17, 0.72);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  border: 1px solid var(--border);
+}
+
+.glass-modal {
+  background: rgba(9, 9, 9, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+
+  border: 1px solid var(--border-strong);
+}
+
+/* ============================================================
+   Technical Grid
+   ============================================================ */
+
+.kanban-grid {
+  background-image:
+    linear-gradient(
+      rgba(255, 255, 255, 0.025) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.025) 1px,
+      transparent 1px
+    );
+
+  background-size: 32px 32px;
+}
+
+/* ============================================================
+   Dot Grid
+   ============================================================ */
+
+.kanban-dots {
+  background-image:
+    radial-gradient(
+      circle,
+      rgba(255, 255, 255, 0.08) 1px,
+      transparent 1px
+    );
+
+  background-size: 28px 28px;
+}
+
+/* ============================================================
+   Terminal Cursor
+   ============================================================ */
+
+.terminal-cursor {
+  display: inline-block;
+  width: 7px;
+  height: 15px;
+  margin-left: 3px;
+  background: var(--brand);
+
+  animation: terminal-blink 1s steps(1) infinite;
+}
+
+@keyframes terminal-blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+
+  51%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ============================================================
+   Brand Pulse
+   ============================================================ */
+
+.brand-pulse {
+  animation: brand-pulse 2s ease-in-out infinite;
+}
+
+@keyframes brand-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.45;
+  }
 }
