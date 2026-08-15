@@ -25,6 +25,10 @@ export default function RegisterPage() {
 
       navigate("/auth/login", {
         replace: true,
+        state: {
+          registered: true,
+          email,
+        },
       });
     } catch (error: unknown) {
       console.error("Sign up failed:", error);
@@ -54,8 +58,9 @@ export default function RegisterPage() {
             </Link>
           </div>
 
-          {/* Authentication card */}
+          {/* Authentication Card */}
           <div className="border border-neutral-800 bg-[#101010]">
+            {/* Header */}
             <div className="border-b border-neutral-800 px-6 py-5 sm:px-8">
               <p className="mb-2 font-mono text-xs uppercase tracking-[0.2em] text-neutral-600">
                 Authentication
@@ -70,12 +75,25 @@ export default function RegisterPage() {
               </p>
             </div>
 
+            {/* Server Error */}
+            {error && (
+              <div
+                role="alert"
+                aria-live="polite"
+                className="border-b border-rose-500/20 bg-rose-500/5 px-6 py-3 sm:px-8"
+              >
+                <p className="font-mono text-xs leading-5 text-rose-400">
+                  <span className="mr-2 text-rose-500">&gt;</span>
+                  {error}
+                </p>
+              </div>
+            )}
+
             {/* Form */}
             <div className="px-6 py-7 sm:px-8">
               <RegisterForm
                 onSubmit={handleRegister}
                 isSubmitting={isSubmitting}
-                error={error}
               />
             </div>
 
