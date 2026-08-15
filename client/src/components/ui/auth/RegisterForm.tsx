@@ -1,4 +1,9 @@
-import { useState, type FormEvent } from "react";
+import { useState, type FormEventHandler } from "react";
+
+import {
+  registerSchema,
+  type RegisterFormData,
+} from "@/validations/auth.schema";
 
 interface RegisterFormProps {
   onSubmit: (
@@ -6,91 +11,141 @@ interface RegisterFormProps {
     email: string,
     password: string,
   ) => Promise<void>;
-
   isSubmitting?: boolean;
-  error?: string | null;
+}
+
+interface RegisterFormErrors {
+  fullName?: string;
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
 }
 
 export default function RegisterForm({
   onSubmit,
   isSubmitting = false,
-  error = null,
 }: RegisterFormProps) {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [validationError, setValidationError] = useState<string | null>(null);
 
-  const handleSubmit = async (
-    event: FormEvent<HTMLFormElement>,
-  ): Promise<void> => {
-    event.preventDefault();
+  const [errors, setErrors] = useState<RegisterFormErrors>({});
 
-    setValidationError(null);
+  const clearFieldError = (field: keyof RegisterFormErrors) => {
+    setErrors((current) => {
+      if (!current[field]) {
+        return current;
+      }
 
-    const normalizedFullName = fullName.trim();
-    const normalizedEmail = email.trim();
+      const next = { ...current };
 
-    if (!normalizedFullName) {
-      setValidationError("Full name is required.");
-      return;
-    }
+      delete next[field];
 
-    if (!normalizedEmail) {
-      setValidationError("Email is required.");
-      return;
-    }
-
-    if (password.length < 8) {
-      setValidationError("Password must be at least 8 characters.");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setValidationError("Passwords do not match.");
-      return;
-    }
-
-    try {
-      await onSubmit(normalizedFullName, normalizedEmail, password);
-    } catch {
-      // Registration errors are handled by RegisterPage.
-    }
+      return next;
+    });
   };
 
-  const displayedError = validationError ?? error;
+  const handleSubmit: FormEventHandler<HTMLFormElement> = async (event) => {
+    event.preventDefault();
+
+    const formData: RegisterFormData = {
+      fullName,
+      email,
+      password,
+      confirmPassword,
+    };
+
+    const result = registerSchema.safeParse(formData);
+
+    if (!result.success) {
+      const fieldErrors: RegisterFormErrors = {};
+
+      for (const issue of result.error.issues) {
+        const field = issue.path[0];
+
+        if (
+          field === "fullName" ||
+          field === "email" ||
+          field === "password" ||
+          field === "confirmPassword"
+        ) {
+          fieldErrors[field] = issue.message;
+        }
+      }
+
+      setErrors(fieldErrors);
+
+      return;
+    }
+
+    setErrors({});
+
+    const {
+      fullName: validatedFullName,
+      email: validatedEmail,
+      password: validatedPassword,
+    } = result.data;
+
+    await onSubmit(validatedFullName, validatedEmail, validatedPassword);
+  };
 
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-6">
-      {/* Full name */}
+      {/* Full Name */}
       <div className="space-y-2">
         <label
-          htmlFor="register-full-name"
-          className="block font-mono text-xs text-neutral-400"
+          htmlFor="register-fullName"
+          className="block font-mono text-xs text-(--text-secondary)"
         >
           Full Name
         </label>
 
         <input
-          id="register-full-name"
+          id="register-fullName"
           name="fullName"
           type="text"
           autoComplete="name"
           value={fullName}
-          onChange={(event) => setFullName(event.target.value)}
+          onChange={(event) => {
+            setFullName(event.target.value);
+            clearFieldError("fullName");
+          }}
           placeholder="Raj Mishra"
-          required
           disabled={isSubmitting}
-          className="h-11 w-full border border-neutral-700 bg-[#080808] px-3 font-mono text-sm text-neutral-100 outline-none transition-colors placeholder:text-neutral-700 focus:border-rose-500/70 disabled:cursor-not-allowed disabled:opacity-60"
+          aria-invalid={Boolean(errors.fullName)}
+          aria-describedby={
+            errors.fullName ? "register-fullName-error" : undefined
+          }
+          className={`h-11 w-full border bg-(--bg-root) px-3 font-mono text-sm text-(--text-primary) placeholder:text-(--text-muted) transition-colors disabled:cursor-not-allowed disabled:opacity-60 shadow-none!
+          focus:outline-none!
+          focus:ring-0!
+          focus:shadow-none!
+          focus-visible:outline-none!
+          focus-visible:ring-0!
+          focus-visible:shadow-none! ${
+            errors.fullName
+              ? "border-(--danger)"
+              : "border-(--border-strong) focus:border-(--brand)"
+          }`}
         />
+
+        {errors.fullName && (
+          <p
+            id="register-fullName-error"
+            className="font-mono text-xs leading-5 text-(--danger)"
+          >
+            <span className="mr-2">&gt;</span>
+            {errors.fullName}
+          </p>
+        )}
       </div>
 
       {/* Email */}
       <div className="space-y-2">
         <label
           htmlFor="register-email"
-          className="block font-mono text-xs text-neutral-400"
+          className="block font-mono text-xs text-(--text-secondary)"
         >
           Email
         </label>
@@ -101,19 +156,43 @@ export default function RegisterForm({
           type="email"
           autoComplete="email"
           value={email}
-          onChange={(event) => setEmail(event.target.value)}
+          onChange={(event) => {
+            setEmail(event.target.value);
+            clearFieldError("email");
+          }}
           placeholder="you@example.com"
-          required
           disabled={isSubmitting}
-          className="h-11 w-full border border-neutral-700 bg-[#080808] px-3 font-mono text-sm text-neutral-100 outline-none transition-colors placeholder:text-neutral-700 focus:border-rose-500/70 disabled:cursor-not-allowed disabled:opacity-60"
+          aria-invalid={Boolean(errors.email)}
+          aria-describedby={errors.email ? "register-email-error" : undefined}
+          className={`h-11 w-full border bg-(--bg-root) px-3 font-mono text-sm text-(--text-primary) placeholder:text-(--text-muted) transition-colors disabled:cursor-not-allowed disabled:opacity-60 shadow-none!
+          focus:outline-none!
+          focus:ring-0!
+          focus:shadow-none!
+          focus-visible:outline-none!
+          focus-visible:ring-0!
+          focus-visible:shadow-none! ${
+            errors.email
+              ? "border-(--danger)"
+              : "border-(--border-strong) focus:border-(--brand)"
+          }`}
         />
+
+        {errors.email && (
+          <p
+            id="register-email-error"
+            className="font-mono text-xs leading-5 text-(--danger)"
+          >
+            <span className="mr-2">&gt;</span>
+            {errors.email}
+          </p>
+        )}
       </div>
 
       {/* Password */}
       <div className="space-y-2">
         <label
           htmlFor="register-password"
-          className="block font-mono text-xs text-neutral-400"
+          className="block font-mono text-xs text-(--text-secondary)"
         >
           Password
         </label>
@@ -124,20 +203,45 @@ export default function RegisterForm({
           type="password"
           autoComplete="new-password"
           value={password}
-          onChange={(event) => setPassword(event.target.value)}
+          onChange={(event) => {
+            setPassword(event.target.value);
+            clearFieldError("password");
+          }}
           placeholder="••••••••"
-          minLength={8}
-          required
           disabled={isSubmitting}
-          className="h-11 w-full border border-neutral-700 bg-[#080808] px-3 font-mono text-sm text-neutral-100 outline-none transition-colors placeholder:text-neutral-700 focus:border-rose-500/70 disabled:cursor-not-allowed disabled:opacity-60"
+          aria-invalid={Boolean(errors.password)}
+          aria-describedby={
+            errors.password ? "register-password-error" : undefined
+          }
+          className={`h-11 w-full border bg-(--bg-root) px-3 font-mono text-sm text-(--text-primary) placeholder:text-(--text-muted) transition-colors disabled:cursor-not-allowed disabled:opacity-60 shadow-none!
+          focus:outline-none!
+          focus:ring-0!
+          focus:shadow-none!
+          focus-visible:outline-none!
+          focus-visible:ring-0!
+          focus-visible:shadow-none! ${
+            errors.password
+              ? "border-(--danger)"
+              : "border-(--border-strong) focus:border-(--brand)"
+          }`}
         />
+
+        {errors.password && (
+          <p
+            id="register-password-error"
+            className="font-mono text-xs leading-5 text-(--danger)"
+          >
+            <span className="mr-2">&gt;</span>
+            {errors.password}
+          </p>
+        )}
       </div>
 
-      {/* Confirm password */}
+      {/* Confirm Password */}
       <div className="space-y-2">
         <label
           htmlFor="register-confirm-password"
-          className="block font-mono text-xs text-neutral-400"
+          className="block font-mono text-xs text-(--text-secondary)"
         >
           Confirm Password
         </label>
@@ -148,30 +252,66 @@ export default function RegisterForm({
           type="password"
           autoComplete="new-password"
           value={confirmPassword}
-          onChange={(event) => setConfirmPassword(event.target.value)}
+          onChange={(event) => {
+            setConfirmPassword(event.target.value);
+            clearFieldError("confirmPassword");
+          }}
           placeholder="••••••••"
-          minLength={8}
-          required
           disabled={isSubmitting}
-          className="h-11 w-full border border-neutral-700 bg-[#080808] px-3 font-mono text-sm text-neutral-100 outline-none transition-colors placeholder:text-neutral-700 focus:border-rose-500/70 disabled:cursor-not-allowed disabled:opacity-60"
+          aria-invalid={Boolean(errors.confirmPassword)}
+          aria-describedby={
+            errors.confirmPassword
+              ? "register-confirm-password-error"
+              : undefined
+          }
+          className={`h-11 w-full border bg-(--bg-root) px-3 font-mono text-sm text-(--text-primary) placeholder:text-(--text-muted) transition-colors disabled:cursor-not-allowed disabled:opacity-60 shadow-none!
+          focus:outline-none!
+          focus:ring-0!
+          focus:shadow-none!
+          focus-visible:outline-none!
+          focus-visible:ring-0!
+          focus-visible:shadow-none! ${
+            errors.confirmPassword
+              ? "border-(--danger)"
+              : "border-(--border-strong) focus:border-(--brand)"
+          }`}
         />
-      </div>
 
-      {/* Error */}
-      {displayedError && (
-        <div
-          role="alert"
-          className="border border-red-500/30 bg-red-500/5 px-3 py-3 font-mono text-xs text-red-400"
-        >
-          {displayedError}
-        </div>
-      )}
+        {errors.confirmPassword && (
+          <p
+            id="register-confirm-password-error"
+            className="font-mono text-xs leading-5 text-(--danger)"
+          >
+            <span className="mr-2">&gt;</span>
+            {errors.confirmPassword}
+          </p>
+        )}
+      </div>
 
       {/* Submit */}
       <button
         type="submit"
         disabled={isSubmitting}
-        className="flex h-11 w-full items-center justify-center border border-rose-500/80 bg-rose-500/10 px-4 font-mono text-sm text-rose-400 transition-all hover:bg-rose-500/15 hover:text-rose-300 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
+        className="
+          flex h-11 w-full items-center justify-center
+          border border-(--brand)
+          bg-(--brand)/10
+          px-4
+          font-mono text-sm text-(--brand)
+          transition-all
+          hover:bg-(--brand)/15
+          hover:text-(--brand)
+          active:scale-[0.99]
+          disabled:cursor-not-allowed
+          disabled:opacity-50
+          shadow-none!
+          focus:outline-none!
+          focus:ring-0!
+          focus:shadow-none!
+          focus-visible:outline-none!
+          focus-visible:ring-0!
+          focus-visible:shadow-none!
+        "
       >
         {isSubmitting ? "[ Creating account... ]" : "[ Create Account ]"}
       </button>
