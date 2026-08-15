@@ -67,7 +67,10 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
   const setTheme = useCallback((nextTheme: Theme) => {
     setThemeState(nextTheme);
-    localStorage.setItem(STORAGE_KEY, nextTheme);
+
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(STORAGE_KEY, nextTheme);
+    }
   }, []);
 
   useEffect(() => {
