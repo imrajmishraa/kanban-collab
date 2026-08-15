@@ -1,6 +1,7 @@
 import { Navigate, Outlet } from "react-router-dom";
 
 import { useAuth } from "@/app/providers/AuthProvider";
+import AuthLoadingScreen from "@/components/feedback/AuthLoadingScreen";
 
 export default function GuestRoute() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -10,20 +11,7 @@ export default function GuestRoute() {
    * the user's session.
    */
   if (isLoading) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-[#080808] text-neutral-100">
-        <div className="text-center">
-          <p className="font-mono text-xs text-neutral-500">
-            [ Checking authentication... ]
-          </p>
-
-          <span
-            aria-hidden="true"
-            className="mx-auto mt-4 block h-1.5 w-1.5 animate-pulse bg-rose-500"
-          />
-        </div>
-      </main>
-    );
+    return <AuthLoadingScreen message="[ Checking authentication... ]" />;
   }
 
   /**
