@@ -1,12 +1,12 @@
-import type { ApiResponse } from "@/types/api";
+import type { ApiResponse } from "@/types/api/api";
 
 import type {
   RegisterResponse,
   LoginResponse,
   RefreshResponse,
-} from "@/types/auth";
+} from "@/types/api/auth/auth";
 
-import { api } from "./client";
+import { apiClient } from "./client";
 
 export interface RegisterPayload {
   fullName: string;
@@ -27,7 +27,7 @@ interface NestedApiResponse<T> {
 export async function registerRequest(
   payload: RegisterPayload,
 ): Promise<ApiResponse<RegisterResponse>> {
-  const response = await api.post<
+  const response = await apiClient.post<
     ApiResponse<NestedApiResponse<RegisterResponse>>
   >("/auth/register", payload);
 
@@ -40,7 +40,7 @@ export async function registerRequest(
 export async function loginRequest(
   payload: LoginPayload,
 ): Promise<ApiResponse<LoginResponse>> {
-  const response = await api.post<
+  const response = await apiClient.post<
     ApiResponse<NestedApiResponse<LoginResponse>>
   >("/auth/login", payload);
 
@@ -52,7 +52,7 @@ export async function loginRequest(
 
 export async function refreshRequest(): Promise<ApiResponse<RefreshResponse>> {
   const response =
-    await api.post<ApiResponse<NestedApiResponse<RefreshResponse>>>(
+    await apiClient.post<ApiResponse<NestedApiResponse<RefreshResponse>>>(
       "/auth/refresh",
     );
 
@@ -63,5 +63,5 @@ export async function refreshRequest(): Promise<ApiResponse<RefreshResponse>> {
 }
 
 export async function logoutRequest(): Promise<void> {
-  await api.post("/auth/logout");
+  await apiClient.post("/auth/logout");
 }
