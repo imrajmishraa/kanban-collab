@@ -1,43 +1,7 @@
+import React from "react";
 import { Link } from "react-router-dom";
 
-interface BoardColumnProps {
-  title: string;
-  count: string;
-  cards: string[];
-}
-
-function BoardColumn({ title, count, cards }: BoardColumnProps) {
-  return (
-    <div className="min-h-56 bg-[#0c0c0e] p-4 sm:min-h-64">
-      <div className="mb-5 flex items-center justify-between">
-        <span className="font-mono text-xs font-semibold uppercase tracking-wider text-neutral-400">
-          {title}
-        </span>
-
-        <span className="font-mono text-[10px] text-neutral-600">{count}</span>
-      </div>
-
-      <div className="space-y-2">
-        {cards.map((card) => (
-          <div
-            key={card}
-            className="border border-neutral-800 bg-[#101012] px-3 py-3 transition-colors hover:border-neutral-700"
-          >
-            <p className="text-xs text-neutral-300">{card}</p>
-
-            <div className="mt-3 flex items-center justify-between">
-              <span className="h-px w-10 bg-neutral-800" />
-
-              <span className="font-mono text-[9px] text-neutral-700">
-                CARD
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+import { BoardColumn } from "@components/ui/marketing/features/BoardColumn";
 
 export default function FeaturesHero() {
   return (
@@ -71,50 +35,20 @@ export default function FeaturesHero() {
         <div className="mt-9 flex flex-col items-center gap-3 sm:flex-row">
           <Link
             to="/auth/register"
-            className="inline-flex
-                min-w-36
-                items-center
-                justify-center
-                border
-                border-rose-500/80
-                bg-rose-500/10
-                px-5
-                py-2.5
-                font-mono
-                text-sm
-                text-rose-400
-                transition-all
-                duration-200
-                hover:bg-rose-500/20
-                hover:text-rose-300
-                active:scale-[0.98]"
+            className="inline-flex min-w-36 items-center justify-center border border-rose-500/80 bg-rose-500/10 px-5 py-2.5 font-mono text-sm text-rose-400 transition-all duration-200 hover:bg-rose-500/20 hover:text-rose-300 active:scale-[0.98]"
           >
             [ Get Started ]
           </Link>
 
           <a
             href="#core-features"
-            className="inline-flex
-                min-w-36
-                items-center
-                justify-center
-                border
-                border-neutral-700
-                px-5
-                py-2.5
-                font-mono
-                text-sm
-                text-neutral-400
-                transition-all
-                duration-200
-                hover:border-neutral-500
-                hover:text-neutral-100"
+            className="inline-flex min-w-36 items-center justify-center border border-neutral-700 px-5 py-2.5 font-mono text-sm text-neutral-400 transition-all duration-200 hover:border-neutral-500 hover:text-neutral-100"
           >
             [ Explore Features ]
           </a>
         </div>
 
-        {/* Product preview */}
+        {/* Product Preview */}
         <div className="mt-20 w-full max-w-5xl">
           <div className="border border-neutral-800 bg-[#0c0c0e]">
             {/* Browser chrome */}
