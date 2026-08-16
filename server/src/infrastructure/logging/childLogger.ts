@@ -12,6 +12,10 @@ export const workspaceJobSchedulerLogger = schedulerLogger.child({
   job: "workspace",
 });
 
+export const dashboardControllerLogger = httpLogger.child({
+  controller: "dashboard",
+});
+
 export const boardControllerLogger = httpLogger.child({
   controller: "board",
 });
