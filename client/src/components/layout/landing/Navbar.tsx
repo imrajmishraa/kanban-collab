@@ -331,8 +331,8 @@ export default function Navbar({ onNavigate, activeHref = "" }: NavbarProps) {
             {/* Login — only visible when logged out */}
             {!isAuthenticated && (
               <a
-                href="/auth/sign-in"
-                onClick={(event) => handleNavClick(event, "/auth/sign-in")}
+                href="/auth/login"
+                onClick={(event) => handleNavClick(event, "/auth/login")}
                 className={`text-xs transition-colors ${
                   currentPath === "/auth/sign-in"
                     ? "font-bold text-rose-400"
