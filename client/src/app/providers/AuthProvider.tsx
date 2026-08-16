@@ -21,7 +21,7 @@ import {
   setAccessToken,
 } from "@/stores/useAuthStore";
 
-import type { AuthStatus, AuthUser } from "@/types/auth";
+import type { AuthStatus, AuthUser } from "@/types/api/auth/auth";
 
 interface AuthContextValue {
   status: AuthStatus;
