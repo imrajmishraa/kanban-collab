@@ -1,13 +1,29 @@
+import { useState } from "react";
 import { Outlet } from "react-router-dom";
 
-import Sidebar from "@/components/layout/workspace/Sidebar";
+import DashboardSidebar from "#components/layout/dashboard/DashboardSidebar";
 
 export default function AppLayout() {
-  return (
-    <div className="flex min-h-screen bg-(--bg-root) text-(--text-primary)">
-      <Sidebar />
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-      <main className="min-w-0 flex-1">
+  const handleSidebarToggle = () => {
+    setSidebarCollapsed((previous) => !previous);
+  };
+
+  return (
+    <div className="min-h-screen bg-(--bg-root) text-(--text-primary)">
+      <DashboardSidebar
+        collapsed={sidebarCollapsed}
+        onToggle={handleSidebarToggle}
+      />
+
+      <main
+        className={[
+          "min-h-screen overflow-y-auto",
+          "transition-[margin-left] duration-200 ease-out",
+          sidebarCollapsed ? "ml-18" : "ml-64",
+        ].join(" ")}
+      >
         <Outlet />
       </main>
     </div>
