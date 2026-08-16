@@ -8,6 +8,7 @@ import cookieParser from "cookie-parser";
 import healthzRoute from "./routes/healthz/healthz.route";
 import authRoute from "./routes/auth/auth.route";
 import kanbanRoute from "./routes/kanban/kanban.routes";
+import dashboardRoutes from "./routes/dashboard/dashboard";
 
 import { logger } from "../../infrastructure/logging/logger";
 import { errorHandler } from "./middleware/errorHandler";
@@ -137,6 +138,10 @@ app.use("/api/v1", healthzRoute);
 app.use("/api/v1/auth", authRoute);
 
 app.use("/api/v1", kanbanRoute);
+
+app.use("/api/v1", dashboardRoutes);
+
+
 
 // =======================================
 // 404 Handler
