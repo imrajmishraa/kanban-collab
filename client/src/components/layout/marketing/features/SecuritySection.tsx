@@ -1,4 +1,6 @@
-import React from 'react'
+import React from 'react';
+import { SecurityPoint } from '@components/ui/marketing/features/SecurityPoint';
+import { SecurityStatus } from '@components/ui/marketing/features/SecurityStatus';
 
 export default function SecuritySection() {
   return (
@@ -123,68 +125,5 @@ export default function SecuritySection() {
         </div>
       </div>
     </section>
-  );
-}
-
-interface SecurityStatusProps {
-  label: string;
-  value: string;
-  status: "ok" | "warning";
-}
-
-function SecurityStatus({ label, value, status }: SecurityStatusProps) {
-  return (
-    <div className="flex items-center justify-between border-b border-neutral-800 px-4 py-4 last:border-b-0">
-      <div className="flex items-center gap-3">
-        <span
-          aria-hidden="true"
-          className={
-            status === "ok"
-              ? "h-1.5 w-1.5 rounded-full bg-emerald-500"
-              : "h-1.5 w-1.5 rounded-full bg-yellow-500"
-          }
-        />
-
-        <span className="font-mono text-xs text-neutral-400">{label}</span>
-      </div>
-
-      <span
-        className={
-          status === "ok"
-            ? "font-mono text-[10px] uppercase tracking-wider text-emerald-600"
-            : "font-mono text-[10px] uppercase tracking-wider text-yellow-600"
-        }
-      >
-        {value}
-      </span>
-    </div>
-  );
-}
-
-interface SecurityPointProps {
-  title: string;
-  description: string;
-}
-
-function SecurityPoint({ title, description }: SecurityPointProps) {
-  return (
-    <div className="border-b border-neutral-800 py-5 last:border-b-0">
-      <div className="flex items-start gap-3">
-        <span
-          aria-hidden="true"
-          className="mt-1.5 h-1.5 w-1.5 shrink-0 bg-rose-500"
-        />
-
-        <div>
-          <h3 className="font-mono text-xs font-semibold text-neutral-300">
-            {title}
-          </h3>
-
-          <p className="mt-2 max-w-lg text-xs leading-6 text-neutral-600">
-            {description}
-          </p>
-        </div>
-      </div>
-    </div>
   );
 }
