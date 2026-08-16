@@ -16,7 +16,7 @@ import LoginPage from "@/features/auth/pages/LoginPage";
 import RegisterPage from "@/features/auth/pages/RegisterPage";
 
 import { BoardPage } from "@/features/boards/pages/BoardPage";
-import { DashboardPage } from "@/features/workspaces/pages/DashboardPage";
+import DashboardPage from "@/features/dashboard/pages/DashboardPage";
 import { WorkspacePage } from "@/features/workspaces/pages/WorkspacePage";
 
 import ProfilePage from "@/components/layout/user/Profile";
