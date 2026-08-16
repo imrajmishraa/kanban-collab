@@ -1,5 +1,5 @@
-import FeatureCard from "#components/ui/marketing/features/FeatureCard";
-import FeatureIcon from "#components/ui/marketing/features/FeatureIcon";
+import FeatureCard from "@components/ui/marketing/features/FeatureCard";
+import FeatureIcon from "@components/ui/marketing/features/FeatureIcon";
 
 export default function CoreFeaturesSection() {
   return (
