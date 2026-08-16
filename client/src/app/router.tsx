@@ -8,8 +8,8 @@ import AppLayout from "./layouts/AppLayout";
 
 import NotFoundPage from "@/components/feedback/NotFoundPage";
 
-import FeaturesPage from "@/features/landing/FeaturesPage";
-import HowItWorksPage from "@/features/landing/HowItWorksPage";
+import FeaturesPage from "@/features/marketing/pages/FeaturesPage";
+import HowItWorksPage from "@/features/marketing/pages/HowItWorksPage";
 import LandingPage from "@/features/landing/LandingPage";
 
 import LoginPage from "@/features/auth/pages/LoginPage";
