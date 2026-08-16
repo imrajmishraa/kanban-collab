@@ -4,7 +4,7 @@ import { getAccessToken } from "@/stores/useAuthStore";
 
 import type { ApiErrorResponse } from "./apiError";
 
-export const api = axios.create({
+export const apiClient = axios.create({
   baseURL: "/api/v1",
   withCredentials: true,
   headers: {
@@ -15,7 +15,7 @@ export const api = axios.create({
 /**
  * Attach the current access token to outgoing requests.
  */
-api.interceptors.request.use((config) => {
+apiClient.interceptors.request.use((config) => {
   const accessToken = getAccessToken();
 
   if (accessToken) {
@@ -31,7 +31,7 @@ api.interceptors.request.use((config) => {
  * This prevents UI components from receiving Axios'
  * generic "Request failed with status code XXX" message.
  */
-api.interceptors.response.use(
+apiClient.interceptors.response.use(
   (response: AxiosResponse) => response,
 
   (error: unknown) => {
