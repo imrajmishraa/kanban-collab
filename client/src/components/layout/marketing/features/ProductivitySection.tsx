@@ -1,4 +1,6 @@
-import React from 'react'
+import React from 'react';
+import { ProductivityPoint } from '@components/ui/marketing/features/ProductivityPoint';
+import { ProductivityTask } from '@components/ui/marketing/features/ProductivityTask';
 
 export default function ProductivitySection() {
   return (
@@ -137,72 +139,6 @@ export default function ProductivitySection() {
   );
 }
 
-interface ProductivityPointProps {
-  number: string;
-  title: string;
-  description: string;
-}
 
-function ProductivityPoint({
-  number,
-  title,
-  description,
-}: ProductivityPointProps) {
-  return (
-    <div className="grid grid-cols-[32px_1fr] gap-4 border-b border-neutral-800 py-5 last:border-b-0">
-      <span className="font-mono text-[10px] text-neutral-700">{number}</span>
 
-      <div>
-        <h3 className="font-mono text-xs font-semibold text-neutral-300">
-          {title}
-        </h3>
 
-        <p className="mt-2 text-xs leading-6 text-neutral-600">{description}</p>
-      </div>
-    </div>
-  );
-}
-
-interface ProductivityTaskProps {
-  title: string;
-  status: string;
-  priority: "HIGH" | "MEDIUM" | "LOW";
-  due: string;
-}
-
-function ProductivityTask({
-  title,
-  status,
-  priority,
-  due,
-}: ProductivityTaskProps) {
-  return (
-    <div className="grid gap-3 border-b border-neutral-800 px-4 py-4 sm:grid-cols-[1fr_auto] sm:items-center">
-      <div className="min-w-0">
-        <div className="flex items-center gap-2">
-          <span aria-hidden="true" className="h-1.5 w-1.5 bg-neutral-700" />
-
-          <p className="truncate text-xs text-neutral-300">{title}</p>
-        </div>
-
-        <div className="mt-2 flex items-center gap-3">
-          <span className="font-mono text-[9px] uppercase tracking-wider text-neutral-700">
-            {status}
-          </span>
-
-          <span
-            className={
-              priority === "HIGH"
-                ? "font-mono text-[9px] uppercase tracking-wider text-rose-500"
-                : "font-mono text-[9px] uppercase tracking-wider text-neutral-700"
-            }
-          >
-            {priority}
-          </span>
-        </div>
-      </div>
-
-      <span className="font-mono text-[10px] text-neutral-600">{due}</span>
-    </div>
-  );
-}
