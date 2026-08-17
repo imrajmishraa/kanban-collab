@@ -1,21 +1,16 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
 
-import DashboardSidebar from "#components/layout/dashboard/DashboardSidebar";
+import DashboardSidebar from "@components/layout/dashboard/sidebar/DashboardSidebar";
+import { useSidebarState } from "@/hooks/dashboard/useSidebarState";
 
 export default function AppLayout() {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-
-  const handleSidebarToggle = () => {
-    setSidebarCollapsed((previous) => !previous);
-  };
+  const { collapsed: sidebarCollapsed, toggle: toggleSidebar } =
+    useSidebarState();
 
   return (
     <div className="min-h-screen bg-(--bg-root) text-(--text-primary)">
-      <DashboardSidebar
-        collapsed={sidebarCollapsed}
-        onToggle={handleSidebarToggle}
-      />
+      <DashboardSidebar collapsed={sidebarCollapsed} onToggle={toggleSidebar} />
 
       <main
         className={[
