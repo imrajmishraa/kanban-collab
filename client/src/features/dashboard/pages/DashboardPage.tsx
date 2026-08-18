@@ -1,31 +1,38 @@
-import DashboardHeader from "#components/layout/dashboard/main/DashboardHeader";
-import DashboardOverview from "#components/layout/dashboard/main/DashboardOverview";
-import ActivitySection from "#components/layout/dashboard/main/ActivitySection";
-import RecentBoardsSection from "#components/layout/dashboard/main/RecentBoardsSection";
-import WorkspaceSection from "#components/layout/dashboard/main/WorkspaceSection";
+import DashboardHeader from "@components/layout/dashboard/main/DashboardHeader";
+import DashboardOverview from "@components/layout/dashboard/main/DashboardOverview";
+import ActivitySection from "@components/layout/dashboard/main/ActivitySection";
+import RecentBoardsSection from "@components/layout/dashboard/main/RecentBoardsSection";
+import WorkspaceSection from "@components/layout/dashboard/main/WorkspaceSection";
+
+import DashboardError from "@components/layout/dashboard/main/DashboardError";
+
+import DashboardSkeleton from "@components/ui/dashboard/skeletons/DashboardSkeleton";
 
 import { useDashboard } from "@/hooks/dashboard/useDashboard";
 
 export default function DashboardPage() {
-  const { data: dashboard, isLoading, isError } = useDashboard();
+  const {
+    data: dashboard,
+    isLoading,
+    isError,
+    isFetching,
+    refetch,
+  } = useDashboard();
 
   return (
     <div className="min-h-screen bg-(--bg-root) text-(--text-primary)">
       <div className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-6 lg:px-8">
         <DashboardHeader />
 
-        {isLoading && (
-          <div className="flex min-h-[40vh] items-center justify-center">
-            <p className="font-mono text-sm text-neutral-500">Loading...</p>
-          </div>
-        )}
+        {isLoading && <DashboardSkeleton />}
 
         {isError && !isLoading && (
-          <div className="flex min-h-[40vh] items-center justify-center">
-            <p className="font-mono text-sm text-red-400">
-              Unable to load dashboard data.
-            </p>
-          </div>
+          <DashboardError
+            onRetry={() => {
+              void refetch();
+            }}
+            isRetrying={isFetching}
+          />
         )}
 
         {!isLoading && !isError && dashboard && (
