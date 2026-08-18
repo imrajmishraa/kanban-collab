@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Outlet } from "react-router-dom";
 
 import DashboardSidebar from "@components/layout/dashboard/sidebar/DashboardSidebar";
@@ -16,7 +15,8 @@ export default function AppLayout() {
         className={[
           "min-h-screen overflow-y-auto",
           "transition-[margin-left] duration-200 ease-out",
-          sidebarCollapsed ? "ml-18" : "ml-64",
+          "ml-0",
+          sidebarCollapsed ? "md:ml-18" : "md:ml-64",
         ].join(" ")}
       >
         <Outlet />
