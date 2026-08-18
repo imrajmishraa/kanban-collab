@@ -52,6 +52,7 @@ export default function MobileSidebar({
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
           <SidebarWorkspace
             collapsed={false}
+            mobile
             workspaces={workspaces}
             activeWorkspaceId={activeWorkspaceId}
             onWorkspaceChange={(workspaceId) => {
@@ -61,7 +62,6 @@ export default function MobileSidebar({
             isLoading={isWorkspacesLoading}
             isError={isWorkspacesError}
           />
-
           <SidebarNavigation collapsed={false} />
 
           <SidebarBoards
