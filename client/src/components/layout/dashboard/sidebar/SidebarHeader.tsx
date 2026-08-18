@@ -1,4 +1,4 @@
-import { PanelLeftClose, Search } from "lucide-react";
+import { PanelLeftClose, PanelLeftOpen, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface SidebarHeaderProps {
@@ -24,9 +24,19 @@ const SidebarHeader = ({
         }}
         aria-label="Expand sidebar"
         title="Expand sidebar"
-        className="flex h-14 w-full cursor-e-resize items-center justify-center border-b border-neutral-800"
+        className="group flex h-14 w-full cursor-e-resize items-center justify-center border-b border-neutral-800"
       >
-        <span className="font-extrabold text-rose-500">&gt;</span>
+        {/* Brand */}
+        <span className="font-mono font-extrabold text-rose-500 transition-opacity duration-150 group-hover:opacity-0">
+          &gt;
+        </span>
+
+        {/* Expand icon */}
+        <PanelLeftOpen
+          size={18}
+          strokeWidth={1.8}
+          className="absolute text-neutral-400 opacity-0 transition-all duration-150 group-hover:opacity-100 group-hover:text-neutral-100"
+        />
       </button>
     );
   }
