@@ -5,6 +5,8 @@ import type { Workspace } from "@/types/api/dashboard/workspace";
 
 interface SidebarWorkspaceProps {
   collapsed: boolean;
+  mobile?: boolean;
+
   workspaces: Workspace[];
   activeWorkspaceId: string | null;
   onWorkspaceChange: (workspaceId: string) => void;
@@ -14,6 +16,7 @@ interface SidebarWorkspaceProps {
 
 const SidebarWorkspace = ({
   collapsed,
+  mobile = false,
   workspaces,
   activeWorkspaceId,
   onWorkspaceChange,
@@ -76,17 +79,27 @@ const SidebarWorkspace = ({
   }, [collapsed]);
 
   /*
+   * Close dropdown when switching into mobile drawer state.
+   */
+  useEffect(() => {
+    if (mobile) {
+      setIsWorkspaceHovered(false);
+    }
+  }, [mobile]);
+
+  /*
    * Select workspace.
    */
   const handleWorkspaceChange = (workspaceId: string) => {
     onWorkspaceChange(workspaceId);
     setIsOpen(false);
+    setIsWorkspaceHovered(false);
   };
 
   /*
-   * Collapsed sidebar.
+   * Collapsed desktop sidebar.
    *
-   * Hovering the workspace icon reveals a workspace flyout.
+   * Hovering the workspace icon reveals the workspace flyout.
    */
   if (collapsed) {
     return (
@@ -177,8 +190,7 @@ const SidebarWorkspace = ({
                         type="button"
                         onClick={(event) => {
                           event.stopPropagation();
-                          onWorkspaceChange(workspace.id);
-                          setIsWorkspaceHovered(false);
+                          handleWorkspaceChange(workspace.id);
                         }}
                         className={[
                           "flex w-full cursor-pointer items-center gap-2",
@@ -190,22 +202,18 @@ const SidebarWorkspace = ({
                             : "text-neutral-500 hover:bg-white/3 hover:text-neutral-300",
                         ].join(" ")}
                       >
-                        {/* Active indicator */}
                         <span className="flex size-4 shrink-0 items-center justify-center">
                           {isActive && (
                             <Check className="size-3 text-rose-500" />
                           )}
                         </span>
 
-                        {/* Workspace icon */}
                         <Briefcase className="size-3.5 shrink-0 text-neutral-600" />
 
-                        {/* Workspace name */}
                         <span className="min-w-0 flex-1 truncate">
                           {workspace.name}
                         </span>
 
-                        {/* Pending status */}
                         {workspace.status === "deletion_pending" && (
                           <span className="font-mono text-[9px] uppercase tracking-wider text-amber-500">
                             Pending
@@ -298,8 +306,16 @@ const SidebarWorkspace = ({
       <div
         ref={dropdownRef}
         className="relative"
-        onMouseEnter={() => setIsOpen(true)}
-        onMouseLeave={() => setIsOpen(false)}
+        onMouseEnter={() => {
+          if (!mobile) {
+            setIsOpen(true);
+          }
+        }}
+        onMouseLeave={() => {
+          if (!mobile) {
+            setIsOpen(false);
+          }
+        }}
       >
         {/* Workspace trigger */}
         <button
@@ -309,6 +325,16 @@ const SidebarWorkspace = ({
           aria-expanded={isOpen}
           onClick={(event) => {
             event.stopPropagation();
+
+            /*
+             * Mobile:
+             * click toggles the workspace list.
+             *
+             * Desktop:
+             * click also toggles the list, while hover
+             * continues to provide the desktop interaction.
+             */
+            setIsOpen((previous) => !previous);
           }}
           className={[
             "group flex h-9 w-full cursor-pointer items-center gap-2 px-2",
@@ -341,7 +367,7 @@ const SidebarWorkspace = ({
           </span>
         </button>
 
-        {/* Workspace flyout */}
+        {/* Workspace list */}
         {isOpen && (
           <div
             role="listbox"
@@ -373,9 +399,7 @@ const SidebarWorkspace = ({
                     aria-selected={isActive}
                     onClick={(event) => {
                       event.stopPropagation();
-
-                      onWorkspaceChange(workspace.id);
-                      setIsOpen(false);
+                      handleWorkspaceChange(workspace.id);
                     }}
                     className={[
                       "flex w-full cursor-pointer items-center gap-2",
@@ -387,20 +411,16 @@ const SidebarWorkspace = ({
                         : "text-neutral-500 hover:bg-white/3 hover:text-neutral-300",
                     ].join(" ")}
                   >
-                    {/* Active indicator */}
                     <span className="flex size-4 shrink-0 items-center justify-center">
                       {isActive && <Check className="size-3 text-rose-500" />}
                     </span>
 
-                    {/* Workspace icon */}
                     <Briefcase className="size-3.5 shrink-0 text-neutral-600" />
 
-                    {/* Workspace name */}
                     <span className="min-w-0 flex-1 truncate">
                       {workspace.name}
                     </span>
 
-                    {/* Pending status */}
                     {workspace.status === "deletion_pending" && (
                       <span className="font-mono text-[9px] uppercase tracking-wider text-amber-500">
                         Pending
