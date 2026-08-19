@@ -48,7 +48,7 @@ const SidebarBoards = ({
                   <SidebarItem
                     key={board.id}
                     label={board.name}
-                    href={`/boards/${board.id}`}
+                    href={`/board/${board.id}`}
                     icon={<FolderKanban className="size-4" />}
                     collapsed={collapsed}
                   />
