@@ -52,9 +52,9 @@ export function AppRouter() {
 
           <Route path="/workspace/:workspaceId" element={<WorkspacePage />} />
 
-          <Route path="/boards" element={<MainBoard />} />
+          <Route path="/boards" element={<BoardPage />} />
 
-          <Route path="/boards/:boardId" element={<BoardPage />} />
+          <Route path="/board/:boardId" element={<MainBoard />} />
         </Route>
       </Route>
 
