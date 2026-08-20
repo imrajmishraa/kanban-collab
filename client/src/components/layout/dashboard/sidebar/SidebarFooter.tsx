@@ -72,7 +72,7 @@ const SidebarFooter = ({ collapsed, user, onLogout }: SidebarFooterProps) => {
               event.stopPropagation();
               void onLogout();
             }}
-            className="flex size-9 items-center justify-center text-neutral-600 transition-colors hover:bg-white/3 hover:text-red-400"
+            className="flex size-9 items-center justify-center text-neutral-600 transition-colors hover:bg-white/3 hover:text-red-400 cursor-pointer"
           >
             <LogOut className="size-4" />
           </button>
