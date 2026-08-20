@@ -4,9 +4,10 @@ import BoardColumn from "./BoardColumn";
 
 interface BoardColumnsProps {
   board: BoardDetails;
+  onAddCard?: (columnId: string) => void;
 }
 
-export default function BoardColumns({ board }: BoardColumnsProps) {
+export default function BoardColumns({ board, onAddCard }: BoardColumnsProps) {
   const columns = [...board.columns].sort(
     (a, b) => a.orderIndex - b.orderIndex,
   );
@@ -23,6 +24,7 @@ export default function BoardColumns({ board }: BoardColumnsProps) {
             id={column.id}
             title={column.name}
             cards={column.cards}
+            onAddCard={onAddCard}
           />
         ))}
       </div>

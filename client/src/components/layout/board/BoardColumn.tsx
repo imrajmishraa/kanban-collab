@@ -8,12 +8,14 @@ interface BoardColumnProps {
   id: string;
   title: string;
   cards: BoardCardType[];
+  onAddCard?: (columnId: string) => void;
 }
 
 export default function BoardColumn({
-  id: _id,
+  id,
   title,
   cards,
+  onAddCard,
 }: BoardColumnProps) {
   const sortedCards = [...cards].sort((a, b) => a.orderIndex - b.orderIndex);
 
@@ -46,9 +48,18 @@ export default function BoardColumn({
       {/* Cards */}
       <div className="min-h-0 flex-1 overflow-y-auto p-3">
         <div className="flex min-h-full flex-col gap-2">
-          {sortedCards.map((card) => (
-            <BoardCard key={card.id} card={card} />
-          ))}
+          {sortedCards.length > 0 ? (
+            sortedCards.map((card) => <BoardCard key={card.id} card={card} />)
+          ) : (
+            <div
+              className="flex min-h-24 flex-1 items-center justify-center border border-dashed border-neutral-800"
+              aria-label={`No cards in ${title}`}
+            >
+              <p className="font-mono text-[10px] uppercase tracking-wide text-neutral-700">
+                No cards yet
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -56,6 +67,7 @@ export default function BoardColumn({
       <footer className="border-t border-neutral-800 p-2">
         <button
           type="button"
+          onClick={() => onAddCard?.(id)}
           className="flex w-full items-center gap-2 px-2 py-2 font-mono text-xs text-neutral-600 transition hover:bg-neutral-900 hover:text-neutral-300"
         >
           <Plus size={14} />
