@@ -1,0 +1,23 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 20
+      arrivalRate: 5
+      rampTo: 15
+  defaults:
+    headers:
+      Content-Type: "application/json"
+
+scenarios:
+  - name: "Login Only Load Test"
+    flow:
+      - post:
+          url: "/api/v1/auth/login"
+          json:
+            email: "raj212558@gmail.com"          # ✅ Fixed existing user
+            password: "Imrajmishraa@2005"
+          capture:
+            - json: "$.data.data.accessToken"
+              as: "accessToken"
+          ensure:
+            status: 200

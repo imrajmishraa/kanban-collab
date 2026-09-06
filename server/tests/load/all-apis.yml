@@ -1,0 +1,119 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 30
+      arrivalRate: 3
+      rampTo: 10
+      name: "Mixed CRUD load"
+  processor: "./helpers.js"
+  defaults:
+    headers:
+      Content-Type: "application/json"
+
+scenarios:
+  - name: "Full Kanban Lifecycle"
+    flow:
+      # 1. LOGIN
+      - post:
+          url: "/api/v1/auth/login"
+          json:
+            email: "raj212558@gmail.com"
+            password: "Imrajmishraa@2005"
+          capture:
+            - json: "$.data.data.accessToken"
+              as: "authToken"
+          ensure:
+            status: 200
+
+      # 2. LIST WORKSPACES → get first workspace ID
+      - get:
+          url: "/api/v1/workspaces"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          capture:
+            - json: "$.data.data[0]._id"
+              as: "workspaceId"
+          ensure:
+            status: 200
+
+      # 3. CREATE A BOARD
+      - function: "generateBoardName"
+      - post:
+          url: "/api/v1/boards"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            name: "{{ boardName }}"
+            description: "Artillery test board"
+            workspaceId: "{{ workspaceId }}"
+          capture:
+            - json: "$.data.data._id"
+              as: "boardId"
+          ensure:
+            status: 201
+
+      # 4. GET BOARD DETAILS (HEAVY)
+      - get:
+          url: "/api/v1/boards/{{ boardId }}"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          ensure:
+            status: 200
+
+      # 5. CREATE A COLUMN
+      - function: "generateColumnName"
+      - post:
+          url: "/api/v1/columns"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            title: "{{ columnName }}"
+            boardId: "{{ boardId }}"
+          capture:
+            - json: "$.data.data._id"
+              as: "columnId"
+          ensure:
+            status: 201
+
+      # 6. CREATE A CARD
+      - function: "generateCardTitle"
+      - post:
+          url: "/api/v1/cards"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            title: "{{ cardTitle }}"
+            description: "Artillery test card"
+            columnId: "{{ columnId }}"
+          capture:
+            - json: "$.data.data._id"
+              as: "cardId"
+          ensure:
+            status: 201
+
+      # 7. MOVE THE CARD (or update)
+      - patch:
+          url: "/api/v1/cards/{{ cardId }}/move"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            targetColumnId: "{{ columnId }}"
+            position: 0
+          ensure:
+            status: 200
+
+      # 8. DELETE THE CARD (cleanup)
+      - delete:
+          url: "/api/v1/cards/{{ cardId }}"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          ensure:
+            status: 204
+
+      # 9. DELETE THE BOARD (cascade cleanup)
+      - delete:
+          url: "/api/v1/boards/{{ boardId }}"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          ensure:
+            status: 204

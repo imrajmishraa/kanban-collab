@@ -1,0 +1,32 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 10
+      arrivalRate: 2
+  defaults:
+    headers:
+      Content-Type: "application/json"
+
+scenarios:
+  - name: "Cache Hit Test"
+    flow:
+      - post:
+          url: "/api/v1/auth/login"
+          json:
+            email: "raj212558@gmail.com"
+            password: "Imrajmishraa@2005"
+          capture:
+            - json: "$.data.data.accessToken"
+              as: "authToken"
+          ensure:
+            status: 200
+
+      # Use a fixed board ID (replace with a real one from your DB)
+      - loop:
+          - get:
+              url: "/api/v1/boards/6a9a62e971b9d29b55e0dde2"
+              headers:
+                Authorization: "Bearer {{ authToken }}"
+              ensure:
+                status: 200
+        count: 10

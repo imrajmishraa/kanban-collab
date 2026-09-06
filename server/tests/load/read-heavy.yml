@@ -1,0 +1,35 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 30
+      arrivalRate: 10
+      rampTo: 25
+      name: "Read Storm"
+  processor: "./helpers.js"
+  defaults:
+    headers:
+      Content-Type: "application/json"
+
+scenarios:
+  - name: "Read Only - GET /boards/:boardId"
+    flow:
+      - post:
+          url: "/api/v1/auth/login"
+          json:
+            email: "raj212558@gmail.com"
+            password: "Imrajmishraa@2005"
+          capture:
+            - json: "$.data.data.accessToken"
+              as: "authToken"
+          ensure:
+            status: 200
+
+      # No board creation – use a fixed boardId (replace with your actual boardId)
+      - loop:
+          - get:
+              url: "/api/v1/boards/67f8a1b2c3d4e5f6a7b8c9d0"   # ← replace with real ID
+              headers:
+                Authorization: "Bearer {{ authToken }}"
+              ensure:
+                status: 200
+        count: 10
