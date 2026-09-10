@@ -1,11 +1,12 @@
 import {
-  Filter,
-  Plus,
-  Search,
-  SlidersHorizontal,
-  Users,
-  X,
-} from "lucide-react";
+  Add01Icon,
+  FilterIcon,
+  Search01Icon,
+  SlidersHorizontalIcon,
+  UserGroupIcon,
+  Cancel01Icon,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { useState } from "react";
 
 interface BoardToolbarProps {
@@ -38,20 +39,27 @@ export default function BoardToolbar({
   };
 
   return (
-    <div className="border-b border-neutral-800 bg-[#080808] px-4 py-3 md:px-6">
+    <div className="border-b border-(--border) bg-(--bg-surface) px-4 py-3 md:px-6">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         {/* Search */}
         <div className="flex min-w-0 flex-1 items-center gap-2">
-          <div className="flex h-9 w-full max-w-md items-center border border-neutral-800 bg-[#0b0b0b] transition focus-within:border-neutral-700">
-            <Search size={14} className="ml-3 shrink-0 text-neutral-600" />
+          <div className="flex h-9 w-full max-w-md items-center border border-(--border) bg-(--surface-elevated) transition focus-within:border-(--brand)">
+            <HugeiconsIcon
+              icon={Search01Icon}
+              size={14}
+              strokeWidth={1.5}
+              className="ml-3 shrink-0 text-(--text-muted)"
+            />
 
             <input
               type="search"
               value={search}
-              onChange={(event) => handleSearchChange(event.target.value)}
+              onChange={(event) =>
+                handleSearchChange(event.target.value)
+              }
               placeholder="Search cards..."
               aria-label="Search cards"
-              className="min-w-0 flex-1 bg-transparent px-2 font-mono text-xs text-neutral-200 outline-none placeholder:text-neutral-600"
+              className="min-w-0 flex-1 bg-transparent px-2 font-mono text-xs text-(--text-primary) outline-none placeholder:text-(--text-muted)"
             />
 
             {search && (
@@ -59,9 +67,13 @@ export default function BoardToolbar({
                 type="button"
                 onClick={clearSearch}
                 aria-label="Clear search"
-                className="mr-1 flex h-7 w-7 items-center justify-center text-neutral-600 transition hover:text-neutral-300"
+                className="mr-1 flex h-7 w-7 items-center justify-center text-(--text-muted) transition hover:text-(--text-primary)"
               >
-                <X size={13} />
+                <HugeiconsIcon
+                  icon={Cancel01Icon}
+                  size={13}
+                  strokeWidth={1.5}
+                />
               </button>
             )}
           </div>
@@ -70,10 +82,13 @@ export default function BoardToolbar({
           <button
             type="button"
             onClick={onFilter}
-            className="flex h-9 shrink-0 items-center gap-2 border border-neutral-800 px-3 font-mono text-xs text-neutral-500 transition hover:border-neutral-700 hover:text-neutral-200"
+            className="flex h-9 shrink-0 items-center gap-2 border border-(--border) px-3 font-mono text-xs text-(--text-secondary) transition hover:border-(--brand) hover:bg-(--brand-muted) hover:text-(--text-primary)"
           >
-            <Filter size={14} />
-
+            <HugeiconsIcon
+              icon={FilterIcon}
+              size={14}
+              strokeWidth={1.5}
+            />
             <span className="hidden sm:inline">Filter</span>
           </button>
 
@@ -81,10 +96,13 @@ export default function BoardToolbar({
           <button
             type="button"
             onClick={onMembers}
-            className="flex h-9 shrink-0 items-center gap-2 border border-neutral-800 px-3 font-mono text-xs text-neutral-500 transition hover:border-neutral-700 hover:text-neutral-200"
+            className="flex h-9 shrink-0 items-center gap-2 border border-(--border) px-3 font-mono text-xs text-(--text-secondary) transition hover:border-(--brand) hover:bg-(--brand-muted) hover:text-(--text-primary)"
           >
-            <Users size={14} />
-
+            <HugeiconsIcon
+              icon={UserGroupIcon}
+              size={14}
+              strokeWidth={1.5}
+            />
             <span className="hidden sm:inline">Members</span>
           </button>
         </div>
@@ -95,10 +113,13 @@ export default function BoardToolbar({
           <button
             type="button"
             onClick={onSort}
-            className="flex h-9 items-center gap-2 border border-neutral-800 px-3 font-mono text-xs text-neutral-500 transition hover:border-neutral-700 hover:text-neutral-200"
+            className="flex h-9 items-center gap-2 border border-(--border) px-3 font-mono text-xs text-(--text-secondary) transition hover:border-(--brand) hover:bg-(--brand-muted) hover:text-(--text-primary)"
           >
-            <SlidersHorizontal size={14} />
-
+            <HugeiconsIcon
+              icon={SlidersHorizontalIcon}
+              size={14}
+              strokeWidth={1.5}
+            />
             <span className="hidden sm:inline">Sort</span>
           </button>
 
@@ -106,14 +127,17 @@ export default function BoardToolbar({
           <button
             type="button"
             onClick={onAddCard}
-            className="flex h-9 items-center gap-2 border border-[#ff1f5a]/40 bg-[#ff1f5a]/10 px-3 font-mono text-xs text-[#ff1f5a] transition hover:border-[#ff1f5a] hover:bg-[#ff1f5a]/15"
+            className="flex h-9 items-center gap-2 border border-(--brand) bg-(--brand-muted) px-3 font-mono text-xs text-(--brand-hover) transition hover:bg-[rgba(124,92,252,0.18)] hover:text-(--text-primary)"
           >
-            <Plus size={14} />
-
+            <HugeiconsIcon
+              icon={Add01Icon}
+              size={14}
+              strokeWidth={1.5}
+            />
             <span>Add card</span>
           </button>
         </div>
       </div>
     </div>
   );
-}
+};

@@ -1,14 +1,33 @@
-import type { CreateCardRequest } from "@/types/dashboard/card";
+import type {
+  CreateCardRequest,
+  CreateCardResponse,
+  MoveCardRequest,
+  UpdateCardRequest,
+  UpdateCardResponse,
+} from "@/types/dashboard/card";
+
+import { apiClient } from "./client";
 
 
 export const cardApi = {
-  createCard: async ({
-    boardId,
-    columnId,
-    title,
-  }: CreateCardRequest) => {
-    // Connect this to the project's existing HTTP client.
-    // The exact endpoint/client call should follow boardApi.ts.
-    throw new Error("cardApi.createCard is not implemented yet");
+  createCard: async (data: CreateCardRequest): Promise<CreateCardResponse> => {
+    const response = await apiClient.post("/cards", data);
+
+    return response.data.data;
+  },
+
+  moveCard: async (cardId: string, data: MoveCardRequest): Promise<null> => {
+    const response = await apiClient.patch(`/cards/${cardId}/move`, data);
+
+    return response.data.data;
+  },
+
+  updateCard: async (
+    cardId: string,
+    data: UpdateCardRequest,
+  ): Promise<UpdateCardResponse> => {
+    const response = await apiClient.patch(`/cards/${cardId}`, data);
+
+    return response.data.data;
   },
 };

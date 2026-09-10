@@ -1,4 +1,8 @@
-import { MoreHorizontal, Star } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  MoreHorizontalIcon,
+  StarIcon,
+} from "@hugeicons/core-free-icons";
 
 import type { BoardDetails } from "@/types/api/dashboard/board";
 
@@ -15,25 +19,25 @@ export default function BoardHeader({ board }: BoardHeaderProps) {
   );
 
   return (
-    <header className="border-b border-neutral-800 bg-[#080808] px-4 py-4 md:px-6">
+    <header className="border-b border-(--border) bg-(--bg-surface) px-4 py-4 md:px-6">
       <div className="flex items-start justify-between gap-6">
         {/* Board information */}
         <div className="min-w-0 flex-1">
           {/* Breadcrumb */}
-          <div className="mb-2 font-mono text-[10px] uppercase tracking-[0.15em] text-neutral-600">
+          <div className="mb-2 font-mono text-[10px] uppercase tracking-[0.15em] text-(--text-muted)">
             WORKSPACE / BOARD
           </div>
 
           {/* Title */}
           <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
-            <h1 className="truncate text-lg font-semibold text-neutral-100 md:text-xl">
+            <h1 className="truncate text-lg font-semibold text-(--text-primary) md:text-xl">
               {board.name}
             </h1>
           </div>
 
           {/* Description */}
           {board.description && (
-            <p className="mt-1.5 max-w-2xl text-sm leading-5 text-neutral-500">
+            <p className="mt-1.5 max-w-2xl text-sm leading-5 text-(--text-secondary)">
               {board.description}
             </p>
           )}
@@ -41,9 +45,7 @@ export default function BoardHeader({ board }: BoardHeaderProps) {
           {/* Statistics */}
           <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
             <BoardStat label="COLUMNS" value={columnCount} />
-
             <BoardStat label="CARDS" value={cardCount} />
-
             <BoardStat label="BOARD ID" value={board.id} />
           </div>
         </div>
@@ -53,17 +55,25 @@ export default function BoardHeader({ board }: BoardHeaderProps) {
           <button
             type="button"
             aria-label="Favorite board"
-            className="flex h-9 w-9 items-center justify-center border border-neutral-800 text-neutral-500 transition hover:border-neutral-700 hover:text-neutral-200"
+            className="flex h-9 w-9 items-center justify-center border border-(--border) text-(--text-muted) transition hover:border-(--brand) hover:bg-(--brand-muted) hover:text-(--text-primary)"
           >
-            <Star size={16} />
+            <HugeiconsIcon
+              icon={StarIcon}
+              size={16}
+              strokeWidth={1.5}
+            />
           </button>
 
           <button
             type="button"
             aria-label="Board actions"
-            className="flex h-9 w-9 items-center justify-center border border-neutral-800 text-neutral-500 transition hover:border-neutral-700 hover:text-neutral-200"
+            className="flex h-9 w-9 items-center justify-center border border-(--border) text-(--text-muted) transition hover:border-(--brand) hover:bg-(--brand-muted) hover:text-(--text-primary)"
           >
-            <MoreHorizontal size={17} />
+            <HugeiconsIcon
+              icon={MoreHorizontalIcon}
+              size={17}
+              strokeWidth={1.5}
+            />
           </button>
         </div>
       </div>
@@ -79,13 +89,13 @@ interface BoardStatProps {
 function BoardStat({ label, value }: BoardStatProps) {
   return (
     <div className="flex items-center gap-1.5">
-      <span className="font-mono text-[9px] uppercase tracking-wider text-neutral-700">
+      <span className="font-mono text-[9px] uppercase tracking-wider text-(--text-muted)">
         {label}
       </span>
 
-      <span className="max-w-45 truncate font-mono text-[10px] text-neutral-500">
+      <span className="max-w-45 truncate font-mono text-[10px] text-(--text-secondary)">
         {value}
       </span>
     </div>
   );
-}
+};

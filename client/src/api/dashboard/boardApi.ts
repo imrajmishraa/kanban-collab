@@ -1,11 +1,12 @@
 import { apiClient } from "../client";
-
 import type { ApiResponse } from "@/types/api/api";
 import type {
   Board,
   BoardDetails,
   CreateBoardPayload,
   UpdateBoardPayload,
+  ListBoardsParams,
+  BoardPagination,
 } from "@/types/api/dashboard/board";
 
 interface BoardApiDocument extends Omit<Board, "id"> {
@@ -16,10 +17,9 @@ interface CreateOrUpdateBoardResponse {
   data: BoardApiDocument;
 }
 
-interface ListBoardsResponse {
-  data: {
-    boards: BoardApiDocument[];
-  };
+interface ListBoardsApiResponse {
+  boards: BoardApiDocument[];
+  pagination: BoardPagination;
 }
 
 const normalizeBoard = (board: BoardApiDocument): Board => ({
@@ -36,17 +36,29 @@ export const boardApi = {
     return normalizeBoard(response.data.data.data);
   },
 
-  async listBoards(workspaceId: string): Promise<Board[]> {
-    const response = await apiClient.get<ApiResponse<ListBoardsResponse>>(
+  async listBoards(
+    workspaceId: string,
+    params?: ListBoardsParams,
+  ): Promise<{
+    boards: Board[];
+    pagination: BoardPagination;
+  }> {
+    const response = await apiClient.get<ApiResponse<ListBoardsApiResponse>>(
       "/boards",
       {
         params: {
           workspaceId,
+          ...params,
         },
       },
     );
 
-    return response.data.data.data.boards.map(normalizeBoard);
+    const { boards, pagination } = response.data.data;
+
+    return {
+      boards: boards.map(normalizeBoard),
+      pagination,
+    };
   },
 
   async updateBoard(

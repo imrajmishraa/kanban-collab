@@ -14,12 +14,29 @@ export default function ActivitySection({
 }: ActivitySectionProps) {
   return (
     <section className="mt-12">
-      <div className="border-b border-neutral-800 pb-3">
-        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-neutral-600">
+      <div
+        className="
+          border-b border-(--border)
+          pb-3
+        "
+      >
+        <p
+          className="
+            font-mono text-[10px] uppercase
+            tracking-[0.18em]
+            text-(--text-muted)
+          "
+        >
           Recent activity
         </p>
 
-        <h2 className="mt-2 font-mono text-sm font-semibold text-neutral-200">
+        <h2
+          className="
+            mt-2
+            font-mono text-sm font-semibold
+            text-(--text-primary)
+          "
+        >
           What's happening
         </h2>
       </div>
@@ -35,8 +52,18 @@ export default function ActivitySection({
             />
           ))
         ) : (
-          <div className="border-b border-neutral-900 px-1 py-8">
-            <p className="font-mono text-xs text-neutral-600">
+          <div
+            className="
+              border-b border-(--border)
+              px-1 py-8
+            "
+          >
+            <p
+              className="
+                font-mono text-xs
+                text-(--text-muted)
+              "
+            >
               No recent activity.
             </p>
           </div>
@@ -60,7 +87,9 @@ function formatActivityTime(createdAt: string): string {
   }).format(date);
 }
 
-function formatActivityAction(type: DashboardActivityType): string {
+function formatActivityAction(
+  type: DashboardActivityType,
+): string {
   switch (type) {
     case "board_created":
       return "Board created";
@@ -83,4 +112,4 @@ function formatActivityAction(type: DashboardActivityType): string {
     default:
       return "Activity";
   }
-}
+};
