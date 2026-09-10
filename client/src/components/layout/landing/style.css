@@ -1,0 +1,87 @@
+@property --border-angle {
+    syntax: "<angle>";
+    initial-value: 0deg;
+    inherits: false;
+  }
+
+  @keyframes borderTravel {
+    0%   { --border-angle: 0deg; }
+    100% { --border-angle: 360deg; }
+  }
+
+  .eyebrow-orbit {
+    position: relative;
+    isolation: isolate;
+  }
+
+  /* The rotating conic gradient — sits behind the pill content */
+  .eyebrow-orbit::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: conic-gradient(
+      from var(--border-angle),
+      transparent 0deg,
+      transparent 60deg,
+      rgba(255,255,255,0.05) 90deg,
+      rgba(255,255,255,0.55) 130deg,
+      rgba(255,255,255,0.9) 150deg,
+      rgba(255,255,255,0.55) 170deg,
+      rgba(255,255,255,0.05) 210deg,
+      transparent 240deg,
+      transparent 360deg
+    );
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    animation: borderTravel 6s linear infinite;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* A softer second pass, offset for a "double comet" feel */
+  .eyebrow-orbit::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: conic-gradient(
+      from calc(var(--border-angle) + 180deg),
+      transparent 0deg,
+      transparent 80deg,
+      rgba(56,189,248,0.08) 120deg,
+      rgba(56,189,248,0.35) 145deg,
+      rgba(56,189,248,0.08) 170deg,
+      transparent 210deg,
+      transparent 360deg
+    );
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    animation: borderTravel 6s linear infinite;
+    pointer-events: none;
+    opacity: 0.9;
+    z-index: 1;
+  }
+
+  /* The pill's own solid border, drawn under the traveling light */
+  .eyebrow-orbit > .eyebrow-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    border: 1px solid rgba(255,255,255,0.10);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .eyebrow-orbit::before,
+    .eyebrow-orbit::after { animation: none; opacity: 0; }
+  }
