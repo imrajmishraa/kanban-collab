@@ -1,6 +1,6 @@
 import { useState, type FormEventHandler } from "react";
 
-import { loginSchema, type LoginFormData } from "@/validations/auth.schema";
+import { loginSchema, type LoginFormData } from "@/validations/auth/auth.validator";
 
 interface LoginFormProps {
   onSubmit: (email: string, password: string) => Promise<void>;

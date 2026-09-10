@@ -1,12 +1,18 @@
 import { useEffect, useRef, useState } from "react";
-import { Briefcase, Check, ChevronDown } from "lucide-react";
+
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  ArrowDown01Icon,
+  Briefcase01Icon,
+  CheckmarkCircle01Icon,
+  KanbanIcon,
+} from "@hugeicons/core-free-icons";
 
 import type { Workspace } from "@/types/api/dashboard/workspace";
 
 interface SidebarWorkspaceProps {
   collapsed: boolean;
   mobile?: boolean;
-
   workspaces: Workspace[];
   activeWorkspaceId: string | null;
   onWorkspaceChange: (workspaceId: string) => void;
@@ -50,7 +56,7 @@ const SidebarWorkspace = ({
   }, []);
 
   /*
-   * Close dropdown with Escape.
+   * Close dropdown/flyout with Escape.
    */
   useEffect(() => {
     if (!isOpen && !isWorkspaceHovered) {
@@ -72,24 +78,6 @@ const SidebarWorkspace = ({
   }, [isOpen, isWorkspaceHovered]);
 
   /*
-   * Close dropdown when sidebar becomes collapsed.
-   */
-  useEffect(() => {
-    if (collapsed) {
-      setIsOpen(false);
-    }
-  }, [collapsed]);
-
-  /*
-   * Disable hover state when entering mobile mode.
-   */
-  useEffect(() => {
-    if (mobile) {
-      setIsWorkspaceHovered(false);
-    }
-  }, [mobile]);
-
-  /*
    * Select workspace.
    */
   const handleWorkspaceChange = (workspaceId: string) => {
@@ -99,11 +87,13 @@ const SidebarWorkspace = ({
   };
 
   /*
-   * Collapsed desktop sidebar.
-   *
-   * Hovering the workspace icon reveals the workspace flyout.
+   * ─────────────────────────────────────────────
+   * Collapsed desktop sidebar
+   * ─────────────────────────────────────────────
    */
   if (collapsed) {
+    const showWorkspaceFlyout = !mobile && isWorkspaceHovered;
+
     return (
       <div
         className="relative flex justify-center px-2 py-3"
@@ -119,34 +109,47 @@ const SidebarWorkspace = ({
         }}
       >
         {/* Workspace icon */}
-        <button
-          type="button"
-          title="Workspaces"
-          aria-label="Open workspaces"
-          aria-expanded={isWorkspaceHovered}
-          onClick={(event) => {
-            event.stopPropagation();
-
-            /*
-             * Collapsed mode is desktop-only.
-             * Hover controls the flyout.
-             */
-          }}
-          className={[
-            "flex size-9 cursor-pointer items-center justify-center",
-            "text-neutral-500",
-            "transition-colors duration-150",
-            isWorkspaceHovered
-              ? "bg-white/5 text-neutral-200"
-              : "hover:bg-white/4 hover:text-neutral-200",
-          ].join(" ")}
-        >
-          <Briefcase className="size-4" />
-        </button>
+        {isLoading ? (
+          <div
+            className="
+              flex size-9 items-center justify-center
+              rounded-md
+              border border-transparent
+            "
+          >
+            <div className="size-4 animate-pulse rounded bg-(--surface-elevated)" />
+          </div>
+        ) : (
+          <button
+            type="button"
+            title="Workspaces"
+            aria-label="Open workspaces"
+            aria-expanded={showWorkspaceFlyout}
+            onClick={(event) => {
+              event.stopPropagation();
+            }}
+            className={[
+              "group flex size-9 cursor-pointer items-center justify-center",
+              "rounded-md border border-transparent",
+              "text-(--text-secondary)",
+              "transition-all duration-150",
+              showWorkspaceFlyout
+                ? "border-(--brand) bg-(--brand-muted) text-(--text-primary)"
+                : "hover:border-(--brand) hover:bg-(--brand-muted) hover:text-(--text-primary)",
+            ].join(" ")}
+          >
+            <HugeiconsIcon
+              icon={Briefcase01Icon}
+              size={16}
+              strokeWidth={1.5}
+            />
+          </button>
+        )}
 
         {/* Workspace flyout */}
-        {isWorkspaceHovered && (
+        {showWorkspaceFlyout && (
           <div
+            ref={dropdownRef}
             className="fixed z-100 w-60"
             style={{
               left: "4.5rem",
@@ -162,22 +165,48 @@ const SidebarWorkspace = ({
               event.stopPropagation();
             }}
           >
-            <div className="overflow-hidden border border-neutral-800 bg-[#0b0b0b] shadow-[0_12px_30px_rgba(0,0,0,0.55)]">
+            <div
+              className="
+                overflow-hidden
+                rounded-lg
+                border border-(--border)
+                bg-(--bg-surface)
+                shadow-[0_12px_30px_rgba(0,0,0,0.45)]
+              "
+            >
               {/* Header */}
-              <div className="border-b border-neutral-800 px-3 py-2.5">
-                <p className="font-mono text-[9px] font-semibold uppercase tracking-[0.18em] text-neutral-600">
+              <div className="border-b border-(--border) px-3 py-2.5">
+                <p className="font-mono text-[9px] font-semibold uppercase tracking-[0.18em] text-(--text-muted)">
                   Workspaces
                 </p>
               </div>
 
               {/* Loading */}
               {isLoading && (
-                <div className="px-3 py-3">
-                  <div className="flex items-center gap-2">
-                    <Briefcase className="size-3.5 text-neutral-700" />
+                <div className="space-y-1 px-2 py-2">
+                  {[1, 2, 3].map((item) => (
+                    <div
+                      key={item}
+                      className="flex min-h-10 items-center gap-2 px-2"
+                    >
+                      <div className="size-4 shrink-0 animate-pulse rounded bg-(--surface-elevated)" />
 
-                    <span className="font-mono text-xs text-neutral-600">
-                      Loading workspaces...
+                      <div
+                        className={[
+                          "h-3 animate-pulse rounded bg-(--surface-elevated)",
+                          item === 1
+                            ? "w-28"
+                            : item === 2
+                              ? "w-20"
+                              : "w-24",
+                        ].join(" ")}
+                      />
+                    </div>
+                  ))}
+
+                  <div className="pt-1 text-center">
+                    <span className="font-mono text-[9px] uppercase tracking-wider text-(--text-muted)">
+                      Loading workspaces
                     </span>
                   </div>
                 </div>
@@ -186,7 +215,7 @@ const SidebarWorkspace = ({
               {/* Error */}
               {isError && !isLoading && (
                 <div className="px-3 py-3">
-                  <p className="font-mono text-xs text-red-400">
+                  <p className="font-mono text-xs text-(--danger)">
                     Unable to load workspaces.
                   </p>
                 </div>
@@ -195,7 +224,7 @@ const SidebarWorkspace = ({
               {/* Empty */}
               {!isLoading && !isError && workspaces.length === 0 && (
                 <div className="px-3 py-3">
-                  <p className="font-mono text-xs text-neutral-600">
+                  <p className="font-mono text-xs text-(--text-muted)">
                     No workspaces
                   </p>
                 </div>
@@ -205,7 +234,8 @@ const SidebarWorkspace = ({
               {!isLoading && !isError && workspaces.length > 0 && (
                 <div className="max-h-64 overflow-y-auto py-1">
                   {workspaces.map((workspace) => {
-                    const isActive = workspace.id === activeWorkspaceId;
+                    const isActive =
+                      workspace.id === activeWorkspaceId;
 
                     return (
                       <button
@@ -218,29 +248,40 @@ const SidebarWorkspace = ({
                           handleWorkspaceChange(workspace.id);
                         }}
                         className={[
-                          "flex min-h-10 w-full cursor-pointer items-center gap-2",
+                          "group flex min-h-10 w-full cursor-pointer items-center gap-2",
+                          "border border-transparent",
                           "px-3 py-2.5",
                           "text-left font-mono text-xs",
-                          "transition-colors duration-100",
+                          "transition-all duration-100",
                           isActive
-                            ? "bg-white/5 text-neutral-100"
-                            : "text-neutral-500 hover:bg-white/3 hover:text-neutral-300",
+                            ? "border-(--brand) bg-(--brand-muted) text-(--text-primary)"
+                            : "text-(--text-secondary) hover:border-(--brand) hover:bg-(--brand-muted) hover:text-(--text-primary)",
                         ].join(" ")}
                       >
                         <span className="flex size-4 shrink-0 items-center justify-center">
                           {isActive && (
-                            <Check className="size-3 text-rose-500" />
+                            <HugeiconsIcon
+                              icon={CheckmarkCircle01Icon}
+                              size={14}
+                              strokeWidth={1.5}
+                              className="text-(--brand)"
+                            />
                           )}
                         </span>
 
-                        <Briefcase className="size-3.5 shrink-0 text-neutral-600" />
+                        <HugeiconsIcon
+                          icon={KanbanIcon}
+                          size={20}
+                          color="currentColor"
+                          strokeWidth={1.5}
+                        />
 
                         <span className="min-w-0 flex-1 truncate">
                           {workspace.name}
                         </span>
 
                         {workspace.status === "deletion_pending" && (
-                          <span className="font-mono text-[9px] uppercase tracking-wider text-amber-500">
+                          <span className="font-mono text-[9px] uppercase tracking-wider text-(--warning)">
                             Pending
                           </span>
                         )}
@@ -257,36 +298,54 @@ const SidebarWorkspace = ({
   }
 
   /*
-   * Loading state.
+   * ─────────────────────────────────────────────
+   * Loading state
+   * ─────────────────────────────────────────────
    */
   if (isLoading) {
     return (
       <section className="px-3 pt-5">
-        <p className="mb-2 px-2 font-mono text-[10px] font-semibold tracking-[0.2em] text-neutral-600">
-          WORKSPACE
+        <p className="mb-2 px-2 font-mono text-[10px] font-semibold tracking-[0.2em] text-(--text-muted)">
+          WORKSPACES
         </p>
 
-        <div className="flex h-9 items-center gap-2 px-2">
-          <Briefcase className="size-4 text-neutral-700" />
+        <div
+          className="
+            flex h-9 w-full items-center gap-2 px-2
+            rounded-md
+            border border-transparent
+          "
+        >
+          <div className="size-3.5 shrink-0 animate-pulse rounded bg-(--surface-elevated)" />
 
-          <span className="font-mono text-xs text-neutral-600">Loading...</span>
+          <div className="h-3 w-28 animate-pulse rounded bg-(--surface-elevated)" />
+
+          <div className="ml-auto size-3 animate-pulse rounded bg-(--surface-elevated)" />
         </div>
       </section>
     );
   }
 
   /*
-   * Error state.
+   * ─────────────────────────────────────────────
+   * Error state
+   * ─────────────────────────────────────────────
    */
   if (isError) {
     return (
       <section className="px-3 pt-5">
-        <p className="mb-2 px-2 font-mono text-[10px] font-semibold tracking-[0.2em] text-neutral-600">
-          WORKSPACE
+        <p className="mb-2 px-2 font-mono text-[10px] font-semibold tracking-[0.2em] text-(--text-muted)">
+          WORKSPACES
         </p>
 
-        <div className="px-2 py-2">
-          <p className="font-mono text-xs text-red-400">
+        <div
+          className="
+            rounded-md
+            border border-transparent
+            px-2 py-2
+          "
+        >
+          <p className="font-mono text-xs text-(--danger)">
             Unable to load workspaces.
           </p>
         </div>
@@ -295,19 +354,32 @@ const SidebarWorkspace = ({
   }
 
   /*
-   * Empty state.
+   * ─────────────────────────────────────────────
+   * Empty state
+   * ─────────────────────────────────────────────
    */
   if (workspaces.length === 0) {
     return (
       <section className="px-3 pt-5">
-        <p className="mb-2 px-2 font-mono text-[10px] font-semibold tracking-[0.2em] text-neutral-600">
-          WORKSPACE
+        <p className="mb-2 px-2 font-mono text-[10px] font-semibold tracking-[0.2em] text-(--text-muted)">
+          WORKSPACES
         </p>
 
-        <div className="flex h-9 items-center gap-2 px-2">
-          <Briefcase className="size-4 text-neutral-700" />
+        <div
+          className="
+            flex h-9 items-center gap-2 px-2
+            rounded-md
+            border border-transparent
+          "
+        >
+          <HugeiconsIcon
+            icon={Briefcase01Icon}
+            size={16}
+            strokeWidth={1.5}
+            className="text-(--text-muted)"
+          />
 
-          <span className="font-mono text-xs text-neutral-600">
+          <span className="font-mono text-xs text-(--text-muted)">
             No workspaces
           </span>
         </div>
@@ -319,12 +391,18 @@ const SidebarWorkspace = ({
    * Resolve currently active workspace.
    */
   const activeWorkspace =
-    workspaces.find((workspace) => workspace.id === activeWorkspaceId) ??
-    workspaces[0];
+    workspaces.find(
+      (workspace) => workspace.id === activeWorkspaceId,
+    ) ?? workspaces[0];
 
+  /*
+   * ─────────────────────────────────────────────
+   * Expanded sidebar
+   * ─────────────────────────────────────────────
+   */
   return (
     <section className="px-3 pt-5">
-      <p className="mb-2 px-2 font-mono text-[10px] font-semibold tracking-[0.2em] text-neutral-600">
+      <p className="mb-2 px-2 font-mono text-[10px] font-semibold tracking-[0.2em] text-(--text-muted)">
         WORKSPACES
       </p>
 
@@ -350,40 +428,39 @@ const SidebarWorkspace = ({
           aria-expanded={isOpen}
           onClick={(event) => {
             event.stopPropagation();
-
-            /*
-             * Mobile:
-             * click opens/closes the workspace list.
-             *
-             * Desktop:
-             * click also toggles the list while hover
-             * continues to provide the interaction.
-             */
             setIsOpen((previous) => !previous);
           }}
           className={[
-            "group flex h-9 w-full cursor-pointer items-center gap-2 px-2",
-            "font-mono text-sm",
-            "transition-colors duration-150",
+            "group flex h-9 w-full cursor-pointer items-center gap-2",
+            "rounded-md border border-transparent",
+            "px-2 font-mono text-sm",
+            "transition-all duration-150",
             isOpen
-              ? "bg-white/5 text-neutral-100"
-              : "text-neutral-400 hover:bg-white/4 hover:text-neutral-200",
+              ? "border-(--brand) bg-(--brand-muted) text-(--text-primary)"
+              : "text-(--text-secondary) hover:border-(--brand) hover:bg-(--brand-muted) hover:text-(--text-primary)",
           ].join(" ")}
         >
-          <ChevronDown
+          <HugeiconsIcon
+            icon={ArrowDown01Icon}
+            size={14}
+            strokeWidth={1.5}
             className={[
-              "size-3.5 shrink-0 text-neutral-600",
-              "transition-transform duration-150",
-              isOpen ? "rotate-180 text-neutral-400" : "",
+              "shrink-0 transition-transform duration-150",
+              isOpen
+                ? "rotate-180 text-(--text-secondary)"
+                : "text-(--text-muted) group-hover:text-(--text-secondary)",
             ].join(" ")}
           />
 
-          <Briefcase
+          <HugeiconsIcon
+            icon={KanbanIcon}
+            size={16}
+            strokeWidth={1.5}
             className={[
-              "size-4 shrink-0 transition-colors duration-150",
+              "shrink-0 transition-colors duration-150",
               isOpen
-                ? "text-neutral-300"
-                : "text-neutral-500 group-hover:text-neutral-300",
+                ? "text-(--text-primary)"
+                : "text-(--text-secondary) group-hover:text-(--text-primary)",
             ].join(" ")}
           />
 
@@ -400,68 +477,127 @@ const SidebarWorkspace = ({
             onClick={(event) => {
               event.stopPropagation();
             }}
-            className={[
-              "absolute left-0 right-0 top-full z-50 mt-1",
-              "overflow-hidden border border-neutral-800",
-              "bg-[#0b0b0b]",
-              "shadow-[0_12px_30px_rgba(0,0,0,0.45)]",
-            ].join(" ")}
+            className="
+              absolute left-0 right-0 top-full z-50 mt-1
+              overflow-hidden
+              rounded-lg
+              border border-(--border)
+              bg-(--bg-surface)
+              shadow-[0_12px_30px_rgba(0,0,0,0.45)]
+            "
           >
             {/* Header */}
-            <div className="border-b border-neutral-800 px-3 py-2">
-              <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-neutral-600">
+            <div className="border-b border-(--border) px-3 py-2">
+              <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-(--text-muted)">
                 Workspaces
               </p>
             </div>
 
-            {/* Workspace list */}
-            <div className="max-h-64 overflow-y-auto py-1">
-              {workspaces.map((workspace) => {
-                const isActive = workspace.id === activeWorkspace.id;
-
-                return (
-                  <button
-                    key={workspace.id}
-                    type="button"
-                    role="option"
-                    aria-selected={isActive}
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      handleWorkspaceChange(workspace.id);
-                    }}
-                    className={[
-                      "flex min-h-10 w-full cursor-pointer items-center gap-2",
-                      "px-3 py-2.5",
-                      "text-left font-mono text-xs",
-                      "transition-colors duration-100",
-                      isActive
-                        ? "bg-white/5 text-neutral-100"
-                        : "text-neutral-500 hover:bg-white/3 hover:text-neutral-300",
-                    ].join(" ")}
+            {/* Loading */}
+            {isLoading && (
+              <div className="space-y-1 px-2 py-2">
+                {[1, 2, 3].map((item) => (
+                  <div
+                    key={item}
+                    className="flex min-h-10 items-center gap-2 px-2"
                   >
-                    {/* Active indicator */}
-                    <span className="flex size-4 shrink-0 items-center justify-center">
-                      {isActive && <Check className="size-3 text-rose-500" />}
-                    </span>
+                    <div className="size-4 shrink-0 animate-pulse rounded bg-(--surface-elevated)" />
 
-                    {/* Workspace icon */}
-                    <Briefcase className="size-3.5 shrink-0 text-neutral-600" />
+                    <div
+                      className={[
+                        "h-3 animate-pulse rounded bg-(--surface-elevated)",
+                        item === 1
+                          ? "w-28"
+                          : item === 2
+                            ? "w-20"
+                            : "w-24",
+                      ].join(" ")}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
 
-                    {/* Workspace name */}
-                    <span className="min-w-0 flex-1 truncate">
-                      {workspace.name}
-                    </span>
+            {/* Workspace list */}
+            {!isLoading && (
+              <div className="max-h-64 overflow-y-auto py-1">
+                {workspaces.map((workspace) => {
+                  const isActive =
+                    workspace.id === activeWorkspace.id;
 
-                    {/* Pending status */}
-                    {workspace.status === "deletion_pending" && (
-                      <span className="font-mono text-[9px] uppercase tracking-wider text-amber-500">
-                        Pending
+                  return (
+                    <button
+                      key={workspace.id}
+                      type="button"
+                      role="option"
+                      aria-selected={isActive}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleWorkspaceChange(workspace.id);
+                      }}
+                      className={[
+                        "group flex min-h-10 w-full cursor-pointer items-center gap-2",
+                        "border border-transparent",
+                        "px-3 py-2.5",
+                        "text-left font-mono text-xs",
+                        "transition-all duration-100",
+                        isActive
+                          ? "border-(--brand) bg-(--brand-muted) text-(--text-primary)"
+                          : "text-(--text-secondary) hover:border-(--brand) hover:bg-(--brand-muted) hover:text-(--text-primary)",
+                      ].join(" ")}
+                    >
+                      <span className="flex size-4 shrink-0 items-center justify-center">
+                        {isActive && (
+                          <HugeiconsIcon
+                            icon={CheckmarkCircle01Icon}
+                            size={14}
+                            strokeWidth={1.5}
+                            className="text-(--brand)"
+                          />
+                        )}
                       </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+
+                      <HugeiconsIcon
+                        icon={KanbanIcon}
+                        size={20}
+                        color="currentColor"
+                        strokeWidth={1.5}
+                      />
+
+                      <span className="min-w-0 flex-1 truncate">
+                        {workspace.name}
+                      </span>
+
+                      {workspace.status === "deletion_pending" && (
+                        <span className="font-mono text-[9px] uppercase tracking-wider text-(--warning)">
+                          Pending
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Error inside dropdown */}
+            {isError && !isLoading && (
+              <div className="px-3 py-3">
+                <p className="font-mono text-xs text-(--danger)">
+                  Unable to load workspaces.
+                </p>
+              </div>
+            )}
+
+            {/* Empty inside dropdown */}
+            {!isLoading &&
+              !isError &&
+              workspaces.length === 0 && (
+                <div className="px-3 py-3">
+                  <p className="font-mono text-xs text-(--text-muted)">
+                    No workspaces
+                  </p>
+                </div>
+              )}
           </div>
         )}
       </div>
@@ -470,3 +606,4 @@ const SidebarWorkspace = ({
 };
 
 export default SidebarWorkspace;
+

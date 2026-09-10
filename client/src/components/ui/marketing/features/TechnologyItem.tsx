@@ -1,4 +1,4 @@
-import { type Technology } from "@components/layout/marketing/features/TechnologySection"
+import type { Technology } from "@components/layout/marketing/features/TechnologySection";
 
 interface TechnologyItemProps {
   technology: Technology;

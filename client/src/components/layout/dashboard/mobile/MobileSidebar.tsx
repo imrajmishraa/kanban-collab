@@ -1,10 +1,12 @@
 import MobileSidebarHeader from "./MobileSidebarHeader";
+
 import SidebarWorkspace from "../sidebar/SidebarWorkspace";
 import SidebarNavigation from "../sidebar/SidebarNavigation";
 import SidebarBoards from "../sidebar/SidebarBoards";
-import SidebarFooter from "../sidebar/SidebarFooter";
+
 
 import type { MobileSidebarProps } from "@/types/dashboard/mobileSidebar";
+import SidebarFooter from "../sidebar/SidebarFooter";
 
 export default function MobileSidebar({
   open,
@@ -18,6 +20,11 @@ export default function MobileSidebar({
   boards,
   isBoardsLoading,
   isBoardsError,
+  boardsOpen,
+  onBoardsToggle,
+  hasNextPage,
+  isFetchingNextPage,
+  onLoadMoreBoards,
   onSearch,
   onLogout,
 }: MobileSidebarProps) {
@@ -34,7 +41,7 @@ export default function MobileSidebar({
         aria-hidden="true"
       />
 
-      {/* Mobile sidebar */}
+      {/* Mobile Sidebar */}
       <aside
         className={[
           "fixed inset-y-0 left-0 z-50 flex w-72 flex-col",
@@ -47,9 +54,13 @@ export default function MobileSidebar({
           event.stopPropagation();
         }}
       >
-        <MobileSidebarHeader onClose={onClose} onSearch={onSearch} />
+        {/* Fixed Header */}
+        <div className="shrink-0">
+          <MobileSidebarHeader onClose={onClose} onSearch={onSearch} />
+        </div>
 
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+        {/* Fixed Workspace */}
+        <div className="shrink-0">
           <SidebarWorkspace
             collapsed={false}
             mobile
@@ -62,15 +73,31 @@ export default function MobileSidebar({
             isLoading={isWorkspacesLoading}
             isError={isWorkspacesError}
           />
-          <SidebarNavigation collapsed={false} />
+        </div>
 
+        {/* Flexible Content */}
+        <div className="flex min-h-0 flex-1 flex-col">
+          {/* Navigation - independently scrollable */}
+          <div className="max-h-40 shrink-0 overflow-y-auto">
+            <SidebarNavigation collapsed={false} />
+          </div>
+
+          {/* Boards - independently scrollable */}
           <SidebarBoards
             collapsed={false}
+            open={boardsOpen}
+            onToggle={onBoardsToggle}
             boards={boards}
             isLoading={isBoardsLoading}
             isError={isBoardsError}
+            hasNextPage={hasNextPage}
+            isFetchingNextPage={isFetchingNextPage}
+            onLoadMore={onLoadMoreBoards}
           />
+        </div>
 
+        {/* Fixed More */}
+        <div className="shrink-0">
           <SidebarFooter collapsed={false} user={user} onLogout={onLogout} />
         </div>
       </aside>

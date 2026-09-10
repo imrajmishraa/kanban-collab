@@ -1,4 +1,9 @@
-import { LayoutDashboard, PanelsTopLeft, Users } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  DashboardSquare01Icon,
+  Layout01Icon,
+  UserGroupIcon,
+} from "@hugeicons/core-free-icons";
 
 import SidebarItem from "@components/ui/dashboard/SidebarItem";
 
@@ -6,27 +11,50 @@ interface SidebarNavigationProps {
   collapsed: boolean;
 }
 
-const SidebarNavigation = ({ collapsed }: SidebarNavigationProps) => {
+const SidebarNavigation = ({
+  collapsed,
+}: SidebarNavigationProps) => {
   return (
-    <nav className="px-3 pt-4">
+    <nav
+      aria-label="Main navigation"
+      className="px-3 pt-4"
+    >
       <SidebarItem
         label="Overview"
         href="/dashboard"
-        icon={<LayoutDashboard className="size-4" />}
+        icon={
+          <HugeiconsIcon
+            icon={DashboardSquare01Icon}
+            size={16}
+            strokeWidth={1.5}
+          />
+        }
         collapsed={collapsed}
       />
 
       <SidebarItem
         label="Boards"
         href="/boards"
-        icon={<PanelsTopLeft className="size-4" />}
+        icon={
+          <HugeiconsIcon
+            icon={Layout01Icon}
+            size={16}
+            strokeWidth={1.5}
+          />
+        }
         collapsed={collapsed}
       />
 
       <SidebarItem
         label="Members"
         href="/members"
-        icon={<Users className="size-4" />}
+        icon={
+          <HugeiconsIcon
+            icon={UserGroupIcon}
+            size={16}
+            strokeWidth={1.5}
+          />
+        }
         collapsed={collapsed}
       />
     </nav>
@@ -34,3 +62,4 @@ const SidebarNavigation = ({ collapsed }: SidebarNavigationProps) => {
 };
 
 export default SidebarNavigation;
+

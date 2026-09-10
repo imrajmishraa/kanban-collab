@@ -151,7 +151,7 @@ export default function Footer() {
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
                 v0.1.0
               </span>
-              <span aria-hidden="true" className="h-3 w-px bg-white/[0.08" />
+              <span aria-hidden="true" className="h-3 w-px bg-white/8" />
               <a
                 href="https://github.com/imrajmishraa/kanban-collab"
                 target="_blank"

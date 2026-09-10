@@ -1,27 +1,24 @@
-import React from 'react'
-
 function MemberPage() {
   return (
     <div
-      className="min-h-screen"
-      style={{
-        background: "var(--bg-root)",
-        color: "var(--text-primary)",
-        padding: "40px 24px",
-      }}
+      className="
+        min-h-screen
+        bg-(--bg-surface)
+        px-6 py-10
+        text-(--text-primary)
+      "
     >
-      
       <p
-        style={{
-          color: "var(--text-muted)",
-          marginTop: "24px",
-          fontSize: "14px",
-        }}
+        className="
+          mt-6
+          text-sm
+          text-(--text-muted)
+        "
       >
         Kanban columns + Yjs collaboration coming in Phase 4
       </p>
     </div>
-  )
+  );
 }
 
-export default MemberPage
+export default MemberPage;

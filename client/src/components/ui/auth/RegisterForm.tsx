@@ -3,7 +3,7 @@ import { useState, type FormEventHandler } from "react";
 import {
   registerSchema,
   type RegisterFormData,
-} from "@/validations/auth.schema";
+} from "@/validations/auth/auth.validator";
 
 interface RegisterFormProps {
   onSubmit: (

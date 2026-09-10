@@ -1,142 +1,409 @@
-import { LogOut, Settings, UserCircle } from "lucide-react";
-
-import SidebarItem from "@components/ui/dashboard/SidebarItem";
-import type { AuthUser } from "@/types/api/auth/auth";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-interface SidebarFooterProps {
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  Logout01Icon,
+  Menu01Icon,
+  Settings01Icon,
+  UserIcon,
+} from "@hugeicons/core-free-icons";
+
+import type { AuthUser } from "@/types/api/auth/auth";
+
+interface SidebarMoreProps {
   collapsed: boolean;
   user: AuthUser | null;
   onLogout: () => Promise<void>;
+  mobile?: boolean;
 }
 
-const SidebarFooter = ({ collapsed, user, onLogout }: SidebarFooterProps) => {
-  if (!user) {
-    return (
-      <footer className="border-t border-neutral-800 p-3">
-        <div className="flex items-center justify-center">
-          <div className="flex size-8 items-center justify-center border border-neutral-800 bg-[#0c0c0e] font-mono text-xs text-neutral-600">
-            ?
-          </div>
-        </div>
-      </footer>
-    );
-  }
-
+export default function SidebarMore({
+  collapsed,
+  user,
+  onLogout,
+  mobile = false,
+}: SidebarMoreProps) {
+  const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
 
-  const initials = user.fullName
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  const handleProfile = () => {
+    navigate("/profile");
 
-  const handleLogout = () => {
-    void onLogout();
+    if (mobile) {
+      setMobileOpen(false);
+    }
+  };
+
+  const handleSettings = () => {
+    navigate("/settings");
+
+    if (mobile) {
+      setMobileOpen(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    setMobileOpen(false);
+    await onLogout();
   };
 
   /*
-   * Collapsed sidebar
+   * ─────────────────────────────────────────────
+   * Collapsed desktop sidebar
+   * ─────────────────────────────────────────────
+   *
+   * More button stays at the bottom.
+   * Menu opens to the right on hover.
    */
-  if (collapsed) {
+  if (collapsed && !mobile) {
     return (
-      <footer className="mt-auto border-t border-neutral-800 p-3">
-        <div className="flex flex-col items-center gap-2">
-          <SidebarItem
-            label="Settings"
-            href="/settings"
-            icon={<Settings className="size-4" />}
-            collapsed={collapsed}
+      <div className="group relative shrink-0 border-t border-(--border) py-3">
+        {/* Collapsed More Menu */}
+        <div
+          className="
+            absolute bottom-0 left-full z-50 hidden w-60 pl-2
+            group-hover:block
+          "
+          role="menu"
+        >
+          <div
+            className="
+              overflow-hidden
+              rounded-lg
+              border border-(--border)
+              bg-(--bg-surface)
+              shadow-[12px_12px_30px_rgba(0,0,0,0.45)]
+            "
+          >
+            {/* User Details */}
+            <div className="border-b border-(--border) px-3 py-3">
+              <div className="flex items-center gap-3">
+                <div
+                  className="
+                    flex size-8 shrink-0 items-center justify-center
+                    rounded-md
+                    border border-(--border-strong)
+                    bg-(--surface-elevated)
+                  "
+                >
+                  <HugeiconsIcon
+                    icon={UserIcon}
+                    size={16}
+                    strokeWidth={1.5}
+                    className="text-(--text-secondary)"
+                  />
+                </div>
+
+                <div className="min-w-0">
+                  <p className="truncate font-mono text-xs text-(--text-primary)">
+                    {user?.fullName ?? "User"}
+                  </p>
+
+                  <p className="truncate font-mono text-[10px] text-(--text-muted)">
+                    {user?.email ?? ""}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Profile */}
+            <button
+              type="button"
+              role="menuitem"
+              onClick={handleProfile}
+              className="
+                flex w-full cursor-pointer items-center gap-3
+                border border-transparent
+                px-3 py-2.5
+                text-left font-mono text-[11px]
+                text-(--text-secondary)
+                transition-all duration-150
+                hover:border-(--brand)
+                hover:bg-(--brand-muted)
+                hover:text-(--text-primary)
+              "
+            >
+              <HugeiconsIcon
+                icon={UserIcon}
+                size={16}
+                strokeWidth={1.5}
+                className="shrink-0"
+              />
+
+              <span>Profile</span>
+            </button>
+
+            {/* Settings */}
+            <button
+              type="button"
+              role="menuitem"
+              onClick={handleSettings}
+              className="
+                flex w-full cursor-pointer items-center gap-3
+                border border-transparent
+                px-3 py-2.5
+                text-left font-mono text-[11px]
+                text-(--text-secondary)
+                transition-all duration-150
+                hover:border-(--brand)
+                hover:bg-(--brand-muted)
+                hover:text-(--text-primary)
+              "
+            >
+              <HugeiconsIcon
+                icon={Settings01Icon}
+                size={16}
+                strokeWidth={1.5}
+                className="shrink-0"
+              />
+
+              <span>Settings</span>
+            </button>
+
+            {/* Logout */}
+            <button
+              type="button"
+              role="menuitem"
+              onClick={handleLogout}
+              className="
+                flex w-full cursor-pointer items-center gap-3
+                border-t border-(--border)
+                border-x border-transparent
+                px-3 py-2.5
+                text-left font-mono text-[11px]
+                text-(--text-secondary)
+                transition-all duration-150
+                hover:border-(--danger)
+                hover:bg-[rgba(241,107,122,0.08)]
+                hover:text-(--danger)
+              "
+            >
+              <HugeiconsIcon
+                icon={Logout01Icon}
+                size={16}
+                strokeWidth={1.5}
+                className="shrink-0"
+              />
+
+              <span>Logout</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Collapsed More Button */}
+        <button
+          type="button"
+          title="More"
+          aria-label="More"
+          className="
+            mx-auto flex size-9 cursor-pointer items-center justify-center
+            rounded-md
+            border border-transparent
+            text-(--text-secondary)
+            transition-all duration-150
+            hover:border-(--brand)
+            hover:bg-(--brand-muted)
+            hover:text-(--text-primary)
+          "
+        >
+          <HugeiconsIcon
+            icon={Menu01Icon}
+            size={16}
+            strokeWidth={1.5}
           />
-          {/* User avatar */}
+        </button>
+      </div>
+    );
+  }
+
+  /*
+   * ─────────────────────────────────────────────
+   * Expanded desktop + mobile
+   * ─────────────────────────────────────────────
+   */
+  return (
+    <div className="group relative shrink-0 border-t border-(--border) px-3 py-3">
+      {/* More Menu */}
+      <div
+        className={[
+          "absolute bottom-full left-3 right-3 z-50 overflow-hidden pb-2",
+          !mobile && "hidden group-hover:block",
+          mobile && (mobileOpen ? "block" : "hidden"),
+        ]
+          .filter(Boolean)
+          .join(" ")}
+        role="menu"
+      >
+        <div
+          className="
+            overflow-hidden
+            rounded-lg
+            border border-(--border)
+            bg-(--bg-surface)
+            shadow-[0_12px_30px_rgba(0,0,0,0.45)]
+          "
+        >
+          {/* User Details */}
+          <div className="border-b border-(--border) px-3 py-3">
+            <div className="flex items-center gap-3">
+              <div
+                className="
+                  flex size-8 shrink-0 items-center justify-center
+                  rounded-md
+                  border border-(--border-strong)
+                  bg-(--surface-elevated)
+                "
+              >
+                <HugeiconsIcon
+                  icon={UserIcon}
+                  size={16}
+                  strokeWidth={1.5}
+                  className="text-(--text-secondary)"
+                />
+              </div>
+
+              <div className="min-w-0">
+                <p className="truncate font-mono text-xs text-(--text-primary)">
+                  {user?.fullName ?? "User"}
+                </p>
+
+                <p className="truncate font-mono text-[10px] text-(--text-muted)">
+                  {user?.email ?? ""}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Profile */}
           <button
             type="button"
-            title={user.fullName}
-            onClick={(event) => {
-              event.stopPropagation();
-              navigate("/user/profile");
-            }}
-            className="flex size-9 cursor-pointer items-center justify-center border border-neutral-700 bg-white/3 font-mono text-xs font-semibold text-neutral-300 transition-colors hover:border-neutral-600 hover:bg-white/5 hover:text-white"
+            role="menuitem"
+            onClick={handleProfile}
+            className="
+              flex w-full cursor-pointer items-center gap-3
+              border border-transparent
+              px-3 py-2.5
+              text-left font-mono text-[11px]
+              text-(--text-secondary)
+              transition-all duration-150
+              hover:border-(--brand)
+              hover:bg-(--brand-muted)
+              hover:text-(--text-primary)
+            "
           >
-            {initials}
+            <HugeiconsIcon
+              icon={UserIcon}
+              size={16}
+              strokeWidth={1.5}
+              className="shrink-0"
+            />
+
+            <span>Profile</span>
+          </button>
+
+          {/* Settings */}
+          <button
+            type="button"
+            role="menuitem"
+            onClick={handleSettings}
+            className="
+              flex w-full cursor-pointer items-center gap-3
+              border border-transparent
+              px-3 py-2.5
+              text-left font-mono text-[11px]
+              text-(--text-secondary)
+              transition-all duration-150
+              hover:border-(--brand)
+              hover:bg-(--brand-muted)
+              hover:text-(--text-primary)
+            "
+          >
+            <HugeiconsIcon
+              icon={Settings01Icon}
+              size={16}
+              strokeWidth={1.5}
+              className="shrink-0"
+            />
+
+            <span>Settings</span>
           </button>
 
           {/* Logout */}
           <button
             type="button"
-            title="Log out"
-            onClick={(event) => {
-              event.stopPropagation();
-              void onLogout();
-            }}
-            className="flex size-9 items-center justify-center text-neutral-600 transition-colors hover:bg-white/3 hover:text-red-400 cursor-pointer"
+            role="menuitem"
+            onClick={handleLogout}
+            className="
+              flex w-full cursor-pointer items-center gap-3
+              border-t border-(--border)
+              border-x border-transparent
+              px-3 py-2.5
+              text-left font-mono text-[11px]
+              text-(--text-secondary)
+              transition-all duration-150
+              hover:border-(--danger)
+              hover:bg-[rgba(241,107,122,0.08)]
+              hover:text-(--danger)
+            "
           >
-            <LogOut className="size-4" />
+            <HugeiconsIcon
+              icon={Logout01Icon}
+              size={16}
+              strokeWidth={1.5}
+              className="shrink-0"
+            />
+
+            <span>Logout</span>
           </button>
-        </div>
-      </footer>
-    );
-  }
-
-  /*
-   * Expanded sidebar
-   */
-  return (
-    <footer className="mt-auto border-t border-neutral-800 p-3">
-      <SidebarItem
-        label="Settings"
-        href="/settings"
-        icon={<Settings className="size-4" />}
-        collapsed={false}
-      />
-
-      <SidebarItem
-        label="Profile"
-        href="/user/profile"
-        icon={<UserCircle className="size-4" />}
-        collapsed={false}
-      />
-
-      <div className="my-3 border-t border-neutral-800" />
-
-      {/* User information */}
-      <div className="flex items-center gap-3 px-2">
-        <div
-          className="flex size-8 shrink-0 items-center justify-center border border-neutral-700 bg-white/3 font-mono text-xs font-semibold text-neutral-300"
-          title={user.fullName}
-        >
-          {initials}
-        </div>
-
-        <div className="min-w-0">
-          <p className="truncate font-mono text-xs text-neutral-200">
-            {user.fullName}
-          </p>
-
-          <p className="truncate font-mono text-[10px] text-neutral-600">
-            {user.email}
-          </p>
         </div>
       </div>
 
-      {/* Logout */}
+      {/* More Button */}
       <button
         type="button"
-        onClick={(event) => {
-          event.stopPropagation();
-          handleLogout();
+        onClick={() => {
+          if (mobile) {
+            setMobileOpen((previous) => !previous);
+          }
         }}
-        className="mt-3 flex h-9 w-full cursor-pointer items-center gap-3 px-3 font-mono text-xs text-neutral-500 transition-colors hover:bg-white/3 hover:text-red-400"
+        className="
+          flex w-full cursor-pointer items-center justify-between
+          rounded-md
+          border border-transparent
+          px-2 py-2
+          text-left
+          transition-all duration-150
+          hover:border-(--brand)
+          hover:bg-(--brand-muted)
+        "
+        aria-expanded={mobile ? mobileOpen : undefined}
+        aria-haspopup="menu"
       >
-        <LogOut className="size-4 shrink-0" />
+        <div className="flex items-center gap-3">
+          <HugeiconsIcon
+            icon={Menu01Icon}
+            size={16}
+            strokeWidth={1.5}
+            className="
+              shrink-0
+              text-(--text-secondary)
+              transition-colors duration-150
+            "
+          />
 
-        <span>Log out</span>
+          <span
+            className="
+              font-mono text-[10px] font-semibold
+              tracking-[0.18em]
+              text-(--text-secondary)
+            "
+          >
+            MORE
+          </span>
+        </div>
       </button>
-    </footer>
+    </div>
   );
 };
 
-export default SidebarFooter;
