@@ -24,11 +24,11 @@ function BoardVisual() {
       {/* Column 1 */}
       <div className="flex flex-col gap-1.5">
         <span className="mb-1 h-1 w-6 rounded-full bg-white/[0.14]" />
-        <div className="rounded border border-white/[0.07] bg-white/[0.03] p-2">
-          <span className="block h-1 w-full rounded-full bg-white/[0.18]" />
-          <span className="mt-1 block h-1 w-3/4 rounded-full bg-white/[0.10]" />
+        <div className="rounded border border-white/[0.07] bg-white/3 p-2">
+          <span className="block h-1 w-full rounded-full bg-white/18" />
+          <span className="mt-1 block h-1 w-3/4 rounded-full bg-white/10" />
         </div>
-        <div className="rounded border border-white/[0.07] bg-white/[0.03] p-2">
+        <div className="rounded border border-white/[0.07] bg-white/3 p-2">
           <span className="block h-1 w-2/3 rounded-full bg-white/[0.14]" />
         </div>
       </div>
@@ -37,32 +37,32 @@ function BoardVisual() {
       <div className="flex flex-col gap-1.5">
         <span className="mb-1 h-1 w-6 rounded-full bg-(--brand)/60" />
         {/* Drag target */}
-        <div className="rounded border border-dashed border-(--brand)/40 bg-(--brand)/[0.04] p-2">
+        <div className="rounded border border-dashed border-(--brand)/40 bg-(--brand)/4 p-2">
           <span className="block h-1 w-4/5 rounded-full bg-(--brand)/30" />
         </div>
         {/* The dragging card */}
-        <div className="relative rotate-[-2deg] rounded border border-(--brand)/40 bg-(--brand)/[0.12] p-2 shadow-[0_4px_12px_-4px_var(--brand)]">
+        <div className="relative -rotate-2 rounded border border-(--brand)/40 bg-(--brand)/12 p-2 shadow-[0_4px_12px_-4px_var(--brand)]">
           <span className="block h-1 w-full rounded-full bg-(--brand)/50" />
           <span className="mt-1 block h-1 w-2/3 rounded-full bg-(--brand)/25" />
           {/* Grab handle dots */}
-          <span className="absolute -left-1 top-1/2 flex -translate-y-1/2 flex-col gap-[2px]">
-            <span className="h-[2px] w-[2px] rounded-full bg-(--brand)" />
-            <span className="h-[2px] w-[2px] rounded-full bg-(--brand)" />
-            <span className="h-[2px] w-[2px] rounded-full bg-(--brand)" />
+          <span className="absolute -left-1 top-1/2 flex -translate-y-1/2 flex-col gap-0.5">
+            <span className="h-0.5 w-0.5 rounded-full bg-(--brand)" />
+            <span className="h-0.5 w-0.5 rounded-full bg-(--brand)" />
+            <span className="h-0.5-0.5 rounded-full bg-(--brand)" />
           </span>
         </div>
       </div>
 
       {/* Column 3 — done, faded */}
       <div className="flex flex-col gap-1.5">
-        <span className="mb-1 h-1 w-6 rounded-full bg-white/[0.10]" />
-        <div className="rounded border border-white/[0.05] bg-white/[0.02] p-2 opacity-60">
-          <span className="block h-1 w-3/4 rounded-full bg-white/[0.10]" />
+        <span className="mb-1 h-1 w-6 rounded-full bg-white/10" />
+        <div className="rounded border border-white/5 bg-white/2 p-2 opacity-60">
+          <span className="block h-1 w-3/4 rounded-full bg-white/10" />
           <span className="mt-1 flex items-center gap-1">
             <span className="flex h-2 w-2 items-center justify-center rounded-full bg-emerald-400/15 text-emerald-400">
               <HugeiconsIcon icon={Tick02Icon} size={5} />
             </span>
-            <span className="block h-1 w-8 rounded-full bg-white/[0.08]" />
+            <span className="block h-1 w-8 rounded-full bg-white/8" />
           </span>
         </div>
       </div>
@@ -78,8 +78,8 @@ function CursorsVisual() {
     <div className="relative h-full overflow-hidden p-4">
       {/* Faint board shape behind */}
       <div className="absolute inset-4 grid grid-cols-2 gap-2 opacity-25">
-        <div className="rounded border border-white/[0.08] bg-white/[0.02]" />
-        <div className="rounded border border-white/[0.08] bg-white/[0.02]" />
+        <div className="rounded border border-white/8 bg-white/2" />
+        <div className="rounded border border-white/8 bg-white/2" />
       </div>
 
       {/* Cursor — Maya (brand) */}
@@ -131,7 +131,7 @@ function CursorsVisual() {
       </div>
 
       {/* Live pulse dot top-right */}
-      <div className="absolute right-4 top-4 flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] px-2 py-1 backdrop-blur-sm">
+      <div className="absolute right-4 top-4 flex items-center gap-1.5 rounded-full border border-white/8 bg-white/3 px-2 py-1 backdrop-blur-sm">
         <span className="relative flex h-1.5 w-1.5">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
           <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
@@ -184,7 +184,7 @@ function VelocityVisual() {
                 className={`absolute inset-0 rounded-t-[3px] ${
                   isLast
                     ? "bg-linear-to-t from-(--brand)/60 to-(--brand)"
-                    : "bg-white/[0.08]"
+                    : "bg-white/8"
                 }`}
               />
             </div>
@@ -219,7 +219,7 @@ export default function WhyCard({
       className="
         group/card relative flex flex-col overflow-hidden rounded-2xl
         border border-white/[0.07]
-        bg-white/[0.02]
+        bg-white/2
         backdrop-blur-xl backdrop-saturate-150
         shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]
         transition-all duration-500
@@ -236,7 +236,7 @@ export default function WhyCard({
       />
 
       {/* ── Visual stage ─────────────────────────────────────── */}
-      <div className="relative h-48 overflow-hidden border-b border-white/[0.05] bg-[#0B0B0F]">
+      <div className="relative h-48 overflow-hidden border-b border-white/5 bg-[#0B0B0F]">
         {/* Faint inner grid */}
         <div
           aria-hidden="true"
@@ -269,8 +269,8 @@ export default function WhyCard({
           <span
             className="
               flex h-9 w-9 items-center justify-center rounded-[10px]
-              border border-white/[0.09]
-              bg-linear-to-b from-white/[0.05] to-white/[0.01]
+              border border-white/9
+              bg-linear-to-b from-white/5 to-white/1
               text-(--brand)
               shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]
               transition-all duration-500
@@ -301,7 +301,7 @@ export default function WhyCard({
           <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-(--text-secondary)/55 transition-colors duration-500 group-hover/card:text-(--brand-hover)">
             Explore
           </span>
-          <span className="flex h-5 w-5 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.02] text-(--text-secondary)/70 transition-all duration-500 group-hover/card:translate-x-0.5 group-hover/card:border-(--brand)/40 group-hover/card:bg-(--brand)/10 group-hover/card:text-(--brand-hover)">
+          <span className="flex h-5 w-5 items-center justify-center rounded-full border border-white/8 bg-white/2 text-(--text-secondary)/70 transition-all duration-500 group-hover/card:translate-x-0.5 group-hover/card:border-(--brand)/40 group-hover/card:bg-(--brand)/10 group-hover/card:text-(--brand-hover)">
             <HugeiconsIcon icon={ArrowRight01Icon} size={10} />
           </span>
         </div>
