@@ -1,9 +1,6 @@
 import { z } from "zod";
+import { objectIdSchema } from "../common/objectId";
 
-export const objectIdSchema = z
-  .string()
-  .trim()
-  .regex(/^[a-f\d]{24}$/i, "Invalid ObjectId.");
 
 const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 

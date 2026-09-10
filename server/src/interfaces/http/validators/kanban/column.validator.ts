@@ -1,9 +1,6 @@
 import { z } from "zod";
+import { objectIdSchema } from "../common/objectId";
 
-export const objectIdSchema = z
-  .string()
-  .trim()
-  .regex(/^[a-f\d]{24}$/i, "Invalid ObjectId.");
 
 export const columnParamsSchema = z.object({
   params: z.object({

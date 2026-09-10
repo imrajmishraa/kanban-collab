@@ -1,93 +1,72 @@
 import { logger } from "./logger";
 
-export const httpLogger = logger.child({
-  module: "http",
-});
+type ControllerName =
+  | "dashboard"
+  | "board"
+  | "workspace"
+  | "card"
+  | "column"
+  | "search"
+  | "file upload";
 
-export const schedulerLogger = logger.child({
-  module: "cron",
-});
+type WebsocketComponentName = "server" | "authenticate" | "heartbeat";
 
-export const workspaceJobSchedulerLogger = schedulerLogger.child({
-  job: "workspace",
-});
+type CollaborationComponentName = "yjs" | "awareness" | "sync";
 
-export const dashboardControllerLogger = httpLogger.child({
-  controller: "dashboard",
-});
+type JobName = "workspace";  
 
-export const boardControllerLogger = httpLogger.child({
-  controller: "board",
-});
 
-export const workspaceControllerLogger = httpLogger.child({
-  controller: "workspace",
-});
+// Module-level loggers (one per functional area)
+export const httpLogger = logger.child({ module: "http" });
+export const schedulerLogger = logger.child({ module: "cron" });
+export const authLogger = logger.child({ module: "auth" });
+export const websocketLogger = logger.child({ module: "websocket" });
+export const collaborationLogger = logger.child({ module: "collaboration" });
+export const persistenceLogger = logger.child({ module: "persistence" });
+export const databaseLogger = logger.child({ module: "database" });
+export const securityLogger = logger.child({ module: "security" });
+export const lifecycleLogger = logger.child({ module: "lifecycle" });
 
-export const cardControllerLogger = httpLogger.child({
-  controller: "card",
-});
 
-export const columnControllerLogger = httpLogger.child({
-  controller: "column",
-});
+// Factory functions for common sub‑logger patterns
 
-export const searchControllerLogger = httpLogger.child({
-  controller: "search",
-});
+const createControllerLogger = (controller: ControllerName) =>
+  httpLogger.child({ controller });
 
-export const fileUploadControllerLogger = httpLogger.child({
-  controller: "file upload",
-});
+const createWebsocketComponentLogger = (component: WebsocketComponentName) =>
+  websocketLogger.child({ component });
 
-export const authLogger = logger.child({
-  module: "auth",
-});
+const createCollaborationComponentLogger = (component: CollaborationComponentName) =>
+  collaborationLogger.child({ component });
 
-export const websocketLogger = logger.child({
-  module: "websocket",
-});
+const createJobSchedulerLogger = (job: JobName) =>
+  schedulerLogger.child({ job });
 
-export const collaborationLogger = logger.child({
-  module: "collaboration",
-});
 
-export const persistenceLogger = logger.child({
-  module: "persistence",
-});
+// HTTP controller loggers
 
-export const databaseLogger = logger.child({
-  module: "database",
-});
+export const dashboardControllerLogger = createControllerLogger("dashboard");
+export const boardControllerLogger = createControllerLogger("board");
+export const workspaceControllerLogger = createControllerLogger("workspace");
+export const cardControllerLogger = createControllerLogger("card");
+export const columnControllerLogger = createControllerLogger("column");
+export const searchControllerLogger = createControllerLogger("search");
+export const fileUploadControllerLogger = createControllerLogger("file upload");
 
-export const securityLogger = logger.child({
-  module: "security",
-});
 
-export const lifecycleLogger = logger.child({
-  module: "lifecycle",
-});
+// Scheduler job loggers
+export const workspaceJobSchedulerLogger = createJobSchedulerLogger("workspace");
 
-export const websocketServerLogger = websocketLogger.child({
-  component: "server",
-});
 
-export const websocketAuthLogger = websocketLogger.child({
-  component: "authenticate",
-});
+// WebSocket component loggers
 
-export const heartbeatLogger = websocketLogger.child({
-  component: "heartbeat",
-});
+export const websocketServerLogger = createWebsocketComponentLogger("server");
+export const websocketAuthLogger = createWebsocketComponentLogger("authenticate");
+export const heartbeatLogger = createWebsocketComponentLogger("heartbeat");
 
-export const yjsLogger = collaborationLogger.child({
-  component: "yjs",
-});
 
-export const awarenessLogger = collaborationLogger.child({
-  component: "awareness",
-});
+// Collaboration component loggers
 
-export const syncLogger = collaborationLogger.child({
-  component: "sync",
-});
+export const yjsLogger = createCollaborationComponentLogger("yjs");
+export const awarenessLogger = createCollaborationComponentLogger("awareness");
+export const syncLogger = createCollaborationComponentLogger("sync");

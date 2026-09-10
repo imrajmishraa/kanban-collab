@@ -1,9 +1,6 @@
 import { z } from "zod";
+import { objectIdSchema } from "../common/objectId";
 
-const objectIdSchema = z
-  .string()
-  .trim()
-  .regex(/^[a-f\d]{24}$/i, "Invalid ObjectId.");
 
 export const cardParamsSchema = z.object({
   params: z.object({
@@ -86,7 +83,6 @@ export const updateCardSchema = {
     message: "At least one field must be provided for update.",
   })
 };
-
 
 
 export const moveCardSchema = {

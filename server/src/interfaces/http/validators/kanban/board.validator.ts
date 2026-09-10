@@ -1,9 +1,5 @@
 import { z } from "zod";
-
-export const objectIdSchema = z
-  .string()
-  .trim()
-  .regex(/^[a-f\d]{24}$/i, "Invalid ObjectId.");
+import { objectIdSchema } from "../common/objectId";
 
 const boardVisibility = ["private", "public", "workspace"] as const;
 
