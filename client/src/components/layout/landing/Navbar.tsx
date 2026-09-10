@@ -1,7 +1,16 @@
-import { useEffect, useState, useTransition, type MouseEvent } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-
 import { useAuth } from "@/app/providers/AuthProvider";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  ArrowRight02Icon,
+  Menu01Icon,
+  Cancel01Icon,
+  UserIcon,
+  Logout03Icon,
+  Edit02Icon,
+  GithubIcon,
+} from "@hugeicons/core-free-icons";
 
 export interface NavigationSection {
   title: string;
@@ -9,18 +18,9 @@ export interface NavigationSection {
 }
 
 const navigationData: NavigationSection[] = [
-  {
-    title: "Features",
-    href: "/features",
-  },
-  {
-    title: "How it Works",
-    href: "/how-it-works",
-  },
-  {
-    title: "GitHub",
-    href: "https://github.com/imrajmishraa/kanban-collab",
-  },
+  { title: "Features", href: "/features" },
+  { title: "How it Works", href: "/how-it-works" },
+  { title: "GitHub", href: "https://github.com/imrajmishraa/kanban-collab" },
 ];
 
 interface NavbarProps {
@@ -31,34 +31,17 @@ interface NavbarProps {
 export default function Navbar({ onNavigate, activeHref = "" }: NavbarProps) {
   const location = useLocation();
   const navigate = useNavigate();
-
   const { user, isAuthenticated, logout } = useAuth();
 
   const [showHeader, setShowHeader] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isPending, startTransition] = useTransition();
   const [isSigningOut, setIsSigningOut] = useState(false);
 
   const currentPath = activeHref || location.pathname;
 
-  /*
-   * ------------------------------------------------------------
-   * Responsive header visibility
-   * ------------------------------------------------------------
-   *
-   * Desktop:
-   * - Header becomes visible on mouse activity.
-   * - Header hides after a short period of inactivity.
-   *
-   * Mobile:
-   * - Header remains visible.
-   * - Touch interaction keeps the header visible.
-   * - Mobile menu prevents the header from hiding.
-   */
   useEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 767px)");
-
     let timeoutId: number | undefined;
 
     const clearHideTimeout = () => {
@@ -70,14 +53,8 @@ export default function Navbar({ onNavigate, activeHref = "" }: NavbarProps) {
 
     const scheduleHide = () => {
       clearHideTimeout();
-
-      if (mediaQuery.matches || isHovered || mobileMenuOpen) {
-        return;
-      }
-
-      timeoutId = window.setTimeout(() => {
-        setShowHeader(false);
-      }, 2500);
+      if (mediaQuery.matches || isHovered || mobileMenuOpen) return;
+      timeoutId = window.setTimeout(() => setShowHeader(false), 2500);
     };
 
     const handleActivity = () => {
@@ -87,76 +64,54 @@ export default function Navbar({ onNavigate, activeHref = "" }: NavbarProps) {
 
     const handleViewportChange = () => {
       clearHideTimeout();
-
       if (mediaQuery.matches) {
         setShowHeader(true);
         return;
       }
-
       scheduleHide();
     };
 
     window.addEventListener("mousemove", handleActivity);
     window.addEventListener("touchstart", handleActivity);
-
     mediaQuery.addEventListener("change", handleViewportChange);
 
     scheduleHide();
 
     return () => {
       clearHideTimeout();
-
       window.removeEventListener("mousemove", handleActivity);
       window.removeEventListener("touchstart", handleActivity);
-
       mediaQuery.removeEventListener("change", handleViewportChange);
     };
   }, [isHovered, mobileMenuOpen]);
 
-  // Navigation
   const handleNavClick = (
     event: MouseEvent<HTMLAnchorElement>,
     href: string,
   ) => {
     const isExternal = href.startsWith("http");
-
     if (isExternal) {
       setMobileMenuOpen(false);
       return;
     }
-
     event.preventDefault();
-
-    if (onNavigate) {
-      onNavigate(href);
-    } else {
-      navigate(href);
-    }
-
+    if (onNavigate) onNavigate(href);
+    else navigate(href);
     setMobileMenuOpen(false);
   };
 
-  // Authentication
   const handleStartBuilding = () => {
     navigate("/auth/register");
     setMobileMenuOpen(false);
   };
 
   const handleSignOut = async () => {
-    if (!isAuthenticated || isSigningOut) {
-      return;
-    }
-
+    if (!isAuthenticated || isSigningOut) return;
     setIsSigningOut(true);
-
     try {
       await logout();
-
       setMobileMenuOpen(false);
-
-      navigate("/auth/login", {
-        replace: true,
-      });
+      navigate("/auth/login", { replace: true });
     } catch (error) {
       console.error("Sign out failed:", error);
     } finally {
@@ -164,215 +119,274 @@ export default function Navbar({ onNavigate, activeHref = "" }: NavbarProps) {
     }
   };
 
-  // Render
   return (
     <header
       onMouseEnter={() => {
         setIsHovered(true);
         setShowHeader(true);
       }}
-      onMouseLeave={() => {
-        setIsHovered(false);
-      }}
-      className={`fixed inset-x-0 top-0 z-50 w-full border-b border-neutral-800 bg-[#0c0c0e]/95 backdrop-blur-sm transition-all duration-300 ${
+      onMouseLeave={() => setIsHovered(false)}
+      className={`fixed inset-x-0 top-0 z-50 w-full transition-all duration-500 ${
         showHeader
           ? "translate-y-0 opacity-100"
           : "pointer-events-none -translate-y-full opacity-0"
       }`}
     >
-      <div className="mx-auto flex h-14 max-w-full items-center justify-between px-4 sm:px-6">
-        {/* Brand */}
-        <button
-          type="button"
-          onClick={() => {
-            navigate("/");
-            setMobileMenuOpen(false);
-          }}
-          className="group flex cursor-pointer items-center gap-2 font-mono text-lg font-bold tracking-tight text-neutral-100 transition-colors hover:text-white"
-          aria-label="Go to homepage"
+      {/* ── Glassy floating container ─────────────────────────────────── */}
+      <div className="mx-auto max-w-7xl px-3 pt-3 sm:px-5 sm:pt-4">
+        <div
+          className="
+            group/glass
+            relative
+            overflow-hidden
+            rounded-2xl
+            border border-white/8
+            bg-white/3
+            backdrop-blur-xl
+            backdrop-saturate-150
+            shadow-[0_8px_32px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.08)]
+            transition-all duration-300
+            hover:border-white/[0.14]
+            hover:bg-white/5
+            hover:shadow-[0_12px_40px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.12)]
+          "
         >
-          <span className="font-extrabold text-rose-500">&gt;</span>
+          {/* Top sheen */}
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.35)_50%,transparent)]" />
 
-          <span>Kanban</span>
-        </button>
+          {/* Brand glow */}
+          <div className="pointer-events-none absolute -top-24 left-1/4 h-40 w-72 -translate-x-1/2 rounded-full bg-(--brand)/14 blur-[60px]" />
 
-        {/* Desktop Navigation */}
-        <div className="hidden items-center gap-6 md:flex">
-          <nav className="flex items-center gap-5">
-            {navigationData.map((item) => {
-              const isExternal = item.href.startsWith("http");
-              const isActive = !isExternal && currentPath === item.href;
+          {/* Diagonal reflection */}
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,transparent_30%,rgba(255,255,255,0.05)_45%,transparent_60%)]" />
 
-              return (
-                <a
-                  key={item.title}
-                  href={item.href}
-                  target={isExternal ? "_blank" : undefined}
-                  rel={isExternal ? "noopener noreferrer" : undefined}
-                  onClick={(event) => handleNavClick(event, item.href)}
-                  className={`relative font-mono text-xs tracking-wide transition-colors ${
-                    isActive
-                      ? "font-semibold text-rose-400"
-                      : "text-neutral-400 hover:text-neutral-200"
-                  }`}
-                >
-                  {item.title}
-
-                  {isActive && (
-                    <svg
-                      className="pointer-events-none absolute -bottom-1 left-0 h-1.5 w-full text-rose-500"
-                      viewBox="0 0 100 20"
-                      preserveAspectRatio="none"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M 2,10 Q 50,18 98,9 Q 50,13 2,11"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                  )}
-                </a>
-              );
-            })}
-
-            {/* Login — only visible when logged out */}
-            {!isAuthenticated && (
-              <a
-                href="/auth/login"
-                onClick={(event) => handleNavClick(event, "/auth/login")}
-                className={`font-mono text-xs tracking-wide transition-colors ${
-                  currentPath === "/auth/sign-in"
-                    ? "font-semibold text-rose-400"
-                    : "text-neutral-400 hover:text-neutral-200"
-                }`}
-              >
-                Login
-              </a>
-            )}
-          </nav>
-
-          {/* Separator */}
-          <div className="h-4 w-px bg-neutral-800" />
-
-          {/* Authentication Actions */}
-          {isAuthenticated && user ? (
-            <div className="flex items-center gap-3">
-              <span className="max-w-52 truncate border border-neutral-700 bg-neutral-900/80 px-2 py-0.5 font-mono text-xs text-neutral-300">
-                ✏️ {user.email}
-              </span>
-
-              <button
-                type="button"
-                onClick={handleSignOut}
-                disabled={isSigningOut}
-                className="font-mono text-xs text-rose-500 transition-colors hover:text-rose-400 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {isSigningOut ? "[ Leaving... ]" : "[ Sign Out ]"}
-              </button>
-            </div>
-          ) : (
+          {/* ── Main row ────────────────────────────────────────────── */}
+          <div className="relative flex h-14 items-center justify-between px-4 sm:px-5">
+            {/* Brand */}
             <button
               type="button"
-              onClick={handleStartBuilding}
-              className="border border-rose-500/80 bg-rose-500/10 px-3 py-1 font-mono text-xs text-rose-400 transition-colors hover:bg-rose-500/20 active:scale-95"
+              onClick={() => {
+                navigate("/");
+                setMobileMenuOpen(false);
+              }}
+              className="group flex cursor-pointer items-center gap-2.5 font-mono text-lg font-bold tracking-tight text-(--text-primary) transition-colors"
+              aria-label="Go to homepage"
             >
-              [ Get Started ]
+              <img
+                src="/appIcon.png"
+                alt=""
+                width={28}
+                height={28}
+                draggable={false}
+                className="h-7 w-7 rounded-lg border border-white/8 object-cover shadow-[0_2px_8px_rgba(0,0,0,0.35)] transition-all duration-300 group-hover:border-(--brand)/40 group-hover:shadow-[0_0_16px_-2px_var(--brand)]"
+              />
+              <span>Kanban</span>
             </button>
-          )}
-        </div>
 
-        {/* Mobile Menu Toggle */}
-        <button
-          type="button"
-          onClick={() => {
-            setMobileMenuOpen((previous) => !previous);
-            setShowHeader(true);
-          }}
-          aria-expanded={mobileMenuOpen}
-          aria-controls="mobile-navigation"
-          className="p-1 font-mono text-xs text-neutral-400 transition-colors hover:text-neutral-100 md:hidden"
-        >
-          {mobileMenuOpen ? "[ Close ]" : "[ Menu ]"}
-        </button>
-      </div>
+            {/* Desktop Navigation */}
+            <div className="hidden items-center gap-6 md:flex">
+              <nav className="flex items-center gap-1">
+                {navigationData.map((item) => {
+                  const isExternal = item.href.startsWith("http");
+                  const isActive = !isExternal && currentPath === item.href;
 
-      {/* Mobile Menu */}
-      {mobileMenuOpen && (
-        <div
-          id="mobile-navigation"
-          className="border-t border-neutral-800 bg-[#0c0c0e] px-4 py-4 md:hidden"
-        >
-          <nav className="flex flex-col gap-3 font-mono text-sm">
-            {navigationData.map((item) => {
-              const isExternal = item.href.startsWith("http");
-              const isActive = !isExternal && currentPath === item.href;
+                  return (
+                    <a
+                      key={item.title}
+                      href={item.href}
+                      target={isExternal ? "_blank" : undefined}
+                      rel={isExternal ? "noopener noreferrer" : undefined}
+                      onClick={(event) => handleNavClick(event, item.href)}
+                      className={`relative flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-mono text-xs tracking-wide transition-all duration-200 ${
+                        isActive
+                          ? "text-(--brand-hover)"
+                          : "text-(--text-secondary) hover:bg-white/6 hover:text-(--text-primary)"
+                      }`}
+                    >
+                      {isExternal && (
+                        <HugeiconsIcon icon={GithubIcon} size={14} />
+                      )}
+                      {item.title}
 
-              return (
-                <a
-                  key={item.title}
-                  href={item.href}
-                  target={isExternal ? "_blank" : undefined}
-                  rel={isExternal ? "noopener noreferrer" : undefined}
-                  onClick={(event) => handleNavClick(event, item.href)}
-                  className={`text-xs transition-colors ${
-                    isActive
-                      ? "font-bold text-rose-400"
-                      : "text-neutral-400 hover:text-neutral-200"
-                  }`}
-                >
-                  {item.title}
-                </a>
-              );
-            })}
+                      {isActive && (
+                        <span className="absolute inset-x-2 -bottom-px h-px bg-[linear-gradient(90deg,transparent,var(--brand),transparent)]" />
+                      )}
+                    </a>
+                  );
+                })}
 
-            {/* Login — only visible when logged out */}
-            {!isAuthenticated && (
-              <a
-                href="/auth/login"
-                onClick={(event) => handleNavClick(event, "/auth/login")}
-                className={`text-xs transition-colors ${
-                  currentPath === "/auth/sign-in"
-                    ? "font-bold text-rose-400"
-                    : "text-neutral-400 hover:text-neutral-200"
-                }`}
-              >
-                Login
-              </a>
-            )}
+                {!isAuthenticated && (
+                  <a
+                    href="/auth/login"
+                    onClick={(event) => handleNavClick(event, "/auth/login")}
+                    className={`relative flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-mono text-xs tracking-wide transition-all duration-200 ${
+                      currentPath === "/auth/login"
+                        ? "text-(--brand-hover)"
+                        : "text-(--text-secondary) hover:bg-white/6 hover:text-(--text-primary)"
+                    }`}
+                  >
+                    <HugeiconsIcon icon={UserIcon} size={14} />
+                    Login
+                    {currentPath === "/auth/login" && (
+                      <span className="absolute inset-x-2 -bottom-px h-px bg-[linear-gradient(90deg,transparent,var(--brand),transparent)]" />
+                    )}
+                  </a>
+                )}
+              </nav>
 
-            <div className="my-1 border-t border-neutral-800" />
+              {/* Divider */}
+              <div className="h-5 w-px bg-[linear-gradient(180deg,transparent,rgba(255,255,255,0.14),transparent)]" />
 
-            {/* Mobile Authentication */}
-            {isAuthenticated && user ? (
-              <div className="flex items-center gap-3">
-                <span className="max-w-52 truncate border border-neutral-700 bg-neutral-900/80 px-2 py-0.5 font-mono text-xs text-neutral-300">
-                  ✏️ {user.email}
-                </span>
+              {/* Auth actions */}
+              {isAuthenticated && user ? (
+                <div className="flex items-center gap-2">
+                  <span className="flex max-w-52 items-center gap-1.5 truncate rounded-lg border border-white/8 bg-white/4 px-2.5 py-1 font-mono text-xs text-(--text-primary) backdrop-blur-sm">
+                    <HugeiconsIcon
+                      icon={Edit02Icon}
+                      size={12}
+                      className="text-(--text-secondary)"
+                    />
+                    {user.email}
+                  </span>
 
+                  <button
+                    type="button"
+                    onClick={handleSignOut}
+                    disabled={isSigningOut}
+                    className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 font-mono text-xs text-(--brand) transition-all duration-200 hover:bg-(--brand)/10 hover:text-(--brand-hover) disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <HugeiconsIcon icon={Logout03Icon} size={14} />
+                    {isSigningOut ? "Leaving..." : "Sign Out"}
+                  </button>
+                </div>
+              ) : (
                 <button
                   type="button"
-                  onClick={handleSignOut}
-                  disabled={isSigningOut}
-                  className="font-mono text-xs text-rose-500 transition-colors hover:text-rose-400 disabled:cursor-not-allowed disabled:opacity-50"
+                  onClick={handleStartBuilding}
+                  className="
+                    group/btn relative flex items-center gap-1.5 overflow-hidden
+                    rounded-lg border border-(--brand)/40
+                    bg-(--brand)/10
+                    px-3.5 py-1.5 font-mono text-xs text-(--brand-hover)
+                    backdrop-blur-sm
+                    transition-all duration-300
+                    hover:border-(--brand)/70
+                    hover:bg-(--brand)/20
+                    hover:shadow-[0_0_20px_-4px_var(--brand)]
+                    active:scale-95
+                  "
                 >
-                  {isSigningOut ? "[ Leaving... ]" : "[ Sign Out ]"}
+                  <span className="pointer-events-none absolute inset-0 -translate-x-full bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent)] transition-transform duration-700 group-hover/btn:translate-x-full" />
+                  <HugeiconsIcon icon={ArrowRight02Icon} size={14} />
+                  Get Started
                 </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={handleStartBuilding}
-                className="border border-rose-500/80 bg-rose-500/10 px-3 py-1 font-mono text-xs text-rose-400 transition-colors hover:bg-rose-500/20 active:scale-95"
-              >
-                [ Get Started ]
-              </button>
-            )}
-          </nav>
+              )}
+            </div>
+
+            {/* Mobile Menu Toggle */}
+            <button
+              type="button"
+              onClick={() => {
+                setMobileMenuOpen((previous) => !previous);
+                setShowHeader(true);
+              }}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-navigation"
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/8 bg-white/4 text-(--text-secondary) transition-all duration-200 hover:border-white/[0.14] hover:bg-white/8 hover:text-(--text-primary) md:hidden"
+            >
+              {mobileMenuOpen ? (
+                <HugeiconsIcon icon={Cancel01Icon} size={18} />
+              ) : (
+                <HugeiconsIcon icon={Menu01Icon} size={18} />
+              )}
+            </button>
+          </div>
+
+          {/* ── Mobile Menu ─────────────────────────────────────────── */}
+          {mobileMenuOpen && (
+            <div
+              id="mobile-navigation"
+              className="relative border-t border-white/6 px-4 py-4 md:hidden"
+            >
+              <nav className="flex flex-col gap-1 font-mono text-sm">
+                {navigationData.map((item) => {
+                  const isExternal = item.href.startsWith("http");
+                  const isActive = !isExternal && currentPath === item.href;
+
+                  return (
+                    <a
+                      key={item.title}
+                      href={item.href}
+                      target={isExternal ? "_blank" : undefined}
+                      rel={isExternal ? "noopener noreferrer" : undefined}
+                      onClick={(event) => handleNavClick(event, item.href)}
+                      className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs transition-all duration-200 ${
+                        isActive
+                          ? "bg-white/6 font-bold text-(--brand-hover)"
+                          : "text-(--text-secondary) hover:bg-white/5 hover:text-(--text-primary)"
+                      }`}
+                    >
+                      {isExternal && (
+                        <HugeiconsIcon icon={GithubIcon} size={14} />
+                      )}
+                      {item.title}
+                    </a>
+                  );
+                })}
+
+                {!isAuthenticated && (
+                  <a
+                    href="/auth/login"
+                    onClick={(event) => handleNavClick(event, "/auth/login")}
+                    className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs transition-all duration-200 ${
+                      currentPath === "/auth/login"
+                        ? "bg-white/6 font-bold text-(--brand-hover)"
+                        : "text-(--text-secondary) hover:bg-white/5 hover:text-(--text-primary)"
+                    }`}
+                  >
+                    <HugeiconsIcon icon={UserIcon} size={14} />
+                    Login
+                  </a>
+                )}
+
+                <div className="my-2 h-px bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent)]" />
+
+                {isAuthenticated && user ? (
+                  <div className="flex items-center gap-2">
+                    <span className="flex max-w-52 items-center gap-1.5 truncate rounded-lg border border-white/8 bg-white/4 px-2.5 py-1 font-mono text-xs text-(--text-primary)">
+                      <HugeiconsIcon
+                        icon={Edit02Icon}
+                        size={12}
+                        className="text-(--text-secondary)"
+                      />
+                      {user.email}
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={handleSignOut}
+                      disabled={isSigningOut}
+                      className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 font-mono text-xs text-(--brand) transition-all duration-200 hover:bg-(--brand)/10 hover:text-(--brand-hover) disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <HugeiconsIcon icon={Logout03Icon} size={14} />
+                      {isSigningOut ? "Leaving..." : "Sign Out"}
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleStartBuilding}
+                    className="flex items-center justify-center gap-1.5 rounded-lg border border-(--brand)/40 bg-(--brand)/10 px-3.5 py-2 font-mono text-xs text-(--brand-hover) backdrop-blur-sm transition-all duration-300 hover:border-(--brand)/70 hover:bg-(--brand)/20 active:scale-95"
+                  >
+                    <HugeiconsIcon icon={ArrowRight02Icon} size={14} />
+                    Get Started
+                  </button>
+                )}
+              </nav>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </header>
   );
 }
