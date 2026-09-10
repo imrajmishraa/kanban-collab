@@ -10,7 +10,6 @@ interface CardDetailsModalProps {
 
 export default function CardDetailsModal({
   card,
-  boardId: _boardId,
   onClose,
 }: CardDetailsModalProps) {
   return (
