@@ -19,7 +19,6 @@ interface BoardToolbarProps {
 }
 
 export default function BoardToolbar({
-  boardId: _boardId,
   onSearch,
   onFilter,
   onMembers,
