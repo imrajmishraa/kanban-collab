@@ -7,8 +7,15 @@ import {
   loginSchema,
   refreshTokenSchema,
 } from "../../validators/auth/auth.validators";
+import rateLimit from "express-rate-limit";
 
 const router = Router();
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  skipSuccessfulRequests: true,
+});
 
 // Register new user
 router

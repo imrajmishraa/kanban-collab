@@ -15,6 +15,7 @@ function hashToken(token: string): string {
   return crypto.createHash('sha256').update(token).digest('hex');
 }
 
+const ACCESS_TOKEN_EXPIRES_IN = 900;
 const REFRESH_TOKEN_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
 // Dynamic cookie options builder resolving HTTP vs HTTPS environments
 export const getCookieOptions = (): CookieOptions => ({
@@ -34,6 +35,9 @@ export const clearCookieOptions = (): CookieOptions => ({
 
 const refresh = asyncHandler(async (req, res) => {
   const rawRefreshToken = req.cookies?.refreshToken;
+  const cookieOptions = getCookieOptions();
+
+    const t0 = Date.now();
 
   try {
     if (!rawRefreshToken) {
@@ -41,62 +45,70 @@ const refresh = asyncHandler(async (req, res) => {
     }
 
     const decoded = verifyRefreshToken(rawRefreshToken);
+    const userId = decoded.userId;
 
-    const refreshTokenHash = hashToken(rawRefreshToken);
+    const user = await UserModel.findById(userId)
+      .select("_id email fullName")
+      .lean();
 
-    const session = await SessionModel.findOne({
-      refreshTokenHash,
-    });
+    if (!user) throw userNotFoundError();
+    
 
-    if (!session) {
-      // Refresh token reuse detected.
-      await SessionModel.deleteMany({
-        userId: decoded.userId,
-      });
+    const oldRefreshTokenHash = hashToken(rawRefreshToken);
 
-      res.clearCookie("refreshToken", { ...getCookieOptions() });
-
-      throw expiredRefreshTokenError();
-    }
-
-    const user = await UserModel.findById(decoded.userId);
-
-    if (!user) {
-      throw userNotFoundError();
-    }
-
-    const accessToken = signAccessToken({
+    const accessToken = await signAccessToken({
       userId: user._id.toString(),
       email: user.email,
       fullName: user.fullName,
     });
 
-    const newRefreshToken = signRefreshToken({
-      userId: user._id.toString(),
-    });
+    const newRefreshToken = await signRefreshToken({ userId });
+    const newRefreshTokenHash = hashToken(newRefreshToken);
 
-    session.refreshTokenHash = hashToken(newRefreshToken);
-    session.lastUsedAt = new Date();
-    session.expiresAt = new Date(Date.now() + REFRESH_TOKEN_MAX_AGE);
+    // Atomic rotation with lean() and projection for minimal overhead
+    const updatedSession = await SessionModel.findOneAndUpdate(
+      { refreshTokenHash: oldRefreshTokenHash },
+      {
+        $set: {
+          refreshTokenHash: newRefreshTokenHash,
+          lastUsedAt: new Date(),
+          expiresAt: new Date(Date.now() + REFRESH_TOKEN_MAX_AGE),
+        },
+      },
+      {
+        new: true,
+        // runValidators: true,
+        projection: { _id: 1 },
+        lean: true,
+      },
+    );
 
-    await session.save();
+    if (!updatedSession) {
+      // Token reuse detected: invalidate all user sessions and clear cookie.
+      await SessionModel.deleteMany({ userId });
+      res.clearCookie("refreshToken", cookieOptions);
+      throw expiredRefreshTokenError();
+    }
 
-    res.cookie("refreshToken", newRefreshToken, getCookieOptions());
+
+    // Set the new refresh token cookie
+    res.cookie("refreshToken", newRefreshToken, cookieOptions);
 
     authLogger.info(
       {
         userId: user._id,
-        sessionId: session._id,
+        sessionId: updatedSession._id,
         ipAddress: req.ip,
       },
       "Refresh token rotated successfully.",
     );
+    console.log(`DB update: ${Date.now() - t0}ms`);
 
     return res.status(200).json(
       new ApiResponse(200, "Refresh successful.", {
         data: {
           accessToken,
-          expiresIn: 900,
+          expiresIn: ACCESS_TOKEN_EXPIRES_IN, // now from config
           user: {
             id: user._id,
             email: user.email,
@@ -106,9 +118,17 @@ const refresh = asyncHandler(async (req, res) => {
       }),
     );
   } catch (error) {
+
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack =
+      error instanceof Error && process.env.NODE_ENV === "development"
+        ? error.stack
+        : undefined;
+
     authLogger.error(
       {
-        err: error,
+        message: errorMessage,
+        stack: process.env.NODE_ENV === "development" ? errorStack : undefined,
         hasRefreshToken: Boolean(rawRefreshToken),
         ipAddress: req.ip,
         userAgent: req.headers["user-agent"],
@@ -125,11 +145,10 @@ const register = asyncHandler(async (req, res) => {
   const { email, password, fullName } = req.body;
 
   try {
-    const existingUser = await UserModel.findOne({ email });
-
-    if (existingUser) {
-      throw existingUserError();
-    }
+    const existingUser = await UserModel.findOne({ email })
+      .select("_id")
+      .lean();
+    if (existingUser) throw existingUserError();
 
     const passwordHash = await hashPassword(password);
 
@@ -175,9 +194,11 @@ const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const user = await UserModel.findOne({ email });
+    const user = await UserModel.findOne({ email })
+      .select("_id fullName email passwordHash")
+      .lean();
   
-    if (!user) {
+    if (!user || !user.passwordHash) {
       throw invalidEmailOrPasswordError();
     }
   
@@ -187,13 +208,13 @@ const login = asyncHandler(async (req, res) => {
       throw invalidEmailOrPasswordError();
     }
   
-    const accessToken = signAccessToken({
+    const accessToken = await signAccessToken({
       userId: user._id.toString(),
       email: user.email,
       fullName: user.fullName,
     });
   
-    const rawRefreshToken = signRefreshToken({
+    const rawRefreshToken = await signRefreshToken({
       userId: user._id.toString(),
     });
   

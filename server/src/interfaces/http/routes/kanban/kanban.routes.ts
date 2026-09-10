@@ -2,14 +2,18 @@ import { Router } from 'express';
 import { createWorkspace, listWorkspaces, addWorkspaceMember, updateWorkspace, deleteWorkspace } from '../../controllers/workspaces/workspaces';
 import { createBoard, updateBoard, listBoards, getBoardDetails } from "../../controllers/boards/boards";
 import { createColumn  } from '../../controllers/columns/columns';
-import { createCard, moveCard } from '../../controllers/cards/cards';
+import {
+  createCard,
+  moveCard,
+  updateCard,
+} from "../../controllers/cards/cards";
 import { searchCards } from '../../controllers/search/search';
 import { signUpload } from '../../controllers/fileUpload/fileUpload';
 import { authenticateJWT } from '../../middleware/auth.middleware';
 import { createWorkspaceSchema, updateWorkspaceSchema, addWorkspaceMemberSchema } from '../../validators/kanban/workspace.validator';
 import { validateSchema } from '../../middleware/validate.middleware';
 import { boardParamsSchema, boardQuerySchema, createBoardSchema, updateBoardSchema } from '../../validators/kanban/board.validator';
-import { createCardSchema, moveCardSchema } from '../../validators/kanban/card.validator';
+import { createCardSchema, moveCardSchema, updateCardSchema } from '../../validators/kanban/card.validator';
 import { createColumnSchema } from '../../validators/kanban/column.validator';
 
 
@@ -90,7 +94,10 @@ router.use(authenticateJWT);
   
   // move the card
   router.patch("/cards/:id/move", validateSchema(moveCardSchema), moveCard);
-
+  
+  // update the card
+  router.patch("/cards/:id", validateSchema(updateCardSchema), updateCard);
+  
   /*
   Attachments
   */ 

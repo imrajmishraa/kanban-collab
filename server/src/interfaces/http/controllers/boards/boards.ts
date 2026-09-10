@@ -4,6 +4,7 @@ import { BoardModel, CardModel, ColumnModel, WorkspaceModel } from "../../../../
 import { ApiResponse } from "../../../../shared/utils/ApiResponse";
 import { Types } from "mongoose";
 
+import { getCacheClient }  from "../../../../infrastructure/cache/redis";
 import { boardControllerLogger } from "../../../../infrastructure/logging/childLogger";
 import { notWorkspaceMemberError, workspaceIdRequiredError } from "../../../../shared/errors/workspace/workspace";
 import { boardNotFoundError, boardAccessDeniedError, guestCannotModifyBoardError } from "../../../../shared/errors/board/board";
@@ -67,43 +68,69 @@ const createBoard = asyncHandler(async (req: AuthenticatedRequest, res ) => {
 });
 
 const listBoards = asyncHandler(async (req: AuthenticatedRequest, res) => {
-  const { workspaceId } = req.query;
+  const { workspaceId, page = "1", limit = "10" } = req.query;
   const userId = req.user!.userId;  
   try {
+    if (!workspaceId) {
+      throw workspaceIdRequiredError();
+    }
 
-      if (!workspaceId) {
-        throw workspaceIdRequiredError();
-      }
+    // Verify workspace membership
+    const workspace = await WorkspaceModel.findOne({
+      _id: workspaceId as string,
+      "members.userId": new Types.ObjectId(userId),
+    });
 
-      // Verify workspace membership
-      const workspace = await WorkspaceModel.findOne({
-        _id: workspaceId as string,
-        "members.userId": new Types.ObjectId(userId),
-      });
+    if (!workspace) {
+      throw notWorkspaceMemberError();
+    }
 
-      if (!workspace) {
-        throw notWorkspaceMemberError();
-      }
+    const currentPage = Math.max(Number(page) || 1, 1);
+    const pageLimit = Math.min(Math.max(Number(limit) || 10, 1), 50);
 
-      const boards = await BoardModel.find({
-        workspaceId: new Types.ObjectId(workspaceId as string),
-      });
+    const skip = (currentPage - 1) * pageLimit;
 
+    const boardFilter = {
+      workspaceId: new Types.ObjectId(workspaceId as string),
+    };
 
-      boardControllerLogger.info(
-        {
-          workspaceId,
-          userId,
-          boardCount: boards.length,
+    // Fetch boards + total count
+    const [boards, totalBoards] = await Promise.all([
+      BoardModel.find(boardFilter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(pageLimit),
+
+      BoardModel.countDocuments(boardFilter),
+    ]);
+
+     const totalPages = Math.ceil(totalBoards / pageLimit);
+
+     boardControllerLogger.info(
+       {
+         workspaceId,
+         userId,
+         boardCount: boards.length,
+         page: currentPage,
+         limit: pageLimit,
+         totalBoards,
+       },
+       "Boards listed",
+     );
+    return res.status(200).json(
+      new ApiResponse(200, "Boards fetched successfully", {
+        boards,
+        pagination: {
+          page: currentPage,
+          limit: pageLimit,
+          totalBoards,
+          totalPages,
+          hasNextPage: currentPage < totalPages,
+          hasPreviousPage: currentPage > 1,
         },
-        "Boards listed",
-      );
-      return res.status(200).json(
-        new ApiResponse(200, "fetched listBoards successfully", {
-          data: { boards },
-        }),
-      );
-    } catch (error) {
+      }),
+    );
+  } catch (error) {
         boardControllerLogger.error(
           {
             err: error,
@@ -177,81 +204,98 @@ const updateBoard = asyncHandler(async (req: AuthenticatedRequest, res) => {
   }
 });
 
-const getBoardDetails = asyncHandler(
-  async (req: AuthenticatedRequest, res) => {
-     const userId = req.user!.userId;
-      const boardId = req.params.boardId || req.params.id;
-     try {     
+const getBoardDetails = asyncHandler(async (req: AuthenticatedRequest, res) => {
+  const userId = req.user!.userId;
+  const boardId = req.params.boardId || req.params.id;
 
-      const board = await BoardModel.findById(boardId);
-      if (!board) {
-        throw boardNotFoundError();
-      }
+  // Try cache
+  const cacheKey = `board:${boardId}`;
 
-      // Verify workspace membership
-      const workspace = await WorkspaceModel.findOne({
-        _id: board.workspaceId,
-        "members.userId": new Types.ObjectId(userId),
-      });
+  const cache = await getCacheClient();
 
+  let cached: string | null = null;
+  try {
+    cached = await cache.get(cacheKey);
+  } catch (err) {
+    console.warn("Cache read error:", err);
+  }
 
-      if (!workspace) {
-        throw boardAccessDeniedError();
-      }
+  if (cached) {
+    return res.status(200).json(JSON.parse(cached));
+  }
 
-      const columns = await ColumnModel.find({ boardId: board._id }).sort({ orderIndex: 1});
-      const cards = await CardModel.find({ boardId: board._id, isArchived: false }).sort({ orderIndex: 1 });
+  // 1. Fetch board
+  const board = await BoardModel.findById(boardId).lean();
+  if (!board) {
+    throw boardNotFoundError();
+  }
 
-      const responseColumns = columns.map(col => {
-        return {
-            id: col._id,
-            name: col.name,
-            orderIndex: col.orderIndex,
-            cards: cards
-                    .filter( card => card.columnId.equals(col._id))
-                    .map(card => ({
-                        id: card._id,
-                        title: card.title,
-                        description: card.description,
-                        orderIndex: card.orderIndex,
-                        dueDate: card.dueDate,
-                        labels: card.labels,
-                        checkLists: card.checklists
-                    }))
-        };
-      });
+  // 2. Verify workspace membership
+  const workspace = await WorkspaceModel.findOne({
+    _id: board.workspaceId,
+    "members.userId": new Types.ObjectId(userId),
+  }).lean();
 
-      boardControllerLogger.info(
-        {
-          boardId: board._id,
-          workspaceId: board.workspaceId,
-          userId,
-        },
-        "Board details retrieved",
-      );
-      return res.status(200).json(
-        new ApiResponse(200, "Fetched board details", {
-          data: {
-            id: board.id,
-            name: board.name,
-            description: board.description,
-            backgroundColor: board.backgroundColor,
-            columns: responseColumns,
-          },
-        }),
-      );
-    } catch (error) {
-        boardControllerLogger.error(
-          {
-            err: error,
-            boardId: req.params.boardId || req.params.id,
-            userId,
-          },
-          "Get board details failed",
-        );
-        throw error;
-    }
-  },
-);
+  if (!workspace) {
+    throw boardAccessDeniedError();
+  }
+
+  // 3. Fetch columns and cards in PARALLEL (both use indexes)
+  const [columns, cards] = await Promise.all([
+    ColumnModel.find({ boardId: board._id })
+      .select("_id name orderIndex")
+      .sort({ orderIndex: 1 })
+      .lean(),
+    CardModel.find({
+      boardId: board._id,
+      isArchived: false,
+    })
+      .select(
+        "_id title description orderIndex dueDate labels checklists columnId",
+      )
+      .sort({ orderIndex: 1 })
+      .lean(),
+  ]);
+
+  // 4. Assemble response (fast in‑memory)
+  const responseColumns = columns.map((col) => ({
+    id: col._id,
+    name: col.name,
+    orderIndex: col.orderIndex,
+    cards: cards
+      .filter((card) => card.columnId.equals(col._id))
+      .map((card) => ({
+        id: card._id,
+        title: card.title,
+        description: card.description,
+        orderIndex: card.orderIndex,
+        dueDate: card.dueDate,
+        labels: card.labels,
+        checklists: card.checklists,
+      })),
+  }));
+
+  boardControllerLogger.info(
+    { boardId: board._id, workspaceId: board.workspaceId, userId },
+    "Board details retrieved",
+  );
+
+  const response = new ApiResponse(200, "Fetched board details", {
+    data: {
+      id: board._id,
+      name: board.name,
+      description: board.description,
+      backgroundColor: board.backgroundColor,
+      columns: responseColumns,
+    },
+  });
+
+  try {
+    await cache.setEx(cacheKey, 60, JSON.stringify(response));
+  } catch (err) {
+    console.warn("Cache write error:", err);
+  }
+  return res.status(200).json(response);
+});
 
 export { createBoard, updateBoard, listBoards, getBoardDetails };

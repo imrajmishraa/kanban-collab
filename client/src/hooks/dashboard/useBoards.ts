@@ -1,5 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
-
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { boardApi } from "@/api/dashboard/boardApi";
 
 export const boardKeys = {
@@ -7,16 +6,33 @@ export const boardKeys = {
 
   lists: () => [...boardKeys.all, "list"] as const,
 
-  list: (workspaceId: string) => [...boardKeys.lists(), workspaceId] as const,
+  list: (workspaceId: string, limit: number) =>
+    [...boardKeys.lists(), workspaceId, { limit }] as const,
 
   detail: (boardId: string) => [...boardKeys.all, "detail", boardId] as const,
 };
 
-export function useBoards(workspaceId?: string) {
-  return useQuery({
-    queryKey: workspaceId ? boardKeys.list(workspaceId) : boardKeys.lists(),
+export function useBoards(workspaceId?: string, limit = 20) {
+  return useInfiniteQuery({
+    queryKey: workspaceId
+      ? boardKeys.list(workspaceId, limit)
+      : boardKeys.lists(),
 
-    queryFn: () => boardApi.listBoards(workspaceId!),
+    queryFn: ({ pageParam }) =>
+      boardApi.listBoards(workspaceId!, {
+        page: pageParam,
+        limit,
+      }),
+
+    initialPageParam: 1,
+
+    getNextPageParam: (lastPage) => {
+      if (!lastPage.pagination.hasNextPage) {
+        return undefined;
+      }
+
+      return lastPage.pagination.page + 1;
+    },
 
     enabled: Boolean(workspaceId),
   });

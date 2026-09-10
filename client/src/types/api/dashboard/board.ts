@@ -51,3 +51,33 @@ export interface BoardDetails {
   backgroundColor: string;
   columns: BoardColumn[];
 }
+
+/**
+ * Query parameters used when listing boards.
+ */
+export interface ListBoardsParams {
+  page?: number;
+  limit?: number;
+  visibility?: BoardVisibility;
+  search?: string;
+}
+
+/**
+ * Pagination metadata returned by the boards API.
+ */
+export interface BoardPagination {
+  page: number;
+  limit: number;
+  totalBoards: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+/**
+ * Response returned by GET /boards.
+ */
+export interface ListBoardsResponse {
+  boards: Board[];
+  pagination: BoardPagination;
+}

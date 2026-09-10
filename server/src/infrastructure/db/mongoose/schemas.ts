@@ -119,9 +119,8 @@ const WorkspaceSchema = new Schema<IWorkspace>(
 WorkspaceSchema.index({ 'members.userId': 1 });
 export const WorkspaceModel = model<IWorkspace>('Workspace', WorkspaceSchema);
 
-// ==========================================
+
 // 3. BOARD
-// ==========================================
 export interface IBoard extends Document {
   workspaceId: Types.ObjectId;
   name: string;
@@ -149,9 +148,8 @@ const BoardSchema = new Schema<IBoard>({
 
 export const BoardModel = model<IBoard>('Board', BoardSchema);
 
-// ==========================================
+
 // 4. COLUMN
-// ==========================================
 export interface IColumn extends Document {
   workspaceId: Types.ObjectId;
   boardId: Types.ObjectId;
@@ -193,9 +191,8 @@ const ColumnSchema = new Schema<IColumn>(
 ColumnSchema.index({ boardId: 1, orderIndex: 1 });
 export const ColumnModel = model<IColumn>('Column', ColumnSchema);
 
-// ==========================================
+
 // 5. CARD
-// ==========================================
 export interface ICard extends Document {
   workspaceId: Types.ObjectId;
   columnId: Types.ObjectId;
@@ -249,11 +246,12 @@ const CardSchema = new Schema<ICard>(
 CardSchema.index({ columnId: 1, orderIndex: 1 });
 CardSchema.index({ boardId: 1 });
 CardSchema.index({ title: 'text', description: 'text' });
+CardSchema.index({ boardId: 1, isArchived: 1, orderIndex: 1 });
 export const CardModel = model<ICard>('Card', CardSchema);
 
-// ==========================================
+
 // 6. COMMENT
-// ==========================================
+
 export interface IComment extends Document {
   workspaceId: Types.ObjectId;
   cardId: Types.ObjectId;
@@ -313,9 +311,8 @@ const ActivityLogSchema = new Schema<IActivityLog>(
 ActivityLogSchema.index({ boardId: 1, createdAt: -1 });
 export const ActivityLogModel = model<IActivityLog>('ActivityLog', ActivityLogSchema);
 
-// ==========================================
+
 // 8. SESSION
-// ==========================================
 export interface ISession extends Document {
   userId: Types.ObjectId;
   refreshTokenHash: string;
@@ -339,11 +336,12 @@ const SessionSchema = new Schema<ISession>({
 // Auto-delete document when expired using MongoDB TTL Index
 SessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 SessionSchema.index({ userId: 1 });
+SessionSchema.index({ refreshTokenHash: 1 });
 export const SessionModel = model<ISession>('Session', SessionSchema);
 
-// ==========================================
+
 // 9. YJS DOCUMENT UPDATES (For Binary CRDT persistence)
-// ==========================================
+
 export interface IYjsUpdate extends Document {
   workspaceId: Types.ObjectId;
   boardId: Types.ObjectId;

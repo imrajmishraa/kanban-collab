@@ -4,6 +4,8 @@ import cors from "cors";
 import helmet from "helmet";
 import mongoSanitize from "express-mongo-sanitize";
 import cookieParser from "cookie-parser";
+import rateLimit from "express-rate-limit";
+import compression from "compression";
 
 import healthzRoute from "./routes/healthz/healthz.route";
 import authRoute from "./routes/auth/auth.route";
@@ -18,9 +20,24 @@ import { ENV } from "../../config/env";
 
 const app = express();
 
-// =======================================
+// Set rate limits
+// Global rate limiter (optional, 100 requests per minute)
+const globalLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 1000,
+  message: 'Too many requests from this IP, please try again later.',
+});
+
+
+// Stricter limiter for Auth (Login/Register)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 1000, // 1000 attempts for testing
+  skipSuccessfulRequests: true, // Don't count successful logins
+  message: 'Too many login attempts, please try again after 15 minutes.',
+});
+
 // Security Middlewares
-// =======================================
 
 app.use(
   helmet({
@@ -56,9 +73,8 @@ app.use(
   }),
 );
 
-// =======================================
+
 // CORS
-// =======================================
 
 app.use(
   cors({
@@ -72,9 +88,10 @@ app.use(
   }),
 );
 
-// =======================================
+
 // Body Parsers
-// =======================================
+app.use(compression());
+
 
 app.use(
   express.json({
@@ -89,21 +106,21 @@ app.use(
   }),
 );
 
-// =======================================
+
 // Sanitization
-// =======================================
+
 
 app.use(mongoSanitize());
 
-// =======================================
+
 // Cookie Parser
-// =======================================
+
 
 app.use(cookieParser());
 
-// =======================================
+
 // HTTP Request Logger
-// =======================================
+
 
 app.use((req: Request, _res: Response, next: NextFunction) => {
   logger.info(
@@ -118,9 +135,8 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
   next();
 });
 
-// =======================================
+
 // Health Check
-// =======================================
 
 app.get("/", (_req: Request, res: Response) => {
   res.status(200).json({
@@ -129,13 +145,14 @@ app.get("/", (_req: Request, res: Response) => {
   });
 });
 
-// =======================================
+
 // API Routes
-// =======================================
+
+app.use("/api/v1", globalLimiter);
 
 app.use("/api/v1", healthzRoute);
 
-app.use("/api/v1/auth", authRoute);
+app.use("/api/v1/auth", authLimiter, authRoute);
 
 app.use("/api/v1", kanbanRoute);
 
@@ -143,15 +160,13 @@ app.use("/api/v1", dashboardRoutes);
 
 
 
-// =======================================
+
 // 404 Handler
-// =======================================
 
 app.use(notFoundHandler);
 
-// =======================================
+
 // Global Error Handler
-// =======================================
 
 app.use(errorHandler);
 

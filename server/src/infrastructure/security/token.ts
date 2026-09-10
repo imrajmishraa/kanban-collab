@@ -38,28 +38,36 @@ export interface RefreshTokenPayload extends JwtPayload {
 
 export function signAccessToken(
   payload: Omit<AccessTokenPayload, "iat" | "exp">,
-): string {
-  return jwt.sign(payload, JWT_SECRET, {
-    algorithm: "HS256",
-    expiresIn: ACCESS_TOKEN_EXPIRES_IN,
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    jwt.sign(
+      payload,
+      JWT_SECRET,
+      { algorithm: "HS256", expiresIn: ACCESS_TOKEN_EXPIRES_IN },
+      (err, token) => {
+        if (err) reject(err);
+        else resolve(token as string);
+      },
+    );
   });
 }
 
 export function signRefreshToken(
   payload: Omit<RefreshTokenPayload, "iat" | "exp">,
-): string {
-  return jwt.sign(
-    {
-      ...payload,
-      jti: crypto.randomUUID(),
-    },
-    JWT_REFRESH_SECRET,
-    {
-      algorithm: "HS256",
-      expiresIn: REFRESH_TOKEN_EXPIRES_IN,
-    },
-  );
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    jwt.sign(
+      { ...payload, jti: crypto.randomUUID() },
+      JWT_REFRESH_SECRET,
+      { algorithm: "HS256", expiresIn: REFRESH_TOKEN_EXPIRES_IN },
+      (err, token) => {
+        if (err) reject(err);
+        else resolve(token as string);
+      },
+    );
+  });
 }
+
 
 export function verifyAccessToken(token: string): AccessTokenPayload {
   try {

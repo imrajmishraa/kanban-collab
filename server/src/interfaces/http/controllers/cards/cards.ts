@@ -87,6 +87,101 @@ const createCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
     }
 });
 
+const updateCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
+  const cardId = req.params;
+  const { title, columnId} = req.body;
+  const userId = req.user!.userId;  
+
+  try {
+    const card = await CardModel.findById({ cardId });
+
+    if (!card) {
+      throw cardNotFoundError();
+    }
+
+    const board = await BoardModel.findById(card.boardId);
+
+    if (!board) {
+      throw boardNotFoundError();
+    }
+
+    // Verify workspace membership
+    const workspace = await WorkspaceModel.findOne({
+      _id: board.workspaceId,
+      "members.userId": new Types.ObjectId(userId),
+    });
+
+    if (!workspace) {
+      throw notWorkspaceMemberError();
+    }
+
+    // Verify member permissions
+
+    const member = workspace.members.find(
+      (m) => m.userId.toString() === userId,
+    );
+
+    if (!member || member.role === "guest") {
+      throw guestCannotModifyBoardError();
+    }
+
+    // Update only supplied fields
+    if (title !== undefined) {
+      card.title = title;
+    }
+
+    if (columnId !== undefined) {
+      card.columnId = new Types.ObjectId(columnId);
+    }
+
+    await card.save();
+
+    // Log activity
+    await ActivityLogModel.create({
+      boardId: board._id,
+      userId: new Types.ObjectId(userId),
+      actionType: "CARD_UPDATE",
+      details: {
+        cardId: card._id,
+        cardTitle: card.title,
+      },
+    });
+
+    cardControllerLogger.info(
+      {
+        cardId: card._id,
+        boardId: board._id,
+        userId,
+      },
+      "Card updated",
+    );
+
+    return res.status(200).json(
+      new ApiResponse(200, "Card updated successfully", {
+        data: {
+          id: card._id,
+          title: card.title,
+          columnId: card.columnId,
+          orderIndex: card.orderIndex,
+          checklists: card.checklists,
+          labels: card.labels,
+        },
+      }),
+    );
+  } catch (error) {
+    cardControllerLogger.error(
+      {
+        err: error,
+        cardId: cardId,
+        userId,
+      },
+      "Failed to update card",
+    );
+
+    throw error;
+  }
+})
+
 const moveCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
   const { id } = req.params;
   const { targetColumnId, targetOrderIndex } = req.body;
@@ -163,4 +258,4 @@ const moveCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
 });
 
 
-export { createCard, moveCard };
+export { createCard, moveCard, updateCard };
