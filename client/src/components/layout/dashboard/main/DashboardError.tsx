@@ -1,4 +1,5 @@
-import { AlertTriangle, RefreshCw } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Alert02Icon, RefreshIcon } from "@hugeicons/core-free-icons";
 
 interface DashboardErrorProps {
   onRetry: () => void;
@@ -12,21 +13,52 @@ const DashboardError = ({
   return (
     <section
       role="alert"
-      className="flex min-h-[40vh] items-center justify-center"
+      className="flex min-h-[40vh] items-center justify-center px-4"
     >
-      <div className="w-full max-w-md border border-neutral-800 bg-[#0b0b0b] px-6 py-8 text-center">
+      <div
+        className="
+          w-full max-w-md
+          border border-(--border)
+          bg-(--surface-elevated)
+          px-6 py-8
+          text-center
+        "
+      >
         {/* Icon */}
-        <div className="mx-auto flex size-10 items-center justify-center border border-neutral-800 bg-white/2">
-          <AlertTriangle className="size-4 text-rose-500" />
+        <div
+          className="
+            mx-auto flex size-10
+            items-center justify-center
+            border border-(--border)
+            bg-(--brand-muted)
+          "
+        >
+          <HugeiconsIcon
+            icon={Alert02Icon}
+            size={16}
+            strokeWidth={1.5}
+            className="text-(--warning)"
+          />
         </div>
 
         {/* Content */}
         <div className="mt-5">
-          <h2 className="font-mono text-sm font-semibold text-neutral-200">
+          <h2
+            className="
+              font-mono text-sm font-semibold
+              text-(--text-primary)
+            "
+          >
             Dashboard unavailable
           </h2>
 
-          <p className="mx-auto mt-2 max-w-sm font-mono text-xs leading-5 text-neutral-600">
+          <p
+            className="
+              mx-auto mt-2 max-w-sm
+              font-mono text-xs leading-5
+              text-(--text-muted)
+            "
+          >
             We couldn't load your dashboard data. Please try again.
           </p>
         </div>
@@ -38,16 +70,30 @@ const DashboardError = ({
           disabled={isRetrying}
           className={[
             "mx-auto mt-6 flex h-9 items-center gap-2",
-            "border border-neutral-800 px-4",
+            "border px-4",
             "font-mono text-xs",
-            "transition-colors duration-150",
+            "transition-all duration-150",
             isRetrying
-              ? "cursor-not-allowed text-neutral-700"
-              : "cursor-pointer text-neutral-400 hover:border-neutral-700 hover:bg-white/4 hover:text-neutral-200",
+              ? [
+                  "cursor-not-allowed",
+                  "border-(--border)",
+                  "text-(--text-muted)",
+                ].join(" ")
+              : [
+                  "cursor-pointer",
+                  "border-(--border)",
+                  "text-(--text-secondary)",
+                  "hover:border-(--brand)",
+                  "hover:bg-(--brand-muted)",
+                  "hover:text-(--text-primary)",
+                ].join(" "),
           ].join(" ")}
         >
-          <RefreshCw
-            className={["size-3.5", isRetrying ? "animate-spin" : ""].join(" ")}
+          <HugeiconsIcon
+            icon={RefreshIcon}
+            size={14}
+            strokeWidth={1.5}
+            className={isRetrying ? "animate-spin" : ""}
           />
 
           <span>{isRetrying ? "Retrying..." : "Try again"}</span>
