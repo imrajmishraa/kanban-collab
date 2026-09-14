@@ -10,6 +10,18 @@ interface FormattedZodError {
   code: string;
 }
 
+/**
+ * Convert a ZodError into an ApiError with a flat list of field-level issues.
+ *
+ * Returns `null` if the error is not a ZodError, so it can be used as a
+ * first matcher in a chain of error handlers:
+ *
+ *   const apiError =
+ *     handleZodError(err) ??
+ *     handleMongoError(err) ??
+ *     handleJwtError(err) ??
+ *     fallbackError(err);
+ */
 export function handleZodError(err: unknown): ApiError | null {
   if (!(err instanceof ZodError)) {
     return null;
@@ -24,6 +36,9 @@ export function handleZodError(err: unknown): ApiError | null {
   return new ApiError(
     HTTP_STATUS.UNPROCESSABLE_ENTITY,
     ERROR_MESSAGE.VALIDATION_FAILED,
-    formattedErrors,
+    {
+      errors: formattedErrors,
+      code: "VALIDATION_FAILED",
+    },
   );
 }

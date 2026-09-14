@@ -1,39 +1,37 @@
 declare module "y-websocket/bin/utils" {
-  import type { IncomingMessage } from "http";
-
+  import type { IncomingMessage } from "node:http";
   import type WebSocket from "ws";
   import type * as Y from "yjs";
 
   export interface Persistence {
-    bindState(docName: string, ydoc: Y.Doc): Promise<void>;
-    writeState(docName: string, ydoc: Y.Doc): Promise<void>;
+    provider: string;
+    bindState: (docName: string, ydoc: WSSharedDoc) => Promise<void> | void;
+    writeState: (docName: string, ydoc: WSSharedDoc) => Promise<void> | void;
+    close?: () => void;
   }
 
   export interface SetupWSConnectionOptions {
-    /**
-     * Optional document name.
-     * If omitted, y-websocket derives it from the request URL.
-     */
     docName?: string;
-
-    /**
-     * Enable or disable Yjs garbage collection.
-     * Defaults to true.
-     */
     gc?: boolean;
   }
 
-  /**
-   * Registers a persistence provider for Yjs documents.
-   */
+  export interface WSSharedDoc extends Y.Doc {
+    name: string;
+    conns: Map<WebSocket, Set<number>>;
+    awareness: import("y-protocols/awareness").Awareness;
+  }
+
   export function setPersistence(persistence: Persistence): void;
 
-  /**
-   * Initializes a Yjs WebSocket connection.
-   */
   export function setupWSConnection(
     conn: WebSocket,
     req: IncomingMessage,
     opts?: SetupWSConnectionOptions,
   ): void;
+
+  export function getYDoc(docName: string, gc?: boolean): WSSharedDoc;
+
+  export function closeConn(conn: WebSocket): void;
+
+  export const docs: Map<string, WSSharedDoc>;
 }
