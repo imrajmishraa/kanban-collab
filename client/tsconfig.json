@@ -11,7 +11,8 @@
       "@/*": ["./src/*"],
       "@app/*": ["./src/app/*"],
       "@api/*": ["./src/api/*"],
-      "@components/*": ["./src/components/*"]
+      "@components/*": ["./src/components/*"],
+      "@validations/*": ["./src/validations/*"]
     }
   }
 }
