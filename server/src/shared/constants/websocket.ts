@@ -1,121 +1,87 @@
-// server/src/shared/constants/websocket.ts
+// Path / subprotocol
+
+
+/**
+ * The single WS upgrade path. `handleUpgrade` must reject any upgrade
+ * whose pathname !== WS_PATH — otherwise a stray client can hold an
+ * unauthenticated socket open by hitting any URL.
+ */
+export const WS_PATH = "/ws" as const;
+
+/**
+ * Board-scoped upgrade path: `/ws/boards/:boardId`.
+ * Keep this prefix in one place so parseRequest.ts and any future
+ * router agree on the shape.
+ */
+export const WS_PATH_PREFIX = "/ws/boards/" as const;
+
+/**
+ * Subprotocol name used to smuggle the access token through the handshake.
+ *
+ * Browsers cannot set custom headers on `new WebSocket(...)`, so the only
+ * ways to carry a bearer token are: cookie, query string, or subprotocol.
+ * We standardize on subprotocol (it's the only one that doesn't leak the
+ * token into server logs / browser history like `?token=` does).
+ *
+ * Wire format on the client:
+ *   new WebSocket(url, [WS_AUTH_SUBPROTOCOL, token])
+ * Server reads `Sec-WebSocket-Protocol: kanban.auth, <token>`.
+ */
+export const WS_AUTH_SUBPROTOCOL = "kanban.auth" as const;
+
+
+// Close codes
 
 /**
  * WebSocket close codes.
  *
- * - 1000–1015  : defined by RFC 6455 and extensions (IETF)
- * - 4000–4999  : reserved for application use (never sent by libraries)
+ * - 1000–1015 : defined by RFC 6455 (IETF)
+ * - 4000–4999 : reserved for application use (never sent by libraries)
  *
  * Reference: https://www.rfc-editor.org/rfc/rfc6455#section-7.4.1
  */
 export const WS_CLOSE_CODE = {
-  // ══════════════════════════════════════════════════════════════════════════
-  // RFC 6455 — Standard codes
-  // ══════════════════════════════════════════════════════════════════════════
-
-  /** Normal closure — endpoint finished its job. */
+  // ── RFC 6455 — standard codes ────────────────────────────────────────────
   NORMAL_CLOSURE: 1000,
-
-  /** Endpoint is going away — server restart, deploy, shutdown. */
   GOING_AWAY: 1001,
-
-  /** Protocol error — peer violated the framing spec. */
   PROTOCOL_ERROR: 1002,
-
-  /** Received a type of data it cannot accept (e.g. binary where text expected). */
   UNSUPPORTED_DATA: 1003,
-
-  /**
-   * No status code was actually present in the close frame.
-   * Reserved — must NOT be sent over the wire; it's set locally by
-   * `ws` / browser when no code was received.
-   */
   NO_STATUS_RECEIVED: 1005,
-
-  /**
-   * Connection closed abnormally (no close frame was received).
-   * Reserved — must NOT be sent over the wire.
-   */
   ABNORMAL_CLOSURE: 1006,
-
-  /** Data within a message was not consistent with its type (bad UTF-8 etc). */
   INVALID_PAYLOAD: 1007,
-
-  /** Policy violation — generic application-level rejection. */
   POLICY_VIOLATION: 1008,
-
-  /** Message too big to process. */
   MESSAGE_TOO_BIG: 1009,
-
-  /** Client expected an extension the server didn't negotiate. */
   MANDATORY_EXTENSION: 1010,
-
-  /** Server encountered an unexpected condition. */
   INTERNAL_ERROR: 1011,
-
-  /** Server is restarting — client should reconnect after a delay. */
   SERVICE_RESTART: 1012,
-
-  /** Server is overloaded — client should try again later. */
   TRY_AGAIN_LATER: 1013,
-
-  /** Server acting as gateway received an invalid response from upstream. */
   BAD_GATEWAY: 1014,
-
-  /** TLS handshake failed (typically only seen by browsers). */
   TLS_HANDSHAKE_FAILED: 1015,
 
-  // ══════════════════════════════════════════════════════════════════════════
-  // Application-specific (4000–4999)
-  // Aligned with ERROR_MESSAGE entries where possible.
-  // ══════════════════════════════════════════════════════════════════════════
-
-  /** Missing or invalid credentials during the upgrade handshake. */
+  // ── Application-specific (4000–4999) ─────────────────────────────────────
   UNAUTHORIZED: 4001,
-
-  /** Authenticated but not allowed to join this board / channel. */
   FORBIDDEN: 4003,
-
-  /** Session tied to this socket has expired or been revoked. */
   SESSION_EXPIRED: 4004,
-
-  /** Missed heartbeat threshold — connection considered dead. */
   HEARTBEAT_TIMEOUT: 4005,
-
-  /** Client exceeded the per-socket message rate limit. */
   RATE_LIMITED: 4008,
-
-  /** Frame exceeded WS_MAX_PAYLOAD. */
   MESSAGE_TOO_LARGE: 4009,
-
-  /** Message failed schema / shape validation. */
   INVALID_MESSAGE: 4010,
-
-  /** Requested Yjs document (board) was not found. */
   DOC_NOT_FOUND: 4011,
-
-  /** MessageHandler could not route the incoming frame. */
   UNROUTABLE_MESSAGE: 4012,
-
-  /** Yjs sync update failed to apply. */
   SYNC_FAILED: 4013,
-
-  /** Awareness payload was malformed or out of date. */
   AWARENESS_INVALID: 4014,
-
-  /** Server reached the max concurrent connections for this user. */
   CONNECTION_LIMIT_REACHED: 4029,
-
-  /** Server is shutting down gracefully — client should reconnect elsewhere. */
   SERVER_SHUTDOWN: 4050,
 } as const;
 
 export type WsCloseCode = (typeof WS_CLOSE_CODE)[keyof typeof WS_CLOSE_CODE];
 
 /**
- * Reserved codes that must NEVER be sent over the wire.
- * Passing these to `socket.close(code)` throws in `ws` and is silently
- * rewritten to 1000 by browsers.
+ * RFC 6455 codes that MUST NOT be sent over the wire.
+ *
+ * `ws` throws if you pass these to `socket.close(code)`, and browsers
+ * silently rewrite them to 1000. They only ever appear on the *inbound*
+ * side (when the peer closed without a code, or the connection died).
  */
 export const WS_RESERVED_CLOSE_CODES = [
   WS_CLOSE_CODE.NO_STATUS_RECEIVED,
@@ -123,9 +89,19 @@ export const WS_RESERVED_CLOSE_CODES = [
   WS_CLOSE_CODE.TLS_HANDSHAKE_FAILED,
 ] as const;
 
+export type WsReservedCloseCode = (typeof WS_RESERVED_CLOSE_CODES)[number];
+
+/** Runtime guard — use before `socket.close(code)`. */
+export function isReservedCloseCode(code: number): code is WsReservedCloseCode {
+  return (WS_RESERVED_CLOSE_CODES as readonly number[]).includes(code);
+}
+
 /**
- * Human-readable reason strings — passed as the second arg to `socket.close()`.
- * Browsers surface these as `event.reason` in the client `close` handler.
+ * Human-readable reason strings — pass as the second arg to `socket.close()`.
+ * Browsers surface these as `CloseEvent.reason` on the client.
+ *
+ * Typed as `Record<WsCloseCode, string>` so adding a code without a reason
+ * is a compile error.
  */
 export const WS_CLOSE_REASON: Record<WsCloseCode, string> = {
   [WS_CLOSE_CODE.NORMAL_CLOSURE]: "Normal closure",
@@ -158,3 +134,8 @@ export const WS_CLOSE_REASON: Record<WsCloseCode, string> = {
   [WS_CLOSE_CODE.CONNECTION_LIMIT_REACHED]: "Connection limit reached",
   [WS_CLOSE_CODE.SERVER_SHUTDOWN]: "Server shutting down",
 };
+
+/** Safe lookup — never returns undefined for unknown numeric codes. */
+export function closeReason(code: number): string {
+  return WS_CLOSE_REASON[code as WsCloseCode] ?? "Unknown close reason";
+}
