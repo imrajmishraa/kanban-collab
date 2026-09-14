@@ -1,8 +1,10 @@
-import { type Request } from "express";
+import type { Request, Response, NextFunction } from "express";
 
-import { asyncHandler } from "../../../shared/utils/asyncHandler";
-import { verifyAccessToken } from "../../../infrastructure/security/token";
-import { missingAccessTokenError } from "../../../shared/errors/auth/accessToken";
+import { verifyAccessToken } from "../../../infrastructure/security/jwt";
+import {
+  missingAccessTokenError,
+  invalidAccessTokenError,
+} from "../../../shared/errors/auth/accessToken";
 
 export interface AuthenticatedRequest extends Request {
   user?: {
@@ -12,28 +14,38 @@ export interface AuthenticatedRequest extends Request {
   };
 }
 
-export const authenticateJWT = asyncHandler(
-  async (req: AuthenticatedRequest, _res, next) => {
-    const authorization = req.headers.authorization;
+export function authenticateJWT(
+  req: AuthenticatedRequest,
+  _res: Response,
+  next: NextFunction,
+): void {
+  const authorization = req.headers.authorization;
 
-    if (!authorization) {
-      throw missingAccessTokenError();
-    }
+  if(!authorization) {
+    return next(missingAccessTokenError());
+  }
 
-    const [scheme, token] = authorization.split(" ");
+  const [scheme, token] = authorization.split(" ", 2);
 
-    if (scheme !== "Bearer" || !token) {
-      throw missingAccessTokenError();
-    }
+  if(!scheme || scheme?.toLowerCase() !== "bearer") {
+    return next(invalidAccessTokenError());
+  }
 
+  if(!token) {
+    return next(missingAccessTokenError());
+  }
+
+  try {
     const decoded = verifyAccessToken(token);
 
     req.user = {
       userId: decoded.userId,
       email: decoded.email,
-      fullName: decoded.fullName,
-    };
+      fullName: decoded.fullName
+    }
 
     next();
-  },
-);
+  } catch(err) {
+    next(err);
+  }
+}

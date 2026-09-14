@@ -5,6 +5,6 @@ import { authenticateJWT } from "../../middleware/auth.middleware";
 
 const router = Router();
 
-router.get("/dashboard", authenticateJWT, getDashboardController);
+router.get("/", authenticateJWT, getDashboardController);
 
 export default router;

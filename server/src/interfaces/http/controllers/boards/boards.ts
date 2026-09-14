@@ -4,7 +4,7 @@ import { BoardModel, CardModel, ColumnModel, WorkspaceModel } from "../../../../
 import { ApiResponse } from "../../../../shared/utils/ApiResponse";
 import { Types } from "mongoose";
 
-import { getCacheClient }  from "../../../../infrastructure/cache/redis";
+import { getCacheClient }  from "../../../../infrastructure/cache/cacheClient";
 import { boardControllerLogger } from "../../../../infrastructure/logging/childLogger";
 import { notWorkspaceMemberError, workspaceIdRequiredError } from "../../../../shared/errors/workspace/workspace";
 import { boardNotFoundError, boardAccessDeniedError, guestCannotModifyBoardError } from "../../../../shared/errors/board/board";

@@ -1,115 +1,92 @@
-import { Router } from 'express';
-import { createWorkspace, listWorkspaces, addWorkspaceMember, updateWorkspace, deleteWorkspace } from '../../controllers/workspaces/workspaces';
-import { createBoard, updateBoard, listBoards, getBoardDetails } from "../../controllers/boards/boards";
-import { createColumn  } from '../../controllers/columns/columns';
+import { Router } from "express";
+
+import {
+  createBoard,
+  updateBoard,
+  listBoards,
+  getBoardDetails,
+} from "../../controllers/boards/boards";
+import { createColumn } from "../../controllers/columns/columns";
 import {
   createCard,
   moveCard,
   updateCard,
 } from "../../controllers/cards/cards";
-import { searchCards } from '../../controllers/search/search';
-import { signUpload } from '../../controllers/fileUpload/fileUpload';
-import { authenticateJWT } from '../../middleware/auth.middleware';
-import { createWorkspaceSchema, updateWorkspaceSchema, addWorkspaceMemberSchema } from '../../validators/kanban/workspace.validator';
-import { validateSchema } from '../../middleware/validate.middleware';
-import { boardParamsSchema, boardQuerySchema, createBoardSchema, updateBoardSchema } from '../../validators/kanban/board.validator';
-import { createCardSchema, moveCardSchema, updateCardSchema } from '../../validators/kanban/card.validator';
-import { createColumnSchema } from '../../validators/kanban/column.validator';
+import { searchCards } from "../../controllers/search/search";
+import { signUpload } from "../../controllers/fileUpload/fileUpload";
 
+import { authenticateJWT } from "../../middleware/auth.middleware";
+import { validateSchema } from "../../middleware/validate.middleware";
+
+import {
+  boardParamsSchema,
+  boardQuerySchema,
+  createBoardSchema,
+  updateBoardSchema,
+} from "../../validators/kanban/board.validator";
+import {
+  createCardSchema,
+  moveCardSchema,
+  updateCardSchema,
+  cardParamsSchema,
+} from "../../validators/kanban/card.validator";
+import { createColumnSchema } from "../../validators/kanban/column.validator";
 
 const router = Router();
 
-// Protect all routes with JWT Auth
 router.use(authenticateJWT);
 
-  /* 
-    Workspaces 
-  */ 
-//  create new workspace
-  router.post(
-    "/workspaces",
-    validateSchema(createWorkspaceSchema),
-    createWorkspace,
-  );
+// BOARDS
 
-  // get workspace lists
-  router.get('/workspaces', listWorkspaces);
+router.post("/boards", validateSchema(createBoardSchema), createBoard);
 
-  // update workspace
-  router.patch(
-    "/workspaces/:workspaceId",
-    validateSchema(updateWorkspaceSchema),
-    updateWorkspace,
-  );
+router.get("/boards", validateSchema(boardQuerySchema), listBoards);
 
-  // add members to workspace
-  router.post(
-    "/workspaces/:id/members",
-    validateSchema(addWorkspaceMemberSchema),
-    addWorkspaceMember,
-  );
+router.get(
+  "/boards/:boardId",
+  validateSchema({ params: boardParamsSchema }),
+  getBoardDetails,
+);
 
-  // delete workspace 
-  router.delete("/workspaces/:id", deleteWorkspace);
+router.patch(
+  "/boards/:boardId",
+  validateSchema({
+    ...updateBoardSchema,
+    params: boardParamsSchema,
+  }),
+  updateBoard,
+);
 
+// COLUMNS
 
-  /*
-    Boards
-  */ 
-  // create new board
-    router.post('/boards', validateSchema(createBoardSchema), createBoard);
-  
-    // update board
-  router.patch(
-    "/boards/:boardId",
-    validateSchema(updateBoardSchema),
-    updateBoard,
-  );
+router.post("/columns", validateSchema(createColumnSchema), createColumn);
 
-  // get lists of boards
-  router.get("/boards", validateSchema(boardQuerySchema), listBoards);
+// CARDS
 
-  // get boards by id
-  router.get(
-    "/boards/:boardId",
-    validateSchema({
-      params: boardParamsSchema,
-    }),
-    getBoardDetails,
-  );
+router.get("/cards/search", searchCards);
 
-  /*
-    Columns
-  */ 
+router.post("/cards", validateSchema(createCardSchema), createCard);
 
-  // Create new column
-  router.post("/columns", validateSchema(createColumnSchema), createColumn);
+router.patch(
+  "/cards/:cardId/move",
+  validateSchema({
+    ...moveCardSchema,
+    params: cardParamsSchema,
+  }),
+  moveCard,
+);
 
-  /*
-  Cards
-  */ 
- 
-  // Create new card
-  router.post("/cards", validateSchema(createCardSchema), createCard);
-  
-  // move the card
-  router.patch("/cards/:id/move", validateSchema(moveCardSchema), moveCard);
-  
-  // update the card
-  router.patch("/cards/:id", validateSchema(updateCardSchema), updateCard);
-  
-  /*
-  Attachments
-  */ 
+router.patch(
+  "/cards/:cardId",
+  validateSchema({
+    ...updateCardSchema,
+    params: cardParamsSchema,
+  }),
+  updateCard,
+);
 
-  // upload doc
-  router.post('/attachments/presign', signUpload);
+// ATTACHMENTS
 
-  /*
-    Search
-  */ 
-
-  // search cards 
-  router.get('/cards/search', searchCards);
+router.post("/attachments/presign", signUpload);
 
 export default router;

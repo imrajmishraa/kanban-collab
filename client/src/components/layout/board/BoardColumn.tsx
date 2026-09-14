@@ -90,7 +90,7 @@ export default function BoardColumn({
                     {card.labels.slice(0, 3).map((label, index) => (
                       <span
                         key={`${card.id}-label-${index}`}
-                        className="rounded-full border border-(--border) bg-(--surface-elevated) px-2 py-0.5 font-mono text-[8px] uppercase tracking-[0.1em] text-(--text-muted)"
+                        className="rounded-full border border-(--border) bg-(--surface-elevated) px-2 py-0.5 font-mono text-[8px] uppercase tracking-widest text-(--text-muted)"
                       >
                         {typeof label === "string" ? label : "label"}
                       </span>

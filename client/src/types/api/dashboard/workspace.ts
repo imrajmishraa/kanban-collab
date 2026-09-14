@@ -1,29 +1,29 @@
-export type WorkspaceStatus = "active" | "deletion_pending";
-
-export type WorkspaceMemberRole = "owner" | "admin" | "member" | "guest";
-
-export interface WorkspaceMember {
-  userId: string;
-  role: WorkspaceMemberRole;
-}
-
 export interface Workspace {
   id: string;
   name: string;
   slug: string;
   description?: string;
-
   ownerId: string;
-
   members: WorkspaceMember[];
-
-  status: WorkspaceStatus;
-
+  status: "active" | "deletion_pending";
   deletionRequestedAt: string | null;
   deletionScheduledFor: string | null;
-
   createdAt: string;
   updatedAt: string;
+}
+
+export interface WorkspaceMember {
+  userId: string;
+  role: "owner" | "admin" | "member" | "guest";
+}
+
+export interface WorkspacePagination {
+  page: number;
+  limit: number;
+  totalWorkspaces: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
 }
 
 export interface CreateWorkspacePayload {
@@ -40,12 +40,18 @@ export interface UpdateWorkspacePayload {
 
 export interface AddWorkspaceMemberPayload {
   email: string;
-  role?: WorkspaceMemberRole;
+  role?: "admin" | "member" | "guest";
 }
 
 export interface WorkspaceDeletionResponse {
   workspaceId: string;
-  status: WorkspaceStatus;
+  status: string;
   deletionRequestedAt: string;
   deletionScheduledFor: string;
+}
+
+export interface ListWorkspacesParams {
+  search?: string;
+  page?: number;
+  limit?: number;
 }

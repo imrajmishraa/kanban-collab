@@ -1,6 +1,6 @@
 import { useEffect, useState, type MouseEvent } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "@/app/providers/AuthProvider";
+
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ArrowRight02Icon,
@@ -11,6 +11,7 @@ import {
   Edit02Icon,
   GithubIcon,
 } from "@hugeicons/core-free-icons";
+import { useAuth } from "#hooks/auth/useAuth";
 
 export interface NavigationSection {
   title: string;
@@ -253,7 +254,7 @@ export default function Navbar({ onNavigate, activeHref = "" }: NavbarProps) {
                     type="button"
                     onClick={handleSignOut}
                     disabled={isSigningOut}
-                    className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 font-mono text-xs text-(--brand) transition-all duration-200 hover:bg-(--brand)/10 hover:text-(--brand-hover) disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 font-mono text-xs text-(--brand) transition-all duration-200 hover:bg-(--brand)/10 hover:text-(--brand-hover) disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
                   >
                     <HugeiconsIcon icon={Logout03Icon} size={14} />
                     {isSigningOut ? "Leaving..." : "Sign Out"}
@@ -273,7 +274,7 @@ export default function Navbar({ onNavigate, activeHref = "" }: NavbarProps) {
                     hover:border-(--brand)/70
                     hover:bg-(--brand)/20
                     hover:shadow-[0_0_20px_-4px_var(--brand)]
-                    active:scale-95
+                    active:scale-95 cursor-pointer
                   "
                 >
                   <span className="pointer-events-none absolute inset-0 -translate-x-full bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent)] transition-transform duration-700 group-hover/btn:translate-x-full" />
@@ -366,7 +367,7 @@ export default function Navbar({ onNavigate, activeHref = "" }: NavbarProps) {
                       type="button"
                       onClick={handleSignOut}
                       disabled={isSigningOut}
-                      className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 font-mono text-xs text-(--brand) transition-all duration-200 hover:bg-(--brand)/10 hover:text-(--brand-hover) disabled:cursor-not-allowed disabled:opacity-50"
+                      className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 font-mono text-xs text-(--brand) transition-all duration-200 hover:bg-(--brand)/10 hover:text-(--brand-hover) cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <HugeiconsIcon icon={Logout03Icon} size={14} />
                       {isSigningOut ? "Leaving..." : "Sign Out"}
@@ -376,7 +377,7 @@ export default function Navbar({ onNavigate, activeHref = "" }: NavbarProps) {
                   <button
                     type="button"
                     onClick={handleStartBuilding}
-                    className="flex items-center justify-center gap-1.5 rounded-lg border border-(--brand)/40 bg-(--brand)/10 px-3.5 py-2 font-mono text-xs text-(--brand-hover) backdrop-blur-sm transition-all duration-300 hover:border-(--brand)/70 hover:bg-(--brand)/20 active:scale-95"
+                    className="flex items-center justify-center gap-1.5 rounded-lg border border-(--brand)/40 bg-(--brand)/10 px-3.5 py-2 font-mono text-xs text-(--brand-hover) backdrop-blur-sm transition-all duration-300 hover:border-(--brand)/70 hover:bg-(--brand)/20 active:scale-95 cursor-pointer"
                   >
                     <HugeiconsIcon icon={ArrowRight02Icon} size={14} />
                     Get Started

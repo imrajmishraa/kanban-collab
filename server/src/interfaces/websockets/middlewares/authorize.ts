@@ -9,7 +9,7 @@ import { boardNotFoundError } from "../../../shared/errors/board/board";
 
 import { notWorkspaceMemberError } from "../../../shared/errors/workspace/workspace";
 
-import { invalidObjectIdError } from "../../../shared/errors/handler/custom";
+import { invalidObjectIdError } from "../../../shared/errors/handler/generic";
 
 export async function authorize(
   userId: string,

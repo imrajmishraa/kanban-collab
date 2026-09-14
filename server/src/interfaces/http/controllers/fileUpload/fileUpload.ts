@@ -5,9 +5,10 @@ import { ApiResponse } from "../../../../shared/utils/ApiResponse";
 import { Types } from "mongoose";
 import { fileUploadControllerLogger } from "../../../../infrastructure/logging/childLogger";
 
-import { attachmentsRequiredError, forbiddenWorkspaceError, guestCannotUploadError } from "../../../../shared/errors/fileUpload/fileUpload";
+import { attachmentsRequiredError,  guestCannotUploadError } from "../../../../shared/errors/fileUpload/fileUpload";
 import { boardNotFoundError } from "../../../../shared/errors/board/board";
 import { cardNotFoundError } from "../../../../shared/errors/card/card";
+import { forbiddenWorkspaceError } from "../../../../shared/errors/workspace/workspace";
 
 
 const signUpload = asyncHandler(async (req: AuthenticatedRequest, res) => {

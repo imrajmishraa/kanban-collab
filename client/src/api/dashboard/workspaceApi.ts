@@ -7,69 +7,60 @@ import type {
   UpdateWorkspacePayload,
   Workspace,
   WorkspaceDeletionResponse,
+  WorkspacePagination,
+  ListWorkspacesParams,
 } from "@/types/api/dashboard/workspace";
 
 interface WorkspaceApiDocument extends Omit<Workspace, "id"> {
   _id: string;
 }
 
-interface WorkspaceListResponse {
-  data: WorkspaceApiDocument[];
+interface ListWorkspacesResponse {
+  workspaces: WorkspaceApiDocument[];
+  pagination: WorkspacePagination;
 }
 
-interface WorkspaceResponse {
-  data: WorkspaceApiDocument;
-}
-
-const normalizeWorkspace = (workspace: WorkspaceApiDocument): Workspace => {
-  return {
-    ...workspace,
-    id: workspace._id,
-  };
-};
+const normalize = (doc: WorkspaceApiDocument): Workspace => ({
+  ...doc,
+  id: doc._id,
+});
 
 export const workspaceApi = {
-  /**
-   * Fetch all workspaces where the authenticated
-   * user is a member.
-   */
-  async listWorkspaces(): Promise<Workspace[]> {
-    const response =
-      await apiClient.get<ApiResponse<WorkspaceListResponse>>("/workspaces");
+  async listWorkspaces(
+    params: ListWorkspacesParams = {},
+  ): Promise<{ workspaces: Workspace[]; pagination: WorkspacePagination }> {
+    const response = await apiClient.get<ApiResponse<ListWorkspacesResponse>>(
+      "/workspaces",
+      { params },
+    );
 
-    return response.data.data.data.map(normalizeWorkspace);
+    return {
+      workspaces: response.data.data.workspaces.map(normalize),
+      pagination: response.data.data.pagination,
+    };
   },
 
-  /**
-   * Create a new workspace.
-   */
   async createWorkspace(payload: CreateWorkspacePayload): Promise<Workspace> {
-    const response = await apiClient.post<ApiResponse<WorkspaceResponse>>(
+    const response = await apiClient.post<ApiResponse<WorkspaceApiDocument>>(
       "/workspaces",
       payload,
     );
 
-    return normalizeWorkspace(response.data.data.data);
+    return normalize(response.data.data);
   },
 
-  /**
-   * Update an existing workspace.
-   */
   async updateWorkspace(
     workspaceId: string,
     payload: UpdateWorkspacePayload,
   ): Promise<Workspace> {
-    const response = await apiClient.patch<ApiResponse<WorkspaceResponse>>(
+    const response = await apiClient.patch<ApiResponse<WorkspaceApiDocument>>(
       `/workspaces/${workspaceId}`,
       payload,
     );
 
-    return normalizeWorkspace(response.data.data.data);
+    return normalize(response.data.data);
   },
 
-  /**
-   * Schedule a workspace for deletion.
-   */
   async deleteWorkspace(
     workspaceId: string,
   ): Promise<WorkspaceDeletionResponse> {
@@ -80,9 +71,6 @@ export const workspaceApi = {
     return response.data.data;
   },
 
-  /**
-   * Add a member to a workspace.
-   */
   async addWorkspaceMember(
     workspaceId: string,
     payload: AddWorkspaceMemberPayload,

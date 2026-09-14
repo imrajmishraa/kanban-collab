@@ -1,6 +1,6 @@
 import type { IncomingMessage } from "http";
 
-import { verifyAccessToken } from "../../../infrastructure/security/token";
+import { verifyAccessToken } from "../../../infrastructure/security/jwt";
 import { expiredAccessTokenError, missingAccessTokenError } from "../../../shared/errors/auth/accessToken";
 import { boardIdRequiredError } from "../../../shared/errors/board/board";
 import { InvalidWebSocketRequestError } from "../../../shared/errors/websocket/websocket";

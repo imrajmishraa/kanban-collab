@@ -1,11 +1,9 @@
-import { BrowserRouter } from 'react-router-dom'
+import { BrowserRouter } from "react-router-dom";
+
 import { AppRouter } from "@app/router";
-import { AuthProvider } from './providers/AuthProvider';
-import { ThemeProvider } from './providers/ThemeProvider';
+import { ThemeProvider } from "./providers/ThemeProvider";
 import QueryProvider from "./providers/QueryProvider";
-
-import ScrollToTop from './ScrollToTop';
-
+import ScrollToTop from "./ScrollToTop";
 
 export default function App() {
   return (
@@ -13,9 +11,7 @@ export default function App() {
       <ScrollToTop />
       <ThemeProvider>
         <QueryProvider>
-          <AuthProvider>
-            <AppRouter />
-          </AuthProvider>
+          <AppRouter />
         </QueryProvider>
       </ThemeProvider>
     </BrowserRouter>

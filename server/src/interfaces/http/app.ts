@@ -1,173 +1,162 @@
-import express, { Request, Response, NextFunction } from "express";
-
+import express, {
+  type Request,
+  type Response,
+  type NextFunction,
+} from "express";
 import cors from "cors";
 import helmet from "helmet";
-import mongoSanitize from "express-mongo-sanitize";
 import cookieParser from "cookie-parser";
-import rateLimit from "express-rate-limit";
 import compression from "compression";
+import rateLimit from "express-rate-limit";
+import crypto from "node:crypto";
+
+import { ENV } from "../../config/env";
+import { httpLogger } from "../../infrastructure/logging/childLogger";
 
 import healthzRoute from "./routes/healthz/healthz.route";
 import authRoute from "./routes/auth/auth.route";
+import oauthRoute from "./routes/auth/oauthRoutes";
 import kanbanRoute from "./routes/kanban/kanban.routes";
 import dashboardRoutes from "./routes/dashboard/dashboard";
+import workspaceRoute from "./routes/kanban/workspace/workspaceRoutes";
 
-import { logger } from "../../infrastructure/logging/logger";
 import { errorHandler } from "./middleware/errorHandler";
-import { notFoundHandler } from "./middleware/notFound";
+import { notFoundHandler } from "./middleware/notFoundHandler";
 
-import { ENV } from "../../config/env";
+// APP
 
 const app = express();
 
-// Set rate limits
-// Global rate limiter (optional, 100 requests per minute)
+if (ENV.TRUST_PROXY) {
+  app.set("trust proxy", 1);
+}
+
+app.disable("x-powered-by");
+
+// RATE LIMITERS
+
 const globalLimiter = rateLimit({
-  windowMs: 1 * 60 * 1000, // 1 minute
-  max: 1000,
-  message: 'Too many requests from this IP, please try again later.',
+  windowMs: ENV.RATE_LIMIT_WINDOW_MS,
+  max: ENV.RATE_LIMIT_MAX,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  message: "Too many requests from this IP. Please try again later.",
 });
 
-
-// Stricter limiter for Auth (Login/Register)
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000, // 1000 attempts for testing
-  skipSuccessfulRequests: true, // Don't count successful logins
-  message: 'Too many login attempts, please try again after 15 minutes.',
+  windowMs: 15 * 60 * 1000,
+  max: ENV.AUTH_RATE_LIMIT_MAX,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  skipSuccessfulRequests: true,
+  message: "Too many login attempts. Please try again after 15 minutes.",
 });
 
-// Security Middlewares
+// SECURITY
 
 app.use(
   helmet({
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-
         scriptSrc: ["'self'", "https://cdn.jsdelivr.net"],
-
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
-
+        imgSrc: ["'self'", "data:", "blob:"],
         connectSrc: [
           "'self'",
           ENV.CLIENT_URL,
           "ws:",
           "wss:",
-          "wss://collaboration.enterprise.com",
+          ...ENV.CORS_ORIGINS,
         ],
       },
     },
-
-    crossOriginEmbedderPolicy: true,
-
-    crossOriginOpenerPolicy: {
-      policy: "same-origin",
-    },
-
-    referrerPolicy: {
-      policy: "strict-origin-when-cross-origin",
-    },
+    crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: { policy: "same-origin" },
+    referrerPolicy: { policy: "strict-origin-when-cross-origin" },
   }),
 );
-
-
-// CORS
 
 app.use(
   cors({
-    origin: ENV.NODE_ENV === "production" ? ENV.CLIENT_URL : true,
-
+    origin: ENV.CORS_ORIGINS,
     credentials: true,
-
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-
-    allowedHeaders: ["Content-Type", "Authorization"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Request-Id",
+      "X-CSRF-Token",
+    ],
+    exposedHeaders: ["X-Request-Id", "Retry-After"],
+    maxAge: 600,
   }),
 );
 
+// PARSERS
 
-// Body Parsers
 app.use(compression());
-
-
-app.use(
-  express.json({
-    limit: "10kb",
-  }),
-);
-
-app.use(
-  express.urlencoded({
-    extended: true,
-    limit: "10kb",
-  }),
-);
-
-
-// Sanitization
-
-
-app.use(mongoSanitize());
-
-
-// Cookie Parser
-
-
+app.use(express.json({ limit: "1mb" }));
+app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 app.use(cookieParser());
 
+// REQUEST ID + LOGGING
 
-// HTTP Request Logger
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const incoming = req.headers["x-request-id"];
+  const requestId =
+    typeof incoming === "string" && incoming.length > 0
+      ? incoming
+      : crypto.randomUUID();
 
+  req.id = requestId;
+  res.setHeader("X-Request-Id", requestId);
+  next();
+});
 
-app.use((req: Request, _res: Response, next: NextFunction) => {
-  logger.info(
-    {
-      method: req.method,
-      url: req.originalUrl,
-      ip: req.ip,
-    },
-    "Incoming request",
-  );
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const start = process.hrtime.bigint();
+
+  res.on("finish", () => {
+    const durationMs = Number(process.hrtime.bigint() - start) / 1_000_000;
+
+    httpLogger.debug(
+      {
+        requestId: req.id,
+        method: req.method,
+        url: req.originalUrl,
+        statusCode: res.statusCode,
+        durationMs: Number(durationMs.toFixed(2)),
+        ip: req.ip,
+      },
+      "HTTP request",
+    );
+  });
 
   next();
 });
 
-
-// Health Check
+// ROUTES
 
 app.get("/", (_req: Request, res: Response) => {
-  res.status(200).json({
-    success: true,
-    message: "Server is healthy",
-  });
+  res.status(200).json({ success: true, message: "Server is healthy" });
 });
 
-
-// API Routes
-
 app.use("/api/v1", globalLimiter);
+app.use("/healthz", healthzRoute);
 
-app.use("/api/v1", healthzRoute);
-
+// OAuth before auth — public routes, must not be shadowed
+app.use("/api/v1/auth/oauth", oauthRoute);
 app.use("/api/v1/auth", authLimiter, authRoute);
 
 app.use("/api/v1", kanbanRoute);
+app.use("/api/v1/workspaces", workspaceRoute);
+app.use("/api/v1/dashboard", dashboardRoutes);
 
-app.use("/api/v1", dashboardRoutes);
-
-
-
-
-// 404 Handler
+// TERMINAL
 
 app.use(notFoundHandler);
-
-
-// Global Error Handler
-
 app.use(errorHandler);
 
 export { app };

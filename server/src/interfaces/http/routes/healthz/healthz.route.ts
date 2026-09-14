@@ -4,7 +4,7 @@ import { websocketHealth } from "../../controllers/healthz/websocketHealth";
 
 const router = Router();
 
-router.get("/healthz", healthz);
-router.get("/healthz/websocket", websocketHealth);
+router.get("/", healthz);
+router.get("/websocket", websocketHealth);
 
 export default router;

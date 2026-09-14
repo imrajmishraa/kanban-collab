@@ -3,7 +3,6 @@ import { apiClient } from "@/api/client";
 import type { ApiResponse } from "@/types/api/api";
 import type { DashboardResponse } from "@/types/dashboard/dashboard";
 
-
 interface DashboardApiResponse {
   data: DashboardResponse;
 }

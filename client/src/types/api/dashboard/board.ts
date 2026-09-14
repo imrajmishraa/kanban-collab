@@ -1,4 +1,4 @@
-export type BoardVisibility = "workspace" | "private";
+export type BoardVisibility = "private" | "public" | "workspace";
 
 export interface Board {
   id: string;
@@ -15,6 +15,7 @@ export interface Board {
 export interface CreateBoardPayload {
   workspaceId: string;
   name: string;
+  description?: string;
   backgroundColor?: string;
   visibility?: BoardVisibility;
 }
@@ -27,34 +28,43 @@ export interface UpdateBoardPayload {
   visibility?: BoardVisibility;
 }
 
+export interface BoardCardChecklistItem {
+  title: string;
+  isCompleted: boolean;
+}
+
 export interface BoardCard {
   id: string;
+  columnId: string;
+  boardId: string;
+  workspaceId: string;
   title: string;
-  description?: string;
+  description: string;
   orderIndex: number;
   dueDate?: string;
-  labels: unknown[];
-  checkLists: unknown[];
+  members: string[];
+  labels: string[];
+  checklists: BoardCardChecklistItem[];
+  isArchived: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface BoardColumn {
   id: string;
+  boardId: string;
+  workspaceId: string;
   name: string;
   orderIndex: number;
   cards: BoardCard[];
+  createdAt: string;
+  updatedAt: string;
 }
 
-export interface BoardDetails {
-  id: string;
-  name: string;
-  description?: string;
-  backgroundColor: string;
+export interface BoardDetails extends Board {
   columns: BoardColumn[];
 }
 
-/**
- * Query parameters used when listing boards.
- */
 export interface ListBoardsParams {
   page?: number;
   limit?: number;
@@ -62,9 +72,6 @@ export interface ListBoardsParams {
   search?: string;
 }
 
-/**
- * Pagination metadata returned by the boards API.
- */
 export interface BoardPagination {
   page: number;
   limit: number;
@@ -74,9 +81,6 @@ export interface BoardPagination {
   hasPreviousPage: boolean;
 }
 
-/**
- * Response returned by GET /boards.
- */
 export interface ListBoardsResponse {
   boards: Board[];
   pagination: BoardPagination;

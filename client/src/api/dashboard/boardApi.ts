@@ -1,4 +1,5 @@
 import { apiClient } from "../client";
+
 import type { ApiResponse } from "@/types/api/api";
 import type {
   Board,
@@ -73,11 +74,9 @@ export const boardApi = {
   },
 
   async getBoardDetails(boardId: string): Promise<BoardDetails> {
-    const response = await apiClient.get<
-      ApiResponse<{
-        data: BoardDetails;
-      }>
-    >(`/boards/${boardId}`);
+    const response = await apiClient.get<ApiResponse<{ data: BoardDetails }>>(
+      `/boards/${boardId}`,
+    );
 
     return response.data.data.data;
   },
