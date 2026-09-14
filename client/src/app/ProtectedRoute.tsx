@@ -1,14 +1,14 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 
-import { useAuth } from "@/app/providers/AuthProvider";
-import AuthLoadingScreen from "@/components/feedback/AuthLoadingScreen";
+import LoadingScreen from "@components/feedback/LoadingScreen";
+import { useAuth } from "@/hooks/auth/useAuth";
 
 export default function ProtectedRoute() {
   const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
-    return <AuthLoadingScreen message="[ Restoring session... ]" />;
+    return <LoadingScreen message="Restoring session..." />;
   }
 
   if (!isAuthenticated) {

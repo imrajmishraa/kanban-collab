@@ -6,6 +6,8 @@ import type {
 } from "@/types/api/auth/auth";
 import { apiClient } from "./client";
 
+// PAYLOADS
+
 export interface RegisterPayload {
   fullName: string;
   email: string;
@@ -15,63 +17,54 @@ export interface RegisterPayload {
 export interface LoginPayload {
   email: string;
   password: string;
+  rememberMe?: boolean;
 }
 
-interface NestedApiResponse<T> {
-  data: T;
-}
+// REGISTER
 
-// ----------------------------------------------------------
-// Regular auth requests
-// ----------------------------------------------------------
 export async function registerRequest(
   payload: RegisterPayload,
 ): Promise<ApiResponse<RegisterResponse>> {
-  const response = await apiClient.post<
-    ApiResponse<NestedApiResponse<RegisterResponse>>
-  >("/auth/register", payload);
+  const response = await apiClient.post<ApiResponse<RegisterResponse>>(
+    "/auth/register",
+    payload,
+  );
 
-  return {
-    ...response.data,
-    data: response.data.data.data,
-  };
+  return response.data;
 }
+
+// LOGIN
 
 export async function loginRequest(
   payload: LoginPayload,
 ): Promise<ApiResponse<LoginResponse>> {
-  const response = await apiClient.post<
-    ApiResponse<NestedApiResponse<LoginResponse>>
-  >("/auth/login", payload);
+  const response = await apiClient.post<ApiResponse<LoginResponse>>(
+    "/auth/login",
+    payload,
+  );
 
-  return {
-    ...response.data,
-    data: response.data.data.data,
-  };
+  return response.data;
 }
+
+// LOGOUT
 
 export async function logoutRequest(): Promise<void> {
   await apiClient.post("/auth/logout");
 }
 
-// ----------------------------------------------------------
-// Refresh token with singleton pattern
-// ----------------------------------------------------------
+// REFRESH
+
 let refreshPromise: Promise<ApiResponse<RefreshResponse>> | null = null;
 
 export function refreshRequest(): Promise<ApiResponse<RefreshResponse>> {
-  // If a refresh is already in progress, return the same promise.
-  if (!refreshPromise) {
-    refreshPromise = apiClient
-      .post<ApiResponse<NestedApiResponse<RefreshResponse>>>("/auth/refresh")
-      .then((response) => ({
-        ...response.data,
-        data: response.data.data.data,
-      }))
-      .finally(() => {
-        // Clear the promise so future refreshes can start fresh.
-        refreshPromise = null;
-      });
-  }
+  if (refreshPromise) return refreshPromise;
+
+  refreshPromise = apiClient
+    .post<ApiResponse<RefreshResponse>>("/auth/refresh")
+    .then((response) => response.data)
+    .finally(() => {
+      refreshPromise = null;
+    });
+
   return refreshPromise;
 }
