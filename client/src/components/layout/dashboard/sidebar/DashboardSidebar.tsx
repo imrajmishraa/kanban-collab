@@ -1,18 +1,20 @@
 import { useState } from "react";
 
 import SidebarHeader from "./SidebarHeader";
-import SidebarWorkspace from "./SidebarWorkspace";
+import SidebarNewWorkspace from "../workspace/create/SidebarNewWorkspace";
 import SidebarNavigation from "./SidebarNavigation";
 import SidebarBoards from "./SidebarBoards";
 import SidebarFooter from "./SidebarFooter";
+import { SidebarSelectMode } from "./SidebarSelectMode";
 
 import MobileSidebar from "../mobile/MobileSidebar";
 import SidebarMobileHeader from "../mobile/SidebarMobileHeader";
 
-import { useAuth } from "@/app/providers/AuthProvider";
 import { useWorkspaces } from "@/hooks/dashboard/useWorkspaces";
 import { useBoards } from "@/hooks/dashboard/useBoards";
-import { useActiveWorkspace } from "@/hooks/dashboard/useActiveWorkspace";
+import { useActiveWorkspace } from "@/stores/activeWorkspace";
+import { useSidebarState } from "@/stores/sidebarState";
+import { useAuth } from "@/hooks/auth/useAuth";
 
 interface DashboardSidebarProps {
   collapsed: boolean;
@@ -24,30 +26,24 @@ export default function DashboardSidebar({
   onToggle,
 }: DashboardSidebarProps) {
   const { user, logout } = useAuth();
+  const { boardsOpen, toggleBoards, setBoardsOpen } = useSidebarState();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [boardsOpen, setBoardsOpen] = useState(false);
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedBoards, setSelectedBoards] = useState<Set<string>>(new Set());
+  const [pinnedBoardIds, setPinnedBoardIds] = useState<string[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem("kanban.pinnedBoards") ?? "[]");
+    } catch {
+      return [];
+    }
+  });
 
-  const boardsLimit = 20;
+  const boardsLimit = 6;
 
-  // ---------------------------------------------------------------------------
-  // Workspaces
-  // ---------------------------------------------------------------------------
+  const { data: workspaces = [] } = useWorkspaces();
 
-  const {
-    data: workspaces = [],
-    isLoading: isWorkspacesLoading,
-    isError: isWorkspacesError,
-  } = useWorkspaces();
-
-  const workspaceIds = workspaces.map((workspace) => workspace.id);
-
-  const { activeWorkspaceId, setActiveWorkspaceId } =
-    useActiveWorkspace(workspaceIds);
-
-  // ---------------------------------------------------------------------------
-  // Boards
-  // ---------------------------------------------------------------------------
+  const { activeWorkspaceId, setActiveWorkspace } = useActiveWorkspace();
 
   const {
     data: boardsData,
@@ -56,35 +52,18 @@ export default function DashboardSidebar({
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
-  } = useBoards(activeWorkspaceId ?? "", boardsLimit);
+  } = useBoards(boardsLimit);
 
-  // Flatten all loaded pages into one board list.
-  const boards =
-    boardsData?.pages.flatMap((page) => page.boards) ?? [];
-
-  // ---------------------------------------------------------------------------
-  // Handlers
-  // ---------------------------------------------------------------------------
-
-  const handleBoardsToggle = () => {
-    setBoardsOpen((previous) => !previous);
-  };
+  const boards = boardsData?.pages.flatMap((page) => page.boards) ?? [];
 
   const handleWorkspaceChange = (workspaceId: string) => {
-    setActiveWorkspaceId(workspaceId);
-
-    // Close boards when changing workspace.
-    setBoardsOpen(false);
+    const workspace = workspaces.find((w) => w.id === workspaceId);
+    setActiveWorkspace(workspaceId, workspace?.name ?? "");
+    setBoardsOpen(true);
   };
 
   const handleLoadMoreBoards = () => {
-    if (hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  };
-
-  const handleSearch = () => {
-    // Search dialog will be implemented later.
+    if (hasNextPage && !isFetchingNextPage) fetchNextPage();
   };
 
   const handleLogout = async () => {
@@ -95,84 +74,128 @@ export default function DashboardSidebar({
     }
   };
 
-  // Render
+  const toggleBoardSelection = (id: string) => {
+    setSelectedBoards((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const closeSelectMode = () => {
+    setSelectMode(false);
+    setSelectedBoards(new Set());
+  };
+
+  const handleBulkPin = (ids: string[]) => {
+    const merged = [...new Set([...pinnedBoardIds, ...ids])];
+    setPinnedBoardIds(merged);
+    localStorage.setItem("kanban.pinnedBoards", JSON.stringify(merged));
+    closeSelectMode();
+  };
+
+  const handleBulkDelete = (ids: string[]) => {
+    console.log("Delete boards:", ids);
+    closeSelectMode();
+  };
+
+  const handlePinBoard = (boardId: string, pinned: boolean) => {
+    const next = pinned
+      ? [...new Set([...pinnedBoardIds, boardId])]
+      : pinnedBoardIds.filter((id) => id !== boardId);
+    setPinnedBoardIds(next);
+    localStorage.setItem("kanban.pinnedBoards", JSON.stringify(next));
+  };
 
   return (
     <>
-      {/* Desktop Sidebar */}
-
       <aside
-        onClick={collapsed ? onToggle : undefined}
+        onClick={collapsed && !selectMode ? onToggle : undefined}
         className={[
           "fixed left-0 top-0 z-40 hidden h-screen flex-col",
-          "border-r border-(--border) bg-(--bg-surface)",
+          "bg-(--bg-surface)",
           "transition-[width] duration-200 ease-out",
           "md:flex",
-          collapsed
-            ? "w-18 cursor-e-resize"
-            : "w-64",
+          collapsed ? "w-18 cursor-e-resize" : "w-64",
         ].join(" ")}
       >
-        {/* Header */}
         <div className="shrink-0">
           <SidebarHeader
             collapsed={collapsed}
             onToggle={onToggle}
-            onSearch={handleSearch}
+            toggleLabel={collapsed ? "Expand" : "Collapse"}
           />
         </div>
 
-        {/* Workspace */}
-        <div className="shrink-0">
-          <SidebarWorkspace
-            collapsed={collapsed}
-            workspaces={workspaces}
-            activeWorkspaceId={activeWorkspaceId ?? null}
-            onWorkspaceChange={handleWorkspaceChange}
-            isLoading={isWorkspacesLoading}
-            isError={isWorkspacesError}
-          />
-        </div>
-
-        {/* Scrollable / flexible content */}
-        <div className="flex min-h-0 flex-1 flex-col">
-          {/* Navigation */}
-          <div className="max-h-40 shrink-0 overflow-y-auto">
-            <SidebarNavigation collapsed={collapsed} />
-          </div>
-
-          {/* Boards */}
-          <SidebarBoards
-            collapsed={collapsed}
-            open={boardsOpen}
-            onToggle={handleBoardsToggle}
+        {selectMode && !collapsed ? (
+          <SidebarSelectMode
             boards={boards}
-            isLoading={isBoardsLoading}
-            isError={isBoardsError}
-            hasNextPage={hasNextPage ?? false}
-            isFetchingNextPage={isFetchingNextPage}
-            onLoadMore={handleLoadMoreBoards}
+            selected={selectedBoards}
+            onToggle={toggleBoardSelection}
+            onClose={closeSelectMode}
+            onPin={handleBulkPin}
+            onDelete={handleBulkDelete}
+            pinnedBoardIds={pinnedBoardIds}
+            onPinBoard={(id) => {
+              const isPinned = pinnedBoardIds.includes(id);
+              handlePinBoard(id, !isPinned);
+            }}
+            onRenameBoard={(id) => console.log("Rename:", id)}
+            onShareBoard={(id) => console.log("Share:", id)}
+            onDeleteBoard={(id) => console.log("Delete:", id)}
           />
-        </div>
+        ) : (
+          <>
+            <SidebarNewWorkspace collapsed={collapsed} />
 
-        {/* ALWAYS AT BOTTOM */}
-        <div className="shrink-0 border-t border-(--border)">
-          <SidebarFooter
-            collapsed={collapsed}
-            user={user}
-            onLogout={handleLogout}
-          />
-        </div>
+            <div className="relative min-h-0 flex-1">
+              <div className="h-full overflow-y-auto">
+                <SidebarNavigation collapsed={collapsed} />
+                <SidebarBoards
+                  key={activeWorkspaceId ?? "none"}
+                  collapsed={collapsed}
+                  open={boardsOpen}
+                  onToggle={toggleBoards}
+                  boards={boards}
+                  isLoading={isBoardsLoading}
+                  isError={isBoardsError}
+                  hasNextPage={hasNextPage ?? false}
+                  isFetchingNextPage={isFetchingNextPage}
+                  onLoadMore={handleLoadMoreBoards}
+                  pinnedBoardIds={pinnedBoardIds}
+                  onPin={handlePinBoard}
+                  onRename={(id) => console.log("Rename:", id)}
+                  onShare={(id) => console.log("Share:", id)}
+                  onDelete={(id) => console.log("Delete:", id)}
+                  onEnterSelectMode={() => setSelectMode(true)}
+                />
+              </div>
+
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-(--bg-surface)"
+                style={{
+                  maskImage:
+                    "linear-gradient(to top, black 40%, transparent 100%)",
+                  WebkitMaskImage:
+                    "linear-gradient(to top, black 40%, transparent 100%)",
+                }}
+              />
+            </div>
+
+            <div className="shrink-0">
+              <SidebarFooter
+                collapsed={collapsed}
+                user={user}
+                onLogout={handleLogout}
+              />
+            </div>
+          </>
+        )}
       </aside>
 
-      {/* Mobile Header */}
-
-      <SidebarMobileHeader
-        onMenuClick={() => setMobileMenuOpen(true)}
-        onSearch={handleSearch}
-      />
-
-      {/* Mobile Sidebar */}
+      <SidebarMobileHeader onMenuClick={() => setMobileMenuOpen(true)} />
 
       <MobileSidebar
         open={mobileMenuOpen}
@@ -181,19 +204,16 @@ export default function DashboardSidebar({
         workspaces={workspaces}
         activeWorkspaceId={activeWorkspaceId ?? null}
         onWorkspaceChange={handleWorkspaceChange}
-        isWorkspacesLoading={isWorkspacesLoading}
-        isWorkspacesError={isWorkspacesError}
         boards={boards}
         isBoardsLoading={isBoardsLoading}
         isBoardsError={isBoardsError}
         boardsOpen={boardsOpen}
-        onBoardsToggle={handleBoardsToggle}
+        onBoardsToggle={toggleBoards}
         hasNextPage={hasNextPage ?? false}
         isFetchingNextPage={isFetchingNextPage}
         onLoadMoreBoards={handleLoadMoreBoards}
-        onSearch={handleSearch}
         onLogout={handleLogout}
       />
     </>
   );
-};
+}

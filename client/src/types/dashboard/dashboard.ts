@@ -44,4 +44,8 @@ export interface DashboardActivity {
   boardId?: string;
   boardName?: string;
   createdAt: string;
+  actor: {
+    id: string;
+    name: string;
+  };
 }

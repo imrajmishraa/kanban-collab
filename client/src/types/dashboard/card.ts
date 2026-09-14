@@ -1,3 +1,8 @@
+export interface CardChecklistItem {
+  title: string;
+  isCompleted: boolean;
+}
+
 export interface CreateCardRequest {
   boardId: string;
   columnId: string;
@@ -10,10 +15,9 @@ export interface CreateCardResponse {
   title: string;
   columnId: string;
   orderIndex: number;
-  checklists: unknown[];
-  labels: unknown[];
+  checklists: CardChecklistItem[];
+  labels: string[];
 }
-
 
 export interface UpdateCardRequest {
   title?: string;
@@ -25,13 +29,11 @@ export interface UpdateCardResponse {
   title: string;
   columnId: string;
   orderIndex: number;
-  checklists: unknown[];
-  labels: unknown[];
+  checklists: CardChecklistItem[];
+  labels: string[];
 }
-
 
 export interface MoveCardRequest {
-  targetColumnId: string;
-  targetOrderIndex: number;
+  toColumnId: string; // ← align with server schema
+  toIndex: number; // ← align with server schema
 }
-

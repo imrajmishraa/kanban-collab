@@ -1,4 +1,4 @@
-import { useState, type MouseEvent, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { NavLink } from "react-router-dom";
 
 interface SidebarItemProps {
@@ -6,100 +6,88 @@ interface SidebarItemProps {
   href: string;
   icon: ReactNode;
   collapsed: boolean;
+  pinned?: boolean;
 }
 
-const SidebarItem = ({ label, href, icon, collapsed }: SidebarItemProps) => {
-  const [isHovered, setIsHovered] = useState(false);
+export default function SidebarItem({
+  label,
+  href,
+  icon,
+  collapsed,
+}: SidebarItemProps) {
+  const itemRef = useRef<HTMLDivElement>(null);
+  const [collapsedTooltip, setCollapsedTooltip] = useState<{
+    top: number;
+    left: number;
+  } | null>(null);
 
-  const [flyoutPosition, setFlyoutPosition] = useState({
-    top: 0,
-    left: 0,
-  });
-
-  const handleMouseEnter = (event: MouseEvent<HTMLDivElement>) => {
-    if (!collapsed) {
-      return;
-    }
-
-    const rect = event.currentTarget
-      .querySelector("a")
-      ?.getBoundingClientRect();
-
-    if (!rect) {
-      return;
-    }
-
-    setFlyoutPosition({
-      top: rect.top + rect.height / 2,
-      left: rect.right + 8,
+  const handleMouseEnter = () => {
+    if (!collapsed) return;
+    const anchor = itemRef.current?.querySelector("a");
+    if (!anchor) return;
+    const rect = anchor.getBoundingClientRect();
+    setCollapsedTooltip({
+      top: rect.top + 4, // 6px below the item
+      left: rect.right + 6, // left-aligned with the item
     });
-
-    setIsHovered(true);
   };
 
-  const handleMouseLeave = () => {
-    setIsHovered(false);
-  };
+  const handleMouseLeave = () => setCollapsedTooltip(null);
 
   return (
     <div
-      className="relative"
+      ref={itemRef}
+      className="group/item relative"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
       <NavLink
         to={href}
-        onClick={(event) => {
-          event.stopPropagation();
-        }}
+        onClick={(event) => event.stopPropagation()}
         aria-label={collapsed ? label : undefined}
         className={({ isActive }) =>
           [
-            "flex h-9 items-center gap-3 px-3",
-            "border-l text-sm font-mono",
-            "transition-colors duration-150",
-
+            "relative flex h-9 cursor-pointer items-center gap-3 rounded-lg",
+            "font-mono text-[13px]",
+            "transition-colors duration-200",
+            collapsed ? "justify-center px-0" : "px-3",
             isActive
-              ? "border-rose-500 bg-white/4 text-white"
-              : "border-transparent text-neutral-500 hover:bg-white/2.5 hover:text-neutral-200",
-
-            collapsed ? "justify-center px-0" : "",
+              ? "bg-white/5 text-(--text-soft)"
+              : "text-(--text-soft) hover:bg-white/3 hover:text-(--text-primary)",
           ].join(" ")
         }
       >
-        <span className="flex size-4 shrink-0 items-center justify-center">
-          {icon}
-        </span>
+        {({ isActive }) => (
+          <>
+            {isActive && (
+              <span
+                aria-hidden="true"
+                className="absolute -left-3 top-1/2 h-5 w-px -translate-y-1/2 bg-[linear-gradient(180deg,transparent,var(--brand),transparent)]"
+              />
+            )}
 
-        {!collapsed && <span className="truncate">{label}</span>}
+            <span className="flex size-5 shrink-0 items-center justify-center">
+              {icon}
+            </span>
+
+            {!collapsed && (
+              <span className="min-w-0 flex-1 truncate">{label}</span>
+            )}
+          </>
+        )}
       </NavLink>
 
-      {/* Collapsed navigation flyout */}
-      {collapsed && isHovered && (
+      {collapsed && collapsedTooltip && (
         <div
-          className="pointer-events-none fixed ml-1 z-100"
-          style={{
-            top: flyoutPosition.top,
-            left: flyoutPosition.left,
-            transform: "translateY(-50%)",
-          }}
+          role="tooltip"
+          className="pointer-events-none fixed z-50"
+          style={{ top: collapsedTooltip.top, left: collapsedTooltip.left }}
         >
-          <div
-            className={[
-              "border border-neutral-800",
-              "bg-[#0b0b0b]",
-              "px-3 py-2",
-              "font-mono text-xs text-neutral-200",
-              "shadow-[0_8px_24px_rgba(0,0,0,0.45)]",
-              "animate-in fade-in slide-in-from-left-1",
-            ].join(" ")}
-          >
+          <div className="rounded-md border border-white/12 bg-(--bg-elevated) px-2.5 py-1.5 font-mono text-[11px] text-white/95 shadow-[0_8px_20px_-6px_rgba(0,0,0,0.7)]">
             {label}
           </div>
         </div>
       )}
     </div>
   );
-};
-
-export default SidebarItem;
+}
