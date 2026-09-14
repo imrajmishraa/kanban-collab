@@ -5,7 +5,7 @@ import { ApiResponse } from "../../../../shared/utils/ApiResponse";
 import { Types } from "mongoose";
 import { searchControllerLogger } from "../../../../infrastructure/logging/childLogger";
 
-import { forbiddenWorkspaceError } from "../../../../shared/errors/fileUpload/fileUpload";
+import { forbiddenWorkspaceError } from "../../../../shared/errors/workspace/workspace";
 import { boardIdAndQueryParametersRequiredError, boardNotFoundError } from "../../../../shared/errors/board/board";
 
 
