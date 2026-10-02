@@ -224,19 +224,55 @@ export default function WorkflowOverviewSection() {
             </div>
           </div>
 
-          {/* ── RIGHT COLUMN — plain bordered plate ────────────── */}
+          {/* ── RIGHT COLUMN — the app window ──────────────────── */}
           <div className="lg:col-span-7">
             <div className="relative">
-              {/* Accent bloom behind the plate */}
+              {/* Accent bloom behind the window */}
               <div
                 aria-hidden="true"
                 className="pointer-events-none absolute -inset-x-10 -bottom-12 -top-8 rounded-[50%] blur-[110px] transition-colors duration-700"
                 style={{ backgroundColor: `rgba(${current.accentRgb},0.06)` }}
               />
 
-              {/* Simple bordered plate */}
-              <div className="relative overflow-hidden rounded-sm border border-white/12 bg-[#08080C]">
-                {/* Scene */}
+              {/* Window — chassis, chrome, scene, status bar */}
+              <div
+                className="
+                  relative overflow-hidden rounded-xl
+                  border border-white/12
+                  bg-[#08080C]
+                  shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_30px_80px_-30px_rgba(0,0,0,0.85)]
+                "
+              >
+                {/* Top sheen */}
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-x-0 top-0 z-30 h-px bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.22)_50%,transparent)]"
+                />
+
+                {/* ── Window title bar ─────────────────────────── */}
+                <div className="flex h-9 items-center gap-2 border-b border-white/8 bg-white/2 px-3">
+                  {/* traffic lights */}
+                  <span className="size-2.5 rounded-full bg-[#FF5F57] ring-1 ring-black/30" />
+                  <span className="size-2.5 rounded-full bg-[#FEBC2E] ring-1 ring-black/30" />
+                  <span className="size-2.5 rounded-full bg-[#28C840] ring-1 ring-black/30" />
+
+                  {/* window title */}
+                  <span className="ml-2 font-mono text-[10px] tracking-[0.06em] text-white/40">
+                    kanban.app / launch-board
+                  </span>
+
+                  {/* live chip in the stage's accent */}
+                  <span className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-white/8 bg-white/3 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.18em] text-white/45">
+                    <span
+                      aria-hidden="true"
+                      className="size-1.5 rounded-full"
+                      style={{ backgroundColor: current.accent }}
+                    />
+                    Live
+                  </span>
+                </div>
+
+                {/* ── Scene viewport ───────────────────────────── */}
                 <div className="relative aspect-video w-full overflow-hidden">
                   {stages.map((stage, i) => {
                     const Scene = SCENES[stage.scene];
@@ -259,10 +295,32 @@ export default function WorkflowOverviewSection() {
                       </div>
                     );
                   })}
+
+                  {/* Glass glare — angled light streak across the screen */}
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 z-20 overflow-hidden"
+                  >
+                    <div className="absolute -top-1/4 left-[42%] h-[150%] w-[38%] rotate-12 bg-linear-to-l from-white/45 via-white/2 to-transparent" />
+                  </div>
+
+                  {/* Vignette — seats the scene inside the screen */}
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 z-20 bg-[radial-gradient(120%_100%_at_50%_0%,transparent_55%,rgba(0,0,0,0.40)_100%)]"
+                  />
                 </div>
 
-                {/* Progress hairline along bottom edge */}
-                <div className="absolute inset-x-0 bottom-0 h-px bg-white/6">
+                {/* ── Status bar ───────────────────────────────── */}
+                <div className="flex h-7 items-center justify-between border-t border-white/8 bg-white/2 px-3 font-mono text-[9px] uppercase tracking-[0.18em] text-white/30">
+                  <span className="truncate">{current.tagline}</span>
+                  <span className="tabular-nums">
+                    {current.number} / {String(stages.length).padStart(2, "0")}
+                  </span>
+                </div>
+
+                {/* Progress hairline along the very bottom edge */}
+                <div className="absolute inset-x-0 bottom-0 z-30 h-px bg-white/6">
                   <div
                     className="h-full transition-colors duration-300"
                     style={{
@@ -273,7 +331,13 @@ export default function WorkflowOverviewSection() {
                 </div>
               </div>
 
-              {/* Caption below the plate */}
+              {/* Floor shadow — the window sits on something */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none mx-auto mt-3 h-6 w-[85%] rounded-full bg-black/60 blur-2xl"
+              />
+
+              {/* Caption below the window */}
               <div className="mt-4 flex items-baseline justify-between font-mono text-[10px] uppercase tracking-[0.24em] text-white/35">
                 <span>
                   Fig. {current.number} — {current.tagline}

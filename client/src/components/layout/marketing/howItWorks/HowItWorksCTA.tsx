@@ -1,5 +1,7 @@
-import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowRight02Icon } from "@hugeicons/core-free-icons";
 
 export default function HowItWorksCTA() {
   return (
@@ -152,7 +154,8 @@ export default function HowItWorksCTA() {
             >
               <span className="pointer-events-none absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/18 to-transparent transition-transform duration-700 group-hover/cta:translate-x-full" />
               <span className="relative">Get Started</span>
-              <ArrowRight
+              <HugeiconsIcon
+                icon={ArrowRight02Icon}
                 size={14}
                 strokeWidth={1.5}
                 className="relative transition-transform duration-300 group-hover/cta:translate-x-0.5"

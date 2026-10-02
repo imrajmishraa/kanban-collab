@@ -12,78 +12,7 @@ import {
 export default function HowItWorksHero() {
   return (
     <section className="relative overflow-hidden">
-      {/* ═══════════════════════════════════════════════════════════
-          AMBIENT LIGHT
-          ═══════════════════════════════════════════════════════════ */}
 
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 -top-105 h-190 w-350 -translate-x-1/2 rounded-[50%] bg-(--brand)/10 blur-[170px]"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -left-60 top-95 h-130 w-180 rounded-[50%] bg-white/2 blur-[140px]"
-      />
-
-      {/* ═══════════════════════════════════════════════════════════
-          STARFIELD
-          ═══════════════════════════════════════════════════════════ */}
-
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-70"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle, rgba(255,255,255,0.35) 0.6px, transparent 0.6px)",
-          backgroundSize: "28px 28px",
-          maskImage:
-            "radial-gradient(ellipse 75% 55% at 50% 18%, #000 0%, transparent 85%)",
-          WebkitMaskImage:
-            "radial-gradient(ellipse 75% 55% at 50% 18%, #000 0%, transparent 85%)",
-        }}
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-50"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle, rgba(255,255,255,0.5) 0.8px, transparent 0.8px)",
-          backgroundSize: "44px 44px",
-          backgroundPosition: "12px 18px",
-          maskImage:
-            "radial-gradient(ellipse 70% 50% at 50% 20%, #000 0%, transparent 82%)",
-          WebkitMaskImage:
-            "radial-gradient(ellipse 70% 50% at 50% 20%, #000 0%, transparent 82%)",
-        }}
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-40"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle, var(--brand) 1px, transparent 1px)",
-          backgroundSize: "110px 110px",
-          backgroundPosition: "30px 40px",
-          maskImage:
-            "radial-gradient(ellipse 65% 45% at 50% 18%, #000 0%, transparent 80%)",
-          WebkitMaskImage:
-            "radial-gradient(ellipse 65% 45% at 50% 18%, #000 0%, transparent 80%)",
-        }}
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-60"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle, rgba(255,255,255,0.7) 1.2px, transparent 1.2px)",
-          backgroundSize: "180px 180px",
-          backgroundPosition: "60px 90px",
-          maskImage:
-            "radial-gradient(ellipse 60% 40% at 50% 20%, #000 0%, transparent 75%)",
-          WebkitMaskImage:
-            "radial-gradient(ellipse 60% 40% at 50% 20%, #000 0%, transparent 75%)",
-        }}
-      />
 
       {/* CONTENT */}
       <div className="relative mx-auto flex w-full max-w-7xl flex-col items-center px-4 pb-28 pt-32 text-center sm:px-6 sm:pb-32 sm:pt-36 lg:px-8 lg:pb-40 lg:pt-40">
