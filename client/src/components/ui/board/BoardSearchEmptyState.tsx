@@ -1,4 +1,5 @@
-import { Search, X } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Search01Icon, XIcon } from "@hugeicons/core-free-icons";
 
 interface BoardSearchEmptyStateProps {
   query: string;
@@ -19,7 +20,7 @@ export default function BoardSearchEmptyState({
           className="mb-5 flex h-11 w-11 items-center justify-center border border-neutral-800 bg-[#0b0b0b] text-neutral-600"
           aria-hidden="true"
         >
-          <Search size={18} />
+          <HugeiconsIcon icon={Search01Icon} size={18} />
         </div>
 
         <h2 className="font-mono text-xs font-semibold uppercase tracking-wider text-neutral-300">
@@ -37,7 +38,7 @@ export default function BoardSearchEmptyState({
           onClick={onClear}
           className="mt-5 inline-flex h-8 items-center gap-2 border border-neutral-800 px-3 font-mono text-[11px] text-neutral-500 transition hover:border-neutral-700 hover:bg-neutral-900 hover:text-neutral-200"
         >
-          <X size={13} />
+          <HugeiconsIcon icon={XIcon} size={13} />
           Clear search
         </button>
       </div>

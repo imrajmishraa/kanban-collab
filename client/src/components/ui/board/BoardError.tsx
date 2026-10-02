@@ -1,4 +1,5 @@
-import { AlertTriangle, RefreshCw } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {  Refresh01Icon, TriangleAlertIcon } from "@hugeicons/core-free-icons";
 
 interface BoardErrorProps {
   message?: string;
@@ -16,7 +17,7 @@ export default function BoardError({
     >
       <div className="w-full max-w-md border border-neutral-800 bg-[#0b0b0b] p-6 text-center">
         <div className="mx-auto flex h-10 w-10 items-center justify-center border border-neutral-800 text-[#ff1f5a]">
-          <AlertTriangle size={18} />
+          <HugeiconsIcon icon={TriangleAlertIcon} size={18} />
         </div>
 
         <div className="mt-4">
@@ -39,7 +40,7 @@ export default function BoardError({
             onClick={onRetry}
             className="mt-5 inline-flex h-9 items-center gap-2 border border-neutral-700 px-4 font-mono text-xs text-neutral-400 transition hover:border-[#ff1f5a]/60 hover:text-neutral-200"
           >
-            <RefreshCw size={13} />
+            <HugeiconsIcon icon={Refresh01Icon} size={13} />
             Try again
           </button>
         )}
