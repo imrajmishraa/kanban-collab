@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import SidebarHeader from "./SidebarHeader";
 import SidebarNewWorkspace from "../workspace/create/SidebarNewWorkspace";
@@ -26,7 +26,7 @@ export default function DashboardSidebar({
   onToggle,
 }: DashboardSidebarProps) {
   const { user, logout } = useAuth();
-  const { boardsOpen, toggleBoards, setBoardsOpen } = useSidebarState();
+  const { boardsOpen, toggleBoards, openBoards } = useSidebarState();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectMode, setSelectMode] = useState(false);
@@ -41,7 +41,9 @@ export default function DashboardSidebar({
 
   const boardsLimit = 6;
 
-  const { data: workspaces = [] } = useWorkspaces();
+  // useWorkspaces returns { ...query, workspaces } — take the flat array.
+  // `data` here is InfiniteData (pages), NOT a Workspace[].
+  const { workspaces } = useWorkspaces();
 
   const { activeWorkspaceId, setActiveWorkspace } = useActiveWorkspace();
 
@@ -54,16 +56,25 @@ export default function DashboardSidebar({
     fetchNextPage,
   } = useBoards(boardsLimit);
 
-  const boards = boardsData?.pages.flatMap((page) => page.boards) ?? [];
+  const boards = useMemo(
+    () => boardsData?.pages.flatMap((page) => page.boards) ?? [],
+    [boardsData],
+  );
+
+  const handleLoadMoreBoards = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const handleWorkspaceChange = (workspaceId: string) => {
     const workspace = workspaces.find((w) => w.id === workspaceId);
     setActiveWorkspace(workspaceId, workspace?.name ?? "");
-    setBoardsOpen(true);
+    openBoards();
   };
 
-  const handleLoadMoreBoards = () => {
-    if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+  // Single write path for pins: state + localStorage always in sync.
+  const updatePinnedBoards = (next: string[]) => {
+    setPinnedBoardIds(next);
+    localStorage.setItem("kanban.pinnedBoards", JSON.stringify(next));
   };
 
   const handleLogout = async () => {
@@ -89,9 +100,7 @@ export default function DashboardSidebar({
   };
 
   const handleBulkPin = (ids: string[]) => {
-    const merged = [...new Set([...pinnedBoardIds, ...ids])];
-    setPinnedBoardIds(merged);
-    localStorage.setItem("kanban.pinnedBoards", JSON.stringify(merged));
+    updatePinnedBoards([...new Set([...pinnedBoardIds, ...ids])]);
     closeSelectMode();
   };
 
@@ -101,11 +110,11 @@ export default function DashboardSidebar({
   };
 
   const handlePinBoard = (boardId: string, pinned: boolean) => {
-    const next = pinned
-      ? [...new Set([...pinnedBoardIds, boardId])]
-      : pinnedBoardIds.filter((id) => id !== boardId);
-    setPinnedBoardIds(next);
-    localStorage.setItem("kanban.pinnedBoards", JSON.stringify(next));
+    updatePinnedBoards(
+      pinned
+        ? [...new Set([...pinnedBoardIds, boardId])]
+        : pinnedBoardIds.filter((id) => id !== boardId),
+    );
   };
 
   return (

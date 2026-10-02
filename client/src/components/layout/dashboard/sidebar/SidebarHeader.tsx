@@ -7,7 +7,7 @@ import {
 import { useNavigate } from "react-router-dom";
 
 import { useSearchStore } from "@/stores/searchStore";
-
+import logo from "@/assets/logo.svg?inline";
 interface SidebarHeaderProps {
   collapsed: boolean;
   onToggle: () => void;
@@ -35,12 +35,12 @@ const SidebarHeader = ({
           className="group relative flex size-9 cursor-pointer items-center justify-center rounded-lg border border-(--border) bg-white/2 transition-colors hover:bg-white/6"
         >
           <img
-            src="/appIcon.png"
-            alt="Kanban Collab"
-            width={25}
-            height={25}
+            src={logo}
+            alt=""
+            width={28}
+            height={28}
             draggable={false}
-            className="h-5 w-5 rounded object-cover opacity-90 transition-opacity duration-150 group-hover:opacity-0"
+            className="h-7 w-7 rounded-lg border border-white/8 shadow-[0_2px_8px_rgba(0,0,0,0.35)] transition-all duration-300 group-hover:border-(--brand)/40"
           />
 
           <HugeiconsIcon
@@ -72,12 +72,12 @@ const SidebarHeader = ({
         className="group ml-1 flex cursor-pointer items-center gap-2.5 rounded-md px-1.5 py-1 transition-colors"
       >
         <img
-          src="/appIcon.png"
+          src={logo}
           alt=""
-          width={25}
-          height={25}
+          width={28}
+          height={28}
           draggable={false}
-          className="h-6 w-6 object-cover"
+          className="h-7 w-7 rounded-lg border border-white/8 shadow-[0_2px_8px_rgba(0,0,0,0.35)] transition-all duration-300 group-hover:border-(--brand)/40"
         />
         <span className="font-mono text-[14px] font-bold tracking-tight text-(--text-primary)">
           Kanban

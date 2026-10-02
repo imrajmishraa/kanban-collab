@@ -4,11 +4,15 @@ import { NavLink } from "react-router-dom";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ArrowRight01Icon,
-  ListChecksIcon,
+  Edit02Icon,
   KanbanIcon,
+  ListChecksIcon,
+  MoreVerticalIcon,
 } from "@hugeicons/core-free-icons";
 
-import { BoardActionsMenu } from "./BoardActionsMenu";
+import { DropdownMenu, type DropdownEntry } from "@components/Tooltips/DropdownMenu";
+import { Tooltip } from "@components/Tooltips/ToolTip";
+
 import { groupBoardsByTime } from "@/utils/boardGrouping";
 
 import type { Board } from "@/types/api/dashboard/board";
@@ -32,6 +36,8 @@ interface SidebarBoardsProps {
 
   onEnterSelectMode?: () => void;
 }
+
+const LOAD_MORE_DELAY = 600; // ms — raise to taste
 
 const SidebarBoards = ({
   collapsed,
@@ -81,19 +87,32 @@ const SidebarBoards = ({
     if (!target || !open || !hasNextPage) return;
 
     const root = findScrollableAncestor(target);
+    let loadTimer: number | undefined;
 
     const observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
+
         if (entry?.isIntersecting && hasNextPage && !isFetchingNextPage) {
-          onLoadMore();
+          // Only load if the sentinel *stays* in view — cancels if the
+          // user scrolls straight past the end of the list.
+          window.clearTimeout(loadTimer);
+          loadTimer = window.setTimeout(() => {
+            if (hasNextPage && !isFetchingNextPage) onLoadMore();
+          }, LOAD_MORE_DELAY);
+        } else {
+          window.clearTimeout(loadTimer);
         }
       },
-      { root, rootMargin: "150px", threshold: 0 },
+      { root, rootMargin: "0px", threshold: 0 },
     );
 
     observer.observe(target);
-    return () => observer.disconnect();
+
+    return () => {
+      window.clearTimeout(loadTimer);
+      observer.disconnect();
+    };
   }, [
     open,
     hasNextPage,
@@ -107,15 +126,39 @@ const SidebarBoards = ({
   const renderBoardRow = (board: Board) => {
     const isPinned = pinnedBoardIds.includes(board.id);
 
+    /* The menu's header confirms WHICH board you're acting on —
+       in a long list of similar rows, that prevents wrong-target
+       deletes. Descriptions explain the consequential actions. */
+    const actions: DropdownEntry[] = [
+      {
+        label: isPinned ? "Unpin board" : "Pin board",
+        description: "Pinned boards stay at the top of this list.",
+        onClick: () => onPin?.(board.id, !isPinned),
+      },
+      {
+        label: "Rename",
+        icon: Edit02Icon,
+        onClick: () => onRename?.(board.id),
+      },
+      { label: "Share", onClick: () => onShare?.(board.id) },
+      { divider: true },
+      {
+        label: "Delete",
+        description: "This action cannot be undone.",
+        danger: true,
+        onClick: () => onDelete?.(board.id),
+      },
+    ];
+
     return (
-      <div key={board.id} className="group/board relative">
+      <div key={board.id} className="group/board flex items-center">
         <NavLink
           to={`/board/${board.id}`}
           onClick={(event) => event.stopPropagation()}
           aria-label={board.name}
           className={({ isActive }) =>
             [
-              "flex h-9 cursor-pointer items-center gap-2.5 rounded-md px-2",
+              "flex h-9 min-w-0 flex-1 cursor-pointer items-center gap-2.5 rounded-md px-2",
               "text-[12px] leading-tight",
               "transition-colors duration-200",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--brand)/40",
@@ -132,25 +175,37 @@ const SidebarBoards = ({
             className="shrink-0"
           />
 
-          <span className="min-w-0 flex-1 truncate pr-7">{board.name}</span>
+          <span className="min-w-0 flex-1 truncate">{board.name}</span>
         </NavLink>
 
-        <div className="absolute right-1 top-1/2 z-20 -translate-y-1/2">
-          <BoardActionsMenu
-            isPinned={isPinned}
-            onPin={() => onPin?.(board.id, !isPinned)}
-            onRename={() => onRename?.(board.id)}
-            onShare={() => onShare?.(board.id)}
-            onDelete={() => onDelete?.(board.id)}
-          />
-        </div>
+        <DropdownMenu
+          items={actions}
+          header={
+            <span className="block truncate px-3 pb-1 pt-1.5 font-mono text-[10px] uppercase tracking-wider text-ink-muted">
+              {board.name}
+            </span>
+          }
+          side="bottom"
+          align="end"
+          width="w-56"
+          variant="solid"
+          closeDelay={150}
+        >
+          <button
+            type="button"
+            aria-label={`Actions for ${board.name}`}
+            className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-(--text-muted) opacity-0 transition-all duration-150 hover:bg-white/6 hover:text-(--text-primary) focus-visible:opacity-100 group-hover/board:opacity-100"
+          >
+            <HugeiconsIcon icon={MoreVerticalIcon} size={14} strokeWidth={2} />
+          </button>
+        </DropdownMenu>
       </div>
     );
   };
 
   return (
     <section className="px-3 pt-3 pb-4">
-      <div className="flex h-8 items-center justify-between rounded-lg px-2 transition-colors hover:bg-white/4">
+      <div className="flex h-8 items-center justify-between rounded-lg px-2 hover:bg-white/4">
         <button
           type="button"
           onClick={onToggle}
@@ -171,7 +226,7 @@ const SidebarBoards = ({
           </span>
         </button>
 
-        <div className="group/tooltip relative">
+        <Tooltip label="Multi-select" side="bottom" shape="solid" size="sm">
           <button
             type="button"
             onClick={onEnterSelectMode}
@@ -180,18 +235,11 @@ const SidebarBoards = ({
           >
             <HugeiconsIcon icon={ListChecksIcon} size={13} strokeWidth={1.8} />
           </button>
-
-          <div
-            role="tooltip"
-            className="pointer-events-none absolute right-0 top-full z-50 mt-2 whitespace-nowrap rounded-lg bg-white/12 px-3 py-1.5 text-[12px] font-medium text-white opacity-0 shadow-[0_8px_20px_-6px_rgba(0,0,0,0.6)] backdrop-blur-md transition-opacity duration-150 group-hover/tooltip:opacity-100 group-focus-within/tooltip:opacity-100"
-          >
-            Multi-select
-          </div>
-        </div>
+        </Tooltip>
       </div>
 
       {open && (
-        <div className="relative mt-2 overflow-hidden rounded-xl bg-(--bg-surface) shadow-[0_8px_24px_-10px_rgba(0,0,0,0.6)]">
+        <div className="relative mt-2 overflow-hidden rounded-xl bg-(--bg-surface)">
           <div className="relative p-1">
             {isLoading && <BoardsSkeleton rows={5} />}
 
