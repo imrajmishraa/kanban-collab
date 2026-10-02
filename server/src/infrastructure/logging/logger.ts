@@ -14,10 +14,25 @@ const LOG_FILE =
   process.env.LOG_FILE ?? path.resolve(process.cwd(), "logs", "app.log");
 
 /**
+ * Anything both destinations share that we may need to drain on shutdown.
+ * Both pino transports (ThreadStream) and pino.destination (SonicBoom)
+ * expose flushSync().
+ */
+type Flushable = { flushSync: () => void };
+
+let destination: Flushable | undefined;
+
+/**
  * Build the write destination based on environment:
- *   - test    → stdout (never touch disk during tests)
+ *   - test    → pino's default stdout (never touch disk during tests)
  *   - dev     → pretty-printed stdout via pino-pretty transport
- *   - prod    → async file stream in ./logs/app.log (auto-created)
+ *   - prod    → rotating file transport: a new file every day AND
+ *               whenever the current one reaches 50 MB (whichever
+ *               comes first). Without rotation, app.log grows without
+ *               bound — a production hazard on a long-lived server.
+ *
+ * pino-roll runs in a worker thread, like pino-pretty — it must be
+ * installed as a runtime dependency (not dev).
  */
 function buildDestination() {
   if (IS_DEV) {
@@ -32,11 +47,60 @@ function buildDestination() {
     });
   }
 
-  return pino.destination({
-    dest: LOG_FILE,
-    sync: false,
-    mkdir: true, // creates ./logs/ if missing
+  return pino.transport({
+    target: "pino-roll",
+    options: {
+      file: LOG_FILE,
+      frequency: "daily",
+      size: "50m",
+      mkdir: true, // creates ./logs/ if missing
+    },
   });
+}
+
+/**
+ * Flush any buffered log lines synchronously — call this from your
+ * graceful-shutdown handler (SIGTERM/SIGINT) AFTER closing servers and
+ * DB connections, so the final "shutting down" entries actually reach
+ * disk. Safe to call multiple times; no-op when logging to stdout.
+ */
+export function flushLogger(): void {
+  destination?.flushSync();
+}
+
+/**
+ * Serializes an error chain recursively (depth-capped so a cyclic
+ * cause chain can't hang the logger).
+ */
+function serializeError(err: unknown, depth = 0): Record<string, unknown> {
+  if (!(err instanceof Error)) {
+    return { value: err };
+  }
+
+  const e = err as Error & {
+    code?: string;
+    statusCode?: number;
+    status?: number;
+    isOperational?: boolean;
+    cause?: unknown;
+  };
+
+  const out: Record<string, unknown> = {
+    type: e.name,
+    message: e.message,
+    stack: e.stack,
+
+    // ApiError extras
+    code: e.code,
+    statusCode: e.statusCode ?? e.status,
+    isOperational: e.isOperational,
+  };
+
+  if (depth < 3 && e.cause !== undefined) {
+    out.cause = serializeError(e.cause, depth + 1);
+  }
+
+  return out;
 }
 
 const pinoOptions: pino.LoggerOptions = {
@@ -59,6 +123,24 @@ const pinoOptions: pino.LoggerOptions = {
       "req.headers['x-csrf-token']",
       "res.headers['set-cookie']",
 
+      // ─── Parsed cookies (express cookie-parser output) ──────────────
+      // This is where the refresh token actually lives at runtime —
+      // `req.cookies.refreshToken` — so the whole jar gets redacted.
+      "req.cookies",
+      "*.cookies",
+      "cookies",
+
+      // ─── Request bodies (zod-validatable payloads) ──────────────────
+      "req.body.password",
+      "req.body.newPassword",
+      "req.body.currentPassword",
+      "req.body.confirmPassword",
+      "req.body.token",
+      "req.body.accessToken",
+      "req.body.refreshToken",
+      "req.body.apiKey",
+      "req.body.secret",
+
       // ─── Body / payload — both top-level and nested ─────────────────
       "password",
       "*.password",
@@ -70,10 +152,14 @@ const pinoOptions: pino.LoggerOptions = {
       "*.accessToken",
       "refreshToken",
       "*.refreshToken",
+      "refreshTokenHash",
+      "*.refreshTokenHash",
       "secret",
       "*.secret",
       "apiKey",
       "*.apiKey",
+      "authorization",
+      "*.authorization",
 
       // ─── PII ────────────────────────────────────────────────────────
       "creditCard",
@@ -93,62 +179,48 @@ const pinoOptions: pino.LoggerOptions = {
      *   ApiError: { statusCode, code, isOperational, message, stack, cause? }
      *   Error:    { message, stack }
      *
-     * Recursively serializes `cause` so the original stack (preserved by
-     * internalServerError({ cause })) shows up in logs and Sentry.
+     * Serializes the full `cause` chain (up to depth 3) so the original
+     * stack preserved by ApiError's `{ cause }` option shows up in logs
+     * and in any downstream log shipper.
      */
-    err: (err: unknown) => {
-      if (!(err instanceof Error)) {
-        return err;
-      }
+    err: (err: unknown) => serializeError(err),
 
-      const e = err as Error & {
-        code?: string;
-        statusCode?: number;
-        status?: number;
-        isOperational?: boolean;
-        cause?: unknown;
-      };
-
-      return {
-        type: e.name,
-        message: e.message,
-        stack: e.stack,
-
-        // ApiError extras
-        code: e.code,
-        statusCode: e.statusCode ?? e.status,
-        isOperational: e.isOperational,
-
-        // Preserve the underlying error for 500s
-        cause:
-          e.cause instanceof Error
-            ? {
-                type: e.cause.name,
-                message: e.cause.message,
-                stack: e.cause.stack,
-                code: (e.cause as Error & { code?: string }).code,
-              }
-            : e.cause,
-      };
-    },
-
-    req: (req) => ({
+    req: (req: {
+      method?: string;
+      url?: string;
+      headers?: unknown;
+      params?: unknown;
+      query?: unknown;
+      ip?: string;
+      socket?: { remoteAddress?: string };
+    }) => ({
       method: req.method,
       url: req.url,
       headers: req.headers, // sensitive ones redacted above
-      remoteAddress: req.remoteAddress,
+      // FIX: was `req.remoteAddress` — that property doesn't exist on an
+      // Express request, so it always serialized as undefined and got
+      // dropped from the log line. req.ip respects express "trust proxy".
+      remoteAddress: req.ip ?? req.socket?.remoteAddress,
       params: req.params,
       query: req.query,
     }),
 
-    res: (res) => ({
+    res: (res: { statusCode?: number; getHeaders?: () => unknown }) => ({
       statusCode: res.statusCode,
-      headers: res.getHeaders(),
+      headers: res.getHeaders?.(),
     }),
   },
 };
 
-// In test, use pino's default stdout stream — no filesystem, no worker threads.
-export const logger = IS_TEST
-  ? pino(pinoOptions)
-  : pino(pinoOptions, buildDestination());
+// In test, use pino's default stdout stream — no filesystem, no worker
+// threads. Otherwise, build the destination once and remember it so
+// flushLogger() can drain it on shutdown.
+function buildLogger(): pino.Logger {
+  if (IS_TEST) return pino(pinoOptions);
+
+  const dest = buildDestination();
+  destination = dest;
+  return pino(pinoOptions, dest);
+}
+
+export const logger = buildLogger();

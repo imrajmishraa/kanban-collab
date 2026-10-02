@@ -1,98 +1,111 @@
 import { logger } from "./logger";
 
+/**
+ * Child logger registry.
+ *
+ * Design: one logger instance per functional area (`module`), plus
+ * factories for scoped sub-loggers (`controller`, `component`, `job`,
+ * `channel`). The scoping names are plain union types — nothing
+ * iterates them at runtime, so no `as const` registry arrays are
+ * needed (they would only be "assigned but used as a type" dead code).
+ *
+ * Keep this file append-only where possible: every export below is
+ * imported somewhere, so renaming or removing one breaks callers.
+ */
 
-// NAME REGISTRIES — types are derived from these, single source of truth
+// ─── SCOPING TYPES ──────────────────────────────────────────────────────────
 
-const CONTROLLER_NAMES = [
-  "auth",
-  "dashboard",
-  "board",
-  "workspace",
-  "card",
-  "column",
-  "comment",
-  "notification",
-  "activity",
-  "search",
-  "file-upload",
-] as const;
+export type ModuleName =
+  | "http"
+  | "auth"
+  | "websocket"
+  | "collaboration"
+  | "persistence"
+  | "database"
+  | "security"
+  | "lifecycle"
+  | "cron"
+  | "redis"
+  | "notification"
+  | "storage"
+  | "rate-limit";
 
-const WEBSOCKET_COMPONENTS = [
-  "server",
-  "bootstrap",
-  "authenticate",
-  "authorize",
-  "heartbeat",
-  "connection-registry",
-  "message-handler",
-  "notification-socket",
-] as const;
+export type ControllerName =
+  | "auth"
+  | "dashboard"
+  | "board"
+  | "workspace"
+  | "card"
+  | "column"
+  | "comment"
+  | "notification"
+  | "activity"
+  | "search"
+  | "file-upload";
 
-const COLLABORATION_COMPONENTS = [
-  "yjs",
-  "awareness",
-  "sync",
-  "document-manager",
-  "managed-document",
-] as const;
+export type WebsocketComponentName =
+  | "server"
+  | "bootstrap"
+  | "authenticate"
+  | "authorize"
+  | "heartbeat"
+  | "connection-registry"
+  | "message-handler"
+  | "notification-socket";
 
-const JOB_NAMES = [
-  "workspace-cleanup",
-  "yjs-snapshot",
-  "notification-due-reminder",
-  "notification-digest",
-] as const;
-
-const DELIVERY_CHANNELS = ["email", "sms", "push"] as const;
-
-export type ControllerName = (typeof CONTROLLER_NAMES)[number];
-export type WebsocketComponentName = (typeof WEBSOCKET_COMPONENTS)[number];
 export type CollaborationComponentName =
-  (typeof COLLABORATION_COMPONENTS)[number];
-export type JobName = (typeof JOB_NAMES)[number];
-export type DeliveryChannel = (typeof DELIVERY_CHANNELS)[number];
+  "yjs" | "awareness" | "sync" | "document-manager" | "managed-document";
 
+export type JobName =
+  | "workspace-cleanup"
+  | "yjs-snapshot"
+  | "notification-due-reminder"
+  | "notification-digest";
 
-// MODULE-LEVEL LOGGERS — one per functional area
+export type DeliveryChannel = "email" | "sms" | "push";
 
-export const httpLogger = logger.child({ module: "http" });
-export const authLogger = logger.child({ module: "auth" });
-export const websocketLogger = logger.child({ module: "websocket" });
-export const collaborationLogger = logger.child({ module: "collaboration" });
-export const persistenceLogger = logger.child({ module: "persistence" });
-export const databaseLogger = logger.child({ module: "database" });
-export const securityLogger = logger.child({ module: "security" });
-export const lifecycleLogger = logger.child({ module: "lifecycle" });
-export const schedulerLogger = logger.child({ module: "cron" });
+// ─── FACTORIES — create child loggers with an extra scoping field ─────────
 
-// ─── Subsystems added for the notification + scaling layers ─────────────────
-export const redisLogger = logger.child({ module: "redis" });
-export const notificationLogger = logger.child({ module: "notification" });
-export const storageLogger = logger.child({ module: "storage" });
-export const rateLimitLogger = logger.child({ module: "rate-limit" });
-
-
-// FACTORIES — create child loggers with an extra scoping field
+/** Scoped logger for a top-level functional area not covered below. */
+export const createModuleLogger = (module: ModuleName) =>
+  logger.child({ module });
 
 export const createControllerLogger = (controller: ControllerName) =>
-  httpLogger.child({ controller });
+  logger.child({ module: "http", controller });
 
 export const createWebsocketComponentLogger = (
   component: WebsocketComponentName,
-) => websocketLogger.child({ component });
+) => logger.child({ module: "websocket", component });
 
 export const createCollaborationComponentLogger = (
   component: CollaborationComponentName,
-) => collaborationLogger.child({ component });
+) => logger.child({ module: "collaboration", component });
 
 export const createJobSchedulerLogger = (job: JobName) =>
-  schedulerLogger.child({ job });
+  logger.child({ module: "cron", job });
 
 export const createDeliveryLogger = (channel: DeliveryChannel) =>
-  notificationLogger.child({ channel });
+  logger.child({ module: "notification", channel });
 
+// ─── MODULE-LEVEL LOGGERS — one per functional area ────────────────────────
 
-// HTTP CONTROLLER LOGGERS
+export const httpLogger = createModuleLogger("http");
+export const authLogger = createModuleLogger("auth");
+export const websocketLogger = createModuleLogger("websocket");
+export const collaborationLogger = createModuleLogger("collaboration");
+export const persistenceLogger = createModuleLogger("persistence");
+export const databaseLogger = createModuleLogger("database");
+export const securityLogger = createModuleLogger("security");
+export const lifecycleLogger = createModuleLogger("lifecycle");
+export const schedulerLogger = createModuleLogger("cron");
+
+// Subsystems for the notification + scaling layers
+export const redisLogger = createModuleLogger("redis");
+export const notificationLogger = createModuleLogger("notification");
+export const storageLogger = createModuleLogger("storage");
+export const rateLimitLogger = createModuleLogger("rate-limit");
+
+// ─── HTTP CONTROLLER LOGGERS ───────────────────────────────────────────────
 
 export const authControllerLogger = createControllerLogger("auth");
 export const dashboardControllerLogger = createControllerLogger("dashboard");
@@ -107,8 +120,7 @@ export const activityControllerLogger = createControllerLogger("activity");
 export const searchControllerLogger = createControllerLogger("search");
 export const fileUploadControllerLogger = createControllerLogger("file-upload");
 
-
-// SCHEDULER JOB LOGGERS
+// ─── SCHEDULER JOB LOGGERS ─────────────────────────────────────────────────
 
 export const workspaceCleanupJobLogger =
   createJobSchedulerLogger("workspace-cleanup");
@@ -120,8 +132,7 @@ export const notificationDigestJobLogger = createJobSchedulerLogger(
   "notification-digest",
 );
 
-
-// WEBSOCKET COMPONENT LOGGERS
+// ─── WEBSOCKET COMPONENT LOGGERS ───────────────────────────────────────────
 
 export const websocketServerLogger = createWebsocketComponentLogger("server");
 export const websocketBootstrapLogger =
@@ -140,9 +151,7 @@ export const notificationSocketLogger = createWebsocketComponentLogger(
   "notification-socket",
 );
 
-
-// COLLABORATION COMPONENT LOGGERS
-
+// ─── COLLABORATION COMPONENT LOGGERS ───────────────────────────────────────
 
 export const yjsLogger = createCollaborationComponentLogger("yjs");
 export const awarenessLogger = createCollaborationComponentLogger("awareness");
@@ -152,8 +161,7 @@ export const documentManagerLogger =
 export const managedDocumentLogger =
   createCollaborationComponentLogger("managed-document");
 
-
-// NOTIFICATION DELIVERY LOGGERS
+// ─── NOTIFICATION DELIVERY LOGGERS ──────────────────────────────────────────
 
 export const emailLogger = createDeliveryLogger("email");
 export const smsLogger = createDeliveryLogger("sms");
