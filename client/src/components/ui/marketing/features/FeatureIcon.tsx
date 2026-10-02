@@ -1,27 +1,32 @@
 import {
-  CalendarDays,
-  KanbanSquare,
+  Calendar01Icon,
+  NineSquareIcon,
   Move,
   RectangleHorizontal,
   Tag,
   Users,
-} from "lucide-react";
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 
 interface FeatureIconProps {
   name: "board" | "move" | "card" | "tag" | "calendar" | "users";
 }
 
 const featureIcons = {
-  board: KanbanSquare,
+  board: NineSquareIcon,
   move: Move,
   card: RectangleHorizontal,
   tag: Tag,
-  calendar: CalendarDays,
+  calendar: Calendar01Icon,
   users: Users,
 } as const;
 
 export default function FeatureIcon({ name }: FeatureIconProps) {
   const Icon = featureIcons[name];
 
-  return <Icon aria-hidden="true" size={17} strokeWidth={1.5} />;
+  return (
+    <HugeiconsIcon icon={Icon} size={17}>
+      <span aria-hidden="true" />
+    </HugeiconsIcon>
+  );
 }
