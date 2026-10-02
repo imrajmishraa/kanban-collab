@@ -1,13 +1,38 @@
+import { lazy, Suspense, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 
 import DashboardSidebar from "@components/layout/dashboard/sidebar/DashboardSidebar";
 import DashboardNavbar from "@components/layout/dashboard/workspace/create/DashboardNavbar";
 import { NewWorkspaceDialogProvider } from "@components/layout/dashboard/workspace/create/NewWorkspaceDialogProvider";
-import { SearchModal } from "@components/layout/dashboard/search/SearchModal";
+
 import { useSidebarState } from "@/stores/sidebarState";
+import { useSearchStore } from "@/stores/searchStore";
+
+
+const SearchModal = lazy(() =>
+  import("@components/layout/dashboard/search/SearchModal").then((m) => ({
+    default: m.SearchModal,
+  })),
+);
+
+function warmSearchModal() {
+  void import("@components/layout/dashboard/search/SearchModal");
+}
 
 export default function AppLayout() {
-  const { collapsed, toggle: toggleSidebar } = useSidebarState();
+  const { collapsed, toggleCollapsed: toggleSidebar } = useSidebarState();
+  const searchOpen = useSearchStore((s) => s.open);
+
+  // Prefetch the search chunk during idle time.
+  // Fallback to a 2s timeout on browsers without requestIdleCallback.
+  useEffect(() => {
+    if (typeof requestIdleCallback === "function") {
+      const id = requestIdleCallback(warmSearchModal, { timeout: 3000 });
+      return () => cancelIdleCallback(id);
+    }
+    const id = window.setTimeout(warmSearchModal, 2000);
+    return () => window.clearTimeout(id);
+  }, []);
 
   return (
     <NewWorkspaceDialogProvider>
@@ -28,7 +53,13 @@ export default function AppLayout() {
           </div>
         </main>
 
-        <SearchModal />
+        {/* Mounted only while open — lazy() downloads the chunk on
+            first open; after that it is cached in memory. */}
+        {searchOpen && (
+          <Suspense fallback={null}>
+            <SearchModal />
+          </Suspense>
+        )}
       </div>
     </NewWorkspaceDialogProvider>
   );
