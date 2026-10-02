@@ -4,11 +4,14 @@ import { persist } from "zustand/middleware";
 interface SidebarState {
   collapsed: boolean;
   boardsOpen: boolean;
-  toggle: () => void;
-  setCollapsed: (collapsed: boolean) => void;
+
+  toggleCollapsed: () => void;
+  collapse: () => void;
+  expand: () => void;
 
   toggleBoards: () => void;
-  setBoardsOpen: (open: boolean) => void;
+  openBoards: () => void;
+  closeBoards: () => void;
 }
 
 export const useSidebarState = create<SidebarState>()(
@@ -17,16 +20,18 @@ export const useSidebarState = create<SidebarState>()(
       collapsed: false,
       boardsOpen: true,
 
-      
-      toggle: () => set((state) => ({ collapsed: !state.collapsed })),
-      setCollapsed: (collapsed) => set({ collapsed }),
+      toggleCollapsed: () => set((s) => ({ collapsed: !s.collapsed })),
+      collapse: () => set({ collapsed: true }),
+      expand: () => set({ collapsed: false }),
 
       toggleBoards: () => set((s) => ({ boardsOpen: !s.boardsOpen })),
-      setBoardsOpen: (boardsOpen) => set({ boardsOpen }),
+      openBoards: () => set({ boardsOpen: true }),
+      closeBoards: () => set({ boardsOpen: false }),
     }),
     {
       name: "kanban.sidebar",
-      // Partialize to only persist what should survive reloads
+      // Only the preferences survive reloads — actions are re-created
+      // fresh on every load and must never be persisted.
       partialize: (state) => ({
         collapsed: state.collapsed,
         boardsOpen: state.boardsOpen,
