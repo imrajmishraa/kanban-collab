@@ -1,0 +1,76 @@
+# ────────────────────────────────────────────────────────────────
+# .dockerignore — kanban-collaboration-server
+#
+# Goal: keep the build context small AND keep secrets out of the
+# image. Rule of thumb — anything the image REBUILDS or REGENERATES
+# should be excluded, because it comes back inside the container
+# anyway. Excluding it just makes the build faster and the image
+# smaller.
+# ────────────────────────────────────────────────────────────────
+
+# ── Dependencies — reinstalled in the image (npm ci) ─────────────
+node_modules
+**/node_modules
+
+# ── Build output — rebuilt by `npm run build` ────────────────────
+dist
+**/dist
+*.tsbuildinfo
+
+# ── Test coverage & lint caches ──────────────────────────────────
+coverage
+.nyc_output
+.eslintcache
+
+# ── Runtime artefacts — created at runtime, never shipped ────────
+logs
+*.log
+npm-debug.log*
+# Yjs / LevelDB persistence (regenerated on boot)
+*.db
+data
+
+# ── Secrets — MUST NOT enter the image ───────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── Version control & CI ─────────────────────────────────────────
+.git
+.gitignore
+.gitattributes
+.github
+
+# ── Docker plumbing — not needed inside the image ────────────────
+Dockerfile
+Dockerfile.*
+docker-compose*.yml
+.dockerignore
+
+# ── Editor / IDE ─────────────────────────────────────────────────
+.vscode
+.idea
+*.swp
+*.swo
+
+# ── OS junk ──────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Docs ─────────────────────────────────────────────────────────
+*.md
+!README.md
+
+# ────────────────────────────────────────────────────────────────
+# OPTIONAL — uncomment for a slimmer PRODUCTION image.
+#
+# Only enable this if your Dockerfile's builder stage does NOT run
+# the test suite (npm test / npm run verify). If it does, the build
+# will FAIL, because those files won't be in the context.
+# ────────────────────────────────────────────────────────────────
+# tests
+# **/*.test.ts
+# **/*.spec.ts
+# **/__tests__
+# **/__mocks__
+# jest.config.*
