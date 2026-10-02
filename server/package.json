@@ -31,7 +31,7 @@
     "rebuild": "npm run clean && npm run build",
     "prebuild": "npm run typecheck",
     "// ── Production ───────────────────────────────────────": "",
-    "start": "node --trace-warnings dist/main.js",
+    "start": "node --disable-warning=ExperimentalWarning dist/main.js",
     "start:prod": "NODE_ENV=production node --enable-source-maps dist/main.js",
     "start:cluster": "NODE_ENV=production node --max-old-space-size=2048 dist/main.js",
     "// ── Code Quality ─────────────────────────────────────": "",
