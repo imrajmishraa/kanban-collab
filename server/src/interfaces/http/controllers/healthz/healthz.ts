@@ -46,21 +46,32 @@ export const healthz = asyncHandler(async (_req, res) => {
  *
  * Returns 200 when everything is healthy, 503 when any dependency fails.
  */
+// READINESS — "can this process serve traffic?"
+
+/**
+ * GET /readyz
+ *
+ * Readiness probe — checks that every dependency this process needs is
+ * actually reachable. If any dependency is down, the orchestrator should
+ * route traffic elsewhere (but NOT restart this pod).
+ *
+ * Returns 200 when everything is healthy, 503 when any dependency fails.
+ */
 export const readyz = asyncHandler(async (_req, res) => {
   const checks: Record<string, { status: "up" | "down"; detail?: string }> = {};
 
   // ── MongoDB ──────────────────────────────────────────────────────────────
   const mongoReady = mongoose.connection.readyState === 1;
-  checks.mongo = {
+  checks["mongo"] = {
     status: mongoReady ? "up" : "down",
-    detail: mongoReady
-      ? undefined
-      : `readyState=${mongoose.connection.readyState}`,
+    ...(mongoReady
+      ? {}
+      : { detail: `readyState=${mongoose.connection.readyState}` }),
   };
 
   // ── Redis (cache) ────────────────────────────────────────────────────────
   const redisReady = await isCacheHealthy();
-  checks.redis = {
+  checks["redis"] = {
     status: redisReady ? "up" : "down",
   };
 
@@ -83,3 +94,4 @@ export const readyz = asyncHandler(async (_req, res) => {
     }),
   );
 });
+

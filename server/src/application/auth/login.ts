@@ -21,7 +21,7 @@ export interface LoginInput {
 }
 
 export interface LoginResult {
-  user: { id: string; email: string; fullName: string; avatarUrl?: string };
+  user: { id: string; email: string; fullName: string; avatarUrl?: string | undefined };
   accessToken: string;
   refreshToken: string;
   refreshExpiresAt: Date;

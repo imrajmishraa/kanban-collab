@@ -1,6 +1,5 @@
 import jwt, {
   type JwtPayload,
-  type SignOptions,
   TokenExpiredError,
   JsonWebTokenError,
   NotBeforeError,
@@ -70,7 +69,7 @@ export function signAccessToken(
       ENV.JWT_SECRET,
       {
         algorithm: "HS256",
-        expiresIn: ENV.JWT_ACCESS_EXPIRES_IN as SignOptions["expiresIn"],
+        expiresIn: ENV.JWT_ACCESS_EXPIRES_IN as ms.StringValue,
       },
       (err, token) => {
         if (err) return reject(err);
@@ -79,6 +78,7 @@ export function signAccessToken(
     );
   });
 }
+
 
 /**
  * Sign a refresh token.
@@ -111,7 +111,7 @@ export function signRefreshToken(
       ENV.JWT_REFRESH_SECRET,
       {
         algorithm: "HS256",
-        expiresIn: refreshExpiresIn as SignOptions["expiresIn"],
+        expiresIn: refreshExpiresIn as ms.StringValue,
       },
       (err, token) => {
         if (err) return reject(err);

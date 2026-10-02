@@ -5,7 +5,7 @@ export interface MeResult {
   id: string;
   email: string;
   fullName: string;
-  avatarUrl?: string;
+  avatarUrl?: string | undefined;
   emailVerified: boolean;
   authProviders: Array<{ provider: string; linkedAt: Date }>;
 }

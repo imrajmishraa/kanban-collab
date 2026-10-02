@@ -53,7 +53,7 @@ export function handleMongooseError(err: unknown): ApiError | null {
 
   // ── 3. Duplicate key (unique index violation) ─────────────────────────────
   if (err instanceof mongoose.mongo.MongoServerError && err.code === 11000) {
-    const entries = Object.entries(err.keyValue ?? {});
+    const entries = Object.entries(err["keyValue"] ?? {});
 
     const errors = entries.map(([field, value]) => ({
       field,

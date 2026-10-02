@@ -1,8 +1,8 @@
 export interface ApiErrorOptions {
   errors?: unknown[];
   data?: unknown;
-  code?: string;
-  stack?: string;
+  code?: string | undefined;
+  stack?: string | undefined;
   cause?: unknown;
   isOperational?: boolean;
 }
@@ -12,7 +12,7 @@ export class ApiError extends Error {
   public readonly success: false;
   public readonly errors: unknown[];
   public readonly data: unknown;
-  public readonly code?: string;
+  public readonly code: string | undefined;
   public readonly isOperational: boolean;
 
   constructor(
@@ -87,7 +87,6 @@ export class ApiError extends Error {
     return new ApiError(500, message, { isOperational: false, ...options });
   }
 
-  
   static from(error: unknown): ApiError {
     if (error instanceof ApiError) return error;
 

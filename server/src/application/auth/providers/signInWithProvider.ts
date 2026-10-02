@@ -53,6 +53,7 @@ export async function signInWithProvider(
     }
 
     if (user) {
+      // Link provider to existing account
       if (!profile.emailVerified) {
         throw oauthEmailNotVerifiedError(profile.provider);
       }
@@ -69,10 +70,12 @@ export async function signInWithProvider(
           linkedAt: new Date(),
         });
 
-        if (!user.avatarUrl && profile.avatarUrl)
+        if (!user.avatarUrl && profile.avatarUrl) {
           user.avatarUrl = profile.avatarUrl;
-        if (!user.fullName && profile.fullName)
+        }
+        if (!user.fullName && profile.fullName) {
           user.fullName = profile.fullName;
+        }
 
         await user.save();
 
@@ -82,6 +85,7 @@ export async function signInWithProvider(
         );
       }
     } else {
+      // Create new user
       const email = profile.email;
       if (!email) throw oauthEmailNotVerifiedError(profile.provider);
 
@@ -89,7 +93,7 @@ export async function signInWithProvider(
         email,
         emailVerified: profile.emailVerified,
         fullName: profile.fullName ?? email.split("@")[0],
-        avatarUrl: profile.avatarUrl ?? undefined,
+        ...(profile.avatarUrl ? { avatarUrl: profile.avatarUrl } : {}),
         authProviders: [
           {
             provider: profile.provider,
@@ -126,10 +130,10 @@ export async function signInWithProvider(
     userFullName: user.fullName,
     jti: issued.jti,
     rememberMe: issued.rememberMe,
-    userAgent,
-    ipAddress,
-    deviceId,
-    platform,
+    ...(userAgent ? { userAgent } : {}),
+    ...(ipAddress ? { ipAddress } : {}),
+    ...(deviceId ? { deviceId } : {}),
+    ...(platform ? { platform } : {}),
     lastUsedAt: issued.issuedAt,
     expiresAt: issued.expiresAt,
   });
@@ -149,7 +153,7 @@ export async function signInWithProvider(
       id: userId,
       email: user.email,
       fullName: user.fullName,
-      avatarUrl: user.avatarUrl,
+      ...(user.avatarUrl ? { avatarUrl: user.avatarUrl } : {}),
     },
     accessToken,
     refreshToken: issued.token,

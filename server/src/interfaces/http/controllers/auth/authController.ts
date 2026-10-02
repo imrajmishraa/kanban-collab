@@ -14,7 +14,7 @@ import {
   clearRefreshCookieOptions,
 } from "../../utils/cookies";
 import { missingAccessTokenError } from "../../../../shared/errors/auth/accessToken";
-import { AuthenticatedRequest } from "../../middleware/auth.middleware";
+import type { AuthenticatedRequest } from "../../middleware/auth.middleware";
 import { me as meUseCase } from "../../../../application/auth/me";
 
 const ACCESS_TOKEN_EXPIRES_IN_SECONDS = 900;
@@ -28,9 +28,12 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
     email,
     password,
     fullName,
-    ipAddress: req.ip,
-    userAgent: req.headers["user-agent"],
+    ...(req.ip !== undefined ? { ipAddress: req.ip } : {}),
+    ...(req.headers["user-agent"] !== undefined
+      ? { userAgent: req.headers["user-agent"] }
+      : {}),
   });
+
 
   return res.status(201).json(
     new ApiResponse(201, "User registered successfully.", {
@@ -51,8 +54,10 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
     email,
     password,
     rememberMe,
-    ipAddress: req.ip,
-    userAgent: req.headers["user-agent"],
+    ...(req.ip !== undefined ? { ipAddress: req.ip } : {}),
+    ...(req.headers["user-agent"] !== undefined
+      ? { userAgent: req.headers["user-agent"] }
+      : {}),
   });
 
   res.cookie(
@@ -78,8 +83,10 @@ export const refresh = asyncHandler(async (req: Request, res: Response) => {
   try {
     const result = await refreshTokens({
       refreshToken: rawRefreshToken,
-      ipAddress: req.ip,
-      userAgent: req.headers["user-agent"],
+      ...(req.ip !== undefined ? { ipAddress: req.ip } : {}),
+      ...(req.headers["user-agent"] !== undefined
+        ? { userAgent: req.headers["user-agent"] }
+        : {}),
     });
 
     res.cookie(
@@ -107,8 +114,10 @@ export const logout = asyncHandler(async (req: Request, res: Response) => {
   const rawRefreshToken = req.cookies?.[REFRESH_COOKIE_NAME];
 
   await revokeSession(rawRefreshToken, {
-    ipAddress: req.ip,
-    userAgent: req.headers["user-agent"],
+    ...(req.ip !== undefined ? { ipAddress: req.ip } : {}),
+    ...(req.headers["user-agent"] !== undefined
+      ? { userAgent: req.headers["user-agent"] }
+      : {}),
   });
 
   res.clearCookie(REFRESH_COOKIE_NAME, clearRefreshCookieOptions());

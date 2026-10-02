@@ -11,7 +11,8 @@ const IS_TEST = ENV.NODE_ENV === "test";
  * Add `LOG_FILE=...` to env.ts if you want to override in production.
  */
 const LOG_FILE =
-  process.env.LOG_FILE ?? path.resolve(process.cwd(), "logs", "app.log");
+  process.env["LOG_FILE"] ?? path.resolve(process.cwd(), "logs", "app.log");
+
 
 /**
  * Anything both destinations share that we may need to drain on shutdown.
@@ -97,11 +98,12 @@ function serializeError(err: unknown, depth = 0): Record<string, unknown> {
   };
 
   if (depth < 3 && e.cause !== undefined) {
-    out.cause = serializeError(e.cause, depth + 1);
+    out["cause"] = serializeError(e.cause, depth + 1);
   }
 
   return out;
 }
+
 
 const pinoOptions: pino.LoggerOptions = {
   level: ENV.LOG_LEVEL,

@@ -1,4 +1,4 @@
-import { AuthenticatedRequest } from "../../middleware/auth.middleware";
+import type { AuthenticatedRequest } from "../../middleware/auth.middleware";
 import { asyncHandler } from "../../../../shared/utils/asyncHandler";
 import { BoardModel, CardModel, ColumnModel, WorkspaceModel } from "../../../../infrastructure/db/mongoose/schemas";
 import { ApiResponse } from "../../../../shared/utils/ApiResponse";
@@ -144,7 +144,7 @@ const listBoards = asyncHandler(async (req: AuthenticatedRequest, res) => {
 });
 
 const updateBoard = asyncHandler(async (req: AuthenticatedRequest, res) => {
-  const boardId = req.params.boardId || req.params.id;
+  const boardId = req.params["boardId"] || req.params["id"];
   const { name, description, backgroundColor, coverImageUrl, visibility } = req.body;
   const userId = req.user!.userId;
   try {
@@ -195,7 +195,7 @@ const updateBoard = asyncHandler(async (req: AuthenticatedRequest, res) => {
     boardControllerLogger.error(
       {
         err: error,
-        boardId: req.params.boardId || req.params.id,
+        boardId: req.params["boardId"] || req.params["id"],
         userId,
       },
       "Update board failed",
@@ -206,7 +206,7 @@ const updateBoard = asyncHandler(async (req: AuthenticatedRequest, res) => {
 
 const getBoardDetails = asyncHandler(async (req: AuthenticatedRequest, res) => {
   const userId = req.user!.userId;
-  const boardId = req.params.boardId || req.params.id;
+  const boardId = req.params["boardId"] || req.params['id'];
 
   // Try cache
   const cacheKey = `board:${boardId}`;

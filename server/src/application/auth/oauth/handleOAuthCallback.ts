@@ -12,18 +12,20 @@ export interface HandleOAuthCallbackInput {
 }
 
 export async function handleOAuthCallback(input: HandleOAuthCallbackInput) {
-  const provider = getProvider(input.providerName);
+  const { providerName, code, userAgent, ipAddress, deviceId, platform } =
+    input;
 
-  const { accessToken } = await provider.exchangeCode({ code: input.code });
+  const provider = getProvider(providerName);
 
+  const { accessToken } = await provider.exchangeCode({ code });
   const profile = await provider.fetchProfile(accessToken);
 
   return signInWithProvider({
     profile,
-    userAgent: input.userAgent,
-    ipAddress: input.ipAddress,
-    deviceId: input.deviceId,
-    platform: input.platform,
     rememberMe: true,
+    ...(userAgent ? { userAgent } : {}),
+    ...(ipAddress ? { ipAddress } : {}),
+    ...(deviceId ? { deviceId } : {}),
+    ...(platform ? { platform } : {}),
   });
 }

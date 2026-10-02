@@ -51,6 +51,12 @@ export class GoogleProvider implements OAuthProvider {
 
     const data = (await res.json()) as GoogleTokenResponse;
 
+    if (!data.refresh_token) {
+      throw oauthExchangeFailedError(
+        "Google token exchange returned no refresh token.",
+      );
+    }
+
     return {
       accessToken: data.access_token,
       refreshToken: data.refresh_token,

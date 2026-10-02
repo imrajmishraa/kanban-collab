@@ -14,15 +14,23 @@ const registry = new Map<AuthProvider, OAuthProvider>([
 ]);
 
 export function getProvider(name: string): OAuthProvider {
-  if (!(name in OAUTH_CONFIG)) throw unknownProviderError(name);
+  // 1. Unknown provider name
+  if (!(name in OAUTH_CONFIG)) {
+    throw unknownProviderError(name);
+  }
 
   const providerName = name as OAuthProviderName;
+
+  // 2. Provider exists but is disabled in config
   if (!OAUTH_CONFIG[providerName].enabled) {
     throw providerDisabledError(name);
   }
 
+  // 3. Provider not registered in the map (should never happen)
   const provider = registry.get(providerName as AuthProvider);
-  if (!provider) throw unknownProviderError(name);
+  if (!provider) {
+    throw unknownProviderError(name);
+  }
 
   return provider;
 }

@@ -27,7 +27,7 @@ export const listProviders = asyncHandler(
 );
 
 export const startOAuth = asyncHandler(async (req: Request, res: Response) => {
-  const provider = req.params.provider;
+  const provider = req.params["provider"];
   if (!provider) throw unknownProviderError("(missing)");
 
   const flow = startOAuthFlow(provider);
@@ -45,7 +45,7 @@ export const startOAuth = asyncHandler(async (req: Request, res: Response) => {
 
 export const oauthCallback = asyncHandler(
   async (req: Request, res: Response) => {
-    const provider = req.params.provider;
+    const provider = req.params["provider"];
     if (!provider) throw unknownProviderError("(missing)");
 
     const { code, state } = req.query as { code?: string; state?: string };
@@ -69,8 +69,10 @@ export const oauthCallback = asyncHandler(
       const result = await handleOAuthCallback({
         providerName: provider,
         code,
-        userAgent: req.headers["user-agent"],
-        ipAddress: req.ip,
+        ...(req.ip !== undefined ? { ipAddress: req.ip } : {}),
+        ...(req.headers["user-agent"] !== undefined
+          ? { userAgent: req.headers["user-agent"] }
+          : {}),
       });
 
       res.cookie(

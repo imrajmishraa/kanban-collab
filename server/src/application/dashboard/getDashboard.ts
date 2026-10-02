@@ -316,10 +316,10 @@ function createActivityMessage(
       : {};
 
   const title =
-    typeof detailsRecord.title === "string"
-      ? detailsRecord.title
-      : typeof detailsRecord.name === "string"
-        ? detailsRecord.name
+    typeof detailsRecord["title"] === "string"
+      ? detailsRecord["title"]
+      : typeof detailsRecord["name"] === "string"
+        ? detailsRecord["name"]
         : undefined;
 
   switch (actionType) {

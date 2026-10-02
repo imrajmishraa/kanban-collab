@@ -51,6 +51,9 @@ export function normalizeError(err: unknown): ApiError {
   // ── 3. Fallback — preserve the original for logging ──────────────────────
   return internalServerError({
     cause: err,
-    stack: err instanceof Error ? err.stack : undefined,
+    ...(err instanceof Error && err.stack !== undefined
+      ? { stack: err.stack }
+      : {}),
   });
 }
+

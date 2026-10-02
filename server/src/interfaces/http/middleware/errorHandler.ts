@@ -65,12 +65,12 @@ export function errorHandler(
 
   // Include the machine-readable code only when present
   if (error.code) {
-    body.code = error.code;
+    body["code"] = error.code;
   }
 
   // Expose the stack in dev for non-operational errors — never in production
   if (ENV.NODE_ENV === "development" && !error.isOperational && error.stack) {
-    body.stack = error.stack;
+    body["stack"] = error.stack;
   }
 
   res.status(error.statusCode).json(body);

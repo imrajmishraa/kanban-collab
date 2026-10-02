@@ -104,7 +104,7 @@ export function startCronJobs(): void {
       },
       {
         name,
-        timezone: process.env.SCHEDULER_TIMEZONE ?? "UTC",
+        timezone: process.env["SCHEDULER_TIMEZONE"] ?? "UTC",
         noOverlap: true, // prevents concurrent runs of the same job
       },
     );
@@ -130,7 +130,7 @@ export function startCronJobs(): void {
     {
       count: jobs.length,
       jobs: jobs.map((j) => ({ name: j.name, schedule: j.schedule })),
-      timezone: process.env.SCHEDULER_TIMEZONE ?? "UTC",
+      timezone: process.env["SCHEDULER_TIMEZONE"] ?? "UTC",
     },
     "Cron scheduler started.",
   );
@@ -143,13 +143,14 @@ export function startCronJobs(): void {
  *
  *   process.on("SIGTERM", () => { stopCronJobs(); server.close(); });
  */
-export function stopCronJobs(): void {
+export async function stopCronJobs(): Promise<void> {
   if (scheduledTasks.length === 0) return;
 
   for (const { name, task } of scheduledTasks) {
-    task.stop();
+    await task.stop();
     schedulerLogger.info({ job: name }, "Scheduled job stopped.");
   }
 
   scheduledTasks.length = 0;
 }
+

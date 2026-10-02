@@ -1,9 +1,8 @@
-// server/src/interfaces/http/controllers/workspaces/workspaces.ts
 import { Types } from "mongoose";
 
 import { asyncHandler } from "../../../../shared/utils/asyncHandler";
 import { ApiResponse } from "../../../../shared/utils/ApiResponse";
-import { AuthenticatedRequest } from "../../middleware/auth.middleware";
+import type { AuthenticatedRequest } from "../../middleware/auth.middleware";
 
 import {
   UserModel,
@@ -191,15 +190,15 @@ const listWorkspaces = asyncHandler(async (req: AuthenticatedRequest, res) => {
   const pageLimit = Math.min(Math.max(Number(limit) || 10, 1), 50);
   const skip = (currentPage - 1) * pageLimit;
 
-  const workspaceFilter: Record<string, unknown> = {
-    "members.userId": userObjectId,
-  };
+   const workspaceFilter: Record<string, unknown> = {
+     "members.userId": userObjectId,
+   };
 
-  const trimmedSearch = typeof search === "string" ? search.trim() : "";
+   const trimmedSearch = typeof search === "string" ? search.trim() : "";
 
-  if (trimmedSearch) {
-    workspaceFilter.name = { $regex: trimmedSearch, $options: "i" };
-  }
+   if (trimmedSearch) {
+     workspaceFilter["name"] = { $regex: trimmedSearch, $options: "i" };
+   }
 
   const [workspaces, totalWorkspaces] = await Promise.all([
     WorkspaceModel.find(workspaceFilter)
