@@ -1,7 +1,5 @@
 export type AuthStatus = "loading" | "authenticated" | "unauthenticated";
 
-export type AuthProvider = "password" | "google" | "github";
-
 export interface AuthUser {
   id: string;
   email: string;
@@ -10,10 +8,6 @@ export interface AuthUser {
   emailVerified?: boolean;
 }
 
-export interface AuthProviderLink {
-  provider: AuthProvider;
-  linkedAt: string;
-}
 
 export interface LoginResponse {
   accessToken: string;
@@ -34,11 +28,3 @@ export interface RegisterResponse {
   emailVerified: boolean;
 }
 
-export interface MeResponse {
-  id: string;
-  email: string;
-  fullName: string;
-  avatarUrl?: string | null;
-  emailVerified: boolean;
-  authProviders: AuthProviderLink[];
-}

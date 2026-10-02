@@ -81,7 +81,3 @@ export interface BoardPagination {
   hasPreviousPage: boolean;
 }
 
-export interface ListBoardsResponse {
-  boards: Board[];
-  pagination: BoardPagination;
-}
