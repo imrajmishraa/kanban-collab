@@ -1,90 +1,82 @@
-import { useEffect, useState, type MouseEvent } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type MouseEvent,
+} from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ArrowRight02Icon,
-  Menu01Icon,
   Cancel01Icon,
+  Menu01Icon,
+  GithubIcon,
   UserIcon,
   Logout03Icon,
-  Edit02Icon,
-  GithubIcon,
 } from "@hugeicons/core-free-icons";
-import { useAuth } from "#hooks/auth/useAuth";
+
+import { useAuth } from "@/hooks/auth/useAuth";
+import logo from "@/assets/logo.svg?inline";
+
+const cn = (...classes: Array<string | false | null | undefined>) =>
+  classes.filter(Boolean).join(" ");
 
 export interface NavigationSection {
   title: string;
   href: string;
+  external?: boolean;
 }
 
 const navigationData: NavigationSection[] = [
   { title: "Features", href: "/features" },
   { title: "How it Works", href: "/how-it-works" },
-  { title: "GitHub", href: "https://github.com/imrajmishraa/kanban-collab" },
 ];
 
 interface NavbarProps {
   onNavigate?: (href: string) => void;
   activeHref?: string;
+  /** Force a palette; defaults to dark (matches the app's dark theme). */
+  dark?: boolean;
 }
 
-export default function Navbar({ onNavigate, activeHref = "" }: NavbarProps) {
-  const location = useLocation();
+export default function Navbar({
+  onNavigate,
+  activeHref = "",
+  dark = true,
+}: NavbarProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, isAuthenticated, logout } = useAuth();
-
-  const [showHeader, setShowHeader] = useState(true);
-  const [isHovered, setIsHovered] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isSigningOut, setIsSigningOut] = useState(false);
 
   const currentPath = activeHref || location.pathname;
 
+  const isActive = (item: NavigationSection) => {
+    if (item.external) return false;
+    return currentPath === item.href;
+  };
+
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [menuPath, setMenuPath] = useState(location.pathname);
+
+  if (location.pathname !== menuPath) {
+    setMenuPath(location.pathname);
+    setMobileOpen(false);
+    setUserMenuOpen(false);
+  }
+
+  /* ── Frosted glass appears on scroll ─────────────────────────── */
+  const [scrolled, setScrolled] = useState(false);
+
   useEffect(() => {
-    const mediaQuery = window.matchMedia("(max-width: 767px)");
-    let timeoutId: number | undefined;
-
-    const clearHideTimeout = () => {
-      if (timeoutId !== undefined) {
-        window.clearTimeout(timeoutId);
-        timeoutId = undefined;
-      }
-    };
-
-    const scheduleHide = () => {
-      clearHideTimeout();
-      if (mediaQuery.matches || isHovered || mobileMenuOpen) return;
-      timeoutId = window.setTimeout(() => setShowHeader(false), 2500);
-    };
-
-    const handleActivity = () => {
-      setShowHeader(true);
-      scheduleHide();
-    };
-
-    const handleViewportChange = () => {
-      clearHideTimeout();
-      if (mediaQuery.matches) {
-        setShowHeader(true);
-        return;
-      }
-      scheduleHide();
-    };
-
-    window.addEventListener("mousemove", handleActivity);
-    window.addEventListener("touchstart", handleActivity);
-    mediaQuery.addEventListener("change", handleViewportChange);
-
-    scheduleHide();
-
-    return () => {
-      clearHideTimeout();
-      window.removeEventListener("mousemove", handleActivity);
-      window.removeEventListener("touchstart", handleActivity);
-      mediaQuery.removeEventListener("change", handleViewportChange);
-    };
-  }, [isHovered, mobileMenuOpen]);
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const handleNavClick = (
     event: MouseEvent<HTMLAnchorElement>,
@@ -92,18 +84,13 @@ export default function Navbar({ onNavigate, activeHref = "" }: NavbarProps) {
   ) => {
     const isExternal = href.startsWith("http");
     if (isExternal) {
-      setMobileMenuOpen(false);
+      setMobileOpen(false);
       return;
     }
     event.preventDefault();
     if (onNavigate) onNavigate(href);
     else navigate(href);
-    setMobileMenuOpen(false);
-  };
-
-  const handleStartBuilding = () => {
-    navigate("/auth/register");
-    setMobileMenuOpen(false);
+    setMobileOpen(false);
   };
 
   const handleSignOut = async () => {
@@ -111,283 +98,513 @@ export default function Navbar({ onNavigate, activeHref = "" }: NavbarProps) {
     setIsSigningOut(true);
     try {
       await logout();
-      setMobileMenuOpen(false);
+      setUserMenuOpen(false);
       navigate("/auth/login", { replace: true });
-    } catch (error) {
-      console.error("Sign out failed:", error);
+    } catch (err) {
+      console.error("Sign out failed:", err);
     } finally {
       setIsSigningOut(false);
     }
   };
 
+  /* ── User dropdown: hover open / delayed close ─────────────────── */
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const closeTimer = useRef<number | null>(null);
+
+  const openMenu = useCallback(() => {
+    if (closeTimer.current !== null) {
+      window.clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+    setUserMenuOpen(true);
+  }, []);
+
+  const scheduleClose = useCallback(() => {
+    if (closeTimer.current !== null) window.clearTimeout(closeTimer.current);
+    closeTimer.current = window.setTimeout(() => {
+      setUserMenuOpen(false);
+      closeTimer.current = null;
+    }, 160);
+  }, []);
+
+  useEffect(
+    () => () => {
+      if (closeTimer.current !== null) window.clearTimeout(closeTimer.current);
+    },
+    [],
+  );
+
+  /* ── Escape closes dropdown ────────────────────────────────────── */
+  useEffect(() => {
+    if (!userMenuOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setUserMenuOpen(false);
+        triggerRef.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [userMenuOpen]);
+
+  const initials = (user?.email ?? "?").charAt(0).toUpperCase();
+
+  /* ── Palette: hardcoded dark / hardcoded light ─────────────────── */
+  const isDarkNav = dark;
+
+  const ink = isDarkNav ? "text-[#EAF2ED]" : "text-[#17181A]";
+  const inkSecondary = isDarkNav ? "text-[#9FB0A6]" : "text-[#4E545B]";
+  const accent = isDarkNav ? "text-[#4DE352]" : "text-[#16A34A]";
+  const accentBar = isDarkNav ? "bg-[#4DE352]" : "bg-[#16A34A]";
+  const dividerBg = isDarkNav ? "bg-[#24312B]" : "bg-[#E4E6E9]";
+  const surface = isDarkNav
+    ? "bg-[#101713] border-[#24312B] hover:border-[#31413A] hover:bg-[#141C17] hover:text-[#EAF2ED]"
+    : "bg-white border-[#E4E6E9] hover:border-[#D2D6DA] hover:bg-[#F0F1F3] hover:text-[#17181A]";
+  const focusRing = isDarkNav
+    ? "focus-visible:ring-[#4DE352]/40"
+    : "focus-visible:ring-[#16A34A]/40";
+  const ctaFill = "bg-[#4DE352] text-[#071009] hover:bg-[#63EA68]";
+
+  const btn = cn(
+    "flex size-8 shrink-0 items-center justify-center rounded-md border",
+    isDarkNav
+      ? "border-[#24312B] bg-[#101713] text-[#9FB0A6]"
+      : "border-[#E4E6E9] bg-white text-[#4E545B]",
+    "transition-colors duration-150",
+    surface,
+    "focus-visible:outline-none focus-visible:ring-2",
+    focusRing,
+  );
+
+  /* Shared class recipe for one nav link (desktop) */
+  const desktopLink = (active: boolean) =>
+    cn(
+      "group relative rounded-md px-3 py-1.5",
+      "text-[13px] font-medium",
+      "transition-colors duration-150",
+      "focus-visible:outline-none focus-visible:ring-2",
+      focusRing,
+      active
+        ? accent
+        : cn(
+            inkSecondary,
+            isDarkNav ? "hover:text-[#EAF2ED]" : "hover:text-[#17181A]",
+          ),
+    );
+
+  const underline = (active: boolean) =>
+    cn(
+      "absolute inset-x-3 bottom-0 h-0.5 rounded-full",
+      accentBar,
+      "origin-left transition-transform duration-300 ease-out",
+      active ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
+    );
+
   return (
     <header
-      onMouseEnter={() => {
-        setIsHovered(true);
-        setShowHeader(true);
-      }}
-      onMouseLeave={() => setIsHovered(false)}
-      className={`fixed inset-x-0 top-0 z-50 w-full transition-all duration-500 ${
-        showHeader
-          ? "translate-y-0 opacity-100"
-          : "pointer-events-none -translate-y-full opacity-0"
-      }`}
+      className={cn(
+        "sticky top-0 z-40 w-full",
+        "transition-[background-color,border-color] duration-300",
+        isDarkNav
+          ? scrolled
+            ? "bg-[#0A0F0D]/30 backdrop-blur-xl backdrop-saturate-150"
+            : "bg-transparent"
+          : scrolled
+            ? "bg-white/35 backdrop-blur-xl backdrop-saturate-150"
+            : "bg-transparent",
+      )}
     >
-      {/* ── Glassy floating container ─────────────────────────────────── */}
-      <div className="mx-auto max-w-7xl px-3 pt-3 sm:px-5 sm:pt-4">
-        <div
-          className="
-            group/glass
-            relative
-            overflow-hidden
-            rounded-2xl
-            border border-white/8
-            bg-white/3
-            backdrop-blur-xl
-            backdrop-saturate-150
-            shadow-[0_8px_32px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.08)]
-            transition-all duration-300
-            hover:border-white/[0.14]
-            hover:bg-white/5
-            hover:shadow-[0_12px_40px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.12)]
-          "
+      {/* Ambient glow */}
+      <div
+        aria-hidden
+        className={cn(
+          "pointer-events-none absolute inset-x-0 -top-24 h-24",
+          isDarkNav
+            ? "bg-[radial-gradient(ellipse_at_top,rgba(77,227,82,0.08),transparent_70%)]"
+            : "bg-[radial-gradient(ellipse_at_top,rgba(217,146,42,0.10),transparent_70%)]",
+        )}
+      />
+
+      <div className="relative mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 px-4 sm:h-15 sm:gap-4 sm:px-6">
+        {/* ── LEFT: brand ─────────────────────────────────────────── */}
+        <Link
+          to="/"
+          aria-label="Home"
+          className="focus-visible:outline-none focus-visible:ring-2"
         >
-          {/* Top sheen */}
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.35)_50%,transparent)]" />
-
-          {/* Brand glow */}
-          <div className="pointer-events-none absolute -top-24 left-1/4 h-40 w-72 -translate-x-1/2 rounded-full bg-(--brand)/14 blur-[60px]" />
-
-          {/* Diagonal reflection */}
-          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,transparent_30%,rgba(255,255,255,0.05)_45%,transparent_60%)]" />
-
-          {/* ── Main row ────────────────────────────────────────────── */}
-          <div className="relative flex h-14 items-center justify-between px-4 sm:px-5">
-            {/* Brand */}
-            <button
-              type="button"
-              onClick={() => {
-                navigate("/");
-                setMobileMenuOpen(false);
-              }}
-              className="group flex cursor-pointer items-center gap-2.5 font-mono text-lg font-bold tracking-tight text-(--text-primary) transition-colors"
-              aria-label="Go to homepage"
+          <button
+            type="button"
+            onClick={() => setMobileOpen(false)}
+            className={cn(
+              "flex min-w-0 shrink items-center gap-3 rounded-full",
+              focusRing,
+            )}
+          >
+            <span
+              className={cn(
+                "flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-md",
+              )}
             >
               <img
-                src="/appIcon.png"
+                src={logo}
                 alt=""
                 width={28}
                 height={28}
                 draggable={false}
-                className="h-7 w-7 rounded-lg border border-white/8 object-cover shadow-[0_2px_8px_rgba(0,0,0,0.35)] transition-all duration-300 group-hover:border-(--brand)/40 group-hover:shadow-[0_0_16px_-2px_var(--brand)]"
+                className="size-full object-cover rounded-full"
               />
-              <span>Kanban</span>
-            </button>
-
-            {/* Desktop Navigation */}
-            <div className="hidden items-center gap-6 md:flex">
-              <nav className="flex items-center gap-1">
-                {navigationData.map((item) => {
-                  const isExternal = item.href.startsWith("http");
-                  const isActive = !isExternal && currentPath === item.href;
-
-                  return (
-                    <a
-                      key={item.title}
-                      href={item.href}
-                      target={isExternal ? "_blank" : undefined}
-                      rel={isExternal ? "noopener noreferrer" : undefined}
-                      onClick={(event) => handleNavClick(event, item.href)}
-                      className={`relative flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-mono text-xs tracking-wide transition-all duration-200 ${
-                        isActive
-                          ? "text-(--brand-hover)"
-                          : "text-(--text-secondary) hover:bg-white/6 hover:text-(--text-primary)"
-                      }`}
-                    >
-                      {isExternal && (
-                        <HugeiconsIcon icon={GithubIcon} size={14} />
-                      )}
-                      {item.title}
-
-                      {isActive && (
-                        <span className="absolute inset-x-2 -bottom-px h-px bg-[linear-gradient(90deg,transparent,var(--brand),transparent)]" />
-                      )}
-                    </a>
-                  );
-                })}
-
-                {!isAuthenticated && (
-                  <a
-                    href="/auth/login"
-                    onClick={(event) => handleNavClick(event, "/auth/login")}
-                    className={`relative flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-mono text-xs tracking-wide transition-all duration-200 ${
-                      currentPath === "/auth/login"
-                        ? "text-(--brand-hover)"
-                        : "text-(--text-secondary) hover:bg-white/6 hover:text-(--text-primary)"
-                    }`}
-                  >
-                    <HugeiconsIcon icon={UserIcon} size={14} />
-                    Login
-                    {currentPath === "/auth/login" && (
-                      <span className="absolute inset-x-2 -bottom-px h-px bg-[linear-gradient(90deg,transparent,var(--brand),transparent)]" />
-                    )}
-                  </a>
-                )}
-              </nav>
-
-              {/* Divider */}
-              <div className="h-5 w-px bg-[linear-gradient(180deg,transparent,rgba(255,255,255,0.14),transparent)]" />
-
-              {/* Auth actions */}
-              {isAuthenticated && user ? (
-                <div className="flex items-center gap-2">
-                  <span className="flex max-w-52 items-center gap-1.5 truncate rounded-lg border border-white/8 bg-white/4 px-2.5 py-1 font-mono text-xs text-(--text-primary) backdrop-blur-sm">
-                    <HugeiconsIcon
-                      icon={Edit02Icon}
-                      size={12}
-                      className="text-(--text-secondary)"
-                    />
-                    {user.email}
-                  </span>
-
-                  <button
-                    type="button"
-                    onClick={handleSignOut}
-                    disabled={isSigningOut}
-                    className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 font-mono text-xs text-(--brand) transition-all duration-200 hover:bg-(--brand)/10 hover:text-(--brand-hover) disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
-                  >
-                    <HugeiconsIcon icon={Logout03Icon} size={14} />
-                    {isSigningOut ? "Leaving..." : "Sign Out"}
-                  </button>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleStartBuilding}
-                  className="
-                    group/btn relative flex items-center gap-1.5 overflow-hidden
-                    rounded-lg border border-(--brand)/40
-                    bg-(--brand)/10
-                    px-3.5 py-1.5 font-mono text-xs text-(--brand-hover)
-                    backdrop-blur-sm
-                    transition-all duration-300
-                    hover:border-(--brand)/70
-                    hover:bg-(--brand)/20
-                    hover:shadow-[0_0_20px_-4px_var(--brand)]
-                    active:scale-95 cursor-pointer
-                  "
-                >
-                  <span className="pointer-events-none absolute inset-0 -translate-x-full bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent)] transition-transform duration-700 group-hover/btn:translate-x-full" />
-                  <HugeiconsIcon icon={ArrowRight02Icon} size={14} />
-                  Get Started
-                </button>
+            </span>
+            <span
+              className={cn(
+                "font-display text-[17px] font-bold leading-none tracking-tight transition-colors duration-300",
+                ink,
               )}
-            </div>
+            >
+              Kanban
+            </span>
+          </button>
+        </Link>
 
-            {/* Mobile Menu Toggle */}
+        {/* ── RIGHT: nav links + controls ─────────────────────────── */}
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+          {/* Nav links — desktop only */}
+          <nav className="hidden items-center gap-1 md:flex">
+            {navigationData.map((item) => {
+              const active = isActive(item);
+
+              if (item.external) {
+                return (
+                  <a
+                    key={item.title}
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={cn(
+                      desktopLink(false),
+                      "flex items-center gap-1.5",
+                      inkSecondary,
+                      isDarkNav
+                        ? "hover:text-[#EAF2ED]"
+                        : "hover:text-[#17181A]",
+                    )}
+                  >
+                    <HugeiconsIcon
+                      icon={GithubIcon}
+                      size={13}
+                      strokeWidth={2.2}
+                    />
+                    {item.title}
+                    <span aria-hidden className={underline(false)} />
+                  </a>
+                );
+              }
+
+              return (
+                <a
+                  key={item.title}
+                  href={item.href}
+                  onClick={(event) => handleNavClick(event, item.href)}
+                  className={desktopLink(active)}
+                >
+                  {item.title}
+                  <span aria-hidden className={underline(active)} />
+                </a>
+              );
+            })}
+
+            {!isAuthenticated && (
+              <a
+                href="/auth/login"
+                onClick={(event) => handleNavClick(event, "/auth/login")}
+                className={cn(
+                  desktopLink(currentPath === "/auth/login"),
+                  "flex items-center gap-1.5",
+                )}
+              >
+                <HugeiconsIcon icon={UserIcon} size={13} strokeWidth={2.2} />
+                Login
+                <span
+                  aria-hidden
+                  className={underline(currentPath === "/auth/login")}
+                />
+              </a>
+            )}
+          </nav>
+
+          {/* Divider between links and controls */}
+          <span
+            aria-hidden
+            className={cn("mx-1 hidden h-4 w-px md:block", dividerBg)}
+          />
+
+          {/* Auth */}
+          {isAuthenticated && user ? (
             <button
               type="button"
-              onClick={() => {
-                setMobileMenuOpen((previous) => !previous);
-                setShowHeader(true);
-              }}
-              aria-expanded={mobileMenuOpen}
-              aria-controls="mobile-navigation"
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/8 bg-white/4 text-(--text-secondary) transition-all duration-200 hover:border-white/[0.14] hover:bg-white/8 hover:text-(--text-primary) md:hidden"
-            >
-              {mobileMenuOpen ? (
-                <HugeiconsIcon icon={Cancel01Icon} size={18} />
-              ) : (
-                <HugeiconsIcon icon={Menu01Icon} size={18} />
+              onClick={() => navigate("/auth/register")}
+              className={cn(
+                "group hidden items-center justify-center gap-1.5 rounded-md px-3.5 py-1.5",
+                "text-[13px] font-semibold",
+                ctaFill,
+                "transition-[background-color,transform] duration-150 ease-out",
+                "hover:scale-105",
+                "active:scale-[0.97]",
+                "focus-visible:outline-none focus-visible:ring-2",
+                focusRing,
+                "md:inline-flex cursor-pointer",
               )}
-            </button>
-          </div>
-
-          {/* ── Mobile Menu ─────────────────────────────────────────── */}
-          {mobileMenuOpen && (
-            <div
-              id="mobile-navigation"
-              className="relative border-t border-white/6 px-4 py-4 md:hidden"
             >
-              <nav className="flex flex-col gap-1 font-mono text-sm">
-                {navigationData.map((item) => {
-                  const isExternal = item.href.startsWith("http");
-                  const isActive = !isExternal && currentPath === item.href;
-
-                  return (
-                    <a
-                      key={item.title}
-                      href={item.href}
-                      target={isExternal ? "_blank" : undefined}
-                      rel={isExternal ? "noopener noreferrer" : undefined}
-                      onClick={(event) => handleNavClick(event, item.href)}
-                      className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs transition-all duration-200 ${
-                        isActive
-                          ? "bg-white/6 font-bold text-(--brand-hover)"
-                          : "text-(--text-secondary) hover:bg-white/5 hover:text-(--text-primary)"
-                      }`}
-                    >
-                      {isExternal && (
-                        <HugeiconsIcon icon={GithubIcon} size={14} />
-                      )}
-                      {item.title}
-                    </a>
-                  );
-                })}
-
-                {!isAuthenticated && (
-                  <a
-                    href="/auth/login"
-                    onClick={(event) => handleNavClick(event, "/auth/login")}
-                    className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs transition-all duration-200 ${
-                      currentPath === "/auth/login"
-                        ? "bg-white/6 font-bold text-(--brand-hover)"
-                        : "text-(--text-secondary) hover:bg-white/5 hover:text-(--text-primary)"
-                    }`}
-                  >
-                    <HugeiconsIcon icon={UserIcon} size={14} />
-                    Login
-                  </a>
+              <span>Dashboard</span>
+              <HugeiconsIcon
+                icon={ArrowRight02Icon}
+                size={13}
+                strokeWidth={2.2}
+                className={cn(
+                  "shrink-0",
+                  "transition-transform duration-200 ease-out",
+                  "group-hover:-rotate-45",
                 )}
-
-                <div className="my-2 h-px bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent)]" />
-
-                {isAuthenticated && user ? (
-                  <div className="flex items-center gap-2">
-                    <span className="flex max-w-52 items-center gap-1.5 truncate rounded-lg border border-white/8 bg-white/4 px-2.5 py-1 font-mono text-xs text-(--text-primary)">
-                      <HugeiconsIcon
-                        icon={Edit02Icon}
-                        size={12}
-                        className="text-(--text-secondary)"
-                      />
-                      {user.email}
-                    </span>
-
-                    <button
-                      type="button"
-                      onClick={handleSignOut}
-                      disabled={isSigningOut}
-                      className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 font-mono text-xs text-(--brand) transition-all duration-200 hover:bg-(--brand)/10 hover:text-(--brand-hover) cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      <HugeiconsIcon icon={Logout03Icon} size={14} />
-                      {isSigningOut ? "Leaving..." : "Sign Out"}
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={handleStartBuilding}
-                    className="flex items-center justify-center gap-1.5 rounded-lg border border-(--brand)/40 bg-(--brand)/10 px-3.5 py-2 font-mono text-xs text-(--brand-hover) backdrop-blur-sm transition-all duration-300 hover:border-(--brand)/70 hover:bg-(--brand)/20 active:scale-95 cursor-pointer"
-                  >
-                    <HugeiconsIcon icon={ArrowRight02Icon} size={14} />
-                    Get Started
-                  </button>
+              />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => navigate("/auth/register")}
+              className={cn(
+                "group hidden items-center justify-center gap-1.5 rounded-md px-3.5 py-1.5",
+                "text-[13px] font-semibold",
+                ctaFill,
+                "transition-[background-color,transform] duration-150 ease-out",
+                "hover:scale-105",
+                "active:scale-[0.97]",
+                "focus-visible:outline-none focus-visible:ring-2",
+                focusRing,
+                "md:inline-flex cursor-pointer",
+              )}
+            >
+              <span>Get Started</span>
+              <HugeiconsIcon
+                icon={ArrowRight02Icon}
+                size={13}
+                strokeWidth={2.2}
+                className={cn(
+                  "shrink-0",
+                  "transition-transform duration-200 ease-out",
+                  "group-hover:-rotate-45",
                 )}
-              </nav>
-            </div>
+              />
+            </button>
           )}
+
+          {/* Mobile menu toggle */}
+          <button
+            type="button"
+            onClick={() => setMobileOpen((p) => !p)}
+            aria-expanded={mobileOpen}
+            aria-controls="navbar-mobile-nav"
+            aria-label="Toggle menu"
+            className={cn(btn, "md:hidden cursor-pointer border-none transparent-none")}
+          >
+            <HugeiconsIcon
+              icon={mobileOpen ? Cancel01Icon : Menu01Icon}
+              size={18}
+              strokeWidth={2}
+            />
+          </button>
         </div>
       </div>
+
+      {/* ── Mobile drawer ─────────────────────────────────────────── */}
+      {mobileOpen && (
+        <div
+          id="navbar-mobile-nav"
+          className={cn(
+            "border-t backdrop-blur-xl backdrop-saturate-150 md:hidden",
+            isDarkNav
+              ? "border-[#24312B]/95 bg-[#0A0F0D]/95"
+              : "border-[#E4E6E9] bg-white/95",
+          )}
+        >
+          <nav className="mx-auto flex max-w-7xl flex-col gap-0.5 px-4 py-3">
+            {navigationData.map((item) => {
+              const active = isActive(item);
+              const cls = cn(
+                "flex items-center gap-2 rounded-md px-3 py-2.5 text-sm font-medium",
+                "transition-colors duration-150",
+                active
+                  ? isDarkNav
+                    ? "bg-[#4DE352]/10 text-[#4DE352]"
+                    : "bg-[#16A34A]/10 text-[#16A34A]"
+                  : cn(
+                      inkSecondary,
+                      isDarkNav
+                        ? "hover:bg-[#141C17] hover:text-[#EAF2ED]"
+                        : "hover:bg-[#F0F1F3] hover:text-[#17181A]",
+                    ),
+              );
+
+              if (item.external) {
+                return (
+                  <a
+                    key={item.title}
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={cls}
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <HugeiconsIcon
+                      icon={GithubIcon}
+                      size={14}
+                      strokeWidth={2.2}
+                    />
+                    {item.title}
+                  </a>
+                );
+              }
+
+              return (
+                <a
+                  key={item.title}
+                  href={item.href}
+                  onClick={(event) => handleNavClick(event, item.href)}
+                  className={cls}
+                >
+                  {item.title}
+                </a>
+              );
+            })}
+
+            {!isAuthenticated && (
+              <a
+                href="/auth/login"
+                onClick={(event) => handleNavClick(event, "/auth/login")}
+                className={cn(
+                  "flex items-center gap-2 rounded-md px-3 py-2.5 text-sm font-medium",
+                  "transition-colors duration-150",
+                  currentPath === "/auth/login"
+                    ? isDarkNav
+                      ? "bg-[#4DE352]/10 text-[#4DE352]"
+                      : "bg-[#16A34A]/10 text-[#16A34A]"
+                    : cn(
+                        inkSecondary,
+                        isDarkNav
+                          ? "hover:bg-[#141C17] hover:text-[#EAF2ED]"
+                          : "hover:bg-[#F0F1F3] hover:text-[#17181A]",
+                      ),
+                )}
+              >
+                <HugeiconsIcon icon={UserIcon} size={14} strokeWidth={2.2} />
+                Login
+              </a>
+            )}
+
+            {!isAuthenticated && (
+              <div
+                className={cn(
+                  "mt-1 border-t pt-3",
+                  isDarkNav ? "border-[#24312B]" : "border-[#E4E6E9]",
+                )}
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileOpen(false);
+                    navigate("/auth/register");
+                  }}
+                  className={cn(
+                    "group relative flex items-center justify-center rounded-md px-3 py-2.5",
+                    "text-sm font-semibold",
+                    ctaFill,
+                    "transition-[background-color,transform] duration-150 ease-out",
+                    "active:scale-[0.98]",
+                    "focus-visible:outline-none focus-visible:ring-2",
+                    focusRing,
+                    "w-full cursor-pointer",
+                  )}
+                >
+                  <span className="pr-5">Get Started</span>
+                  <HugeiconsIcon
+                    icon={ArrowRight02Icon}
+                    size={14}
+                    strokeWidth={2.2}
+                    className={cn(
+                      "absolute right-3",
+                      "transition-transform duration-200 ease-out",
+                      "group-hover:-rotate-45",
+                    )}
+                  />
+                </button>
+              </div>
+            )}
+          </nav>
+        </div>
+      )}
+
+      {/* ── User dropdown ─────────────────────────────────────────── */}
+      {isAuthenticated && user && userMenuOpen && (
+        <div
+          id="navbar-user-menu"
+          onMouseEnter={openMenu}
+          onMouseLeave={scheduleClose}
+          className={cn(
+            "absolute right-3 top-full z-50 mt-1",
+            "before:absolute before:inset-x-0 before:-top-2 before:h-2 before:content-['']",
+            "sm:right-6",
+          )}
+        >
+          <div
+            className={cn(
+              "w-64 overflow-hidden rounded-xl border shadow-lg",
+              isDarkNav
+                ? "border-[#24312B] bg-[#101713] shadow-[0_12px_40px_rgba(0,0,0,0.45)]"
+                : "border-[#E4E6E9] bg-white shadow-[0_12px_40px_rgba(0,0,0,0.12)]",
+            )}
+          >
+            <div
+              className={cn(
+                "flex items-center gap-3 border-b px-4 py-3",
+                isDarkNav ? "border-[#24312B]" : "border-[#E4E6E9]",
+              )}
+            >
+              <span className="flex size-8 items-center justify-center rounded-full bg-[#4DE352] text-xs font-bold text-[#071009]">
+                {initials}
+              </span>
+              <span
+                className={cn(
+                  "truncate text-[13px] font-medium",
+                  isDarkNav ? "text-[#EAF2ED]" : "text-[#17181A]",
+                )}
+              >
+                {user.email}
+              </span>
+            </div>
+
+            <div className="p-1.5">
+              <button
+                type="button"
+                onClick={handleSignOut}
+                disabled={isSigningOut}
+                className={cn(
+                  "flex w-full items-center gap-2 rounded-md px-3 py-2 text-[13px] font-medium",
+                  "transition-colors duration-150 cursor-pointer",
+                  "disabled:cursor-not-allowed disabled:opacity-50",
+                  isDarkNav
+                    ? "text-[#9FB0A6] hover:bg-[#141C17] hover:text-[#EAF2ED]"
+                    : "text-[#4E545B] hover:bg-[#F0F1F3] hover:text-[#17181A]",
+                )}
+              >
+                <HugeiconsIcon
+                  icon={Logout03Icon}
+                  size={15}
+                  strokeWidth={2.2}
+                />
+                {isSigningOut ? "Leaving..." : "Sign Out"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
