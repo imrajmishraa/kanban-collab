@@ -183,3 +183,103 @@ textarea::placeholder {
     scroll-behavior: auto !important;
   }
 }
+
+/* Hide scrollbars everywhere — scrolling still works */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* legacy Edge */
+}
+*::-webkit-scrollbar {
+  display: none; /* Chromium / Safari */
+}
+
+
+
+@keyframes flowPulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes flowPing {
+  75%,
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+@keyframes flowBlink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@keyframes peerFloat {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(6px, -4px);
+  }
+}
+
+@keyframes flowDash {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
+.flow-live .flow-pulse {
+  animation: flowPulse 2.4s ease-in-out infinite;
+}
+
+.flow-live .flow-ping {
+  animation: flowPing 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.flow-live .flow-blink {
+  animation: flowBlink 1.6s ease-in-out infinite;
+}
+
+.flow-live .flow-dash {
+  animation: flowDash 1.6s linear infinite;
+}
+
+.flow-live .peer-float-a {
+  animation: peerFloat 4.5s ease-in-out infinite;
+}
+
+.flow-live .peer-float-b {
+  animation: peerFloat 5.1s ease-in-out infinite 0.6s;
+}
+
+.flow-live .peer-float-c {
+  animation: peerFloat 4.8s ease-in-out infinite 1.2s;
+}
+
+.flow-live .peer-float-d {
+  animation: peerFloat 5.4s ease-in-out infinite 1.8s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flow-live .flow-pulse,
+  .flow-live .flow-ping,
+  .flow-live .flow-blink,
+  .flow-live .flow-dash,
+  .flow-live .peer-float-a,
+  .flow-live .peer-float-b,
+  .flow-live .peer-float-c,
+  .flow-live .peer-float-d {
+    animation: none !important;
+  }
+}
