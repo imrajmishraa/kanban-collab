@@ -1,39 +1,57 @@
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
 
-    <link
-      rel="icon"
-      type="image/svg+xml"
-      href="/appIcon.png"
-    />
+    <!-- No-flash theme: sets the correct class on <html> BEFORE first paint.
+         Reads the same "kanban-theme" key (same envelope shape) that the
+         Zustand store in stores/theme.ts writes. Keep this FIRST in <head>. -->
+    <script>
+      (function () {
+        var theme = "dark";
+        try {
+          var saved = JSON.parse(localStorage.getItem("kanban-theme") || "{}");
+          if (saved && saved.state && saved.state.theme) {
+            theme = saved.state.theme;
+          } else if (window.matchMedia("(prefers-color-scheme: light)").matches) {
+            theme = "light";
+          }
+        } catch (e) {
+          if (window.matchMedia("(prefers-color-scheme: light)").matches) {
+            theme = "light";
+          }
+        }
+        var root = document.documentElement;
+        root.classList.toggle("light", theme === "light");
+        root.classList.toggle("dark", theme === "dark");
+        root.style.colorScheme = theme;
+      })();
+    </script>
 
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0"
     />
-
+    <title>Kanban Collab</title>
     <meta
       name="description"
       content="Enterprise Kanban Collaboration Platform — Real-time collaborative project management"
     />
-
+    <meta name="theme-color" content="#0A0F0D" />
+    <meta property="og:title" content="Kanban Collab — Real-time collaborative project management" />
     <meta
-      name="theme-color"
-      content="#0B0D12"
+      property="og:description"
+      content="Enterprise Kanban Collaboration Platform — Real-time collaborative project management"
     />
+    <meta property="og:type" content="website" />
 
-    <title>Kanban Collab</title>
+    <!-- Tab icon: single file, single reference, no preload needed —
+         the Navbar logo is now an inline SVG component in the bundle. -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
     <!-- Font optimization -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-
-    <link
-      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
 
     <!-- Primary UI font + technical monospace font -->
     <link
