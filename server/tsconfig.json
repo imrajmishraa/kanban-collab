@@ -1,28 +1,57 @@
 {
   "compilerOptions": {
+    /* ── Language & Module ─────────────────────────────── */
     "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
+    "lib": ["ES2022"],
     "rewriteRelativeImportExtensions": true,
-    "erasableSyntaxOnly": true,
-    "verbatimModuleSyntax": false,
+
+    /* ── Output ────────────────────────────────────────── */
     "outDir": "./dist",
     "rootDir": "./src",
+    "sourceMap": true,
+    "declaration": false,
+    "declarationMap": false,
+    "removeComments": true,
+
+    /* ── Strict Type-Checking ──────────────────────────── */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitOverride": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
-    "forceConsistentCasingInFileNames": true,
-    "noEmitOnError": true,
-    "sourceMap": true,
-    "declaration": false,
-    "skipLibCheck": true,
+    "noImplicitReturns": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "exactOptionalPropertyTypes": true,
+    "useUnknownInCatchVariables": true,
+
+    /* ── Module Interop & Resolution ───────────────────── */
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": false,
+    "erasableSyntaxOnly": true,
+
+    /* ── Emit & Safety ─────────────────────────────────── */
+    "noEmitOnError": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "preserveConstEnums": true,
+
+    /* ── Types ─────────────────────────────────────────── */
     "types": ["node"]
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts"],
-  "exclude": ["node_modules", "dist", "test"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "coverage",
+    "test",
+    "tests",
+    "**/*.test.ts",
+    "**/*.spec.ts"
+  ]
 }
