@@ -1,20 +1,8 @@
+import type { ApiError } from "./ApiError";
 
-/**
- * Standard success response envelope returned by every HTTP controller.
- *
- *   {
- *     statusCode: 200,
- *     success: true,
- *     message: "User logged in successfully.",
- *     data: { accessToken, user }
- *   }
- *
- * Error responses use `ApiError` + the global error handler, which produce
- * a shape-consistent envelope with `success: false`.
- */
 class ApiResponse<T> {
   public readonly statusCode: number;
-  public readonly success: boolean;
+  public readonly success: true;
   public readonly message: string;
   public readonly data: T;
 
@@ -33,6 +21,23 @@ class ApiResponse<T> {
     this.message = message;
     this.data = data;
   }
+
+  /** 200 OK — the common case. */
+  static ok<T>(message: string, data: T) {
+    return new ApiResponse(200, message, data);
+  }
+
+  /** 201 Created — resource-creating endpoints. */
+  static created<T>(message: string, data: T) {
+    return new ApiResponse(201, message, data);
+  }
 }
 
+/**
+ * Anything a route's response can be: the success envelope or the error
+ * envelope. Narrow with `if (envelope.success) { … }`.
+ */
+type ApiEnvelope<T = unknown> = ApiResponse<T> | ApiError;
+
 export { ApiResponse };
+export type { ApiEnvelope };
