@@ -9,7 +9,7 @@ import {
   Search01Icon,
 } from "@hugeicons/core-free-icons";
 
-import { useInfiniteWorkspaces } from "@/hooks/dashboard/useInfiniteWorkspaces";
+import { useWorkspaces } from "@/hooks/dashboard/useWorkspaces";
 
 import type { Workspace } from "@/types/api/dashboard/workspace";
 
@@ -45,15 +45,13 @@ export function WorkspaceSelector({
   }, [searchInput]);
 
   const {
-    data,
+    workspaces,
     isLoading,
     isError,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useInfiniteWorkspaces(debouncedSearch, 10);
-
-  const workspaces = data?.pages.flatMap((p) => p.workspaces) ?? [];
+  } = useWorkspaces(debouncedSearch);
 
   const toggleOpen = () => {
     setIsOpen((prev) => {
@@ -203,7 +201,7 @@ export function WorkspaceSelector({
               </p>
             ) : (
               <>
-                {workspaces.map((workspace) => {
+                {workspaces.map((workspace: Workspace) => {
                   const isActive = workspace.id === activeWorkspaceId;
 
                   return (
