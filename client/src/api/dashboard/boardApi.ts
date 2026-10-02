@@ -48,8 +48,8 @@ export const boardApi = {
       "/boards",
       {
         params: {
-          workspaceId,
           ...params,
+          workspaceId,
         },
       },
     );
