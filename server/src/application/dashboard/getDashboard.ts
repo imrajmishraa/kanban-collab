@@ -49,6 +49,23 @@ export interface DashboardResponse {
   recentActivity: DashboardActivity[];
 }
 
+/**
+ * PERFORMANCE NOTE — this function used to load every board document
+ * (full docs, including column arrays) and every active card document,
+ * just to compute counts. With 1,763 boards that meant shipping ~1,800
+ * documents from Mongo to Node on every dashboard load (measured: 2.4 s).
+ *
+ * It now ships:
+ *   - 6 workspace rows          (name only)
+ *   - 1 board row per board     (workspaceId only — ~40 bytes each)
+ *   - 6 recent board rows       (display fields only)
+ *   - 8 activity rows           (unchanged)
+ *   - a count per board WITH active cards (Mongo-side $group aggregate —
+ *     in the measured case, 4 numbers)
+ *   - board names for the activity rows it actually shows (≤ 8 rows)
+ *
+ * Return shape is identical to the previous version.
+ */
 export const getDashboard = async (
   userId: string,
 ): Promise<DashboardResponse> => {
@@ -60,13 +77,15 @@ export const getDashboard = async (
 
   /*
    * ---------------------------------------------------------
-   * 1. Get user's workspaces
+   * 1. Workspaces — name only (the join key and display label)
    * ---------------------------------------------------------
    */
 
   const workspaces = await WorkspaceModel.find({
     "members.userId": userObjectId,
-  }).lean();
+  })
+    .select("name")
+    .lean();
 
   if (workspaces.length === 0) {
     return {
@@ -86,162 +105,190 @@ export const getDashboard = async (
 
   const workspaceIds = workspaces.map((workspace) => workspace._id);
 
-  /*
-   * ---------------------------------------------------------
-   * 2. Get boards
-   * ---------------------------------------------------------
-   */
-
-  const boards = await BoardModel.find({
-    workspaceId: {
-      $in: workspaceIds,
-    },
-  })
-    .sort({
-      updatedAt: -1,
-    })
-    .lean();
-
-  const boardIds = boards.map((board) => board._id);
+  const workspaceNameById = new Map(
+    workspaces.map((workspace) => [workspace._id.toString(), workspace.name]),
+  );
 
   /*
    * ---------------------------------------------------------
-   * 3. Get active tasks
+   * 2. Three independent queries in parallel:
+   *      a) board → workspaceId pairs (ids only — never full boards)
+   *      b) 6 most recently updated boards (display fields only)
+   *      c) 8 most recent activity log rows
    * ---------------------------------------------------------
    */
 
-  const activeTasks =
-    boardIds.length > 0
-      ? await CardModel.find({
-          boardId: {
-            $in: boardIds,
+  const [boardWorkspacePairs, recentBoardDocs, activityLogs] =
+    await Promise.all([
+      BoardModel.find({
+        workspaceId: { $in: workspaceIds },
+      })
+        .select("workspaceId")
+        .lean(),
+
+      BoardModel.find({
+        workspaceId: { $in: workspaceIds },
+      })
+        .sort({ updatedAt: -1 })
+        .limit(6)
+        .select("name backgroundColor updatedAt workspaceId")
+        .lean(),
+
+      ActivityLogModel.find({
+        workspaceId: { $in: workspaceIds },
+      })
+        .sort({ createdAt: -1 })
+        .limit(8)
+        .lean(),
+    ]);
+
+  /*
+   * ---------------------------------------------------------
+   * 3. Roll up board counts per workspace from the id pairs
+   * ---------------------------------------------------------
+   */
+
+  const workspaceIdByBoardId = new Map<string, string>();
+  const boardCountByWorkspaceId = new Map<string, number>();
+
+  for (const { _id, workspaceId } of boardWorkspacePairs) {
+    const id = _id.toString();
+    const wid = workspaceId.toString();
+
+    workspaceIdByBoardId.set(id, wid);
+    boardCountByWorkspaceId.set(
+      wid,
+      (boardCountByWorkspaceId.get(wid) ?? 0) + 1,
+    );
+  }
+
+  /*
+   * ---------------------------------------------------------
+   * 4. Active task counts — grouped in Mongo, never shipped
+   *    as documents. The result only contains boards that
+   *    actually have active cards.
+   * ---------------------------------------------------------
+   */
+
+  const activeTasksByBoard =
+    boardWorkspacePairs.length > 0
+      ? await CardModel.aggregate<{ _id: Types.ObjectId; count: number }>([
+          {
+            $match: {
+              boardId: { $in: boardWorkspacePairs.map((board) => board._id) },
+              isArchived: false,
+            },
           },
-
-          isArchived: false,
-        }).lean()
+          {
+            $group: {
+              _id: "$boardId",
+              count: { $sum: 1 },
+            },
+          },
+        ])
       : [];
 
+  const activeTaskCountByWorkspaceId = new Map<string, number>();
+  let activeTaskCount = 0;
+
+  for (const { _id: boardId, count } of activeTasksByBoard) {
+    const wid = workspaceIdByBoardId.get(boardId.toString());
+    if (wid === undefined) continue;
+
+    activeTaskCountByWorkspaceId.set(
+      wid,
+      (activeTaskCountByWorkspaceId.get(wid) ?? 0) + count,
+    );
+    activeTaskCount += count;
+  }
+
   /*
    * ---------------------------------------------------------
-   * 4. Build workspace dashboard data
+   * 5. Workspaces read model
    * ---------------------------------------------------------
    */
 
   const dashboardWorkspaces: DashboardWorkspace[] = workspaces.map(
     (workspace) => {
-      const workspaceId = workspace._id.toString();
-
-      const workspaceBoards = boards.filter(
-        (board) => board.workspaceId.toString() === workspaceId,
-      );
-
-      const workspaceBoardIds = new Set(
-        workspaceBoards.map((board) => board._id.toString()),
-      );
-
-      const workspaceActiveTasks = activeTasks.filter((task) =>
-        workspaceBoardIds.has(task.boardId.toString()),
-      );
+      const id = workspace._id.toString();
 
       return {
-        id: workspaceId,
+        id,
         name: workspace.name,
-        boardCount: workspaceBoards.length,
-        activeTaskCount: workspaceActiveTasks.length,
+        boardCount: boardCountByWorkspaceId.get(id) ?? 0,
+        activeTaskCount: activeTaskCountByWorkspaceId.get(id) ?? 0,
       };
     },
   );
 
   /*
    * ---------------------------------------------------------
-   * 5. Recent boards
+   * 6. Recent boards
    * ---------------------------------------------------------
    */
 
-  const recentBoards: DashboardBoard[] = boards.slice(0, 6).map((board) => {
-    const workspace = workspaces.find(
-      (item) => item._id.toString() === board.workspaceId.toString(),
-    );
-
-    return {
-      id: board._id.toString(),
-
-      workspaceId: board.workspaceId.toString(),
-
-      workspaceName: workspace?.name ?? "Unknown workspace",
-
-      name: board.name,
-
-      backgroundColor: board.backgroundColor,
-
-      updatedAt: board.updatedAt.toISOString(),
-    };
-  });
+  const recentBoards: DashboardBoard[] = recentBoardDocs.map((board) => ({
+    id: board._id.toString(),
+    workspaceId: board.workspaceId.toString(),
+    workspaceName:
+      workspaceNameById.get(board.workspaceId.toString()) ??
+      "Unknown workspace",
+    name: board.name,
+    backgroundColor: board.backgroundColor,
+    updatedAt: board.updatedAt.toISOString(),
+  }));
 
   /*
    * ---------------------------------------------------------
-   * 6. Recent activity
+   * 7. Recent activity — fetch only the board names it shows,
+   *    instead of having all 1,763 boards in memory to join
+   *    against 8 rows.
    * ---------------------------------------------------------
    */
 
-  const activityLogs = await ActivityLogModel.find({
-    workspaceId: {
-      $in: workspaceIds,
-    },
-  })
-    .sort({
-      createdAt: -1,
-    })
-    .limit(8)
-    .lean();
+  const activityBoardIds = [...new Set(activityLogs.map((a) => a.boardId))];
 
-  const recentActivity: DashboardActivity[] = activityLogs.map((activity) => {
-    const workspace = workspaces.find(
-      (item) => item._id.toString() === activity.workspaceId.toString(),
-    );
+  const activityBoards =
+    activityBoardIds.length > 0
+      ? await BoardModel.find({ _id: { $in: activityBoardIds } })
+          .select("name")
+          .lean()
+      : [];
 
-    const board = boards.find(
-      (item) => item._id.toString() === activity.boardId.toString(),
-    );
+  const boardNameById = new Map(
+    activityBoards.map((board) => [board._id.toString(), board.name]),
+  );
 
-    return {
-      id: activity._id.toString(),
-
-      type: activity.actionType,
-
-      message: createActivityMessage(
-        activity.actionType,
-        activity.details,
-        board?.name,
-      ),
-
-      workspaceId: activity.workspaceId.toString(),
-
-      workspaceName: workspace?.name ?? "Unknown workspace",
-
-      boardId: activity.boardId.toString(),
-
-      boardName: board?.name ?? "Unknown board",
-
-      userId: activity.userId.toString(),
-
-      createdAt: activity.createdAt.toISOString(),
-    };
-  });
+  const recentActivity: DashboardActivity[] = activityLogs.map((activity) => ({
+    id: activity._id.toString(),
+    type: activity.actionType,
+    message: createActivityMessage(
+      activity.actionType,
+      activity.details,
+      boardNameById.get(activity.boardId.toString()),
+    ),
+    workspaceId: activity.workspaceId.toString(),
+    workspaceName:
+      workspaceNameById.get(activity.workspaceId.toString()) ??
+      "Unknown workspace",
+    boardId: activity.boardId.toString(),
+    boardName:
+      boardNameById.get(activity.boardId.toString()) ?? "Unknown board",
+    userId: activity.userId.toString(),
+    createdAt: activity.createdAt.toISOString(),
+  }));
 
   /*
    * ---------------------------------------------------------
-   * 7. Return dashboard read model
+   * 8. Return dashboard read model
    * ---------------------------------------------------------
    */
 
   return {
     stats: {
       workspaceCount: workspaces.length,
-
-      boardCount: boards.length,
-
-      activeTaskCount: activeTasks.length,
+      boardCount: boardWorkspacePairs.length,
+      activeTaskCount,
     },
 
     workspaces: dashboardWorkspaces,
