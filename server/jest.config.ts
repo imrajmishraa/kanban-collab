@@ -5,7 +5,7 @@ const config: Config = {
 
   testEnvironment: "node",
 
-  roots: ["<rootDir>/test"],
+  roots: ["<rootDir>/tests"],
 
   testMatch: ["**/*.test.ts"],
 
