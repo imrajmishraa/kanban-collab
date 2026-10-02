@@ -1,6 +1,7 @@
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Menu01Icon, Search01Icon } from "@hugeicons/core-free-icons";
 import { useNavigate } from "react-router-dom";
+import logo from "@/assets/logo.svg?inline";
 
 import { useSearchStore } from "@/stores/searchStore";
 
@@ -36,12 +37,12 @@ const SidebarMobileHeader = ({ onMenuClick }: SidebarMobileHeaderProps) => {
               className="group flex cursor-pointer items-center gap-2.5 transition-opacity hover:opacity-90"
             >
               <img
-                src="/appIcon.png"
+                src={logo}
                 alt=""
                 width={28}
                 height={28}
                 draggable={false}
-                className="h-7 w-7 rounded-lg border border-white/8 object-cover shadow-[0_2px_8px_rgba(0,0,0,0.35)] transition-all duration-300 group-hover:border-(--brand)/40"
+                className="h-7 w-7 rounded-lg border border-white/8 shadow-[0_2px_8px_rgba(0,0,0,0.35)] transition-all duration-300 group-hover:border-(--brand)/40"
               />
               <span className="font-mono text-lg font-bold tracking-tight text-(--text-primary)">
                 Kanban
