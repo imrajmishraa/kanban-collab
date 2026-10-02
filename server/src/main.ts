@@ -26,6 +26,7 @@ let shuttingDown = false;
 
 /** Max time to allow graceful shutdown before forcing exit. */
 const SHUTDOWN_TIMEOUT_MS = 15_000;
+const PORT = ENV.PORT || 10000;
 
 
 // BOOTSTRAP
@@ -52,7 +53,7 @@ async function bootstrap(): Promise<void> {
   await new Promise<void>((resolve, reject) => {
     httpServer!.once("error", reject);
 
-    httpServer!.listen(ENV.PORT, () => {
+    httpServer!.listen(PORT, () => {
       httpServer!.off("error", reject);
 
       lifecycleLogger.info(
