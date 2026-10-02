@@ -1,0 +1,20 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "project": ["src/**/*.{ts,tsx,css}"],
+  "ignoreExportsUsedInFile": true,
+  "paths": {
+    "@/*": ["src/*"],
+    "@app/*": ["src/app/*"],
+    "@api/*": ["src/api/*"],
+    "@components/*": ["src/components/*"],
+    "@hooks/*": ["src/hooks/*"],
+    "@validations/*": ["src/validations/*"]
+  },
+  "ignoreDependencies": [
+    "tailwindcss",
+    "tw-animate-css",
+    "@testing-library/jest-dom",
+    "@testing-library/react",
+    "@testing-library/user-event"
+  ]
+}
