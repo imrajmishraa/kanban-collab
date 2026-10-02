@@ -1,4 +1,6 @@
-const BACKGROUND_URL = "https://chaicode.com/assets/background-S4EJ6pKP.svg";
+import hexBackground from "@/assets/hex-background.svg";
+
+const BACKGROUND_URL = hexBackground;
 
 export function LandingBackground() {
   return (
@@ -18,7 +20,7 @@ export function LandingBackground() {
       {/* Soft vignette to pull focus toward the center */}
       <div className="absolute inset-0 bg-[radial-gradient(120%_90%_at_50%_-10%,transparent_35%,rgba(0,0,0,0.55)_100%)]" />
 
-      {/* Optional: subtle top-edge highlight */}
+      {/* Subtle top-edge highlight */}
       <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent)]" />
     </div>
   );
