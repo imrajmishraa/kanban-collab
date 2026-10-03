@@ -120,7 +120,6 @@
 //   }
 // });
 
-
 // const register = asyncHandler(async (req, res) => {
 //   const { email, password, fullName } = req.body;
 
@@ -176,31 +175,31 @@
 
 //   try {
 //     const user = await UserModel.findOne({ email });
-  
+
 //     if (!user) {
 //       throw invalidEmailOrPasswordError();
 //     }
-  
+
 //     const isMatch = await comparePassword(password, user.passwordHash);
-  
+
 //     if (!isMatch) {
 //       throw invalidEmailOrPasswordError();
 //     }
-  
+
 //     const accessToken = signAccessToken({
 //       userId: user._id.toString(),
 //       email: user.email,
 //       fullName: user.fullName,
 //     });
-  
+
 //     const rawRefreshToken = signRefreshToken({
 //       userId: user._id.toString(),
 //     });
-  
+
 //     const refreshTokenHash = hashToken(rawRefreshToken);
-  
+
 //     const expiresAt = new Date(Date.now() + REFRESH_TOKEN_MAX_AGE);
-  
+
 //     await SessionModel.create({
 //       userId: user._id,
 //       refreshTokenHash,
@@ -209,9 +208,9 @@
 //       lastUsedAt: new Date(),
 //       expiresAt,
 //     });
-  
+
 //     res.cookie("refreshToken", rawRefreshToken, getCookieOptions());
-  
+
 //     authLogger.info(
 //       {
 //         userId: user._id,
@@ -220,7 +219,7 @@
 //       },
 //       "User logged in successfully.",
 //     );
-  
+
 //     return res.status(200).json(
 //       new ApiResponse(200, "User logged in successfully", {
 //         data: {
@@ -268,7 +267,6 @@
 //       "User logged out successfully.",
 //     );
 
-
 //     return res.status(200).json(
 //       new ApiResponse(200, 'Logged out successfully.', {
 //         data: null
@@ -288,6 +286,5 @@
 //     throw error;
 //   }
 // });
-
 
 // export { register, login, logout, refresh };

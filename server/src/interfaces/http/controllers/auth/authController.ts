@@ -34,7 +34,6 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
       : {}),
   });
 
-
   return res.status(201).json(
     new ApiResponse(201, "User registered successfully.", {
       userId: result.userId,
@@ -127,13 +126,15 @@ export const logout = asyncHandler(async (req: Request, res: Response) => {
     .json(new ApiResponse(200, "Logged out successfully.", null));
 });
 
-export const me = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-  const userId = req.user?.userId;
-  if (!userId) throw missingAccessTokenError();
+export const me = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const userId = req.user?.userId;
+    if (!userId) throw missingAccessTokenError();
 
-  const result = await meUseCase(userId);
+    const result = await meUseCase(userId);
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, "User profile retrieved.", result));
-});
+    return res
+      .status(200)
+      .json(new ApiResponse(200, "User profile retrieved.", result));
+  },
+);
