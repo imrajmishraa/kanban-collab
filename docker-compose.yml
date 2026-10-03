@@ -1,18 +1,18 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # kanban-collab — full production-like stack
 #
-#   web   → nginx serving the built SPA, proxying /api + /ws to api
-#   api   → the Node/Yjs backend (REST + WebSocket)
+#   web   → nginx serving the built SPA, proxying /api + /ws to api (:3000)
+#   api   → the Node/Yjs backend (REST + WebSocket) on :3000
 #   mongo → MongoDB
-#   redis → Redis (cache + Yjs pub/sub)
+#   cache → Redis (cache + Yjs pub/sub)
 #
-# Usage:
+# Usage (from the repo root):
 #   docker compose up -d --build
 #   docker compose logs -f
-#   docker compose down
+#   docker compose down            # add -v to also drop the volumes
 #
-# The api service reads ./server/.env for secrets (JWT, OAuth, …). The
-# connection vars below override it so the app talks to the compose services.
+# PORT is 3000 everywhere — same as local dev, the health scripts, the vite
+# proxy, and the nginx upstream — so nothing can drift out of sync.
 # ─────────────────────────────────────────────────────────────────────────────
 
 name: kanban-collab
@@ -30,7 +30,8 @@ services:
       api:
         condition: service_healthy
     restart: unless-stopped
-    networks: [kanban-net]
+    networks:
+      - kanban-net
 
   api:
     build:
@@ -42,9 +43,9 @@ services:
       - ./server/.env
     environment:
       NODE_ENV: production
-      PORT: "3000"
+      PORT: 3000
       MONGODB_URI: mongodb://mongo:27017/kanban-collab
-      REDIS_URL: redis://redis:6379
+      REDIS_URL: redis://cache:6379
     ports:
       - "3000:3000"
     volumes:
@@ -52,11 +53,18 @@ services:
     depends_on:
       mongo:
         condition: service_healthy
-      redis:
+      cache:
         condition: service_healthy
     init: true
     restart: unless-stopped
-    networks: [kanban-net]
+    networks:
+      - kanban-net
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/healthz').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 25s
+      retries: 3
 
   mongo:
     image: mongo:7
@@ -64,28 +72,30 @@ services:
     restart: unless-stopped
     volumes:
       - mongo_data:/data/db
+    networks:
+      - kanban-net
     healthcheck:
       test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 20s
-    networks: [kanban-net]
 
-  redis:
+  cache:
     image: redis:7-alpine
     container_name: kanban-redis
     restart: unless-stopped
     command: ["redis-server", "--appendonly", "yes", "--save", "60", "1"]
     volumes:
       - redis_data:/data
+    networks:
+      - kanban-net
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 10s
-    networks: [kanban-net]
 
 volumes:
   mongo_data:
