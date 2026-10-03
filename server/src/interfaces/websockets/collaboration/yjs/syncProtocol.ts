@@ -1,7 +1,7 @@
 import * as decoding from "lib0/decoding";
 import * as encoding from "lib0/encoding";
 import * as ySyncProtocol from "y-protocols/sync";
-import * as Y from "yjs";
+import type * as Y from "yjs";
 import type { WebSocket } from "ws";
 
 import { yjsLogger } from "../../../../infrastructure/logging/childLogger";

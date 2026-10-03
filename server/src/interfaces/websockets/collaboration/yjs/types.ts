@@ -1,5 +1,5 @@
 import type { WebSocket } from "ws";
-import  type * as Y from "yjs";
+import type * as Y from "yjs";
 import type { Awareness } from "y-protocols/awareness";
 
 export interface CollaborationClient {
