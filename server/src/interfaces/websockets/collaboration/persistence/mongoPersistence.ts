@@ -1,11 +1,11 @@
-import * as Y from 'yjs';
+import * as Y from "yjs";
 
-import { logger } from '../../../../infrastructure/logging/logger';
-import { websocketConfig } from '../../../../config/websocket';
-import { YjsUpdateModel } from '../../../../infrastructure/db/mongoose/schemas';
+import { logger } from "../../../../infrastructure/logging/logger";
+import { websocketConfig } from "../../../../config/websocket";
+import { YjsUpdateModel } from "../../../../infrastructure/db/mongoose/schemas";
 
-import { Debouncer } from './debounce';
-import type { DocumentPersistence } from './documentPersistence';
+import { Debouncer } from "./debounce";
+import type { DocumentPersistence } from "./documentPersistence";
 
 export class MongoPersistence implements DocumentPersistence {
   private readonly debouncer = new Debouncer();
@@ -116,4 +116,3 @@ export class MongoPersistence implements DocumentPersistence {
 }
 
 export const persistence = new MongoPersistence();
-

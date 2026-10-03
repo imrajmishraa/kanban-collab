@@ -20,14 +20,12 @@ export class Debouncer {
       clearTimeout(existing.timer);
     }
 
-    const timer = setTimeout(async () => {
+    const timer = setTimeout(() => {
       this.tasks.delete(key);
 
-      try {
-        await task();
-      } catch {
+      void task().catch(() => {
         // caller is responsible for logging
-      }
+      });
     }, delay);
 
     this.tasks.set(key, {
