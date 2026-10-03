@@ -16,7 +16,7 @@ export default function OAuthCallback() {
 
     if (s !== "success") {
       const reason = params.get("reason") ?? "unknown";
-      navigate(`/login?error=oauth&reason=${encodeURIComponent(reason)}`, {
+      navigate(`/auth/login?error=oauth&reason=${encodeURIComponent(reason)}`, {
         replace: true,
       });
       return;
@@ -31,7 +31,7 @@ export default function OAuthCallback() {
     if (status === "authenticated") {
       navigate("/dashboard", { replace: true });
     } else if (status === "unauthenticated" && kicked.current) {
-      navigate("/login?error=oauth_refresh", { replace: true });
+      navigate("/auth/login?error=oauth_refresh", { replace: true });
     }
   }, [status, navigate]);
 
