@@ -9,5 +9,14 @@ export function Boot({ children }: { children: ReactNode }) {
     void restoreSession();
   }, [restoreSession]);
 
+  useEffect(() => {
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) void restoreSession();
+    };
+
+    window.addEventListener("pageshow", handlePageShow);
+    return () => window.removeEventListener("pageshow", handlePageShow);
+  }, [restoreSession]);
+
   return <>{children}</>;
 }
