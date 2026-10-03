@@ -1,0 +1,101 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-cd-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-latest
+    outputs:
+      server: ${{ steps.filter.outputs.server }}
+      client: ${{ steps.filter.outputs.client }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            server:
+              - 'server/**'
+              - 'docker-compose*.yml'
+              - '.github/workflows/**'
+            client:
+              - 'client/**'
+              - 'docker-compose*.yml'
+              - '.github/workflows/**'
+
+  server:
+    name: Server
+    needs: changes
+    if: needs.changes.outputs.server == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    env:
+      NODE_ENV: test
+      MONGODB_URI: mongodb://127.0.0.1:27017/kanban_test
+      REDIS_URL: redis://127.0.0.1:6379
+      JWT_SECRET: ci_only_access_secret_0123456789abcdefghijklmnop
+      JWT_REFRESH_SECRET: ci_only_refresh_secret_0123456789abcdefghijklmnop
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm test
+      - run: npm run build
+
+  client:
+    name: Client
+    needs: changes
+    if: needs.changes.outputs.client == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm test -- --passWithNoTests
+      - run: npm run build
+
+  deploy-api:
+    name: Deploy API → Render
+    needs: [changes, server]
+    if: always() && github.ref == 'refs/heads/main' && needs.server.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - run: curl -fsSL -X POST "${{ secrets.RENDER_DEPLOY_HOOK_API }}"
+
+  deploy-web:
+    name: Deploy Web → Render
+    needs: [changes, client]
+    if: always() && github.ref == 'refs/heads/main' && needs.client.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - run: curl -fsSL -X POST "${{ secrets.RENDER_DEPLOY_HOOK_WEB }}"
