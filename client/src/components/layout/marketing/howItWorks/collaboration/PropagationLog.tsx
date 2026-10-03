@@ -12,7 +12,11 @@ export default function PropagationLog() {
     <div className="p-4 sm:p-6">
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <HugeiconsIcon icon={FlashIcon} size={13} className="text-(--brand)" />
+          <HugeiconsIcon
+            icon={FlashIcon}
+            size={13}
+            className="text-(--brand)"
+          />
           <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-white/45 sm:text-[11px]">
             Propagation log
           </span>

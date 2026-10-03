@@ -11,8 +11,6 @@ import {
 } from "@hugeicons/core-free-icons";
 import { useAuth } from "@/hooks/auth/useAuth";
 
-
-
 /* TYPES */
 
 interface LoginLocationState {
@@ -105,7 +103,7 @@ export default function LoginPage() {
   const handleOauth = (provider: "google" | "github") => {
     setOauthLoading(provider);
     const params = new URLSearchParams({ rememberMe: String(remember) });
-    window.location.href = `/api/v1/auth/oauth/${provider}?${params}`
+    window.location.href = `/api/v1/auth/oauth/${provider}?${params}`;
   };
 
   return (

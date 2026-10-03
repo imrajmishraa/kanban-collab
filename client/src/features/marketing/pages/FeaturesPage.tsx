@@ -2,7 +2,6 @@ import { lazy, Suspense } from "react";
 
 import FeaturesHero from "@components/layout/marketing/features/FeaturesHero";
 
-
 const CoreFeaturesSection = lazy(
   () => import("@components/layout/marketing/features/CoreFeaturesSection"),
 );

@@ -312,8 +312,7 @@ export default function SecuritySection() {
 
                   <div className="mt-5 space-y-2 font-mono text-[11px] leading-6">
                     <p className="text-(--text-secondary)/65">
-                      <span className="text-(--brand)">$</span>{" "}
-                      security.check
+                      <span className="text-(--brand)">$</span> security.check
                     </p>
                     <p className="text-(--text-secondary)/50">
                       validating workspace access...

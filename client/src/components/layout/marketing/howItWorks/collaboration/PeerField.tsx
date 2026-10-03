@@ -12,7 +12,11 @@ export default function PeerField() {
     <div className="border-b border-white/6 p-4 sm:p-6 lg:border-b-0 lg:border-r">
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <HugeiconsIcon icon={RadarIcon} size={13} className="text-(--brand)" />
+          <HugeiconsIcon
+            icon={RadarIcon}
+            size={13}
+            className="text-(--brand)"
+          />
           <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-white/45 sm:text-[11px]">
             Live peers
           </span>

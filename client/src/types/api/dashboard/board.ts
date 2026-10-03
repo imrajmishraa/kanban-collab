@@ -80,4 +80,3 @@ export interface BoardPagination {
   hasNextPage: boolean;
   hasPreviousPage: boolean;
 }
-

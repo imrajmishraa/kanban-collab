@@ -1,4 +1,4 @@
-import React from 'react'
+import React from "react";
 
 function ProfilePage() {
   return (
@@ -23,4 +23,4 @@ function ProfilePage() {
   );
 }
 
-export default ProfilePage
+export default ProfilePage;

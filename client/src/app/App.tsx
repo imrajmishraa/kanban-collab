@@ -8,7 +8,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
-        <QueryProvider>
+      <QueryProvider>
         <AppRouter />
       </QueryProvider>
     </BrowserRouter>

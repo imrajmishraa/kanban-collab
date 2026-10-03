@@ -1,4 +1,4 @@
-import React from 'react'
+import React from "react";
 
 function SettingsPage() {
   return (
@@ -25,4 +25,4 @@ function SettingsPage() {
   );
 }
 
-export default SettingsPage
+export default SettingsPage;

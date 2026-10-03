@@ -230,7 +230,6 @@ export default function SidebarFooter({
   );
 }
 
-
 function FlyoutItem({
   icon,
   label,

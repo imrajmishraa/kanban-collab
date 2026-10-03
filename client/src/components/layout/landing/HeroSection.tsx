@@ -5,7 +5,9 @@ import { motion, useScroll, useTransform, type Variants } from "framer-motion";
 import { useMediaQuery } from "./useMediaQuery";
 import DesktopFrame from "./screen/DesktopFrame";
 
-const DashboardDemoPage = lazy(() => import("@/components/layout/landing/DashboardDemoPage"));
+const DashboardDemoPage = lazy(
+  () => import("@/components/layout/landing/DashboardDemoPage"),
+);
 /* ── Entrance choreography ──────────────────────────────────────────── */
 
 const container: Variants = {

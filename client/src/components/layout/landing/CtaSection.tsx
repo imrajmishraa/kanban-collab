@@ -1,6 +1,10 @@
 import { Link } from "react-router-dom";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { ArrowRight02Icon, GithubIcon, Tick02Icon } from "@hugeicons/core-free-icons";
+import {
+  ArrowRight02Icon,
+  GithubIcon,
+  Tick02Icon,
+} from "@hugeicons/core-free-icons";
 
 import { Reveal, TiltCard } from "./Tilt";
 

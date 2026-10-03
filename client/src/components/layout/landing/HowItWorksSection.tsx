@@ -49,7 +49,6 @@ export default function HowItWorksSection() {
 
         <div className="relative mt-16 grid gap-6 md:grid-cols-3">
           {/* Connector line — runs through the step badges, visible in the gaps */}
-          
 
           {steps.map((step, i) => (
             <Reveal key={step.n} delay={i * 0.14} className="h-full">

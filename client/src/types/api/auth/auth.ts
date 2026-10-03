@@ -8,7 +8,6 @@ export interface AuthUser {
   emailVerified?: boolean;
 }
 
-
 export interface LoginResponse {
   accessToken: string;
   expiresIn: number;
@@ -27,4 +26,3 @@ export interface RegisterResponse {
   fullName: string;
   emailVerified: boolean;
 }
-

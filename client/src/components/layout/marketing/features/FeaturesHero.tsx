@@ -29,7 +29,6 @@ const specs = [
 export default function FeaturesHero() {
   return (
     <section className="relative overflow-hidden">
-
       {/* Layer 4 — bright accent stars, sparse */}
       <div
         aria-hidden="true"

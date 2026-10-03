@@ -1,8 +1,5 @@
 import { HugeiconsIcon } from "@hugeicons/react";
-import {
-  MoreHorizontalIcon,
-  Add01Icon,
-} from "@hugeicons/core-free-icons";
+import { MoreHorizontalIcon, Add01Icon } from "@hugeicons/core-free-icons";
 import type { BoardCard as BoardCardType } from "@/types/api/dashboard/board";
 
 interface BoardColumnProps {
@@ -20,9 +17,7 @@ export default function BoardColumn({
   onAddCard,
   onCardClick,
 }: BoardColumnProps) {
-  const sortedCards = [...cards].sort(
-    (a, b) => a.orderIndex - b.orderIndex,
-  );
+  const sortedCards = [...cards].sort((a, b) => a.orderIndex - b.orderIndex);
 
   return (
     <section
@@ -119,16 +114,10 @@ export default function BoardColumn({
           onClick={() => onAddCard?.(_id)}
           className="flex w-full items-center gap-2 px-2 py-2 font-mono text-xs text-(--text-muted) transition hover:bg-(--hover) hover:text-(--text-primary)"
         >
-          <HugeiconsIcon
-            icon={Add01Icon}
-            size={14}
-            strokeWidth={1.5}
-          />
-
+          <HugeiconsIcon icon={Add01Icon} size={14} strokeWidth={1.5} />
           Add card
         </button>
       </footer>
     </section>
   );
 }
-

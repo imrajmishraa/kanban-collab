@@ -6,7 +6,7 @@ import "./index.css";
 
 import App from "./app/App";
 import { Boot } from "./app/Boot";
-import { Toaster } from "@/components/ui/toaster/Toaster";  
+import { Toaster } from "@/components/ui/toaster/Toaster";
 
 // Exported so you can call queryClient.invalidateQueries/setQueryData
 // from anywhere (e.g. after creating a board, to refresh the list).
@@ -26,10 +26,10 @@ if (!container) throw new Error("Missing #root element");
 createRoot(container).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-        <Boot>
-          <App />
-        </Boot>
-        <Toaster />
+      <Boot>
+        <App />
+      </Boot>
+      <Toaster />
     </QueryClientProvider>
   </StrictMode>,
 );

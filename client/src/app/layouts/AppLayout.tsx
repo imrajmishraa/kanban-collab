@@ -8,7 +8,6 @@ import { NewWorkspaceDialogProvider } from "@components/layout/dashboard/workspa
 import { useSidebarState } from "@/stores/sidebarState";
 import { useSearchStore } from "@/stores/searchStore";
 
-
 const SearchModal = lazy(() =>
   import("@components/layout/dashboard/search/SearchModal").then((m) => ({
     default: m.SearchModal,

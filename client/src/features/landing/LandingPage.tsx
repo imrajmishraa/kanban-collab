@@ -34,7 +34,6 @@ export default function LandingPage() {
 
         <OpenSourceSection />
 
-
         <FaqSection />
 
         <CtaSection />

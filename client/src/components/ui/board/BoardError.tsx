@@ -1,5 +1,5 @@
 import { HugeiconsIcon } from "@hugeicons/react";
-import {  Refresh01Icon, TriangleAlertIcon } from "@hugeicons/core-free-icons";
+import { Refresh01Icon, TriangleAlertIcon } from "@hugeicons/core-free-icons";
 
 interface BoardErrorProps {
   message?: string;

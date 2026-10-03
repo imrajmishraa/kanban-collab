@@ -2,7 +2,6 @@ import { useEffect, useRef } from "react";
 
 import FlowScene from "./collaboration/FlowScene";
 
-
 export default function CollaborationFlowSection() {
   const sectionRef = useRef<HTMLElement>(null);
 

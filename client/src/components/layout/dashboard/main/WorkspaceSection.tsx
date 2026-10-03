@@ -69,7 +69,6 @@ export default function WorkspaceSection({
                 index={index}
                 onOpen={() => navigate(`/workspaces/${workspace.id}`)}
               />
-
             </div>
           ))}
         </div>

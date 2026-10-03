@@ -1,4 +1,7 @@
-import type { BoardDetails, BoardCard as BoardCardType } from "@/types/api/dashboard/board";
+import type {
+  BoardDetails,
+  BoardCard as BoardCardType,
+} from "@/types/api/dashboard/board";
 import BoardColumn from "./BoardColumn";
 
 interface BoardColumnsProps {

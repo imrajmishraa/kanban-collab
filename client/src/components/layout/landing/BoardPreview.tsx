@@ -22,7 +22,6 @@ import {
 import { cn } from "@/lib/utils";
 import { useMediaQuery } from "./useMediaQuery";
 
-
 /* ── Hand-written annotation.
      Hidden below lg — on phones AND narrow tablets the absolutely
      positioned labels would overflow the viewport. ────────────────── */

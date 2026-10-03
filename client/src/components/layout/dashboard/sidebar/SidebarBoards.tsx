@@ -10,7 +10,10 @@ import {
   MoreVerticalIcon,
 } from "@hugeicons/core-free-icons";
 
-import { DropdownMenu, type DropdownEntry } from "@components/Tooltips/DropdownMenu";
+import {
+  DropdownMenu,
+  type DropdownEntry,
+} from "@components/Tooltips/DropdownMenu";
 import { Tooltip } from "@components/Tooltips/ToolTip";
 
 import { groupBoardsByTime } from "@/utils/boardGrouping";

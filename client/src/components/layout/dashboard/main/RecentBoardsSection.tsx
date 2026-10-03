@@ -1,7 +1,5 @@
 import { HugeiconsIcon } from "@hugeicons/react";
-import {
-  ArrowRight01Icon,
-} from "@hugeicons/core-free-icons";
+import { ArrowRight01Icon } from "@hugeicons/core-free-icons";
 import { useNavigate } from "react-router-dom";
 
 import type { DashboardBoard } from "@/types/dashboard/dashboard";

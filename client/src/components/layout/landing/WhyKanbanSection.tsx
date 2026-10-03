@@ -108,13 +108,11 @@ export default function WhyKanbanSection() {
   /* Glow drifts as the section scrolls past */
   const sectionRef = useRef<HTMLElement>(null);
 
-
   return (
     <section
       ref={sectionRef}
       className="relative overflow-hidden border-b border-(--border)"
     >
-
       <div className="relative mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-28 lg:px-8 lg:py-32">
         {/* ── Kicker ────────────────────────────────────────────── */}
         <Reveal>

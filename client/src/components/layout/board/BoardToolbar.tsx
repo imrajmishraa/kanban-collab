@@ -53,9 +53,7 @@ export default function BoardToolbar({
             <input
               type="search"
               value={search}
-              onChange={(event) =>
-                handleSearchChange(event.target.value)
-              }
+              onChange={(event) => handleSearchChange(event.target.value)}
               placeholder="Search cards..."
               aria-label="Search cards"
               className="min-w-0 flex-1 bg-transparent px-2 font-mono text-xs text-(--text-primary) outline-none placeholder:text-(--text-muted)"
@@ -83,11 +81,7 @@ export default function BoardToolbar({
             onClick={onFilter}
             className="flex h-9 shrink-0 items-center gap-2 border border-(--border) px-3 font-mono text-xs text-(--text-secondary) transition hover:border-(--brand) hover:bg-(--brand-muted) hover:text-(--text-primary)"
           >
-            <HugeiconsIcon
-              icon={FilterIcon}
-              size={14}
-              strokeWidth={1.5}
-            />
+            <HugeiconsIcon icon={FilterIcon} size={14} strokeWidth={1.5} />
             <span className="hidden sm:inline">Filter</span>
           </button>
 
@@ -97,11 +91,7 @@ export default function BoardToolbar({
             onClick={onMembers}
             className="flex h-9 shrink-0 items-center gap-2 border border-(--border) px-3 font-mono text-xs text-(--text-secondary) transition hover:border-(--brand) hover:bg-(--brand-muted) hover:text-(--text-primary)"
           >
-            <HugeiconsIcon
-              icon={UserGroupIcon}
-              size={14}
-              strokeWidth={1.5}
-            />
+            <HugeiconsIcon icon={UserGroupIcon} size={14} strokeWidth={1.5} />
             <span className="hidden sm:inline">Members</span>
           </button>
         </div>
@@ -128,15 +118,11 @@ export default function BoardToolbar({
             onClick={onAddCard}
             className="flex h-9 items-center gap-2 border border-(--brand) bg-(--brand-muted) px-3 font-mono text-xs text-(--brand-hover) transition hover:bg-[rgba(124,92,252,0.18)] hover:text-(--text-primary)"
           >
-            <HugeiconsIcon
-              icon={Add01Icon}
-              size={14}
-              strokeWidth={1.5}
-            />
+            <HugeiconsIcon icon={Add01Icon} size={14} strokeWidth={1.5} />
             <span>Add card</span>
           </button>
         </div>
       </div>
     </div>
   );
-};
+}

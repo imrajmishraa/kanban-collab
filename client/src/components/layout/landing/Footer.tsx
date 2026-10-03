@@ -1,10 +1,7 @@
 import { Link } from "react-router-dom";
 import { HugeiconsIcon } from "@hugeicons/react";
-import {
-  ArrowUpRight01Icon,
-} from "@hugeicons/core-free-icons";
+import { ArrowUpRight01Icon } from "@hugeicons/core-free-icons";
 import logo from "@/assets/logo.svg?inline";
-
 
 const productLinks = [
   { label: "Features", href: "/features" },
@@ -26,7 +23,6 @@ const legalLinks = [
   { label: "Privacy", href: "/privacy" },
   { label: "Terms", href: "/terms" },
 ];
-
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();

@@ -52,17 +52,17 @@ export function BoardActionsMenu({
   return (
     <div ref={ref} className="relative">
       <button
-  type="button"
-  onClick={(e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setOpen((v) => !v);
-  }}
-  aria-label="Board actions"
-  aria-haspopup="menu"
-  aria-expanded={open}
-  data-open={open}
-  className="
+        type="button"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setOpen((v) => !v);
+        }}
+        aria-label="Board actions"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        data-open={open}
+        className="
     flex size-6 items-center justify-center rounded-full
     bg-(--bg-elevated)
     text-(--text-muted)
@@ -73,9 +73,9 @@ export function BoardActionsMenu({
     group-hover/board:pointer-events-auto group-hover/board:opacity-100
     data-[open=true]:pointer-events-auto data-[open=true]:opacity-100
   "
->
-  <HugeiconsIcon icon={MoreHorizontalIcon} size={14} strokeWidth={1.8} />
-</button>
+      >
+        <HugeiconsIcon icon={MoreHorizontalIcon} size={14} strokeWidth={1.8} />
+      </button>
 
       {open && (
         <div

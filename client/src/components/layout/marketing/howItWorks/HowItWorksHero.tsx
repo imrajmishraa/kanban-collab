@@ -12,8 +12,6 @@ import {
 export default function HowItWorksHero() {
   return (
     <section className="relative overflow-hidden">
-
-
       {/* CONTENT */}
       <div className="relative mx-auto flex w-full max-w-7xl flex-col items-center px-4 pb-28 pt-32 text-center sm:px-6 sm:pb-32 sm:pt-36 lg:px-8 lg:pb-40 lg:pt-40">
         {/* Kicker */}

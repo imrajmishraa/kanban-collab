@@ -1,8 +1,5 @@
 import { HugeiconsIcon } from "@hugeicons/react";
-import {
-  MoreHorizontalIcon,
-  StarIcon,
-} from "@hugeicons/core-free-icons";
+import { MoreHorizontalIcon, StarIcon } from "@hugeicons/core-free-icons";
 
 import type { BoardDetails } from "@/types/api/dashboard/board";
 
@@ -57,11 +54,7 @@ export default function BoardHeader({ board }: BoardHeaderProps) {
             aria-label="Favorite board"
             className="flex h-9 w-9 items-center justify-center border border-(--border) text-(--text-muted) transition hover:border-(--brand) hover:bg-(--brand-muted) hover:text-(--text-primary)"
           >
-            <HugeiconsIcon
-              icon={StarIcon}
-              size={16}
-              strokeWidth={1.5}
-            />
+            <HugeiconsIcon icon={StarIcon} size={16} strokeWidth={1.5} />
           </button>
 
           <button
@@ -98,4 +91,4 @@ function BoardStat({ label, value }: BoardStatProps) {
       </span>
     </div>
   );
-};
+}

@@ -15,4 +15,3 @@ export function toastError(err: unknown, fallback = "Something went wrong.") {
 
   return toast.error(message);
 }
-

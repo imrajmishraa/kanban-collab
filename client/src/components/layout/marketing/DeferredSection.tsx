@@ -1,6 +1,5 @@
 import { Suspense, useEffect, useRef, useState, type ReactNode } from "react";
 
-
 interface DeferredSectionProps {
   children: ReactNode;
   /** How far ahead of the viewport to start loading. */

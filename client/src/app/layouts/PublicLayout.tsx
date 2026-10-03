@@ -8,7 +8,6 @@ import Footer from "@/components/layout/landing/Footer";
 import Navbar from "@/components/layout/landing/Navbar";
 import { LandingBackground } from "@/features/landing/LandingBackground";
 
-
 function ScrollCorner() {
   const { scrollYProgress } = useScroll();
   const progress = useSpring(scrollYProgress, {

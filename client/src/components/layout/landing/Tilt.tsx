@@ -1,8 +1,4 @@
-import {
-  useRef,
-  type MouseEvent,
-  type ReactNode,
-} from "react";
+import { useRef, type MouseEvent, type ReactNode } from "react";
 import {
   motion,
   useMotionTemplate,
@@ -11,7 +7,6 @@ import {
   useTransform,
 } from "framer-motion";
 import { cn } from "#lib/utils";
-
 
 interface TiltCardProps {
   children: ReactNode;
@@ -104,7 +99,12 @@ interface RevealProps {
   y?: number;
 }
 
-export function Reveal({ children, className, delay = 0, y = 32 }: RevealProps) {
+export function Reveal({
+  children,
+  className,
+  delay = 0,
+  y = 32,
+}: RevealProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y, filter: "blur(6px)" }}
@@ -132,7 +132,11 @@ interface SectionHeadingProps {
   description?: string;
 }
 
-export function SectionHeading({ eyebrow, title, description }: SectionHeadingProps) {
+export function SectionHeading({
+  eyebrow,
+  title,
+  description,
+}: SectionHeadingProps) {
   return (
     <div className="mx-auto max-w-2xl text-center">
       <Reveal>

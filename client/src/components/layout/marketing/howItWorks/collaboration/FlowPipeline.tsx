@@ -1,9 +1,6 @@
 import { Fragment } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
-import {
-  ArrowDown02Icon,
-  ArrowRight02Icon,
-} from "@hugeicons/core-free-icons";
+import { ArrowDown02Icon, ArrowRight02Icon } from "@hugeicons/core-free-icons";
 
 import { FLOW_STAGES, type FlowStage } from "./flowData";
 

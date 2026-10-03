@@ -92,7 +92,6 @@ export function SidebarSelectMode({
           <span className="block truncate text-[12px] leading-tight text-(--text-secondary)">
             {board.name}
           </span>
-
         </div>
 
         <div

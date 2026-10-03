@@ -4,13 +4,11 @@ interface AuthLoadingScreenProps {
   message?: string;
 }
 
-
 export default function LoadingScreen({
   message = "Restoring session",
 }: AuthLoadingScreenProps) {
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#050506] text-(--text-primary)">
-
       {/* Single soft top bloom — matches the forget-password panel */}
       <div
         aria-hidden="true"

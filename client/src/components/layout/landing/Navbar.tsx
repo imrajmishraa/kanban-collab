@@ -403,7 +403,10 @@ export default function Navbar({
             aria-expanded={mobileOpen}
             aria-controls="navbar-mobile-nav"
             aria-label="Toggle menu"
-            className={cn(btn, "md:hidden cursor-pointer border-none transparent-none")}
+            className={cn(
+              btn,
+              "md:hidden cursor-pointer border-none transparent-none",
+            )}
           >
             <HugeiconsIcon
               icon={mobileOpen ? Cancel01Icon : Menu01Icon}
