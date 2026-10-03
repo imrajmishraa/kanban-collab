@@ -8,6 +8,8 @@ import {
   type KeyboardEvent,
 } from "react";
 import { Link } from "react-router-dom";
+import { useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ArrowRight02Icon,
@@ -20,6 +22,10 @@ import {
   UserAdd01Icon,
   UserCircleIcon,
 } from "@hugeicons/core-free-icons";
+import {
+  forgotPasswordSchema,
+  type ForgotPasswordFormData,
+} from "@/validations/auth/auth.validator";
 
 type Step = "email" | "code" | "sent";
 
@@ -32,36 +38,46 @@ export default function ForgotPasswordPage() {
   const formRef = useRef<HTMLFormElement>(null);
   const codeRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [step, setStep] = useState<Step>("email");
-  const [email, setEmail] = useState("");
   const [code, setCode] = useState<string[]>(() => Array(CODE_LENGTH).fill(""));
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState(0);
+  const [sentEmail, setSentEmail] = useState("");
+
+  const {
+    register: registerField,
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm<ForgotPasswordFormData>({
+    resolver: zodResolver(forgotPasswordSchema),
+    mode: "onBlur",
+    defaultValues: { email: "" },
+  });
+
+  const email = useWatch({ control, name: "email" }) ?? "";
 
   const filled = code.filter(Boolean).length;
   const isCodeComplete = filled === CODE_LENGTH;
 
   /* ── Send code ─────────────────────────────────────────── */
-  const handleSendCode = async (e: FormEvent) => {
-    e.preventDefault();
-    if (isSubmitting || !email.trim()) return;
+  const handleSendCode = handleSubmit(async (values) => {
+    if (isSubmitting) return;
 
     setError(null);
     setIsSubmitting(true);
 
     try {
       await new Promise((r) => setTimeout(r, 800));
+      setSentEmail(values.email);
       setStep("code");
       setCooldown(RESEND_COOLDOWN);
-      requestAnimationFrame(() => {
-        setTimeout(() => codeRefs.current[0]?.focus(), 50);
-      });
     } catch {
       setError("Couldn't send the code. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
-  };
+  });
 
   /* ── Verify code ───────────────────────────────────────── */
   const handleVerify = async (e?: FormEvent) => {
@@ -98,6 +114,13 @@ export default function ForgotPasswordPage() {
     const t = setTimeout(() => setCooldown((v) => v - 1), 1000);
     return () => clearTimeout(t);
   }, [cooldown]);
+
+  /* ── Focus the first OTP box when the code step opens ──── */
+  useEffect(() => {
+    if (step !== "code") return;
+    const t = setTimeout(() => codeRefs.current[0]?.focus(), 50);
+    return () => clearTimeout(t);
+  }, [step]);
 
   /* ── OTP handlers ──────────────────────────────────────── */
   const handleChange = (i: number, value: string) => {
@@ -379,28 +402,33 @@ export default function ForgotPasswordPage() {
                         <input
                           id={emailId}
                           type="email"
-                          name="email"
                           autoComplete="email"
                           inputMode="email"
-                          required
                           autoFocus
-                          value={email}
-                          onChange={(e) => {
-                            setEmail(e.target.value);
-                            if (error) setError(null);
-                          }}
                           placeholder="you@example.com"
-                          className="
-                            w-full rounded-xl border border-white/9 bg-white/2.5
-                            py-3 pl-11 pr-4
-                            font-mono text-[13.5px] text-white/90 placeholder:text-white/22
-                            outline-none transition-all duration-200
-                            hover:border-white/14 hover:bg-white/3.5
-                            focus:border-(--brand)/55 focus:bg-white/4
-                            focus:shadow-[0_0_0_3px_rgba(255,140,66,0.13)]
-                          "
+                          aria-invalid={errors.email ? "true" : "false"}
+                          {...registerField("email", {
+                            onChange: () => {
+                              if (error) setError(null);
+                            },
+                          })}
+                          className={[
+                            "w-full rounded-xl border bg-white/2.5",
+                            "py-3 pl-11 pr-4",
+                            "font-mono text-[13.5px] text-white/90 placeholder:text-white/22",
+                            "outline-none transition-all duration-200",
+                            errors.email
+                              ? "border-rose-500/45 hover:border-rose-500/60 focus:border-rose-500/70"
+                              : "border-white/9 hover:border-white/14 hover:bg-white/3.5 focus:border-(--brand)/55 focus:bg-white/4",
+                            "focus:shadow-[0_0_0_3px_rgba(255,140,66,0.13)]",
+                          ].join(" ")}
                         />
                       </div>
+                      {errors.email && (
+                        <p className="font-mono text-[11.5px] leading-normal text-rose-400">
+                          {errors.email.message}
+                        </p>
+                      )}
                     </div>
 
                     <button
@@ -459,7 +487,7 @@ export default function ForgotPasswordPage() {
                       </span>
                       <span className="mt-0.5 block truncate font-mono text-[12.5px] text-white/70">
                         Code sent to{" "}
-                        <span className="text-white/90">{email}</span>
+                        <span className="text-white/90">{sentEmail}</span>
                       </span>
                     </div>
                   </div>
@@ -628,8 +656,8 @@ export default function ForgotPasswordPage() {
 
                   <p className="mx-auto mt-3.5 max-w-72 font-mono text-[13px] leading-[1.7] text-white/50">
                     We sent a password reset link to{" "}
-                    <span className="text-white/85">{email}</span>. It expires
-                    in 60 minutes.
+                    <span className="text-white/85">{sentEmail}</span>. It
+                    expires in 60 minutes.
                   </p>
 
                   <a
