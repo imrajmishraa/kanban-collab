@@ -23,10 +23,11 @@ export default tseslint.config(
     files: ["**/*.ts"],
     languageOptions: {
       parserOptions: {
-        projectService: true,
+        project: ["./tsconfig.eslint.json"],
         tsconfigRootDir: import.meta.dirname,
       },
     },
+
     rules: {
       // ── Strictness (good for backend) ───────────────────
       "@typescript-eslint/no-explicit-any": "warn",
