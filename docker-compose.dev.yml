@@ -1,0 +1,38 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# kanban-collab — INFRA ONLY (for local development)
+#
+# Brings up just Mongo + Redis so you can run the server and client on the host
+# with hot reload:
+#
+#   docker compose -f docker-compose.dev.yml up -d
+#   cd server && npm run dev      # talks to localhost:27017 / localhost:6379
+#   cd client && npm run dev      # vite proxies /api + /ws to localhost:3000
+#
+#   docker compose -f docker-compose.dev.yml down
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: kanban-collab-dev
+
+services:
+  mongo:
+    image: mongo:7
+    container_name: kanban-dev-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  redis:
+    image: redis:7-alpine
+    container_name: kanban-dev-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  mongo_data:
+  redis_data:
