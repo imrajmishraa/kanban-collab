@@ -17,9 +17,7 @@ import {
   stopWebSocketServer,
 } from "./interfaces/websockets/server/server";
 
-
 // STATE
-
 
 let httpServer: http.Server | null = null;
 let shuttingDown = false;
@@ -27,7 +25,6 @@ let shuttingDown = false;
 /** Max time to allow graceful shutdown before forcing exit. */
 const SHUTDOWN_TIMEOUT_MS = 15_000;
 const PORT = ENV.PORT || 10000;
-
 
 // BOOTSTRAP
 
@@ -69,7 +66,6 @@ async function bootstrap(): Promise<void> {
   startCronJobs();
 }
 
-
 // GRACEFUL SHUTDOWN
 
 async function shutdown(signal: string): Promise<void> {
@@ -96,7 +92,7 @@ async function shutdown(signal: string): Promise<void> {
 
   try {
     // ─── 1. Stop accepting new work ────────────────────────────────────────
-    stopCronJobs();
+    await stopCronJobs();
 
     // ─── 2. Close WebSocket server (stops Yjs + heartbeat + connections) ───
     await stopWebSocketServer();
@@ -140,12 +136,10 @@ async function shutdown(signal: string): Promise<void> {
   }
 }
 
-
 // PROCESS SIGNALS
 
 process.once("SIGINT", () => void shutdown("SIGINT"));
 process.once("SIGTERM", () => void shutdown("SIGTERM"));
-
 
 // FATAL ERROR HANDLERS
 
@@ -176,7 +170,6 @@ process.on("unhandledRejection", (reason) => {
 
   void shutdown("unhandledRejection");
 });
-
 
 // BOOT
 
