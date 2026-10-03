@@ -8,7 +8,9 @@ import {
   YjsUpdateModel,
 } from "../../infrastructure/db/mongoose/schemas";
 
-export const permanentlyDeleteWorkspace = async (workspaceId: string): Promise<void> => {
+export const permanentlyDeleteWorkspace = async (
+  workspaceId: string,
+): Promise<void> => {
   // 1. Find all boards belonging to the workspace
   const boards = await BoardModel.find(
     {
@@ -90,4 +92,4 @@ export const permanentlyDeleteWorkspace = async (workspaceId: string): Promise<v
       status: "deletion_pending",
     });
   }
-}
+};
