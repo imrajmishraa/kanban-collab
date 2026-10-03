@@ -144,6 +144,13 @@ const envSchema = z.object({
   // Scheduler
   SCHEDULER_ENABLED: zBoolean.default(true),
   WORKSPACE_CLEANUP_CRON: zCron.default("0 * * * *"),
+  SELF_PING_CRON: zCron.default("*/10 * * * *"),
+
+  // Render keep-alive — self-ping the service's own public URL so a Free
+  // instance doesn't spin down. RENDER_EXTERNAL_URL is injected by Render
+  // automatically; SELF_PING_URL overrides it for other hosts / custom domains.
+  SELF_PING_URL: z.url().optional(),
+  RENDER_EXTERNAL_URL: z.url().optional(),
 
   // Rate limiting
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
