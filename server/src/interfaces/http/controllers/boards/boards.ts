@@ -1,59 +1,68 @@
 import type { AuthenticatedRequest } from "../../middleware/auth.middleware";
 import { asyncHandler } from "../../../../shared/utils/asyncHandler";
-import { BoardModel, CardModel, ColumnModel, WorkspaceModel } from "../../../../infrastructure/db/mongoose/schemas";
+import {
+  BoardModel,
+  CardModel,
+  ColumnModel,
+  WorkspaceModel,
+} from "../../../../infrastructure/db/mongoose/schemas";
 import { ApiResponse } from "../../../../shared/utils/ApiResponse";
 import { Types } from "mongoose";
 
-import { getCacheClient }  from "../../../../infrastructure/cache/cacheClient";
+import { getCacheClient } from "../../../../infrastructure/cache/cacheClient";
 import { boardControllerLogger } from "../../../../infrastructure/logging/childLogger";
-import { notWorkspaceMemberError, workspaceIdRequiredError } from "../../../../shared/errors/workspace/workspace";
-import { boardNotFoundError, boardAccessDeniedError, guestCannotModifyBoardError } from "../../../../shared/errors/board/board";
+import {
+  notWorkspaceMemberError,
+  workspaceIdRequiredError,
+} from "../../../../shared/errors/workspace/workspace";
+import {
+  boardNotFoundError,
+  boardAccessDeniedError,
+  guestCannotModifyBoardError,
+} from "../../../../shared/errors/board/board";
 
-
-
-const createBoard = asyncHandler(async (req: AuthenticatedRequest, res ) => {
+const createBoard = asyncHandler(async (req: AuthenticatedRequest, res) => {
   const { workspaceId, name, backgroundColor, visibility } = req.body;
   const userId = req.user!.userId;
   try {
-
     // Verify workspace membership
     const workspace = await WorkspaceModel.findOne({
       _id: workspaceId,
       "members.userId": new Types.ObjectId(userId),
     });
 
-    if(!workspace) {
+    if (!workspace) {
       throw notWorkspaceMemberError();
     }
 
-      const member = workspace.members.find(
-        (m) => m.userId.toString() === userId,
-      );
+    const member = workspace.members.find(
+      (m) => m.userId.toString() === userId,
+    );
 
-      if(!member|| member.role === 'guest') {
-          throw guestCannotModifyBoardError();
-      }
+    if (!member || member.role === "guest") {
+      throw guestCannotModifyBoardError();
+    }
 
-      const board = await BoardModel.create({
-        workspaceId: new Types.ObjectId(workspaceId as string),
-        name,
-        backgroundColor: backgroundColor || "#2b6cb0",
-        visibility: visibility || 'workspace'
-      });
+    const board = await BoardModel.create({
+      workspaceId: new Types.ObjectId(workspaceId as string),
+      name,
+      backgroundColor: backgroundColor || "#2b6cb0",
+      visibility: visibility || "workspace",
+    });
 
-      boardControllerLogger.info(
-        {
-          boardId: board._id,
-          workspaceId,
-          userId,
-        },
-        "Board created",
-      );
-      return res.status(201).json(
-          new ApiResponse(201, 'Board created successfully', {
-              data: board
-          })
-      )
+    boardControllerLogger.info(
+      {
+        boardId: board._id,
+        workspaceId,
+        userId,
+      },
+      "Board created",
+    );
+    return res.status(201).json(
+      new ApiResponse(201, "Board created successfully", {
+        data: board,
+      }),
+    );
   } catch (error) {
     boardControllerLogger.error(
       {
@@ -69,7 +78,7 @@ const createBoard = asyncHandler(async (req: AuthenticatedRequest, res ) => {
 
 const listBoards = asyncHandler(async (req: AuthenticatedRequest, res) => {
   const { workspaceId, page = "1", limit = "10" } = req.query;
-  const userId = req.user!.userId;  
+  const userId = req.user!.userId;
   try {
     if (!workspaceId) {
       throw workspaceIdRequiredError();
@@ -104,19 +113,19 @@ const listBoards = asyncHandler(async (req: AuthenticatedRequest, res) => {
       BoardModel.countDocuments(boardFilter),
     ]);
 
-     const totalPages = Math.ceil(totalBoards / pageLimit);
+    const totalPages = Math.ceil(totalBoards / pageLimit);
 
-     boardControllerLogger.info(
-       {
-         workspaceId,
-         userId,
-         boardCount: boards.length,
-         page: currentPage,
-         limit: pageLimit,
-         totalBoards,
-       },
-       "Boards listed",
-     );
+    boardControllerLogger.info(
+      {
+        workspaceId,
+        userId,
+        boardCount: boards.length,
+        page: currentPage,
+        limit: pageLimit,
+        totalBoards,
+      },
+      "Boards listed",
+    );
     return res.status(200).json(
       new ApiResponse(200, "Boards fetched successfully", {
         boards,
@@ -131,21 +140,22 @@ const listBoards = asyncHandler(async (req: AuthenticatedRequest, res) => {
       }),
     );
   } catch (error) {
-        boardControllerLogger.error(
-          {
-            err: error,
-            workspaceId,
-            userId,
-          },
-          "List boards failed",
-        );
-        throw error;
-    }
+    boardControllerLogger.error(
+      {
+        err: error,
+        workspaceId,
+        userId,
+      },
+      "List boards failed",
+    );
+    throw error;
+  }
 });
 
 const updateBoard = asyncHandler(async (req: AuthenticatedRequest, res) => {
   const boardId = req.params["boardId"] || req.params["id"];
-  const { name, description, backgroundColor, coverImageUrl, visibility } = req.body;
+  const { name, description, backgroundColor, coverImageUrl, visibility } =
+    req.body;
   const userId = req.user!.userId;
   try {
     const board = await BoardModel.findById(boardId);
@@ -206,7 +216,7 @@ const updateBoard = asyncHandler(async (req: AuthenticatedRequest, res) => {
 
 const getBoardDetails = asyncHandler(async (req: AuthenticatedRequest, res) => {
   const userId = req.user!.userId;
-  const boardId = req.params["boardId"] || req.params['id'];
+  const boardId = req.params["boardId"] || req.params["id"];
 
   // Try cache
   const cacheKey = `board:${boardId}`;

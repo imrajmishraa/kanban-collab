@@ -24,16 +24,13 @@ export const healthz = asyncHandler(async (_req, res) => {
 
   return res.status(200).json(
     new ApiResponse(200, "Health check passed.", {
-      data: {
-        status: "UP",
-        timestamp: new Date().toISOString(),
-        uptimeSeconds: Math.floor(process.uptime()),
-        env: ENV.NODE_ENV,
-      },
+      status: "UP",
+      timestamp: new Date().toISOString(),
+      uptimeSeconds: Math.floor(process.uptime()),
+      env: ENV.NODE_ENV,
     }),
   );
 });
-
 
 // READINESS — "can this process serve traffic?"
 
@@ -84,14 +81,11 @@ export const readyz = asyncHandler(async (_req, res) => {
 
   return res.status(statusCode).json(
     new ApiResponse(statusCode, allUp ? "Ready." : "Not ready.", {
-      data: {
-        status: allUp ? "UP" : "DOWN",
-        timestamp: new Date().toISOString(),
-        uptimeSeconds: Math.floor(process.uptime()),
-        env: ENV.NODE_ENV,
-        checks,
-      },
+      status: allUp ? "UP" : "DOWN",
+      timestamp: new Date().toISOString(),
+      uptimeSeconds: Math.floor(process.uptime()),
+      env: ENV.NODE_ENV,
+      checks,
     }),
   );
 });
-
