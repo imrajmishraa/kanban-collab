@@ -105,7 +105,6 @@ export async function workspaceDeletionJob(): Promise<void> {
   }
 }
 
-
 // HELPERS
 
 /**
