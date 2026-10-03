@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Cancel01Icon } from "@hugeicons/core-free-icons";
 export interface CreateCardFormData {
@@ -18,14 +18,19 @@ export default function CreateCardModal({
   onSubmit,
 }: CreateCardModalProps) {
   const [title, setTitle] = useState("");
-  useEffect(() => {
+  const [prevOpen, setPrevOpen] = useState(open);
+
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (!open) {
       setTitle("");
     }
-  }, [open]);
+  }
+
   if (!open) {
     return null;
   }
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const trimmedTitle = title.trim();
