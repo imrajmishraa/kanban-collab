@@ -30,6 +30,16 @@ const zDuration = z
   .string()
   .regex(/^\d+(ms|s|m|h|d|w|y)?$/, "Duration must be like '15m', '7d', '30s'");
 
+/**
+ * Optional URL. Treats an empty / whitespace-only string the same as "not set",
+ * so a blank value in a .env file or the Render dashboard doesn't fail
+ * validation (which would abort boot with process.exit(1)).
+ */
+const zOptionalUrl = z.preprocess(
+  (v) => (typeof v === "string" && v.trim() === "" ? undefined : v),
+  z.url().optional(),
+);
+
 // SCHEMA
 
 const envSchema = z.object({
@@ -149,8 +159,8 @@ const envSchema = z.object({
   // Render keep-alive — self-ping the service's own public URL so a Free
   // instance doesn't spin down. RENDER_EXTERNAL_URL is injected by Render
   // automatically; SELF_PING_URL overrides it for other hosts / custom domains.
-  SELF_PING_URL: z.url().optional(),
-  RENDER_EXTERNAL_URL: z.url().optional(),
+  SELF_PING_URL: zOptionalUrl,
+  RENDER_EXTERNAL_URL: zOptionalUrl,
 
   // Rate limiting
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
