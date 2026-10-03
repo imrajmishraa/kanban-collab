@@ -1,4 +1,5 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
+import Navbar from "@/components/layout/landing/Navbar";
 
 import { useAuth } from "@/hooks/auth/useAuth";
 
@@ -35,8 +36,15 @@ export default function AuthLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-(--bg-root) text-(--text-primary)">
-      <Outlet />
+    <div className="relative flex min-h-screen flex-col bg-(--bg-root) text-(--text-primary)">
+
+      <div className="relative z-50 shrink-0">
+        <Navbar />
+      </div>
+
+      <main className="relative z-10 flex-1 overflow-auto">
+        <Outlet />
+      </main>
     </div>
   );
 }
