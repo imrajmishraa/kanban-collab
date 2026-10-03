@@ -1,6 +1,3 @@
-// Path / subprotocol
-
-
 /**
  * The single WS upgrade path. `handleUpgrade` must reject any upgrade
  * whose pathname !== WS_PATH — otherwise a stray client can hold an
@@ -28,7 +25,6 @@ export const WS_PATH_PREFIX = "/ws/boards/" as const;
  * Server reads `Sec-WebSocket-Protocol: kanban.auth, <token>`.
  */
 export const WS_AUTH_SUBPROTOCOL = "kanban.auth" as const;
-
 
 // Close codes
 

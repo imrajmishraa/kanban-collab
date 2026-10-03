@@ -1,5 +1,3 @@
-// server/src/shared/constants/error.ts
-
 export const ERROR_MESSAGE = {
   // GENERIC
 
