@@ -1,21 +1,11 @@
-import type {
-  CursorPosition,
-  Selection,
-  UserPresence,
-} from "./types";
+import type { CursorPosition, Selection, UserPresence } from "./types";
 
 export class PresenceManager {
   // boardId -> (userId -> UserPresence)
-  private readonly boards = new Map<
-    string,
-    Map<string, UserPresence>
-  >();
+  private readonly boards = new Map<string, Map<string, UserPresence>>();
 
   // Adds or updates a user's presence within a board.
-  public join(
-    boardId: string,
-    presence: UserPresence,
-  ): void {
+  public join(boardId: string, presence: UserPresence): void {
     let users = this.boards.get(boardId);
 
     if (!users) {
@@ -31,10 +21,7 @@ export class PresenceManager {
   }
 
   // Removes a user from a board.
-  public leave(
-    boardId: string,
-    userId: string,
-  ): void {
+  public leave(boardId: string, userId: string): void {
     const users = this.boards.get(boardId);
 
     if (!users) {
@@ -81,10 +68,7 @@ export class PresenceManager {
   }
 
   // Refreshes the user's last activity timestamp.
-  public touch(
-    boardId: string,
-    userId: string,
-  ): void {
+  public touch(boardId: string, userId: string): void {
     const presence = this.getPresence(boardId, userId);
 
     if (!presence) {
@@ -99,15 +83,11 @@ export class PresenceManager {
     boardId: string,
     userId: string,
   ): UserPresence | undefined {
-    return this.boards
-      .get(boardId)
-      ?.get(userId);
+    return this.boards.get(boardId)?.get(userId);
   }
 
-   // Returns all users currently connected to a board.
-  public getUsers(
-    boardId: string,
-  ): readonly UserPresence[] {
+  // Returns all users currently connected to a board.
+  public getUsers(boardId: string): readonly UserPresence[] {
     const users = this.boards.get(boardId);
 
     if (!users) {
@@ -118,23 +98,17 @@ export class PresenceManager {
   }
 
   // Returns the number of connected users in a board.
-  public getUserCount(
-    boardId: string,
-  ): number {
+  public getUserCount(boardId: string): number {
     return this.boards.get(boardId)?.size ?? 0;
   }
 
   //  Returns whether a board has any connected users.
-  public hasUsers(
-    boardId: string,
-  ): boolean {
+  public hasUsers(boardId: string): boolean {
     return this.getUserCount(boardId) > 0;
   }
 
   // Removes every user from a board.
-  public clearBoard(
-    boardId: string,
-  ): void {
+  public clearBoard(boardId: string): void {
     this.boards.delete(boardId);
   }
 
