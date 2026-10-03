@@ -144,7 +144,7 @@ app.get("/", (_req: Request, res: Response) => {
 });
 
 app.use("/api/v1", globalLimiter);
-app.use("/healthz", healthzRoute);
+app.use("/", healthzRoute);
 
 // OAuth before auth — public routes, must not be shadowed
 app.use("/api/v1/auth/oauth", oauthRoute);
