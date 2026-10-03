@@ -36,7 +36,6 @@ export const createBoardSchema = {
   }),
 };
 
-
 export const updateBoardSchema = {
   params: boardParamsSchema,
 
@@ -72,7 +71,6 @@ export const updateBoardSchema = {
       message: "At least one field must be provided for update.",
     }),
 };
-
 
 export const boardQuerySchema = {
   query: z.object({

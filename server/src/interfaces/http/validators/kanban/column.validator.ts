@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { objectIdSchema } from "../common/objectId";
 
-
 export const columnParamsSchema = z.object({
   params: z.object({
     columnId: objectIdSchema,
@@ -28,25 +27,25 @@ export const createColumnSchema = {
 export const updateColumnSchema = {
   params: columnParamsSchema,
 
-  body: z.object({
-    name: z
-      .string()
-      .trim()
-      .min(1, "Column name cannot be empty.")
-      .max(100, "Column name cannot exceed 100 characters.")
-      .optional(),
+  body: z
+    .object({
+      name: z
+        .string()
+        .trim()
+        .min(1, "Column name cannot be empty.")
+        .max(100, "Column name cannot exceed 100 characters.")
+        .optional(),
 
-    orderIndex: z
-      .number()
-      .int()
-      .min(0, "Order index must be greater than or equal to 0.")
-      .optional(),
-  })
-  .refine((body) => Object.keys(body).length > 0, {
-    message: "At least one field must be provided for update.",
-  })
+      orderIndex: z
+        .number()
+        .int()
+        .min(0, "Order index must be greater than or equal to 0.")
+        .optional(),
+    })
+    .refine((body) => Object.keys(body).length > 0, {
+      message: "At least one field must be provided for update.",
+    }),
 };
-
 
 export const moveColumnSchema = z.object({
   params: columnParamsSchema.shape.params,

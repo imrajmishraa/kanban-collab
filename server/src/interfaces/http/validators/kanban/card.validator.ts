@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { objectIdSchema } from "../common/objectId";
 
-
 export const cardParamsSchema = z.object({
   params: z.object({
     cardId: objectIdSchema,
@@ -43,47 +42,46 @@ export const createCardSchema = {
   }),
 };
 
-
 export const updateCardSchema = {
   params: z.object({
     id: objectIdSchema,
   }),
 
-  body: z.object({
-    title: z
-      .string()
-      .trim()
-      .min(1, "Card title cannot be empty.")
-      .max(200, "Card title cannot exceed 200 characters.")
-      .optional(),
+  body: z
+    .object({
+      title: z
+        .string()
+        .trim()
+        .min(1, "Card title cannot be empty.")
+        .max(200, "Card title cannot exceed 200 characters.")
+        .optional(),
 
-    description: z
-      .string()
-      .trim()
-      .max(10000, "Description cannot exceed 10000 characters.")
-      .optional(),
+      description: z
+        .string()
+        .trim()
+        .max(10000, "Description cannot exceed 10000 characters.")
+        .optional(),
 
-    dueDate: z.string().datetime("Invalid due date.").nullable().optional(),
+      dueDate: z.string().datetime("Invalid due date.").nullable().optional(),
 
-    members: z.array(objectIdSchema).optional(),
+      members: z.array(objectIdSchema).optional(),
 
-    labels: z
-      .array(
-        z
-          .string()
-          .trim()
-          .min(1, "Label cannot be empty.")
-          .max(50, "Label cannot exceed 50 characters."),
-      )
-      .optional(),
+      labels: z
+        .array(
+          z
+            .string()
+            .trim()
+            .min(1, "Label cannot be empty.")
+            .max(50, "Label cannot exceed 50 characters."),
+        )
+        .optional(),
 
-    isArchived: z.boolean().optional(),
-  })
-  .refine((body) => Object.keys(body).length > 0, {
-    message: "At least one field must be provided for update.",
-  })
+      isArchived: z.boolean().optional(),
+    })
+    .refine((body) => Object.keys(body).length > 0, {
+      message: "At least one field must be provided for update.",
+    }),
 };
-
 
 export const moveCardSchema = {
   params: z.object({

@@ -36,7 +36,6 @@ const platformField = z
   })
   .optional();
 
-
 // REGISTER
 
 export const registerSchema = {
@@ -57,7 +56,6 @@ export const registerSchema = {
     .strict(),
 };
 
-
 // LOGIN
 
 export const loginSchema = {
@@ -74,7 +72,6 @@ export const loginSchema = {
     .strict(),
 };
 
-
 // REFRESH — reads from cookies, not body
 
 /**
@@ -90,7 +87,6 @@ export const loginSchema = {
 export const refreshTokenSchema = {
   body: z.object({}).strict().optional(),
 };
-
 
 // INFERRED TYPES (optional — for use in controller casts)
 

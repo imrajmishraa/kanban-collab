@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { objectIdSchema } from "../common/objectId";
 
-
 const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 export const workspaceParamsSchema = z.object({
