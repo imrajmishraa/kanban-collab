@@ -21,17 +21,17 @@ export function authenticateJWT(
 ): void {
   const authorization = req.headers.authorization;
 
-  if(!authorization) {
+  if (!authorization) {
     return next(missingAccessTokenError());
   }
 
   const [scheme, token] = authorization.split(" ", 2);
 
-  if(!scheme || scheme?.toLowerCase() !== "bearer") {
+  if (!scheme || scheme?.toLowerCase() !== "bearer") {
     return next(invalidAccessTokenError());
   }
 
-  if(!token) {
+  if (!token) {
     return next(missingAccessTokenError());
   }
 
@@ -41,11 +41,11 @@ export function authenticateJWT(
     req.user = {
       userId: decoded.userId,
       email: decoded.email,
-      fullName: decoded.fullName
-    }
+      fullName: decoded.fullName,
+    };
 
     next();
-  } catch(err) {
+  } catch (err) {
     next(err);
   }
 }

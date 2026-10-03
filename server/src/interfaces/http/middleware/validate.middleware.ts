@@ -1,5 +1,5 @@
 import type { Request, RequestHandler } from "express";
-import { z } from "zod";
+import type { z } from "zod";
 
 import { ApiError } from "../../../shared/utils/ApiError";
 import { HTTP_STATUS } from "../../../shared/constants/http";

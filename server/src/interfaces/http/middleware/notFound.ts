@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import type { Request, Response, NextFunction } from "express";
 
 import { ApiError } from "../../../shared/utils/ApiError";
 import { HTTP_STATUS } from "../../../shared/constants/http";
