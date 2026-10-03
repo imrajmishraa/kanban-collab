@@ -43,14 +43,11 @@ jest.mock(
   }),
 );
 
-jest.mock(
-  "../../../src/interfaces/websockets/middlewares/authorize",
-  () => ({
-    authorize: jest.fn(async () => {
-      // Board authorization is tested separately.
-    }),
+jest.mock("../../../src/interfaces/websockets/middlewares/authorize", () => ({
+  authorize: jest.fn(async () => {
+    // Board authorization is tested separately.
   }),
-);
+}));
 
 import { signAccessToken } from "../../../src/infrastructure/security/token";
 import { handleUpgrade } from "../../../src/interfaces/websockets/server/upgrade";

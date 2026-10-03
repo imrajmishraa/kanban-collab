@@ -1,4 +1,4 @@
-const { v4: uuidv4 } = require('uuid');
+const { v4: uuidv4 } = require("uuid");
 
 module.exports = {
   generateBoardName: (context, events, done) => {
@@ -12,5 +12,5 @@ module.exports = {
   generateCardTitle: (context, events, done) => {
     context.vars.cardTitle = `Card-${uuidv4().slice(0, 8)}`;
     return done();
-  }
+  },
 };

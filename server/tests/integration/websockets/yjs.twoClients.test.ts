@@ -45,20 +45,16 @@ jest.mock(
   }),
 );
 
-jest.mock(
-  "../../../src/interfaces/websockets/middlewares/authorize",
-  () => ({
-    authorize: jest.fn(async () => {
-      // Board authorization is tested separately.
-    }),
+jest.mock("../../../src/interfaces/websockets/middlewares/authorize", () => ({
+  authorize: jest.fn(async () => {
+    // Board authorization is tested separately.
   }),
-);
+}));
 
 import { signAccessToken } from "../../../src/infrastructure/security/token";
 import { connectionRegistry } from "../../../src/interfaces/websockets/collaboration/lifecycle/connectionRegistry";
 import { documentManager } from "../../../src/interfaces/websockets/collaboration/yjs/documentManager";
 import { CollaborationMessage } from "../../../src/interfaces/websockets/collaboration/yjs/protocol";
-import { collaborationMessageDecoder } from "../../../src/interfaces/websockets/collaboration/yjs/collaborationMessageDecoder";
 import { collaborationMessageEncoder } from "../../../src/interfaces/websockets/collaboration/yjs/collaborationMessageEncoder";
 import { handleUpgrade } from "../../../src/interfaces/websockets/server/upgrade";
 import { registerYWebSocket } from "../../../src/interfaces/websockets/server/yWebSocket";
@@ -111,10 +107,7 @@ describe("Yjs Collaboration - Two Clients", () => {
         reject(error);
       };
 
-      const handleClose = (
-        code: number,
-        reason: Buffer,
-      ) => {
+      const handleClose = (code: number, reason: Buffer) => {
         cleanup();
 
         reject(
@@ -166,17 +159,10 @@ describe("Yjs Collaboration - Two Clients", () => {
       const timeout = setTimeout(() => {
         cleanup();
 
-        reject(
-          new Error(
-            "Timed out waiting for initial Yjs synchronization.",
-          ),
-        );
+        reject(new Error("Timed out waiting for initial Yjs synchronization."));
       }, timeoutMs);
 
-      const handleMessage = (
-        data: WebSocket.RawData,
-        isBinary: boolean,
-      ) => {
+      const handleMessage = (data: WebSocket.RawData, isBinary: boolean) => {
         if (!isBinary) {
           return;
         }
@@ -233,10 +219,7 @@ describe("Yjs Collaboration - Two Clients", () => {
         }
       };
 
-      const handleClose = (
-        code: number,
-        reason: Buffer,
-      ) => {
+      const handleClose = (code: number, reason: Buffer) => {
         cleanup();
 
         reject(
@@ -289,17 +272,10 @@ describe("Yjs Collaboration - Two Clients", () => {
       const timeout = setTimeout(() => {
         cleanup();
 
-        reject(
-          new Error(
-            "Timed out waiting for Yjs update.",
-          ),
-        );
+        reject(new Error("Timed out waiting for Yjs update."));
       }, timeoutMs);
 
-      const handleMessage = (
-        data: WebSocket.RawData,
-        isBinary: boolean,
-      ) => {
+      const handleMessage = (data: WebSocket.RawData, isBinary: boolean) => {
         if (!isBinary) {
           return;
         }
@@ -368,10 +344,7 @@ describe("Yjs Collaboration - Two Clients", () => {
         }
       };
 
-      const handleClose = (
-        code: number,
-        reason: Buffer,
-      ) => {
+      const handleClose = (code: number, reason: Buffer) => {
         cleanup();
 
         reject(
@@ -438,9 +411,7 @@ describe("Yjs Collaboration - Two Clients", () => {
     }
 
     if (!generatedUpdate) {
-      throw new Error(
-        "Yjs document did not generate an update.",
-      );
+      throw new Error("Yjs document did not generate an update.");
     }
 
     /*
@@ -454,13 +425,9 @@ describe("Yjs Collaboration - Two Clients", () => {
      */
     const syncEncoder = encoding.createEncoder();
 
-    ySyncProtocol.writeUpdate(
-      syncEncoder,
-      generatedUpdate,
-    );
+    ySyncProtocol.writeUpdate(syncEncoder, generatedUpdate);
 
-    const syncPayload =
-      encoding.toUint8Array(syncEncoder);
+    const syncPayload = encoding.toUint8Array(syncEncoder);
 
     /*
      * Wrap the Yjs sync payload in the application's
@@ -477,9 +444,7 @@ describe("Yjs Collaboration - Two Clients", () => {
   /**
    * Waits for a socket to close.
    */
-  async function closeSocket(
-    socket: WebSocket | undefined,
-  ): Promise<void> {
+  async function closeSocket(socket: WebSocket | undefined): Promise<void> {
     if (!socket) {
       return;
     }
@@ -536,13 +501,9 @@ describe("Yjs Collaboration - Two Clients", () => {
     const start = Date.now();
 
     while (Date.now() - start < timeoutMs) {
-      const managed =
-        documentManager.get(documentName);
+      const managed = documentManager.get(documentName);
 
-      if (
-        managed &&
-        managed.connectionCount === expectedCount
-      ) {
+      if (managed && managed.connectionCount === expectedCount) {
         return;
       }
 
@@ -555,9 +516,7 @@ describe("Yjs Collaboration - Two Clients", () => {
 
     throw new Error(
       `Timed out waiting for ${expectedCount} WebSocket connections. ` +
-        `Actual connection count: ${
-          managed?.connectionCount ?? 0
-        }.`,
+        `Actual connection count: ${managed?.connectionCount ?? 0}.`,
     );
   }
 
@@ -683,253 +642,169 @@ describe("Yjs Collaboration - Two Clients", () => {
    * ---------------------------------------------------------
    */
 
-  it(
-    "should connect two clients to the same Yjs document",
-    async () => {
-      const clientDocumentA = new Y.Doc();
-      const clientDocumentB = new Y.Doc();
+  it("should connect two clients to the same Yjs document", async () => {
+    const clientDocumentA = new Y.Doc();
+    const clientDocumentB = new Y.Doc();
 
-      wsA = createWebSocket(userIdA);
-      const syncA = waitForInitialSync(wsA, clientDocumentA);
+    wsA = createWebSocket(userIdA);
+    const syncA = waitForInitialSync(wsA, clientDocumentA);
 
-      wsB = createWebSocket(userIdB);
-      const syncB = waitForInitialSync(wsB, clientDocumentB);
+    wsB = createWebSocket(userIdB);
+    const syncB = waitForInitialSync(wsB, clientDocumentB);
 
-      /*
-       * Both clients must be open and initial sync received
-       * before we inspect the document manager.
-       */
-      await Promise.all([
-        waitForOpen(wsA),
-        waitForOpen(wsB),
-        syncA,
-        syncB,
-      ]);
+    /*
+     * Both clients must be open and initial sync received
+     * before we inspect the document manager.
+     */
+    await Promise.all([waitForOpen(wsA), waitForOpen(wsB), syncA, syncB]);
 
-      /*
-       * Wait for the server-side connection registry to
-       * observe both clients.
-       */
-      await waitForConnectionCount(
-        boardId,
-        2,
-      );
+    /*
+     * Wait for the server-side connection registry to
+     * observe both clients.
+     */
+    await waitForConnectionCount(boardId, 2);
 
-      const managedDocument =
-        documentManager.get(boardId);
+    const managedDocument = documentManager.get(boardId);
 
-      expect(managedDocument).toBeDefined();
+    expect(managedDocument).toBeDefined();
 
-      expect(
-        managedDocument?.connectionCount,
-      ).toBe(2);
+    expect(managedDocument?.connectionCount).toBe(2);
 
-      expect(
-        managedDocument?.clients.size,
-      ).toBe(2);
-    },
-    10000,
-  );
+    expect(managedDocument?.clients.size).toBe(2);
+  }, 10000);
 
-  it(
-    "should synchronize an update from client A to client B",
-    async () => {
-      const clientDocumentA = new Y.Doc();
-      const clientDocumentB = new Y.Doc();
+  it("should synchronize an update from client A to client B", async () => {
+    const clientDocumentA = new Y.Doc();
+    const clientDocumentB = new Y.Doc();
 
-      wsA = createWebSocket(userIdA);
-      const syncA = waitForInitialSync(wsA, clientDocumentA);
+    wsA = createWebSocket(userIdA);
+    const syncA = waitForInitialSync(wsA, clientDocumentA);
 
-      wsB = createWebSocket(userIdB);
-      const syncB = waitForInitialSync(wsB, clientDocumentB);
+    wsB = createWebSocket(userIdB);
+    const syncB = waitForInitialSync(wsB, clientDocumentB);
 
-      await Promise.all([
-        waitForOpen(wsA),
-        waitForOpen(wsB),
-        syncA,
-        syncB,
-      ]);
+    await Promise.all([waitForOpen(wsA), waitForOpen(wsB), syncA, syncB]);
 
-      await waitForConnectionCount(
-        boardId,
-        2,
-      );
+    await waitForConnectionCount(boardId, 2);
 
-      /*
-       * Register B's update listener BEFORE sending A's
-       * update. This prevents a race condition.
-       */
-      const updatePromise =
-        waitForYjsUpdate(
-          wsB,
-          clientDocumentB,
-        );
+    /*
+     * Register B's update listener BEFORE sending A's
+     * update. This prevents a race condition.
+     */
+    const updatePromise = waitForYjsUpdate(wsB, clientDocumentB);
 
-      /*
-       * Create a genuine Yjs update locally on A.
-       */
-      const message =
-        createYjsUpdateMessage(
-          clientDocumentA,
-          "title",
-          "Client A update",
-        );
+    /*
+     * Create a genuine Yjs update locally on A.
+     */
+    const message = createYjsUpdateMessage(
+      clientDocumentA,
+      "title",
+      "Client A update",
+    );
 
-      /*
-       * Send the application-level collaboration message.
-       */
-      wsA.send(message);
+    /*
+     * Send the application-level collaboration message.
+     */
+    wsA.send(message);
 
-      /*
-       * Wait for the server to broadcast the update to B.
-       */
-      await updatePromise;
+    /*
+     * Wait for the server to broadcast the update to B.
+     */
+    await updatePromise;
 
-      expect(
-        clientDocumentB
-          .getMap("board")
-          .get("title"),
-      ).toBe("Client A update");
-    },
-    10000,
-  );
+    expect(clientDocumentB.getMap("board").get("title")).toBe(
+      "Client A update",
+    );
+  }, 10000);
 
-  it(
-    "should synchronize an update from client B to client A",
-    async () => {
-      const clientDocumentA = new Y.Doc();
-      const clientDocumentB = new Y.Doc();
+  it("should synchronize an update from client B to client A", async () => {
+    const clientDocumentA = new Y.Doc();
+    const clientDocumentB = new Y.Doc();
 
-      wsA = createWebSocket(userIdA);
-      const syncA = waitForInitialSync(wsA, clientDocumentA);
+    wsA = createWebSocket(userIdA);
+    const syncA = waitForInitialSync(wsA, clientDocumentA);
 
-      wsB = createWebSocket(userIdB);
-      const syncB = waitForInitialSync(wsB, clientDocumentB);
+    wsB = createWebSocket(userIdB);
+    const syncB = waitForInitialSync(wsB, clientDocumentB);
 
-      await Promise.all([
-        waitForOpen(wsA),
-        waitForOpen(wsB),
-        syncA,
-        syncB,
-      ]);
+    await Promise.all([waitForOpen(wsA), waitForOpen(wsB), syncA, syncB]);
 
-      await waitForConnectionCount(
-        boardId,
-        2,
-      );
+    await waitForConnectionCount(boardId, 2);
 
-      /*
-       * Listen on A before sending B's update.
-       */
-      const updatePromise =
-        waitForYjsUpdate(
-          wsA,
-          clientDocumentA,
-        );
+    /*
+     * Listen on A before sending B's update.
+     */
+    const updatePromise = waitForYjsUpdate(wsA, clientDocumentA);
 
-      /*
-       * Create a real Yjs update on B.
-       */
-      const message =
-        createYjsUpdateMessage(
-          clientDocumentB,
-          "description",
-          "Client B update",
-        );
+    /*
+     * Create a real Yjs update on B.
+     */
+    const message = createYjsUpdateMessage(
+      clientDocumentB,
+      "description",
+      "Client B update",
+    );
 
-      wsB.send(message);
+    wsB.send(message);
 
-      /*
-       * Wait for server broadcast.
-       */
-      await updatePromise;
+    /*
+     * Wait for server broadcast.
+     */
+    await updatePromise;
 
-      expect(
-        clientDocumentA
-          .getMap("board")
-          .get("description"),
-      ).toBe("Client B update");
-    },
-    10000,
-  );
+    expect(clientDocumentA.getMap("board").get("description")).toBe(
+      "Client B update",
+    );
+  }, 10000);
 
-  it(
-    "should remove both clients after disconnect",
-    async () => {
-      const clientDocumentA = new Y.Doc();
-      const clientDocumentB = new Y.Doc();
+  it("should remove both clients after disconnect", async () => {
+    const clientDocumentA = new Y.Doc();
+    const clientDocumentB = new Y.Doc();
 
-      wsA = createWebSocket(userIdA);
-      const syncA = waitForInitialSync(wsA, clientDocumentA);
+    wsA = createWebSocket(userIdA);
+    const syncA = waitForInitialSync(wsA, clientDocumentA);
 
-      wsB = createWebSocket(userIdB);
-      const syncB = waitForInitialSync(wsB, clientDocumentB);
+    wsB = createWebSocket(userIdB);
+    const syncB = waitForInitialSync(wsB, clientDocumentB);
 
-      await Promise.all([
-        waitForOpen(wsA),
-        waitForOpen(wsB),
-        syncA,
-        syncB,
-      ]);
+    await Promise.all([waitForOpen(wsA), waitForOpen(wsB), syncA, syncB]);
 
-      await waitForConnectionCount(
-        boardId,
-        2,
-      );
+    await waitForConnectionCount(boardId, 2);
 
-      const managedDocument =
-        documentManager.get(boardId);
+    const managedDocument = documentManager.get(boardId);
 
-      expect(managedDocument).toBeDefined();
+    expect(managedDocument).toBeDefined();
 
-      expect(
-        managedDocument?.connectionCount,
-      ).toBe(2);
+    expect(managedDocument?.connectionCount).toBe(2);
 
-      /*
-       * Close A first.
-       */
-      await closeSocket(wsA);
-      wsA = undefined;
+    /*
+     * Close A first.
+     */
+    await closeSocket(wsA);
+    wsA = undefined;
 
-      /*
-       * Wait until the server observes A's disconnect.
-       */
-      await waitForConnectionCount(
-        boardId,
-        1,
-      );
+    /*
+     * Wait until the server observes A's disconnect.
+     */
+    await waitForConnectionCount(boardId, 1);
 
-      /*
-       * Close B.
-       */
-      await closeSocket(wsB);
-      wsB = undefined;
+    /*
+     * Close B.
+     */
+    await closeSocket(wsB);
+    wsB = undefined;
 
-      /*
-       * Wait until the server observes B's disconnect.
-       */
-      await waitForConnectionCount(
-        boardId,
-        0,
-      );
+    /*
+     * Wait until the server observes B's disconnect.
+     */
+    await waitForConnectionCount(boardId, 0);
 
-      const documentAfterClose =
-        documentManager.get(boardId);
+    const documentAfterClose = documentManager.get(boardId);
 
-      expect(
-        documentAfterClose,
-      ).toBeDefined();
+    expect(documentAfterClose).toBeDefined();
 
-      expect(
-        documentAfterClose?.connectionCount,
-      ).toBe(0);
+    expect(documentAfterClose?.connectionCount).toBe(0);
 
-      expect(
-        documentAfterClose?.clients.size,
-      ).toBe(0);
-    },
-    10000,
-  );
+    expect(documentAfterClose?.clients.size).toBe(0);
+  }, 10000);
 });
-
