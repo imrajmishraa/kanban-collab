@@ -78,13 +78,8 @@ export function refreshTokenReuseError(): ApiError {
   );
 }
 
-
-
-
 export function sessionRevokedError(): ApiError {
-  return new ApiError(
-    HTTP_STATUS.UNAUTHORIZED,
-    ERROR_MESSAGE.SESSION_REVOKED,
-    { code: "SESSION_REVOKED" },
-  );
+  return new ApiError(HTTP_STATUS.UNAUTHORIZED, ERROR_MESSAGE.SESSION_REVOKED, {
+    code: "SESSION_REVOKED",
+  });
 }

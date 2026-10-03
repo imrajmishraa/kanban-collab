@@ -3,13 +3,7 @@ import { HTTP_STATUS } from "../../constants/http";
 import { ApiError } from "../../utils/ApiError";
 
 export type RateLimitType =
-  | "login"
-  | "signup"
-  | "refresh"
-  | "chat"
-  | "otp"
-  | "upload"
-  | "api";
+  "login" | "signup" | "refresh" | "chat" | "otp" | "upload" | "api";
 
 interface RateLimitConfig {
   message: string;
