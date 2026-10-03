@@ -1,0 +1,50 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# .dockerignore — kanban-collab client
+#
+# Keeps the build context small and keeps the host's node_modules (and other
+# generated/local files) OUT of the image. Without this, `COPY . .` in the
+# client Dockerfile would copy your host node_modules over the container's,
+# which can break the build (platform mismatch) and bloats the context.
+#
+# Note: `.env` is excluded from the BUILD context on purpose — it's only needed
+# at RUNTIME (docker run --env-file .env), not while building.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Dependencies — reinstalled in the image (npm ci) ─────────────
+node_modules
+**/node_modules
+
+# ── Build output — rebuilt by `npm run build` ────────────────────
+dist
+**/dist
+*.tsbuildinfo
+
+# ── Caches ───────────────────────────────────────────────────────
+coverage
+.vite
+node_modules/.tmp
+
+# ── Local / secrets — never baked into the image ─────────────────
+*.local
+.env
+.env.*
+!.env.example
+
+# ── Version control & CI ─────────────────────────────────────────
+.git
+.gitignore
+.gitattributes
+.github
+
+# ── Docker plumbing ──────────────────────────────────────────────
+Dockerfile
+Dockerfile.*
+docker-compose*.yml
+.dockerignore
+
+# ── Editor / OS ──────────────────────────────────────────────────
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+*.log
