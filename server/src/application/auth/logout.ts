@@ -7,7 +7,6 @@ export interface LogoutContext {
   userAgent?: string;
 }
 
-
 export async function logout(
   refreshToken: string | undefined,
   ctx: LogoutContext = {},

@@ -24,7 +24,7 @@ export async function unlinkProvider(
   user.authProviders.splice(index, 1);
 
   if (provider === "password") {
-   user.set("passwordHash", undefined);
+    user.set("passwordHash", undefined);
   }
 
   await user.save();
