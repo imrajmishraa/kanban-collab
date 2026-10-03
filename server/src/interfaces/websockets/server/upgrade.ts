@@ -1,7 +1,7 @@
 import type { IncomingMessage } from "http";
 import type { Duplex } from "stream";
 
-import { WebSocketServer } from "ws";
+import type { WebSocketServer } from "ws";
 
 import { websocketAuthLogger } from "../../../infrastructure/logging/childLogger";
 

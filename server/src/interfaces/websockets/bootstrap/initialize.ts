@@ -12,22 +12,16 @@ let initialized = false;
  */
 export function initializeCollaboration(): void {
   if (initialized) {
-    logger.debug(
-      "Collaboration infrastructure already initialized.",
-    );
+    logger.debug("Collaboration infrastructure already initialized.");
 
     return;
   }
 
-  logger.info(
-    "Initializing collaboration infrastructure...",
-  );
+  logger.info("Initializing collaboration infrastructure...");
 
   configurePersistence();
   heartbeatManager.start();
   initialized = true;
 
-  logger.info(
-    "Collaboration infrastructure initialized successfully.",
-  );
+  logger.info("Collaboration infrastructure initialized successfully.");
 }
