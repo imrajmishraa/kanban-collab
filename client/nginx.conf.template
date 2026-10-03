@@ -1,0 +1,47 @@
+resolver ${NGINX_RESOLVER} valid=10s ipv6=off;
+
+server {
+    listen       80;
+    server_name  _;
+    root  /usr/share/nginx/html;
+    index index.html;
+
+    gzip_static on;
+
+    add_header X-Content-Type-Options   "nosniff"                         always;
+    add_header X-Frame-Options          "SAMEORIGIN"                      always;
+    add_header Referrer-Policy          "strict-origin-when-cross-origin" always;
+    add_header Permissions-Policy       "geolocation=(), microphone=()"   always;
+
+    location /assets/ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        try_files $uri =404;
+    }
+    location = /index.html { add_header Cache-Control "no-cache"; }
+
+    location /api/ {
+        set $backend ${API_UPSTREAM};
+        proxy_pass           $backend;
+        proxy_http_version   1.1;
+        proxy_ssl_server_name on;
+        proxy_set_header     X-Real-IP         $remote_addr;
+        proxy_set_header     X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header     X-Forwarded-Proto $scheme;
+        proxy_read_timeout   60s;
+    }
+
+    location /ws {
+        set $backend ${API_UPSTREAM};
+        proxy_pass           $backend;
+        proxy_http_version   1.1;
+        proxy_ssl_server_name on;
+        proxy_set_header     Upgrade    $http_upgrade;
+        proxy_set_header     Connection "upgrade";
+        proxy_set_header     X-Real-IP  $remote_addr;
+        proxy_read_timeout   3600s;
+        proxy_send_timeout   3600s;
+    }
+
+    location / { try_files $uri $uri/ /index.html; }
+}

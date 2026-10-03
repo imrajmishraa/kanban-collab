@@ -25,7 +25,7 @@ RUN npm run build
 FROM nginx:1.27-alpine AS runner
 
 # Our server block: SPA fallback + /api + /ws proxy + static compression.
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 
 # The built static bundle.
 COPY --from=build /app/dist /usr/share/nginx/html
