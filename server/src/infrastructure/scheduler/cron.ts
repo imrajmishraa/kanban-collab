@@ -8,6 +8,7 @@ import { workspaceDeletionJob } from "../../jobs/workspaceDeletion.job";
 import { yjsSnapshotJob } from "../../jobs/yjsSnapshot.job";
 import { notificationDueReminderJob } from "../../jobs/notificationDueReminder.job";
 import { notificationDigestJob } from "../../jobs/notificationDigest.job";
+import { selfPingJob } from "../../jobs/selfPing.job";
 
 interface CronJobDefinition {
   /** Human-readable name — shows up in logs and shutdown messages. */
@@ -49,6 +50,11 @@ function buildJobDefinitions(): CronJobDefinition[] {
       name: "notification-digest",
       schedule: ENV.NOTIF_DIGEST_CRON,
       handler: notificationDigestJob,
+    },
+    {
+      name: "self-ping",
+      schedule: ENV.SELF_PING_CRON,
+      handler: selfPingJob,
     },
   ];
 }
