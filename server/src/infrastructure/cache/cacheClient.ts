@@ -3,7 +3,6 @@ import { createClient, type RedisClientType } from "redis";
 import { ENV } from "../../config/env";
 import { redisLogger as log } from "../logging/childLogger";
 
-
 // PUBLIC INTERFACE
 
 /**
@@ -21,7 +20,6 @@ export interface CacheClient {
   incr(key: string): Promise<number>;
   quit(): Promise<void>;
 }
-
 
 // NOOP — used when Redis is unavailable or unconfigured
 
@@ -64,7 +62,6 @@ class NoopCacheClient implements CacheClient {
     /* no-op */
   }
 }
-
 
 // HELPERS
 
@@ -154,7 +151,6 @@ function wrapRealClient(client: RedisClientType): CacheClient {
     },
   };
 }
-
 
 // SINGLETON
 

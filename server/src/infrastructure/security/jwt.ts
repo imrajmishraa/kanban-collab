@@ -19,7 +19,6 @@ import {
   refreshTokenNotActiveError,
 } from "../../shared/errors/auth/refreshToken";
 
-
 // TYPES
 
 export interface AccessTokenPayload extends JwtPayload {
@@ -52,9 +51,7 @@ export interface SignRefreshOptions {
   rememberMe?: boolean;
 }
 
-
 // SIGN
-
 
 /**
  * Sign a short-lived access token (default 15m).
@@ -78,7 +75,6 @@ export function signAccessToken(
     );
   });
 }
-
 
 /**
  * Sign a refresh token.
@@ -126,7 +122,6 @@ export function signRefreshToken(
     );
   });
 }
-
 
 // VERIFY
 

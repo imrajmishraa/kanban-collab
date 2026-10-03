@@ -1,4 +1,5 @@
-import { Schema, model, Document, Types, Model } from "mongoose";
+import { Schema, model } from "mongoose";
+import type { Document, Types, Model } from "mongoose";
 
 export type WorkspaceRole = "owner" | "admin" | "member" | "guest";
 export type WorkspaceStatus = "active" | "deletion_pending";

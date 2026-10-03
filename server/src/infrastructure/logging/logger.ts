@@ -1,18 +1,8 @@
-import path from "node:path";
 import pino from "pino";
 import { ENV } from "../../config/env";
 
 const IS_DEV = ENV.NODE_ENV === "development";
 const IS_TEST = ENV.NODE_ENV === "test";
-
-/**
- * Log file path — env-driven with a safe default.
- * Never default to /var/log (needs root; fails in CI + macOS).
- * Add `LOG_FILE=...` to env.ts if you want to override in production.
- */
-const LOG_FILE =
-  process.env["LOG_FILE"] ?? path.resolve(process.cwd(), "logs", "app.log");
-
 
 /**
  * Anything both destinations share that we may need to drain on shutdown.
@@ -27,13 +17,13 @@ let destination: Flushable | undefined;
  * Build the write destination based on environment:
  *   - test    → pino's default stdout (never touch disk during tests)
  *   - dev     → pretty-printed stdout via pino-pretty transport
- *   - prod    → rotating file transport: a new file every day AND
- *               whenever the current one reaches 50 MB (whichever
- *               comes first). Without rotation, app.log grows without
- *               bound — a production hazard on a long-lived server.
+ *   - prod    → stdout. In a container (Docker, Render, K8s) logs MUST go
+ *               to stdout/stderr so the platform can capture them. A file
+ *               written inside the container is invisible to `docker logs`
+ *               and dies with the pod; the platform handles retention and
+ *               rotation for you.
  *
- * pino-roll runs in a worker thread, like pino-pretty — it must be
- * installed as a runtime dependency (not dev).
+ * pino-pretty runs in a worker thread and is a dev-only dependency.
  */
 function buildDestination() {
   if (IS_DEV) {
@@ -48,22 +38,15 @@ function buildDestination() {
     });
   }
 
-  return pino.transport({
-    target: "pino-roll",
-    options: {
-      file: LOG_FILE,
-      frequency: "daily",
-      size: "50m",
-      mkdir: true, // creates ./logs/ if missing
-    },
-  });
+  // Production → stdout (fd 1). SonicBoom, so flushSync() still works.
+  return pino.destination(1);
 }
 
 /**
  * Flush any buffered log lines synchronously — call this from your
  * graceful-shutdown handler (SIGTERM/SIGINT) AFTER closing servers and
  * DB connections, so the final "shutting down" entries actually reach
- * disk. Safe to call multiple times; no-op when logging to stdout.
+ * the destination. Safe to call multiple times.
  */
 export function flushLogger(): void {
   destination?.flushSync();
@@ -103,7 +86,6 @@ function serializeError(err: unknown, depth = 0): Record<string, unknown> {
 
   return out;
 }
-
 
 const pinoOptions: pino.LoggerOptions = {
   level: ENV.LOG_LEVEL,

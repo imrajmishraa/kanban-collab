@@ -153,4 +153,3 @@ export async function stopCronJobs(): Promise<void> {
 
   scheduledTasks.length = 0;
 }
-
