@@ -2,6 +2,7 @@ declare module "y-websocket/bin/utils" {
   import type { IncomingMessage } from "node:http";
   import type WebSocket from "ws";
   import type * as Y from "yjs";
+  import type { Awareness } from "y-protocols/awareness";
 
   export interface Persistence {
     provider: string;
@@ -18,7 +19,7 @@ declare module "y-websocket/bin/utils" {
   export interface WSSharedDoc extends Y.Doc {
     name: string;
     conns: Map<WebSocket, Set<number>>;
-    awareness: import("y-protocols/awareness").Awareness;
+    awareness: Awareness;
   }
 
   export function setPersistence(persistence: Persistence): void;
