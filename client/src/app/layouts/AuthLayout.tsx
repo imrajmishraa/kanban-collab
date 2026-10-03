@@ -37,7 +37,6 @@ export default function AuthLayout() {
 
   return (
     <div className="relative flex min-h-screen flex-col bg-(--bg-root) text-(--text-primary)">
-
       <div className="relative z-50 shrink-0">
         <Navbar />
       </div>
