@@ -60,7 +60,8 @@ export type JobName =
   | "workspace-cleanup"
   | "yjs-snapshot"
   | "notification-due-reminder"
-  | "notification-digest";
+  | "notification-digest"
+  | "self-ping";
 
 export type DeliveryChannel = "email" | "sms" | "push";
 
@@ -131,6 +132,7 @@ export const notificationDueReminderJobLogger = createJobSchedulerLogger(
 export const notificationDigestJobLogger = createJobSchedulerLogger(
   "notification-digest",
 );
+export const selfPingJobLogger = createJobSchedulerLogger("self-ping");
 
 // ─── WEBSOCKET COMPONENT LOGGERS ───────────────────────────────────────────
 
