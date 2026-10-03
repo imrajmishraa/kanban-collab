@@ -18,8 +18,6 @@ import {
   workspaceParamsSchema,
 } from "../../../validators/kanban/workspace/workspaceValidator";
 
-
-
 const router = Router();
 
 router.use(authenticateJWT);
