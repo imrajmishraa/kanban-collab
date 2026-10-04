@@ -42,7 +42,6 @@ export default function BoardHeader({
   return (
     <header className="flex flex-col gap-6 border-b border-white/8 pb-6 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
-
         <h1 className="mt-3 truncate font-mono text-[22px] font-semibold tracking-tight text-(--text-primary) sm:text-[26px]">
           {name}
         </h1>
