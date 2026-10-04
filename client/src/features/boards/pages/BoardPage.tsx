@@ -98,8 +98,7 @@ export function BoardPage() {
     <BoardShell>
       {/* Header */}
       <header className="flex flex-col gap-2 border-b border-white/8 pb-6">
-        <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.15em] text-(--text-muted)">
-        </div>
+        <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.15em] text-(--text-muted)"></div>
 
         <h1 className="mt-1 font-mono text-[22px] font-semibold tracking-tight text-(--text-primary) sm:text-[26px]">
           Boards
