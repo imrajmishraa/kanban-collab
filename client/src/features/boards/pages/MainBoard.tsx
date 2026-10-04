@@ -4,55 +4,40 @@ import BoardError from "@components/ui/board/BoardError";
 import BoardSkeleton from "@components/ui/board/BoardSkeleton";
 
 import BoardView from "../components/BoardView";
-import { useBoardDetails } from "@/hooks/dashboard/useBoards";
+import { BoardMessage, BoardShell } from "../components/BoardStates";
+import { useBoardForPage } from "../hooks/useBoardForPage";
 
 export default function MainBoard() {
   const { boardId } = useParams<{ boardId: string }>();
-
-  const {
-    data: board,
-    isLoading,
-    isError,
-    error,
-    refetch,
-  } = useBoardDetails(boardId);
+  const { board, isLoading, isError, refetch } = useBoardForPage(boardId);
 
   if (!boardId) {
     return (
-      <div className="flex h-full items-center justify-center bg-[#080808]">
-        <p className="font-mono text-xs text-neutral-500">BOARD_ID_MISSING</p>
-      </div>
+      <BoardMessage
+        title="No board selected"
+        body="Pick a board from the sidebar to open it."
+      />
     );
   }
 
   if (isLoading) {
     return (
-      <div className="h-full min-h-0">
+      <BoardShell>
         <BoardSkeleton />
-      </div>
+      </BoardShell>
     );
   }
 
   if (isError || !board) {
     return (
-      <div className="h-full min-h-0">
+      <BoardShell>
         <BoardError
-          message={
-            error instanceof Error
-              ? error.message
-              : "Unable to load the requested board."
-          }
-          onRetry={() => {
-            void refetch();
-          }}
+          message="We couldn't load this board. It may have been removed, or you may not have access."
+          onRetry={() => void refetch()}
         />
-      </div>
+      </BoardShell>
     );
   }
 
-  return (
-    <div className="h-full min-h-0">
-      <BoardView board={board} />
-    </div>
-  );
+  return <BoardView board={board} boardId={boardId} />;
 }
