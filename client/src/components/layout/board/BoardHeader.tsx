@@ -1,94 +1,76 @@
-import { HugeiconsIcon } from "@hugeicons/react";
-import { MoreHorizontalIcon, StarIcon } from "@hugeicons/core-free-icons";
+import type { ReactNode } from "react";
 
-import type { BoardDetails } from "@/types/api/dashboard/board";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  MoreHorizontalIcon,
+  Share08Icon,
+  StarIcon,
+} from "@hugeicons/core-free-icons";
+
+import { ui } from "@/features/boards/board.helpers";
 
 interface BoardHeaderProps {
-  board: BoardDetails;
+  name: string;
+  description?: string;
+  workspaceName?: string;
+  presence?: ReactNode;
 }
 
-export default function BoardHeader({ board }: BoardHeaderProps) {
-  const columnCount = board.columns.length;
-
-  const cardCount = board.columns.reduce(
-    (total, column) => total + column.cards.length,
-    0,
-  );
-
+function IconButton({
+  label,
+  icon,
+}: {
+  label: string;
+  icon: React.ComponentProps<typeof HugeiconsIcon>["icon"];
+}) {
   return (
-    <header className="border-b border-(--border) bg-(--bg-surface) px-4 py-4 md:px-6">
-      <div className="flex items-start justify-between gap-6">
-        {/* Board information */}
-        <div className="min-w-0 flex-1">
-          {/* Breadcrumb */}
-          <div className="mb-2 font-mono text-[10px] uppercase tracking-[0.15em] text-(--text-muted)">
-            WORKSPACE / BOARD
-          </div>
+    <button
+      type="button"
+      aria-label={label}
+      className="flex size-9 cursor-pointer items-center justify-center rounded-full border border-white/8 bg-white/6 text-(--text-muted) transition-colors duration-200 hover:bg-white/10 hover:text-(--text-primary)"
+    >
+      <HugeiconsIcon icon={icon} size={16} strokeWidth={1.6} />
+    </button>
+  );
+}
 
-          {/* Title */}
-          <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
-            <h1 className="truncate text-lg font-semibold text-(--text-primary) md:text-xl">
-              {board.name}
-            </h1>
-          </div>
+export default function BoardHeader({
+  name,
+  description,
+  presence,
+}: BoardHeaderProps) {
+  return (
+    <header className="flex flex-col gap-6 border-b border-white/8 pb-6 sm:flex-row sm:items-end sm:justify-between">
+      <div className="min-w-0">
 
-          {/* Description */}
-          {board.description && (
-            <p className="mt-1.5 max-w-2xl text-sm leading-5 text-(--text-secondary)">
-              {board.description}
-            </p>
-          )}
+        <h1 className="mt-3 truncate font-mono text-[22px] font-semibold tracking-tight text-(--text-primary) sm:text-[26px]">
+          {name}
+        </h1>
 
-          {/* Statistics */}
-          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
-            <BoardStat label="COLUMNS" value={columnCount} />
-            <BoardStat label="CARDS" value={cardCount} />
-            <BoardStat label="BOARD ID" value={board.id} />
-          </div>
-        </div>
+        {description && (
+          <p className="mt-2 max-w-xl font-mono text-[12px] leading-5 text-(--text-secondary)">
+            {description}
+          </p>
+        )}
+      </div>
 
-        {/* Actions */}
-        <div className="flex shrink-0 items-center gap-1">
-          <button
-            type="button"
-            aria-label="Favorite board"
-            className="flex h-9 w-9 items-center justify-center border border-(--border) text-(--text-muted) transition hover:border-(--brand) hover:bg-(--brand-muted) hover:text-(--text-primary)"
-          >
-            <HugeiconsIcon icon={StarIcon} size={16} strokeWidth={1.5} />
-          </button>
+      <div className="flex shrink-0 flex-wrap items-center gap-2">
+        {presence}
 
-          <button
-            type="button"
-            aria-label="Board actions"
-            className="flex h-9 w-9 items-center justify-center border border-(--border) text-(--text-muted) transition hover:border-(--brand) hover:bg-(--brand-muted) hover:text-(--text-primary)"
-          >
-            <HugeiconsIcon
-              icon={MoreHorizontalIcon}
-              size={17}
-              strokeWidth={1.5}
-            />
-          </button>
-        </div>
+        <IconButton label="Favorite board" icon={StarIcon} />
+
+        <button type="button" className={ui.pill}>
+          <HugeiconsIcon
+            icon={Share08Icon}
+            size={14}
+            strokeWidth={1.6}
+            className="shrink-0 text-(--text-muted)"
+          />
+          Share
+        </button>
+
+        <IconButton label="Board actions" icon={MoreHorizontalIcon} />
       </div>
     </header>
-  );
-}
-
-interface BoardStatProps {
-  label: string;
-  value: number | string;
-}
-
-function BoardStat({ label, value }: BoardStatProps) {
-  return (
-    <div className="flex items-center gap-1.5">
-      <span className="font-mono text-[9px] uppercase tracking-wider text-(--text-muted)">
-        {label}
-      </span>
-
-      <span className="max-w-45 truncate font-mono text-[10px] text-(--text-secondary)">
-        {value}
-      </span>
-    </div>
   );
 }
