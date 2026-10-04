@@ -31,3 +31,5 @@ export type {
   UseCollaborationOptions,
   UseCollaborationResult,
 } from "./useCollaboration";
+
+export { buildCollaborationWsUrl, colorFromUserId } from "./buildWsUrl";
