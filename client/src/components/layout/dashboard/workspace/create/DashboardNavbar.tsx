@@ -1,13 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { HugeiconsIcon } from "@hugeicons/react";
-import { BellIcon } from "@hugeicons/core-free-icons";
-
 import { WorkspaceSelector } from "../selector/WorkspaceSelector";
-import { NavbarSearchIcon } from "./NavbarSearchIcon";
+import { RecentBoardsMenu } from "./RecentBoardsMenu";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { useSidebarState } from "@/stores/sidebarState";
+import {
+  Chevron,
+  DashIcon,
+  NavbarSearchIcon,
+  NotificationsButton,
+} from "./NavbarIcons";
 
 export default function DashboardNavbar() {
   const navigate = useNavigate();
@@ -42,31 +45,31 @@ export default function DashboardNavbar() {
           scrolled ? "bg-(--bg-root)/85 backdrop-blur-md" : "bg-transparent",
         ].join(" ")}
       >
-        <WorkspaceSelector
-          activeWorkspaceId={activeWorkspaceId ?? null}
-          activeWorkspaceName={activeWorkspaceName ?? null}
-          onWorkspaceChange={setActiveWorkspace}
-        />
+        <nav
+          aria-label="Breadcrumb"
+          className="flex min-w-0 items-center gap-0.5"
+        >
+          <DashIcon />
 
-        {sidebarCollapsed && <NavbarSearchIcon />}
+          <Chevron />
+
+          <WorkspaceSelector
+            activeWorkspaceId={activeWorkspaceId ?? null}
+            activeWorkspaceName={activeWorkspaceName ?? null}
+            onWorkspaceChange={setActiveWorkspace}
+          />
+
+          <Chevron />
+
+          {/* Remounts on workspace change, which also closes its menu. */}
+          <RecentBoardsMenu key={activeWorkspaceId ?? "none"} />
+        </nav>
 
         <div className="ml-auto flex items-center gap-1">
+          {sidebarCollapsed && <NavbarSearchIcon />}
           <NotificationsButton onClick={() => navigate("/notifications")} />
         </div>
       </header>
     </>
-  );
-}
-
-function NotificationsButton({ onClick }: { onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label="Notifications"
-      className="relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-white/8 bg-white/4 text-(--text-secondary) transition-colors duration-200 hover:border-white/14 hover:bg-white/8 hover:text-(--text-primary)"
-    >
-      <HugeiconsIcon icon={BellIcon} size={16} strokeWidth={1.6} />
-    </button>
   );
 }

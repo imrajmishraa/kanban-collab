@@ -1,7 +1,7 @@
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
-  DashboardSquare01Icon,
-  Layout01Icon,
+  DashboardSquare02Icon,
+  KanbanIcon,
   Note01Icon,
   UserGroupIcon,
 } from "@hugeicons/core-free-icons";
@@ -24,7 +24,7 @@ const SidebarNavigation = ({ collapsed }: SidebarNavigationProps) => {
           href="/dashboard"
           icon={
             <HugeiconsIcon
-              icon={DashboardSquare01Icon}
+              icon={DashboardSquare02Icon}
               size={16}
               strokeWidth={1.5}
             />
@@ -35,9 +35,7 @@ const SidebarNavigation = ({ collapsed }: SidebarNavigationProps) => {
         <SidebarItem
           label="Boards"
           href="/boards"
-          icon={
-            <HugeiconsIcon icon={Layout01Icon} size={16} strokeWidth={1.5} />
-          }
+          icon={<HugeiconsIcon icon={KanbanIcon} size={16} strokeWidth={1.5} />}
           collapsed={collapsed}
         />
 

@@ -4,8 +4,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ArrowDown01Icon,
   CheckmarkCircle01Icon,
-  Folder01Icon,
-  Search01Icon,
+  Building02Icon,
 } from "@hugeicons/core-free-icons";
 
 import { useWorkspaces } from "@/hooks/dashboard/useWorkspaces";
@@ -110,7 +109,7 @@ export function WorkspaceSelector({
         aria-expanded={isOpen}
         className={[
           "group flex h-7 cursor-pointer items-center gap-1.5",
-          "rounded-md border border-white/8 bg-white/6 px-2",
+          "rounded-md  hover:bg-white/6 px-2",
           "font-mono text-[11px]",
           "transition-colors duration-150",
           isOpen
@@ -122,8 +121,8 @@ export function WorkspaceSelector({
           .join(" ")}
       >
         <HugeiconsIcon
-          icon={Folder01Icon}
-          size={12}
+          icon={Building02Icon}
+          size={14}
           strokeWidth={1.6}
           className={[
             "shrink-0 transition-colors duration-150",
@@ -160,26 +159,6 @@ export function WorkspaceSelector({
             dropdownClassName ?? "w-56",
           ].join(" ")}
         >
-          {/* Search */}
-          <div className="shrink-0 border-b border-white/6 p-1.5">
-            <div className="relative">
-              <HugeiconsIcon
-                icon={Search01Icon}
-                size={11}
-                strokeWidth={1.6}
-                className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-(--text-muted)"
-              />
-              <input
-                type="text"
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                placeholder="Search…"
-                autoFocus
-                className="w-full rounded border border-white/8 bg-white/3 py-1 pl-6.5 pr-2 font-mono text-[11px] text-(--text-primary) placeholder:text-(--text-muted) outline-none transition-colors focus:border-white/16 focus:bg-white/5"
-              />
-            </div>
-          </div>
-
           {/* List */}
           <div
             ref={listRef}
@@ -232,7 +211,7 @@ export function WorkspaceSelector({
                       </span>
 
                       <HugeiconsIcon
-                        icon={Folder01Icon}
+                        icon={Building02Icon}
                         size={13}
                         strokeWidth={1.5}
                         className="shrink-0"
