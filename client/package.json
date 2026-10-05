@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "engines": { "node": "22.x" },
+  "engines": { "node": ">=22.0.0" },
   "imports": {
     "#components/*": "./src/components/*.tsx",
     "#lib/*": "./src/lib/*.ts",
