@@ -280,6 +280,16 @@ export interface ICustomFieldValue {
   value: unknown;
 }
 
+export interface ICardAttachment {
+  _id: Types.ObjectId;
+  url: string;
+  name: string;
+  fileType: string;
+  size: number;
+  uploadedBy: Types.ObjectId;
+  createdAt: Date;
+}
+
 export interface ICard extends Document {
   _id: Types.ObjectId;
   workspaceId: Types.ObjectId;
@@ -293,6 +303,7 @@ export interface ICard extends Document {
   labels: string[];
   checklists: IChecklistItem[];
   customFieldValues: ICustomFieldValue[];
+  attachments: ICardAttachment[];
   isArchived: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -336,6 +347,20 @@ const CardSchema = new Schema<ICard>(
         fieldId: { type: String, required: true },
         value: { type: Schema.Types.Mixed },
         _id: false,
+      },
+    ],
+    attachments: [
+      {
+        url: { type: String, required: true },
+        name: { type: String, required: true },
+        fileType: { type: String, required: true },
+        size: { type: Number, required: true, default: 0 },
+        uploadedBy: {
+          type: Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+        createdAt: { type: Date, default: Date.now },
       },
     ],
     isArchived: { type: Boolean, default: false, index: true },
