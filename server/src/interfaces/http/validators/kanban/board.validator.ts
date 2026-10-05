@@ -83,5 +83,19 @@ export const boardQuerySchema = {
     limit: z.coerce.number().int().min(1).max(100).default(20),
 
     search: z.string().trim().max(100).optional(),
+
+    /**
+     * Opt-in heavy payload for the boards overview. `columns` nests each
+     * board's columns; `cards` additionally nests the cards in those columns.
+     * Kept out of the default (sidebar/navbar) payload on purpose.
+     */
+    include: z
+      .string()
+      .trim()
+      .regex(
+        /^(columns|cards)(,(columns|cards))?$/,
+        "include must be 'columns', 'cards' or 'columns,cards'.",
+      )
+      .optional(),
   }),
 };
