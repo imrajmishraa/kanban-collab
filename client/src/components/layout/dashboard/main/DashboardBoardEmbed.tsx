@@ -7,12 +7,8 @@ import { ArrowRight01Icon, KanbanIcon } from "@hugeicons/core-free-icons";
 
 import BoardColumns from "@components/layout/board/BoardColumns";
 
-import {
-  reindex,
-  reindexColumns,
-  uid,
-  ui,
-} from "@/features/boards/board.helpers";
+import { ui } from "@/features/boards/board.helpers";
+import { useBoardMutations } from "@/features/boards/hooks/useBoardMutations";
 
 import type { BoardCard, BoardDetails } from "@/types/api/dashboard/board";
 
@@ -25,12 +21,24 @@ interface DashboardBoardEmbedProps {
  * Compact, interactive kanban embed for the dashboard — reuses BoardColumns
  * (columns + cards + drag-and-drop) under a slim bar that shows the board
  * name, its id, and an "Open board" link. No duplicated page chrome.
+ *
+ * Mutations are server-backed (same hook the full board page uses), so edits
+ * persist instead of reverting on refresh.
  */
 export default function DashboardBoardEmbed({
   board,
   boardId,
 }: DashboardBoardEmbedProps) {
   const navigate = useNavigate();
+
+  const {
+    createCard,
+    moveCard: moveCardMutation,
+    createColumn,
+    updateColumn,
+    deleteCard: deleteCardMutation,
+    deleteColumn: deleteColumnMutation,
+  } = useBoardMutations(boardId);
 
   const [state, setState] = useState<BoardDetails>(board);
   const [synced, setSynced] = useState<BoardDetails>(board);
@@ -60,85 +68,32 @@ export default function DashboardBoardEmbed({
     0,
   );
 
-  /* ── Mutations (local to the embed) ── */
+  /* ── Mutations (server-backed; each invalidates the board query) ── */
 
   const addCard = (columnId: string, title: string) => {
-    setState((prev) => ({
-      ...prev,
-      columns: prev.columns.map((column) =>
-        column.id === columnId
-          ? {
-              ...column,
-              cards: [
-                ...column.cards,
-                {
-                  id: uid("card"),
-                  columnId,
-                  boardId: prev.id,
-                  workspaceId: prev.workspaceId,
-                  title,
-                  description: "",
-                  orderIndex: column.cards.length,
-                  members: [],
-                  labels: [],
-                  checklists: [],
-                  isArchived: false,
-                  createdAt: new Date().toISOString(),
-                  updatedAt: new Date().toISOString(),
-                },
-              ],
-            }
-          : column,
-      ),
-    }));
+    const column = state.columns.find((c) => c.id === columnId);
+    createCard.mutate({
+      columnId,
+      boardId: state.id,
+      title,
+      orderIndex: column?.cards.length ?? 0,
+    });
   };
 
   const moveCard = (cardId: string, toColumnId: string, toIndex: number) => {
-    setState((prev) => {
-      let movedCard: BoardCard | undefined;
-      const withoutCard = prev.columns.map((column) => {
-        const index = column.cards.findIndex((card) => card.id === cardId);
-        if (index === -1) return column;
-        movedCard = column.cards[index];
-        return {
-          ...column,
-          cards: reindex(column.cards.filter((card) => card.id !== cardId)),
-        };
-      });
-      if (!movedCard) return prev;
-      const cardToPlace = movedCard;
-      return {
-        ...prev,
-        columns: withoutCard.map((column) => {
-          if (column.id !== toColumnId) return column;
-          const cards = [...column.cards];
-          const clamped = Math.max(0, Math.min(toIndex, cards.length));
-          cards.splice(clamped, 0, { ...cardToPlace, columnId: toColumnId });
-          return { ...column, cards: reindex(cards) };
-        }),
-      };
+    moveCardMutation.mutate({
+      cardId,
+      targetColumnId: toColumnId,
+      targetOrderIndex: toIndex,
     });
   };
 
   const addColumn = () => {
-    setState((prev) => {
-      const orderIndex = prev.columns.length;
-      return {
-        ...prev,
-        columns: [
-          ...prev.columns,
-          {
-            id: uid("col"),
-            boardId: prev.id,
-            workspaceId: prev.workspaceId,
-            name: `Column ${orderIndex + 1}`,
-            orderIndex,
-            cards: [],
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-        ],
-      };
+    const orderIndex = state.columns.length;
+    createColumn.mutate({
+      boardId: state.id,
+      name: `Column ${orderIndex + 1}`,
+      orderIndex,
     });
   };
 
@@ -147,30 +102,25 @@ export default function DashboardBoardEmbed({
     if (!column) return;
     const next = window.prompt("Rename column", column.name);
     if (!next || !next.trim()) return;
-    setState((prev) => ({
-      ...prev,
-      columns: prev.columns.map((c) =>
-        c.id === columnId ? { ...c, name: next.trim() } : c,
-      ),
-    }));
+    updateColumn.mutate({ columnId, name: next.trim() });
   };
 
-  const clearColumn = (columnId: string) => {
-    setState((prev) => ({
-      ...prev,
-      columns: prev.columns.map((column) =>
-        column.id === columnId ? { ...column, cards: [] } : column,
-      ),
-    }));
+  const clearColumn = async (columnId: string) => {
+    const column = state.columns.find((c) => c.id === columnId);
+    if (!column) return;
+    for (const card of column.cards) {
+      await deleteCardMutation.mutateAsync(card.id);
+    }
   };
 
-  const deleteColumn = (columnId: string) => {
-    setState((prev) => ({
-      ...prev,
-      columns: reindexColumns(
-        prev.columns.filter((column) => column.id !== columnId),
-      ),
-    }));
+  const deleteColumn = async (columnId: string) => {
+    const column = state.columns.find((c) => c.id === columnId);
+    if (!column) return;
+    // The API refuses to delete a non-empty column — clear it first.
+    for (const card of column.cards) {
+      await deleteCardMutation.mutateAsync(card.id);
+    }
+    deleteColumnMutation.mutate(columnId);
   };
 
   /* ── Drag handlers ── */
