@@ -21,6 +21,8 @@ interface DashboardSidebarProps {
   onToggle: () => void;
 }
 
+const noop = () => undefined;
+
 export default function DashboardSidebar({
   collapsed,
   onToggle,
@@ -106,8 +108,9 @@ export default function DashboardSidebar({
     closeSelectMode();
   };
 
-  const handleBulkDelete = (ids: string[]) => {
-    console.log("Delete boards:", ids);
+  const handleBulkDelete = () => {
+    // Not wired to the API yet — the delete endpoints now exist
+    // (DELETE /boards/:id); hook these up when the boards API is used here.
     closeSelectMode();
   };
 
@@ -152,9 +155,9 @@ export default function DashboardSidebar({
               const isPinned = pinnedBoardIds.includes(id);
               handlePinBoard(id, !isPinned);
             }}
-            onRenameBoard={(id) => console.log("Rename:", id)}
-            onShareBoard={(id) => console.log("Share:", id)}
-            onDeleteBoard={(id) => console.log("Delete:", id)}
+            onRenameBoard={noop}
+            onShareBoard={noop}
+            onDeleteBoard={noop}
           />
         ) : (
           <>
@@ -176,9 +179,9 @@ export default function DashboardSidebar({
                   onLoadMore={handleLoadMoreBoards}
                   pinnedBoardIds={pinnedBoardIds}
                   onPin={handlePinBoard}
-                  onRename={(id) => console.log("Rename:", id)}
-                  onShare={(id) => console.log("Share:", id)}
-                  onDelete={(id) => console.log("Delete:", id)}
+                  onRename={noop}
+                  onShare={noop}
+                  onDelete={noop}
                   onEnterSelectMode={() => setSelectMode(true)}
                 />
               </div>
