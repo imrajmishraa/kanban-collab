@@ -66,7 +66,7 @@ export default function SidebarFooter({
 
   const handleProfile = () => {
     setMobileOpen(false);
-    navigate("/profile");
+    navigate("/user/profile");
   };
 
   const handleSettings = () => {

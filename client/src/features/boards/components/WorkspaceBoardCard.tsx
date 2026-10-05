@@ -143,7 +143,7 @@ export default function WorkspaceBoardCard({
           </span>
 
           <Link
-            to={`/board/${board.id}`}
+            to={`/boards/${board.id}`}
             className="group/open inline-flex items-center gap-2 rounded-full border border-(--brand-border) bg-(--brand-muted) px-3.5 py-1.5 font-mono text-[11px] text-(--brand-hover) transition-colors duration-200 hover:bg-[rgba(255,107,53,0.18)] hover:text-(--text-primary)"
           >
             Open board

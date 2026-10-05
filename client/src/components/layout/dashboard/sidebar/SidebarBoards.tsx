@@ -163,7 +163,7 @@ const SidebarBoards = ({
       >
         {/* Board link */}
         <NavLink
-          to={`/board/${board.id}`}
+          to={`/boards/${board.id}`}
           aria-label={board.name}
           className={({ isActive }) =>
             [

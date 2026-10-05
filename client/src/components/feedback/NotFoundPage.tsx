@@ -1,11 +1,11 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
 import {
   Alert02Icon,
   Add01Icon,
   DashboardSquare01Icon,
   GridViewIcon,
-  Home01Icon,
+  ArrowLeft01Icon,
   Settings01Icon,
   UserGroupIcon,
 } from "@hugeicons/core-free-icons";
@@ -30,9 +30,9 @@ interface MiniCard {
 /* SEEDED DATA */
 
 const SHORTCUTS: ShortcutItem[] = [
-  { to: "/dashboard", icon: GridViewIcon, label: "All boards" },
+  { to: "/boards", icon: GridViewIcon, label: "All boards" },
   { to: "/dashboard", icon: Add01Icon, label: "New board" },
-  { to: "/profile", icon: UserGroupIcon, label: "Profile" },
+  { to: "/user/profile", icon: UserGroupIcon, label: "Profile" },
   { to: "/settings", icon: Settings01Icon, label: "Settings" },
 ];
 
@@ -92,6 +92,20 @@ const MINI_COLUMNS = [
 /* PAGE */
 
 export default function NotFound() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Go back exactly one page. `location.key === "default"` means this is the
+  // first entry in the history stack (the URL was opened directly), so there
+  // is no previous page — fall back to the dashboard.
+  const handleGoBack = () => {
+    if (location.key === "default") {
+      navigate("/dashboard", { replace: true });
+    } else {
+      navigate(-1);
+    }
+  };
+
   return (
     <main className="relative min-h-screen overflow-hidden text-(--text-primary)">
       <Navbar />
@@ -168,8 +182,9 @@ export default function NotFound() {
 
             {/* CTAs — glass pills */}
             <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-              <Link
-                to="/"
+              <button
+                type="button"
+                onClick={handleGoBack}
                 className="
                   group/cta relative inline-flex min-w-42 cursor-pointer items-center justify-center gap-2
                   overflow-hidden rounded-full
@@ -188,12 +203,12 @@ export default function NotFound() {
               >
                 <span className="pointer-events-none absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/18 to-transparent transition-transform duration-700 group-hover/cta:translate-x-full" />
                 <HugeiconsIcon
-                  icon={Home01Icon}
+                  icon={ArrowLeft01Icon}
                   size={13}
                   className="relative"
                 />
-                <span className="relative">Go home</span>
-              </Link>
+                <span className="relative">Go back</span>
+              </button>
 
               <Link
                 to="/dashboard"
@@ -218,17 +233,8 @@ export default function NotFound() {
                   size={13}
                   className="text-white/40 transition-colors group-hover:text-(--brand)"
                 />
-                <span>View boards</span>
+                <span>Dashboard</span>
               </Link>
-            </div>
-
-            {/* Status meta */}
-            <div className="mt-10 flex items-baseline gap-3 font-mono text-[10px] uppercase tracking-[0.24em]">
-              <span className="text-white/30">Status</span>
-              <span aria-hidden="true" className="text-white/15">
-                ──────
-              </span>
-              <span className="text-(--danger)/80">404 · Not found</span>
             </div>
           </div>
 
