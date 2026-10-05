@@ -1,8 +1,20 @@
-import { apiClient } from "../client";
+import { apiClient, ApiClientError } from "../client";
+import type { z } from "zod";
+
+import {
+  createBoardSchema,
+  updateBoardSchema,
+  createColumnSchema,
+  updateColumnSchema,
+  createCardSchema,
+  updateCardSchema,
+  moveCardSchema,
+} from "@/validations/dashboard/board.validator";
 
 import type { ApiResponse } from "@/types/api/api";
 import type {
   Board,
+  BoardCardChecklistItem,
   BoardColumn,
   BoardDetails,
   CreateBoardPayload,
@@ -38,6 +50,55 @@ export interface BoardWithColumns extends Board {
   columns: BoardColumn[];
 }
 
+/**
+ * The card shape returned by `POST /cards` (the server echoes the created
+ * document back, minus the server-managed timestamps/`isArchived`).
+ */
+export interface CreatedCard {
+  id: string;
+  title: string;
+  description: string;
+  columnId: string;
+  boardId: string;
+  workspaceId: string;
+  dueDate?: string | null;
+  members: string[];
+  orderIndex: number;
+  checklists: BoardCardChecklistItem[];
+  labels: string[];
+}
+
+/**
+ * Validate a request payload before it hits the network.
+ *
+ * Throws an `ApiClientError` shaped exactly like the server's 422 response
+ * (`code: "VALIDATION_FAILED"`, `errors: [{ field, message, code }]`), so the
+ * existing error handling in the UI treats local and server rejections the
+ * same way.
+ */
+function assertValid<Schema extends z.ZodType>(
+  schema: Schema,
+  value: unknown,
+  label: string,
+): z.infer<Schema> {
+  const result = schema.safeParse(value);
+
+  if (!result.success) {
+    throw new ApiClientError({
+      message: `Invalid ${label} details.`,
+      statusCode: 422,
+      code: "VALIDATION_FAILED",
+      errors: result.error.issues.map((issue) => ({
+        field: issue.path.join(".") || undefined,
+        message: issue.message,
+        code: issue.code,
+      })),
+    });
+  }
+
+  return result.data;
+}
+
 const normalizeBoard = (board: BoardApiDocument): Board => ({
   ...board,
   id: board._id,
@@ -53,9 +114,11 @@ const normalizeBoardWithColumns = (
 
 export const boardApi = {
   async createBoard(payload: CreateBoardPayload): Promise<Board> {
+    const body = assertValid(createBoardSchema, payload, "board");
+
     const response = await apiClient.post<
       ApiResponse<CreateOrUpdateBoardResponse>
-    >("/boards", payload);
+    >("/boards", body);
 
     return normalizeBoard(response.data.data.data);
   },
@@ -119,9 +182,11 @@ export const boardApi = {
     boardId: string,
     payload: UpdateBoardPayload,
   ): Promise<Board> {
+    const body = assertValid(updateBoardSchema, payload, "board");
+
     const response = await apiClient.patch<
       ApiResponse<CreateOrUpdateBoardResponse>
-    >(`/boards/${boardId}`, payload);
+    >(`/boards/${boardId}`, body);
 
     return normalizeBoard(response.data.data.data);
   },
@@ -147,9 +212,11 @@ export const boardApi = {
     name: string;
     orderIndex: number;
   }): Promise<BoardColumn> {
+    const body = assertValid(createColumnSchema, payload, "column");
+
     const response = await apiClient.post<ApiResponse<{ data: BoardColumn }>>(
       "/columns",
-      payload,
+      body,
     );
 
     return response.data.data.data;
@@ -159,9 +226,11 @@ export const boardApi = {
     columnId: string,
     payload: { name?: string; orderIndex?: number },
   ): Promise<BoardColumn> {
+    const body = assertValid(updateColumnSchema, payload, "column");
+
     const response = await apiClient.patch<ApiResponse<{ data: BoardColumn }>>(
       `/columns/${columnId}`,
-      payload,
+      body,
     );
 
     return response.data.data.data;
@@ -179,11 +248,18 @@ export const boardApi = {
     columnId: string;
     boardId: string;
     title: string;
+    description?: string;
+    dueDate?: string;
+    members?: string[];
+    labels?: string[];
     orderIndex?: number;
-  }): Promise<{ id: string }> {
-    const response = await apiClient.post<
-      ApiResponse<{ data: { id: string } }>
-    >("/cards", payload);
+  }): Promise<CreatedCard> {
+    const body = assertValid(createCardSchema, payload, "card");
+
+    const response = await apiClient.post<ApiResponse<{ data: CreatedCard }>>(
+      "/cards",
+      body,
+    );
 
     return response.data.data.data;
   },
@@ -199,9 +275,11 @@ export const boardApi = {
       isArchived: boolean;
     }>,
   ): Promise<{ id: string }> {
+    const body = assertValid(updateCardSchema, payload, "card");
+
     const response = await apiClient.patch<
       ApiResponse<{ data: { id: string } }>
-    >(`/cards/${cardId}`, payload);
+    >(`/cards/${cardId}`, body);
 
     return response.data.data.data;
   },
@@ -210,9 +288,11 @@ export const boardApi = {
     cardId: string,
     payload: { targetColumnId: string; targetOrderIndex: number },
   ): Promise<null> {
+    const body = assertValid(moveCardSchema, payload, "card");
+
     const response = await apiClient.patch<ApiResponse<{ data: null }>>(
       `/cards/${cardId}/move`,
-      payload,
+      body,
     );
 
     return response.data.data.data;

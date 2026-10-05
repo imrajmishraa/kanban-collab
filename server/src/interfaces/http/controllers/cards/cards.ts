@@ -4,6 +4,7 @@ import {
   ActivityLogModel,
   BoardModel,
   CardModel,
+  ColumnModel,
   WorkspaceModel,
 } from "../../../../infrastructure/db/mongoose/schemas";
 import { ApiResponse } from "../../../../shared/utils/ApiResponse";
@@ -25,8 +26,36 @@ import {
 import { notWorkspaceMemberError } from "../../../../shared/errors/workspace/workspace";
 import { cardNotFoundError } from "../../../../shared/errors/card/card";
 
+/**
+ * Validated body for `POST /cards`, as produced by `createCardSchema`.
+ *
+ * The route runs `validateSchema`, which stores its parsed output on
+ * `req.validated.body` and intentionally leaves `req.body` untouched. Read
+ * from the validated copy so schema transforms (e.g. `title` trimming)
+ * actually apply; fall back to `req.body` defensively.
+ */
+interface CreateCardBody {
+  columnId: string;
+  boardId: string;
+  title: string;
+  description?: string;
+  dueDate?: string;
+  members?: string[];
+  labels?: string[];
+  orderIndex?: number;
+}
+
 const createCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
-  const { columnId, boardId, title, orderIndex } = req.body;
+  const {
+    columnId,
+    boardId,
+    title,
+    description,
+    dueDate,
+    members,
+    labels,
+    orderIndex,
+  } = (req.validated?.body ?? req.body) as CreateCardBody;
   const userId = requireUserId(req);
   try {
     const board = await BoardModel.findById(boardId);
@@ -50,17 +79,32 @@ const createCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
       throw guestCannotModifyBoardError();
     }
 
+    // The column must belong to the board it is being added to, otherwise a
+    // client could graft a card onto an unrelated board's column.
+    const column = await ColumnModel.findById(columnId);
+    if (!column || column.boardId.toString() !== board._id.toString()) {
+      throw ApiError.badRequest("Column does not belong to this board.");
+    }
+
     const card = await CardModel.create({
+      // CardSchema requires workspaceId — derive it from the board that was
+      // just authorized rather than trusting a client-supplied value.
+      workspaceId: board.workspaceId,
       columnId: new Types.ObjectId(columnId),
       boardId: board._id,
       title,
-      orderIndex: orderIndex || 0,
+      description: description ?? "",
+      dueDate: dueDate ? new Date(dueDate) : undefined,
+      members: (members ?? []).map((id) => new Types.ObjectId(id)),
+      orderIndex: orderIndex ?? 0,
       checklists: [],
-      labels: [],
+      labels: labels ?? [],
     });
 
     // Log Activity
     await ActivityLogModel.create({
+      // ActivityLogSchema requires workspaceId — derive it from the board.
+      workspaceId: board.workspaceId,
       boardId: board._id,
       userId: new Types.ObjectId(userId),
       actionType: "CARD_CREATE",
@@ -82,7 +126,12 @@ const createCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
         data: {
           id: card._id,
           title: card.title,
+          description: card.description,
           columnId: card.columnId,
+          boardId: card.boardId,
+          workspaceId: card.workspaceId,
+          dueDate: card.dueDate,
+          members: card.members,
           orderIndex: card.orderIndex,
           checklists: card.checklists,
           labels: card.labels,
@@ -153,6 +202,8 @@ const updateCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
 
     // Log activity
     await ActivityLogModel.create({
+      // ActivityLogSchema requires workspaceId — derive it from the board.
+      workspaceId: board.workspaceId,
       boardId: board._id,
       userId: new Types.ObjectId(userId),
       actionType: "CARD_UPDATE",
@@ -235,6 +286,8 @@ const moveCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
 
     // Log Activity
     await ActivityLogModel.create({
+      // ActivityLogSchema requires workspaceId — derive it from the board.
+      workspaceId: board.workspaceId,
       boardId: board._id,
       userId: new Types.ObjectId(userId),
       actionType: "CARD_MOVE",
