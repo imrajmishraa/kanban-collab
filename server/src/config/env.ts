@@ -123,6 +123,11 @@ const envSchema = z.object({
   S3_BUCKET_NAME: z.string().default(""),
   S3_PUBLIC_URL: z.string().optional(),
 
+  // ImageKit (attachments — client-side upload auth)
+  IMAGEKIT_PUBLIC_KEY: z.string().optional(),
+  IMAGEKIT_PRIVATE_KEY: z.string().optional(),
+  IMAGEKIT_URL_ENDPOINT: zOptionalUrl,
+
   // Email
   EMAIL_PROVIDER: z.enum(["console", "ses", "smtp"]).default("console"),
   EMAIL_FROM: z.string().default("Kanban Collab <no-reply@localhost>"),
@@ -270,6 +275,19 @@ if (raw.PUSH_ENABLED && (!raw.VAPID_PUBLIC_KEY || !raw.VAPID_PRIVATE_KEY)) {
 if (raw.STORAGE_PROVIDER !== "local" && !raw.S3_BUCKET_NAME) {
   crossErrors.push(
     `STORAGE_PROVIDER=${raw.STORAGE_PROVIDER} requires S3_BUCKET_NAME`,
+  );
+}
+
+// ImageKit is all-or-nothing: a partial config can only fail at upload time.
+const imageKitParts = [
+  raw.IMAGEKIT_PUBLIC_KEY,
+  raw.IMAGEKIT_PRIVATE_KEY,
+  raw.IMAGEKIT_URL_ENDPOINT,
+];
+const imageKitConfigured = imageKitParts.filter(Boolean).length;
+if (imageKitConfigured > 0 && imageKitConfigured < 3) {
+  crossErrors.push(
+    "ImageKit requires IMAGEKIT_PUBLIC_KEY, IMAGEKIT_PRIVATE_KEY and IMAGEKIT_URL_ENDPOINT (all three or none)",
   );
 }
 
