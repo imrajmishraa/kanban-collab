@@ -27,17 +27,19 @@ export function Avatar({ member, size = 24, ring = true }: AvatarProps) {
 }
 
 interface AvatarStackProps {
-  ids: string[];
+  /** Optional — some card payloads omit this field entirely. */
+  ids?: string[];
   size?: number;
   max?: number;
 }
 
 /** Renders avatars for raw member ids — color/initials derive from the id. */
 export function AvatarStack({ ids, size = 24, max = 3 }: AvatarStackProps) {
-  if (ids.length === 0) return null;
+  const list = ids ?? [];
+  if (list.length === 0) return null;
 
-  const shown = ids.slice(0, max);
-  const extra = ids.length - shown.length;
+  const shown = list.slice(0, max);
+  const extra = list.length - shown.length;
 
   return (
     <div className="flex items-center">
