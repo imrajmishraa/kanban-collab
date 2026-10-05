@@ -15,10 +15,7 @@ interface SidebarHeaderProps {
   toggleLabel?: string;
 }
 
-const SidebarHeader = ({
-  collapsed,
-  onToggle,
-}: SidebarHeaderProps) => {
+const SidebarHeader = ({ collapsed, onToggle }: SidebarHeaderProps) => {
   const navigate = useNavigate();
   const openSearch = useSearchStore((s) => s.openSearch);
 
