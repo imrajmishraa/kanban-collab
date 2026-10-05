@@ -17,6 +17,14 @@ export interface WorkspaceMember {
   role: "owner" | "admin" | "member" | "guest";
 }
 
+/** Enriched member row returned by GET /workspaces/:id/members. */
+export interface WorkspaceMemberDetail {
+  userId: string;
+  role: "owner" | "admin" | "member" | "guest";
+  name: string | null;
+  email: string | null;
+}
+
 export interface WorkspacePagination {
   page: number;
   limit: number;
