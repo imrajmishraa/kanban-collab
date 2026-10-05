@@ -1,21 +1,25 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+
+import { useQuery } from "@tanstack/react-query";
 
 import { WorkspaceSelector } from "../workspace/selector/WorkspaceSelector";
 import { RecentBoardsMenu } from "../workspace/create/RecentBoardsMenu";
+import { notificationKeys } from "../notifications/index";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { useSidebarState } from "@/stores/sidebarState";
+import { notificationsApi } from "@/api/dashboard/notificationsApi";
 import {
   Chevron,
   DashIcon,
   NavbarSearchIcon,
   NotificationsButton,
 } from "../workspace/create/NavbarIcons";
+import NotificationsPanel from "../notifications/NotificationsPanel";
 
 export default function DashboardNavbar() {
-  const navigate = useNavigate();
   const sentinelRef = useRef<HTMLDivElement>(null);
   const [scrolled, setScrolled] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -33,6 +37,14 @@ export default function DashboardNavbar() {
     useActiveWorkspace();
 
   const sidebarCollapsed = useSidebarState((s) => s.collapsed);
+
+  // Lightweight poll for the unread badge. The panel reuses the same key.
+  const { data: notificationsData } = useQuery({
+    queryKey: notificationKeys.all,
+    queryFn: () => notificationsApi.listNotifications(),
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+  });
 
   return (
     <>
@@ -70,7 +82,16 @@ export default function DashboardNavbar() {
         <div className="ml-auto flex items-center justify-end gap-1">
           {sidebarCollapsed && <NavbarSearchIcon />}
 
-          <NotificationsButton onClick={() => navigate("/notifications")} />
+          <div className="relative">
+            <NotificationsButton
+              unreadCount={notificationsData?.unreadCount ?? 0}
+              onClick={() => setNotificationsOpen((open) => !open)}
+            />
+            <NotificationsPanel
+              open={notificationsOpen}
+              onClose={() => setNotificationsOpen(false)}
+            />
+          </div>
         </div>
       </header>
     </>

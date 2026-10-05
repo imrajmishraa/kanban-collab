@@ -11,10 +11,16 @@ import MobileSidebar from "../mobile/MobileSidebar";
 import SidebarMobileHeader from "../mobile/SidebarMobileHeader";
 
 import { useWorkspaces } from "@/hooks/dashboard/useWorkspaces";
-import { useBoards, BOARDS_LIST_LIMIT } from "@/hooks/dashboard/useBoards";
+import {
+  useBoards,
+  boardKeys,
+  BOARDS_LIST_LIMIT,
+} from "@/hooks/dashboard/useBoards";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { useSidebarState } from "@/stores/sidebarState";
 import { useAuth } from "@/hooks/auth/useAuth";
+import { boardApi } from "@/api/dashboard/boardApi";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface DashboardSidebarProps {
   collapsed: boolean;
@@ -29,6 +35,7 @@ export default function DashboardSidebar({
 }: DashboardSidebarProps) {
   const { user, logout } = useAuth();
   const { boardsOpen, toggleBoards, openBoards } = useSidebarState();
+  const queryClient = useQueryClient();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectMode, setSelectMode] = useState(false);
@@ -84,8 +91,18 @@ export default function DashboardSidebar({
   const handleLogout = async () => {
     try {
       await logout();
-    } catch (error) {
-      console.error("Logout failed:", error);
+    } catch {
+      // Logout failures are non-fatal — the session is cleared locally by
+      // the auth store regardless. Swallow rather than log to the console.
+    }
+  };
+
+  /** Persist a board deletion, then refresh the affected lists. */
+  const handleDeleteBoard = async (boardId: string) => {
+    try {
+      await boardApi.deleteBoard(boardId);
+    } finally {
+      void queryClient.invalidateQueries({ queryKey: boardKeys.all });
     }
   };
 
@@ -108,9 +125,11 @@ export default function DashboardSidebar({
     closeSelectMode();
   };
 
-  const handleBulkDelete = () => {
-    // Not wired to the API yet — the delete endpoints now exist
-    // (DELETE /boards/:id); hook these up when the boards API is used here.
+  const handleBulkDelete = async () => {
+    const ids = Array.from(selectedBoards);
+    await Promise.all(
+      ids.map((id) => handleDeleteBoard(id).catch(() => undefined)),
+    );
     closeSelectMode();
   };
 
@@ -157,7 +176,7 @@ export default function DashboardSidebar({
             }}
             onRenameBoard={noop}
             onShareBoard={noop}
-            onDeleteBoard={noop}
+            onDeleteBoard={handleDeleteBoard}
           />
         ) : (
           <>
@@ -181,7 +200,7 @@ export default function DashboardSidebar({
                   onPin={handlePinBoard}
                   onRename={noop}
                   onShare={noop}
-                  onDelete={noop}
+                  onDelete={handleDeleteBoard}
                   onEnterSelectMode={() => setSelectMode(true)}
                 />
               </div>
