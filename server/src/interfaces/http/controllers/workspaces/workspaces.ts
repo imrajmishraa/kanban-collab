@@ -307,12 +307,67 @@ const addWorkspaceMember = asyncHandler(
   },
 );
 
+// LIST MEMBERS
+
+const listWorkspaceMembers = asyncHandler(
+  async (req: AuthenticatedRequest, res) => {
+    const { workspaceId } = req.params;
+    const userId = req.user!.userId;
+
+    if (!workspaceId || !Types.ObjectId.isValid(workspaceId)) {
+      throw invalidObjectIdError();
+    }
+
+    const userObjectId = new Types.ObjectId(userId);
+
+    // Any member of the workspace may read its member list.
+    const workspace = await WorkspaceModel.findOne({
+      _id: workspaceId,
+      "members.userId": userObjectId,
+    })
+      .select("members")
+      .lean();
+
+    if (!workspace) {
+      throw notWorkspaceMemberError();
+    }
+
+    const memberIds = workspace.members.map((m) => m.userId);
+
+    const users = await UserModel.find({ _id: { $in: memberIds } })
+      .select("_id fullName email")
+      .lean();
+
+    const usersById = new Map(users.map((u) => [u._id.toString(), u]));
+
+    const members = workspace.members.map((m) => {
+      const user = usersById.get(m.userId.toString());
+      return {
+        userId: m.userId.toString(),
+        role: m.role,
+        name: user?.fullName ?? null,
+        email: user?.email ?? null,
+      };
+    });
+
+    workspaceControllerLogger.info(
+      { workspaceId, userId, memberCount: members.length },
+      "Workspace members listed",
+    );
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, "Members fetched successfully", { members }));
+  },
+);
+
 // EXPORTS
 
 export {
   createWorkspace,
   listWorkspaces,
   addWorkspaceMember,
+  listWorkspaceMembers,
   updateWorkspace,
   deleteWorkspace,
 };

@@ -4,6 +4,7 @@ import {
   createWorkspace,
   listWorkspaces,
   addWorkspaceMember,
+  listWorkspaceMembers,
   updateWorkspace,
   deleteWorkspace,
 } from "../../../controllers/workspaces/workspaces";
@@ -47,6 +48,13 @@ router.delete(
   "/:workspaceId",
   validateSchema({ params: workspaceParamsSchema }),
   deleteWorkspace,
+);
+
+// GET /api/v1/workspaces/:workspaceId/members
+router.get(
+  "/:workspaceId/members",
+  validateSchema({ params: workspaceParamsSchema }),
+  listWorkspaceMembers,
 );
 
 // POST /api/v1/workspaces/:workspaceId/members
