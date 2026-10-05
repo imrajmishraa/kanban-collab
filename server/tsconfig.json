@@ -53,5 +53,15 @@
     "tests",
     "**/*.test.ts",
     "**/*.spec.ts"
-  ]
+  ],
+
+  /* ts-node options. `files: true` makes ts-node load the files matched by
+     `include` above — notably the global augmentations in
+     src/shared/types/*.d.ts (Express.Request.id, etc.). Without it, running
+     ts-node without the `--files` CLI flag (e.g. the `dev:debug` script)
+     type-checks only what's reachable by import, the augmentations are never
+     loaded, and `req.id` fails with TS2339. */
+  "ts-node": {
+    "files": true
+  }
 }
