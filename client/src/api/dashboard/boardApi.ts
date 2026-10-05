@@ -9,6 +9,7 @@ import {
   createCardSchema,
   updateCardSchema,
   moveCardSchema,
+  shareBoardSchema,
 } from "@/validations/dashboard/board.validator";
 
 import type { ApiResponse } from "@/types/api/api";
@@ -205,6 +206,21 @@ export const boardApi = {
     >(`/boards/${boardId}`);
 
     return response.data.data.data;
+  },
+
+  async shareBoard(
+    boardId: string,
+    payload: { email: string; role?: "member" | "guest" },
+  ): Promise<{ userId: string; name: string; role: string }> {
+    const body = assertValid(shareBoardSchema, payload, "share");
+
+    const response = await apiClient.post<
+      ApiResponse<{
+        sharedWith: { userId: string; name: string; role: string };
+      }>
+    >(`/boards/${boardId}/share`, body);
+
+    return response.data.data.sharedWith;
   },
 
   async createColumn(payload: {

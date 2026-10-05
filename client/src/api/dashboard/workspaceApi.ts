@@ -91,4 +91,35 @@ export const workspaceApi = {
 
     return response.data.data.members;
   },
+
+  async updateMemberRole(
+    workspaceId: string,
+    memberId: string,
+    role: "owner" | "admin" | "member" | "guest",
+  ): Promise<{ userId: string; role: string }> {
+    const response = await apiClient.patch<
+      ApiResponse<{ member: { userId: string; role: string } }>
+    >(`/workspaces/${workspaceId}/members/${memberId}`, { role });
+
+    return response.data.data.member;
+  },
+
+  async removeMember(
+    workspaceId: string,
+    memberId: string,
+  ): Promise<{ userId: string }> {
+    const response = await apiClient.delete<
+      ApiResponse<{ member: { userId: string } }>
+    >(`/workspaces/${workspaceId}/members/${memberId}`);
+
+    return response.data.data.member;
+  },
+
+  async leaveWorkspace(workspaceId: string): Promise<null> {
+    const response = await apiClient.post<ApiResponse<null>>(
+      `/workspaces/${workspaceId}/leave`,
+    );
+
+    return response.data.data;
+  },
 };
