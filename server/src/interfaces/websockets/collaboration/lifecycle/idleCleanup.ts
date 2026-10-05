@@ -40,6 +40,9 @@ export class IdleCleanup {
       void this.cleanup(documentName);
     }, this.idleTimeoutMs);
 
+    // Do not let an idle-cleanup timer keep the process (or a Jest run) alive.
+    timer.unref?.();
+
     this.timers.set(documentName, timer);
 
     websocketLogger.debug(

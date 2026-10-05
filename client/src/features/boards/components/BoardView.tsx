@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type { DragEvent } from "react";
 
 import BoardColumns from "@components/layout/board/BoardColumns";
@@ -9,7 +9,12 @@ import BoardPresence from "@components/layout/board/BoardPresence";
 import BoardToolbar from "@components/layout/board/BoardToolbar";
 import CardDetailModal from "@components/layout/board/CardDetailModal";
 
-import { buildCollaborationWsUrl, useCollaboration } from "@/collaboration";
+import {
+  buildCollaborationWsUrl,
+  useBoardDoc,
+  useCollaboration,
+  useCursors,
+} from "@/collaboration";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { useAuthStore } from "@/stores/useAuthStore";
 
@@ -31,25 +36,7 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
   const accessToken = useAuthStore((state) => state.accessToken);
   const members = useActiveWorkspaceMembers();
 
-  const {
-    createCard,
-    updateCard: updateCardMutation,
-    moveCard: moveCardMutation,
-    deleteCard: deleteCardMutation,
-    createColumn,
-    updateColumn,
-    deleteColumn: deleteColumnMutation,
-  } = useBoardMutations(boardId ?? board.id);
-
-  /* ── Editable copy of the board, re-synced when the prop changes ── */
-  const [state, setState] = useState<BoardDetails>(board);
-  const [synced, setSynced] = useState<BoardDetails>(board);
-  if (board !== synced) {
-    setSynced(board);
-    setState(board);
-  }
-
-  /* ── Collaboration (presence only) ── */
+  /* ── Collaboration (live board state) ── */
   // The server expects `{WS_BASE}/ws?token=…&boardId=…`.
   const wsUrl = useMemo(
     () => buildCollaborationWsUrl(boardId, accessToken),
@@ -67,11 +54,21 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
     };
   }, [currentUser]);
 
-  const { status, peers } = useCollaboration({
+  const { doc, awareness, status, peers } = useCollaboration({
     room: boardId ?? null,
     wsUrl,
     user: collabUser,
   });
+
+  /* ── Board state: CRDT-backed when connected, REST otherwise ── */
+  const docApi = useBoardDoc({ doc, board });
+  const rest = useBoardMutations(boardId ?? board.id);
+
+  const live = Boolean(doc);
+  const state = docApi.board;
+
+  /* ── Presence cursors (T7) ── */
+  const { setCursor, clearCursor, peersOnCard } = useCursors(awareness);
 
   /* ── View state ── */
   const [search, setSearch] = useState("");
@@ -83,6 +80,19 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
   const [draggingCardId, setDraggingCardId] = useState<string | null>(null);
   const [dragOverColumnId, setDragOverColumnId] = useState<string | null>(null);
   const [dropIndex, setDropIndex] = useState<number | null>(null);
+
+  const openCard = useCallback(
+    (card: BoardCard) => {
+      setActiveCard(card);
+      setCursor({ cardId: card.id, columnId: card.columnId });
+    },
+    [setCursor],
+  );
+
+  const closeCard = useCallback(() => {
+    setActiveCard(null);
+    clearCursor();
+  }, [clearCursor]);
 
   const allLabels = useMemo(() => {
     const set = new Set<string>();
@@ -149,20 +159,27 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
     return { columnCount, cardCount, doneCount, overdueCount };
   }, [state]);
 
-  /* ── Mutations (server-backed; each invalidates the board query) ── */
+  /* ── Mutations: live CRDT when connected, REST fallback otherwise ── */
 
   const addCard = (columnId: string, title: string) => {
     const column = state.columns.find((c) => c.id === columnId);
-    createCard.mutate({
-      columnId,
-      boardId: state.id,
-      title,
-      orderIndex: column?.cards.length ?? 0,
-    });
+    const orderIndex = column?.cards.length ?? 0;
+
+    if (live) {
+      docApi.addCard({ columnId, title, orderIndex });
+      return;
+    }
+
+    rest.createCard.mutate({ columnId, boardId: state.id, title, orderIndex });
   };
 
   const moveCard = (cardId: string, toColumnId: string, toIndex: number) => {
-    moveCardMutation.mutate({
+    if (live) {
+      docApi.moveCard(cardId, toColumnId, toIndex);
+      return;
+    }
+
+    rest.moveCard.mutate({
       cardId,
       targetColumnId: toColumnId,
       targetOrderIndex: toIndex,
@@ -170,25 +187,45 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
   };
 
   const handleUpdateCard = (updated: BoardCard) => {
-    updateCardMutation.mutate({
-      cardId: updated.id,
-      title: updated.title,
-      description: updated.description,
-      dueDate: updated.dueDate ?? null,
-      members: updated.members,
-      labels: updated.labels,
-    });
-    setActiveCard(null);
+    if (live) {
+      docApi.updateCard(updated.id, {
+        title: updated.title,
+        description: updated.description,
+        dueDate: updated.dueDate ?? null,
+        members: updated.members,
+        labels: updated.labels,
+      });
+    } else {
+      rest.updateCard.mutate({
+        cardId: updated.id,
+        title: updated.title,
+        description: updated.description,
+        dueDate: updated.dueDate ?? null,
+        members: updated.members,
+        labels: updated.labels,
+      });
+    }
+    closeCard();
   };
 
   const handleDeleteCard = (cardId: string) => {
-    deleteCardMutation.mutate(cardId);
-    setActiveCard(null);
+    if (live) {
+      docApi.deleteCard(cardId);
+    } else {
+      rest.deleteCard.mutate(cardId);
+    }
+    closeCard();
   };
 
   const addColumn = () => {
     const orderIndex = state.columns.length;
-    createColumn.mutate({
+
+    if (live) {
+      docApi.addColumn(`Column ${orderIndex + 1}`);
+      return;
+    }
+
+    rest.createColumn.mutate({
       boardId: state.id,
       name: `Column ${orderIndex + 1}`,
       orderIndex,
@@ -200,25 +237,46 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
     if (!column) return;
     const next = window.prompt("Rename column", column.name);
     if (!next || !next.trim()) return;
-    updateColumn.mutate({ columnId, name: next.trim() });
+
+    if (live) {
+      docApi.renameColumn(columnId, next.trim());
+      return;
+    }
+
+    rest.updateColumn.mutate({ columnId, name: next.trim() });
   };
 
   const clearColumn = async (columnId: string) => {
     const column = state.columns.find((c) => c.id === columnId);
     if (!column) return;
+
     for (const card of column.cards) {
-      await deleteCardMutation.mutateAsync(card.id);
+      if (live) {
+        docApi.deleteCard(card.id);
+      } else {
+        await rest.deleteCard.mutateAsync(card.id);
+      }
     }
   };
 
   const handleDeleteColumn = async (columnId: string) => {
     const column = state.columns.find((c) => c.id === columnId);
     if (!column) return;
+
     // The API refuses to delete a non-empty column — clear it first.
     for (const card of column.cards) {
-      await deleteCardMutation.mutateAsync(card.id);
+      if (live) {
+        docApi.deleteCard(card.id);
+      } else {
+        await rest.deleteCard.mutateAsync(card.id);
+      }
     }
-    deleteColumnMutation.mutate(columnId);
+
+    if (live) {
+      docApi.deleteColumn(columnId);
+    } else {
+      rest.deleteColumn.mutate(columnId);
+    }
   };
 
   /* ── Drag handlers ── */
@@ -288,7 +346,7 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
               onCloseComposer={() => setComposerColumnId(null)}
               onAddCard={addCard}
               onAddColumn={addColumn}
-              onOpenCard={setActiveCard}
+              onOpenCard={openCard}
               onDragStartCard={handleDragStart}
               onDragEndCard={handleDragEnd}
               onDragOverCard={(columnId, index) => {
@@ -305,10 +363,7 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
               onClearColumn={clearColumn}
             />
           ) : (
-            <BoardListView
-              columns={visibleColumns}
-              onOpenCard={setActiveCard}
-            />
+            <BoardListView columns={visibleColumns} onOpenCard={openCard} />
           )}
         </div>
       </div>
@@ -318,9 +373,10 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
           key={activeCard.id}
           card={activeCard}
           members={members}
-          onClose={() => setActiveCard(null)}
+          onClose={closeCard}
           onSave={handleUpdateCard}
           onDelete={handleDeleteCard}
+          watchers={peersOnCard(activeCard.id)}
         />
       )}
     </div>

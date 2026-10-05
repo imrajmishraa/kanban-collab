@@ -5,6 +5,7 @@ import { yjsLogger } from "../../../../infrastructure/logging/childLogger";
 
 import { persistence } from "../persistence/mongoPersistence";
 import { bindRedisSync, cleanupRedisRoom } from "../persistence/redisSync";
+import { boardReconciler } from "../persistence/boardReconciler";
 
 import type { CollaborationClient, ManagedDocument } from "./types";
 
@@ -112,6 +113,11 @@ class DocumentManager {
        * document has successfully loaded.
        */
       bindRedisSync(documentName, document);
+
+      /*
+       * Project CRDT changes back into MongoDB (T6).
+       */
+      boardReconciler.attach(documentName, document);
 
       return this.register(documentName, document, awareness);
     } catch (error) {
@@ -417,6 +423,11 @@ class DocumentManager {
        * Flush pending MongoDB writes.
        */
       await persistence.writeState(documentName, managed.doc);
+
+      /*
+       * Final CRDT → MongoDB projection before the document is released.
+       */
+      await boardReconciler.flush(documentName, managed.doc);
 
       /*
        * Remove Redis subscription.

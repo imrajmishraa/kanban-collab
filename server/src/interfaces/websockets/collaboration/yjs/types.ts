@@ -16,8 +16,12 @@ export interface DecodedMessage {
 export interface AwarenessState {
   userId: string;
   name?: string;
+  color?: string;
   cursor?: {
     cardId?: string;
+    columnId?: string;
+    x?: number;
+    y?: number;
   };
 }
 

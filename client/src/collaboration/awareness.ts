@@ -17,6 +17,14 @@ export interface AwarenessUser {
 
 export type AwarenessChangeHandler = (peers: AwarenessUser[]) => void;
 
+/** A remote peer together with their current cursor/selection (T7). */
+export interface PeerCursor {
+  userId: string;
+  name?: string;
+  color?: string;
+  cursor?: AwarenessUser["cursor"];
+}
+
 /**
  * Create an Awareness instance bound to a Y.Doc and
  * seed the local client state.
@@ -37,6 +45,21 @@ export function setLocalUser(awareness: Awareness, user: AwarenessUser): void {
     color: user.color,
     cursor: user.cursor,
   });
+}
+
+/**
+ * Update only the local user's cursor/selection (T7).
+ *
+ * Kept separate from `setLocalUser` so moving between cards/columns does not
+ * rebuild the identity fields (which would bump the awareness clock for every
+ * cursor move and churn the peer list).
+ */
+export function setLocalCursor(
+  awareness: Awareness,
+  cursor: AwarenessUser["cursor"],
+): void {
+  const current = (awareness.getLocalState()?.user ?? {}) as AwarenessUser;
+  awareness.setLocalStateField("user", { ...current, cursor });
 }
 
 /**

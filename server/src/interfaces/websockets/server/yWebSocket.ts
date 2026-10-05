@@ -22,6 +22,9 @@ import { documentManager } from "../collaboration/yjs/documentManager";
 import { messageHandler } from "../collaboration/yjs/messageHandler";
 import { updateBroadcaster } from "../collaboration/yjs/updateBroadcaster";
 
+import { persistence } from "../collaboration/persistence/mongoPersistence";
+import { idleCleanup } from "../collaboration/lifecycle/idleCleanup";
+
 import { CollaborationMessage } from "../collaboration/yjs/protocol";
 import type { CollaborationClient } from "../collaboration/yjs/types";
 
@@ -256,6 +259,16 @@ async function handleConnection(
     ws.on("close", (code, reason) => {
       if (client) {
         documentManager.removeClient(documentName, client.id);
+      }
+
+      /*
+       * Last client out (T6): reconcile the CRDT into MongoDB immediately so
+       * the REST endpoints agree, then let the idle sweeper release the
+       * document after the configured idle window.
+       */
+      if (document.connectionCount === 0) {
+        void persistence.flush(documentName, document.doc);
+        idleCleanup.schedule(documentName);
       }
 
       if (registered) {

@@ -26,6 +26,10 @@ jest.mock(
       writeState: jest.fn(async (_documentName: string, _document: Y.Doc) => {
         // Persistence is tested separately.
       }),
+
+      flush: jest.fn(async (_documentName: string, _document: Y.Doc) => {
+        // Called on last-client-close (T6); persistence is tested separately.
+      }),
     },
   }),
 );
@@ -56,6 +60,7 @@ import { registerYWebSocket } from "../../../src/interfaces/websockets/server/yW
 import { connectionRegistry } from "../../../src/interfaces/websockets/collaboration/lifecycle/connectionRegistry";
 
 import { documentManager } from "../../../src/interfaces/websockets/collaboration/yjs/documentManager";
+import { idleCleanup } from "../../../src/interfaces/websockets/collaboration/lifecycle/idleCleanup";
 
 import { CollaborationMessage } from "../../../src/interfaces/websockets/collaboration/yjs/protocol";
 
@@ -214,6 +219,10 @@ describe("Yjs Collaboration - Single Client", () => {
 
     documentManager.clear();
     connectionRegistry.clear();
+
+    // The last-client-close path schedules an idle-cleanup timer (T6); clear it
+    // so Jest does not report it as an open handle.
+    idleCleanup.clear();
   });
 
   /*
@@ -268,6 +277,7 @@ describe("Yjs Collaboration - Single Client", () => {
 
     documentManager.clear();
     connectionRegistry.clear();
+    idleCleanup.clear();
   });
 
   /*

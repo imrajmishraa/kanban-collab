@@ -28,6 +28,10 @@ jest.mock(
       writeState: jest.fn(async (_documentName: string, _document: Y.Doc) => {
         // Persistence is tested separately.
       }),
+
+      flush: jest.fn(async (_documentName: string, _document: Y.Doc) => {
+        // Called on last-client-close (T6); persistence is tested separately.
+      }),
     },
   }),
 );
@@ -54,6 +58,8 @@ jest.mock("../../../src/interfaces/websockets/middlewares/authorize", () => ({
 import { signAccessToken } from "../../../src/infrastructure/security/token";
 import { connectionRegistry } from "../../../src/interfaces/websockets/collaboration/lifecycle/connectionRegistry";
 import { documentManager } from "../../../src/interfaces/websockets/collaboration/yjs/documentManager";
+import { idleCleanup } from "../../../src/interfaces/websockets/collaboration/lifecycle/idleCleanup";
+import { boardReconciler } from "../../../src/interfaces/websockets/collaboration/persistence/boardReconciler";
 import { CollaborationMessage } from "../../../src/interfaces/websockets/collaboration/yjs/protocol";
 import { collaborationMessageEncoder } from "../../../src/interfaces/websockets/collaboration/yjs/collaborationMessageEncoder";
 import { handleUpgrade } from "../../../src/interfaces/websockets/server/upgrade";
@@ -594,6 +600,12 @@ describe("Yjs Collaboration - Two Clients", () => {
 
     documentManager.clear();
     connectionRegistry.clear();
+
+    // This suite sends CRDT updates, which schedule (a) the reconciler's
+    // debounce timer and (b) an idle-cleanup timer on last-client-close.
+    // Clear both so Jest reports no open handles.
+    idleCleanup.clear();
+    boardReconciler.clear();
   });
 
   /*
@@ -634,6 +646,8 @@ describe("Yjs Collaboration - Two Clients", () => {
 
     documentManager.clear();
     connectionRegistry.clear();
+    idleCleanup.clear();
+    boardReconciler.clear();
   });
 
   /*

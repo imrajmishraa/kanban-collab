@@ -8,3 +8,7 @@
  */
 export { useCollaboration } from "./useCollaboration";
 export { buildCollaborationWsUrl } from "./buildWsUrl";
+export { useBoardDoc } from "./useBoardDoc";
+export { useCursors } from "./useCursors";
+export { createId, isBoardSeeded, readBoard } from "./boardDoc";
+export { ORIGIN_LOCAL, ORIGIN_REMOTE } from "./origins";

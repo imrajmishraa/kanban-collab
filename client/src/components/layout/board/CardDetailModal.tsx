@@ -15,6 +15,8 @@ interface CardDetailModalProps {
   card: BoardCard;
   /** Real members of the active workspace (may be empty). */
   members: BoardMember[];
+  /** Remote peers currently viewing this card (T7 awareness). */
+  watchers?: Array<{ userId: string; name?: string; color?: string }>;
   onClose: () => void;
   onSave: (card: BoardCard) => void;
   onDelete: (cardId: string) => void;
@@ -29,6 +31,7 @@ const label =
 export default function CardDetailModal({
   card,
   members,
+  watchers,
   onClose,
   onSave,
   onDelete,
@@ -142,6 +145,13 @@ export default function CardDetailModal({
             >
               Edit card
             </h2>
+            {watchers && watchers.length > 0 && (
+              <p className="mt-1 font-mono text-[10px] text-(--text-muted)">
+                {watchers.length === 1
+                  ? `${watchers[0]?.name ?? "Someone"} is viewing`
+                  : `${watchers.length} others viewing`}
+              </p>
+            )}
           </div>
 
           <button

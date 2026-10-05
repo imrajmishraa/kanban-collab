@@ -94,6 +94,17 @@ export class MongoPersistence implements DocumentPersistence {
     }
   }
 
+  /**
+   * Cancel the pending debounce and persist immediately.
+   *
+   * Called when the last client leaves a board (T6: reconcile on close) so the
+   * latest state is durable without waiting for the debounce window.
+   */
+  public async flush(documentName: string, document: Y.Doc): Promise<void> {
+    this.debouncer.cancel(documentName);
+    await this.writeState(documentName, document);
+  }
+
   public async shutdown(): Promise<void> {
     try {
       await this.debouncer.flushAll();

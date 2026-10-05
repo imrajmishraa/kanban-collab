@@ -55,7 +55,7 @@ export default function DashboardNavbar() {
           "fixed top-0 right-0 z-50 hidden h-14 md:flex",
           "items-center gap-2 px-5 ",
           "transition-[left,background-color] duration-200",
-          sidebarCollapsed ? "left-16 ml-15" : "left-54",
+          sidebarCollapsed ? "left-16" : "left-54",
           scrolled ? "bg-(--bg-root)/85 backdrop-blur-md" : "bg-transparent",
         ].join(" ")}
       >

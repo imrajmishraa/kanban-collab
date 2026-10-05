@@ -1,6 +1,7 @@
 import { yjsSnapshotJobLogger as log } from "../infrastructure/logging/childLogger";
 import { documentManager } from "../interfaces/websockets/collaboration/yjs/documentManager";
 import { persistence } from "../interfaces/websockets/collaboration/persistence/mongoPersistence";
+import { boardReconciler } from "../interfaces/websockets/collaboration/persistence/boardReconciler";
 
 /**
  * Cron job: safety-net snapshot for active Yjs documents.
@@ -24,6 +25,10 @@ export async function yjsSnapshotJob(): Promise<void> {
       // Reuses the same upsert the debounced writer uses, so a snapshot and a
       // debounce write can never disagree about the persisted shape.
       await persistence.writeState(managed.name, managed.doc);
+
+      // Also project the CRDT into the relational collections (T6).
+      await boardReconciler.flush(managed.name, managed.doc);
+
       snapshotted += 1;
     }
 

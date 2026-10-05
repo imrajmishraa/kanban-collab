@@ -9,10 +9,16 @@
  *   type 0 → Sync      (y-protocols/sync)
  *   type 1 → Awareness (y-protocols/awareness)
  *
- * Origin rules:
+ * Origin rules (T9):
  *   - Document updates that originated from the network use
- *     origin `"remote"` so they are not echoed back.
- *   - Awareness updates from the network use origin `"remote"`.
+ *     origin `ORIGIN_REMOTE` so they are not echoed back.
+ *   - Awareness updates from the network use `ORIGIN_REMOTE`.
+ *   - Local edits are tagged `ORIGIN_LOCAL` by the board binding.
+ *
+ * Reconnection (T8):
+ *   - An unexpected close schedules a reconnect with exponential backoff and
+ *     jitter, surfacing status `"reconnecting"` so the UI can show it.
+ *   - The backoff resets on a successful open.
  */
 
 import * as Y from "yjs";
@@ -28,6 +34,7 @@ import {
   subscribeToPeers,
   type AwarenessUser,
 } from "./awareness";
+import { ORIGIN_REMOTE } from "./origins";
 import {
   CollaborationMessage,
   applySyncMessage,
@@ -39,7 +46,12 @@ import {
 } from "./syncProtocol";
 
 export type ProviderStatus =
-  "idle" | "connecting" | "connected" | "disconnected" | "error";
+  | "idle"
+  | "connecting"
+  | "connected"
+  | "reconnecting"
+  | "disconnected"
+  | "error";
 
 export interface YjsProviderOptions {
   /** Full WebSocket URL (including auth / room query params). */
@@ -54,6 +66,10 @@ export interface YjsProviderOptions {
   onPeers?: (peers: AwarenessUser[]) => void;
   /** Called on unrecoverable errors. */
   onError?: (error: Error) => void;
+  /** First reconnect delay in ms (default 1000). */
+  reconnectBaseDelayMs?: number;
+  /** Maximum reconnect delay in ms (default 15000). */
+  reconnectMaxDelayMs?: number;
 }
 
 /**
@@ -76,11 +92,17 @@ export class YjsProvider {
   private readonly onStatus?: (status: ProviderStatus) => void;
   private readonly onPeers?: (peers: AwarenessUser[]) => void;
   private readonly onError?: (error: Error) => void;
+  private readonly reconnectBaseDelayMs: number;
+  private readonly reconnectMaxDelayMs: number;
 
   private ws: WebSocket | null = null;
   private status: ProviderStatus = "idle";
   private intentionalClose = false;
   private peersUnsub: (() => void) | null = null;
+
+  /** Consecutive failed connect attempts — drives the backoff. */
+  private reconnectAttempt = 0;
+  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
   private readonly boundDocUpdate: (
     update: Uint8Array,
@@ -101,6 +123,8 @@ export class YjsProvider {
     this.onStatus = options.onStatus;
     this.onPeers = options.onPeers;
     this.onError = options.onError;
+    this.reconnectBaseDelayMs = options.reconnectBaseDelayMs ?? 1_000;
+    this.reconnectMaxDelayMs = options.reconnectMaxDelayMs ?? 15_000;
 
     this.doc = options.doc ?? new Y.Doc();
     this.awareness = createAwareness(this.doc, options.user);
@@ -114,6 +138,11 @@ export class YjsProvider {
     return this.status;
   }
 
+  /** Number of consecutive failed attempts (0 once connected). */
+  getReconnectAttempt(): number {
+    return this.reconnectAttempt;
+  }
+
   /** Open the WebSocket and start syncing. */
   connect(): void {
     if (
@@ -124,8 +153,9 @@ export class YjsProvider {
       return;
     }
 
+    this.clearReconnectTimer();
     this.intentionalClose = false;
-    this.setStatus("connecting");
+    this.setStatus(this.reconnectAttempt > 0 ? "reconnecting" : "connecting");
 
     let ws: WebSocket;
     try {
@@ -151,6 +181,8 @@ export class YjsProvider {
     }
 
     ws.onopen = () => {
+      // Successful connection — reset the backoff.
+      this.reconnectAttempt = 0;
       this.setStatus("connected");
       this.sendSyncStep1();
       this.sendFullAwareness();
@@ -163,21 +195,28 @@ export class YjsProvider {
     ws.onerror = () => {
       const err = new Error("WebSocket connection error.");
       this.onError?.(err);
-      this.setStatus("error");
+      // `onclose` always follows an error; let it own the reconnect so we do
+      // not schedule two attempts.
     };
 
     ws.onclose = () => {
       this.teardownListeners();
       this.ws = null;
-      if (!this.intentionalClose) {
+
+      if (this.intentionalClose) {
         this.setStatus("disconnected");
+        return;
       }
+
+      this.scheduleReconnect();
     };
   }
 
   /** Gracefully disconnect and clean up local awareness. */
   disconnect(): void {
     this.intentionalClose = true;
+    this.clearReconnectTimer();
+    this.reconnectAttempt = 0;
     removeLocalAwareness(this.awareness);
 
     if (this.ws) {
@@ -208,6 +247,34 @@ export class YjsProvider {
 
   // ── private ──────────────────────────────────────────────
 
+  private scheduleReconnect(): void {
+    this.reconnectAttempt += 1;
+    this.setStatus("reconnecting");
+
+    const exponential = Math.min(
+      this.reconnectMaxDelayMs,
+      this.reconnectBaseDelayMs * 2 ** (this.reconnectAttempt - 1),
+    );
+
+    // Full jitter — avoids a thundering herd when a server restarts.
+    const delay = Math.round(
+      exponential / 2 + Math.random() * (exponential / 2),
+    );
+
+    this.clearReconnectTimer();
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = null;
+      this.connect();
+    }, delay);
+  }
+
+  private clearReconnectTimer(): void {
+    if (this.reconnectTimer !== null) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+  }
+
   private setStatus(status: ProviderStatus): void {
     this.status = status;
     this.onStatus?.(status);
@@ -231,7 +298,10 @@ export class YjsProvider {
   }
 
   private handleDocUpdate(update: Uint8Array, origin: unknown): void {
-    if (origin === "remote" || origin === this.ws) return;
+    // Never echo a remote update, the socket, or a Redis-originated change.
+    if (origin === ORIGIN_REMOTE || origin === "redis" || origin === this.ws) {
+      return;
+    }
     this.send(CollaborationMessage.Sync, encodeSyncUpdate(update));
   }
 
@@ -243,7 +313,7 @@ export class YjsProvider {
     }: { added: number[]; updated: number[]; removed: number[] },
     origin: unknown,
   ): void {
-    if (origin === "remote") return;
+    if (origin === ORIGIN_REMOTE) return;
     const changed = added.concat(updated, removed);
     if (changed.length === 0) return;
     this.send(
@@ -259,7 +329,7 @@ export class YjsProvider {
       switch (type) {
         case CollaborationMessage.Sync: {
           if (payload.length === 0) return;
-          const response = applySyncMessage(this.doc, payload, "remote");
+          const response = applySyncMessage(this.doc, payload, ORIGIN_REMOTE);
           if (response.length > 0) {
             this.send(CollaborationMessage.Sync, response);
           }
@@ -268,7 +338,7 @@ export class YjsProvider {
 
         case CollaborationMessage.Awareness: {
           if (payload.length === 0) return;
-          applyAwarenessUpdate(this.awareness, payload, "remote");
+          applyAwarenessUpdate(this.awareness, payload, ORIGIN_REMOTE);
           break;
         }
 

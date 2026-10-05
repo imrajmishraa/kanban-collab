@@ -13,7 +13,8 @@ interface BoardPresenceProps {
 
 function statusColor(status: string): string {
   if (status === "connected") return "var(--success)";
-  if (status === "connecting") return "var(--warning)";
+  if (status === "connecting" || status === "reconnecting")
+    return "var(--warning)";
   return "var(--text-muted)";
 }
 
