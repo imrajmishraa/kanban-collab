@@ -7,6 +7,7 @@ import type {
   UpdateWorkspacePayload,
   Workspace,
   WorkspaceDeletionResponse,
+  WorkspaceMemberDetail,
   WorkspacePagination,
   ListWorkspacesParams,
 } from "@/types/api/dashboard/workspace";
@@ -81,5 +82,13 @@ export const workspaceApi = {
     );
 
     return response.data.data;
+  },
+
+  async listMembers(workspaceId: string): Promise<WorkspaceMemberDetail[]> {
+    const response = await apiClient.get<
+      ApiResponse<{ members: WorkspaceMemberDetail[] }>
+    >(`/workspaces/${workspaceId}/members`);
+
+    return response.data.data.members;
   },
 };

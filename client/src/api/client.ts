@@ -53,11 +53,35 @@ export const apiClient = axios.create({
 
 // REQUEST INTERCEPTOR
 
+/** Read a non-httpOnly cookie by name (used for the CSRF double-submit token). */
+function readCookie(name: string): string | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(
+    new RegExp(
+      `(?:^|; )${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}=([^;]*)`,
+    ),
+  );
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+const UNSAFE_METHODS = new Set(["post", "put", "patch", "delete"]);
+
 apiClient.interceptors.request.use((config) => {
   const token = getAccessToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
+  // CSRF double-submit: echo the readable cookie back as a header on every
+  // state-changing request (the server rejects the request otherwise).
+  const method = (config.method ?? "get").toLowerCase();
+  if (UNSAFE_METHODS.has(method)) {
+    const csrfToken = readCookie("csrf_token");
+    if (csrfToken) {
+      config.headers["X-CSRF-Token"] = csrfToken;
+    }
+  }
+
   return config;
 });
 
