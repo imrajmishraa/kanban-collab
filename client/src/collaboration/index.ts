@@ -1,35 +1,10 @@
-export {
-  CollaborationMessage,
-  encodeCollaborationMessage,
-  decodeCollaborationMessage,
-  encodeSyncStep1,
-  encodeSyncUpdate,
-  applySyncMessage,
-} from "./syncProtocol";
-
-export type { CollaborationMessageType } from "./syncProtocol";
-
-export {
-  createAwareness,
-  setLocalUser,
-  encodeAwarenessUpdate,
-  encodeFullAwarenessUpdate,
-  applyAwarenessUpdate,
-  getRemotePeers,
-  removeLocalAwareness,
-  subscribeToPeers,
-} from "./awareness";
-
-export type { AwarenessUser, AwarenessChangeHandler } from "./awareness";
-
-export { YjsProvider } from "./YjsProvider";
-export type { ProviderStatus, YjsProviderOptions } from "./YjsProvider";
-
+/**
+ * Public surface of the collaboration module.
+ *
+ * Only the two symbols the app imports through this barrel are re-exported.
+ * The protocol/awareness/provider internals are used within the module and
+ * imported directly where needed, so re-exporting them here just produced
+ * dead barrel exports (knip).
+ */
 export { useCollaboration } from "./useCollaboration";
-export type {
-  CollabStatus,
-  UseCollaborationOptions,
-  UseCollaborationResult,
-} from "./useCollaboration";
-
-export { buildCollaborationWsUrl, colorFromUserId } from "./buildWsUrl";
+export { buildCollaborationWsUrl } from "./buildWsUrl";

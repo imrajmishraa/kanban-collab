@@ -26,9 +26,9 @@ export function buildCollaborationWsUrl(
 
   const envUrl = import.meta.env.VITE_WS_URL as string | undefined;
   if (!envUrl) {
-    console.warn(
-      "[collab] VITE_WS_URL is not set. Set it to ws://localhost:3000/ws (local) or wss://…/ws (prod).",
-    );
+    // No WS base configured — collaboration is simply disabled. The caller
+    // treats a null URL as "do not connect", so this stays silent rather
+    // than logging on every render.
     return null;
   }
 
@@ -39,14 +39,4 @@ export function buildCollaborationWsUrl(
   });
 
   return `${base}?${params.toString()}`;
-}
-
-/** Stable pastel-ish color from a user id (for awareness avatars). */
-export function colorFromUserId(userId: string): string {
-  let hash = 0;
-  for (let i = 0; i < userId.length; i++) {
-    hash = userId.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const hue = Math.abs(hash) % 360;
-  return `hsl(${hue} 70% 55%)`;
 }
