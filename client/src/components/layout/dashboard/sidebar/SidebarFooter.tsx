@@ -83,7 +83,7 @@ export default function SidebarFooter({
     return (
       <div className="group relative shrink-0 border-t border-white/8 py-3">
         <div
-          className="absolute bottom-0 left-full z-50 hidden w-52 pl-2 group-hover:block"
+          className="absolute bottom-0 left-full z-50 hidden w-48 pl-2 group-hover:block"
           role="menu"
         >
           <div className="relative overflow-hidden rounded-lg border border-white/12 bg-(--bg-elevated) shadow-[0_12px_32px_-8px_rgba(0,0,0,0.7),0_2px_8px_-2px_rgba(0,0,0,0.4)]">
