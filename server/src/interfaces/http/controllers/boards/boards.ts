@@ -1,9 +1,12 @@
 import type { AuthenticatedRequest } from "../../middleware/auth.middleware";
 import { asyncHandler } from "../../../../shared/utils/asyncHandler";
 import {
+  ActivityLogModel,
   BoardModel,
   CardModel,
   ColumnModel,
+  NotificationModel,
+  UserModel,
   WorkspaceModel,
 } from "../../../../infrastructure/db/mongoose/schemas";
 import { ApiResponse } from "../../../../shared/utils/ApiResponse";
@@ -14,8 +17,10 @@ import { getCacheClient } from "../../../../infrastructure/cache/cacheClient";
 import { boardControllerLogger } from "../../../../infrastructure/logging/childLogger";
 import {
   notWorkspaceMemberError,
+  userAlreadyWorkspaceMemberError,
   workspaceIdRequiredError,
 } from "../../../../shared/errors/workspace/workspace";
+import { userNotFoundError } from "../../../../shared/errors/auth/custom";
 import {
   boardNotFoundError,
   boardAccessDeniedError,
@@ -509,4 +514,105 @@ const deleteBoard = asyncHandler(async (req: AuthenticatedRequest, res) => {
   }
 });
 
-export { createBoard, updateBoard, listBoards, getBoardDetails, deleteBoard };
+/**
+ * POST /api/v1/boards/:boardId/share
+ *
+ * Share a board by inviting a user (by email) into the board's workspace.
+ * Board access is workspace-scoped, so "sharing a board" means granting
+ * workspace membership and notifying the invitee.
+ */
+const shareBoard = asyncHandler(async (req: AuthenticatedRequest, res) => {
+  const boardId = req.params["boardId"] || req.params["id"];
+  const { email, role } = (req.validated?.body ?? req.body) as {
+    email: string;
+    role?: "member" | "guest";
+  };
+  const userId = requireUserId(req);
+
+  const board = await BoardModel.findById(boardId);
+
+  if (!board) {
+    throw boardNotFoundError();
+  }
+
+  // Only an owner/admin of the board's workspace may share it.
+  const workspace = await WorkspaceModel.findOne({
+    _id: board.workspaceId,
+    members: {
+      $elemMatch: {
+        userId: new Types.ObjectId(userId),
+        role: { $in: ["owner", "admin"] },
+      },
+    },
+  });
+
+  if (!workspace) {
+    throw boardAccessDeniedError();
+  }
+
+  const invitee = await UserModel.findOne({ email: email.toLowerCase().trim() })
+    .select("_id fullName")
+    .lean();
+
+  if (!invitee) {
+    throw userNotFoundError();
+  }
+
+  if (workspace.members.some((m) => m.userId.equals(invitee._id))) {
+    throw userAlreadyWorkspaceMemberError();
+  }
+
+  const grantedRole = role ?? "member";
+
+  workspace.members.push({ userId: invitee._id, role: grantedRole });
+  await workspace.save();
+
+  // Notify the invitee (NotificationSchema requires userId, workspaceId, type,
+  // title and message — boardId is optional but set here for deep-linking).
+  await NotificationModel.create({
+    userId: invitee._id,
+    actorId: new Types.ObjectId(userId),
+    workspaceId: board.workspaceId,
+    boardId: board._id,
+    type: "BOARD_SHARED",
+    title: "A board was shared with you",
+    message: `${req.user?.fullName ?? "Someone"} shared “${board.name}” with you.`,
+    channels: { inApp: true, email: false, push: false, sms: false },
+  });
+
+  await ActivityLogModel.create({
+    workspaceId: board.workspaceId,
+    boardId: board._id,
+    userId: new Types.ObjectId(userId),
+    actionType: "BOARD_SHARED",
+    details: {
+      boardId: board._id,
+      inviteeId: invitee._id,
+      role: grantedRole,
+    },
+  });
+
+  boardControllerLogger.info(
+    { boardId: board._id, userId, inviteeId: invitee._id, role: grantedRole },
+    "Board shared",
+  );
+
+  return res.status(200).json(
+    new ApiResponse(200, "Board shared successfully", {
+      sharedWith: {
+        userId: invitee._id.toString(),
+        name: invitee.fullName,
+        role: grantedRole,
+      },
+    }),
+  );
+});
+
+export {
+  createBoard,
+  updateBoard,
+  listBoards,
+  getBoardDetails,
+  deleteBoard,
+  shareBoard,
+};

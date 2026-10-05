@@ -370,6 +370,198 @@ const listWorkspaceMembers = asyncHandler(
   },
 );
 
+// MEMBER MANAGEMENT (T13)
+
+type WorkspaceRoleValue = "owner" | "admin" | "member" | "guest";
+
+/**
+ * Load a workspace where the caller holds one of `roles`.
+ *
+ * Returns the mutable document — callers mutate `members` and `save()`.
+ */
+async function requireWorkspaceRole(
+  workspaceId: string,
+  userId: string,
+  roles: readonly WorkspaceRoleValue[],
+) {
+  if (!Types.ObjectId.isValid(workspaceId)) {
+    throw invalidObjectIdError();
+  }
+
+  const workspace = await WorkspaceModel.findOne({
+    _id: workspaceId,
+    members: {
+      $elemMatch: {
+        userId: new Types.ObjectId(userId),
+        role: { $in: roles },
+      },
+    },
+  });
+
+  if (!workspace) {
+    throw cannotModifyWorkspaceError();
+  }
+
+  return workspace;
+}
+
+function ownerCount(workspace: { members: Array<{ role: string }> }): number {
+  return workspace.members.filter((m) => m.role === "owner").length;
+}
+
+/** PATCH /api/v1/workspaces/:workspaceId/members/:memberId */
+const updateWorkspaceMemberRole = asyncHandler(
+  async (req: AuthenticatedRequest, res) => {
+    const { workspaceId, memberId } = req.params as {
+      workspaceId: string;
+      memberId: string;
+    };
+    const { role } = (req.validated?.body ?? req.body) as {
+      role: WorkspaceRoleValue;
+    };
+    const userId = requireUserId(req);
+
+    const workspace = await requireWorkspaceRole(workspaceId, userId, [
+      "owner",
+      "admin",
+    ]);
+
+    const target = workspace.members.find(
+      (m) => m.userId.toString() === memberId,
+    );
+
+    if (!target) {
+      throw notWorkspaceMemberError();
+    }
+
+    const caller = workspace.members.find(
+      (m) => m.userId.toString() === userId,
+    );
+
+    // Only an owner may grant or revoke ownership.
+    if (
+      (role === "owner" || target.role === "owner") &&
+      caller?.role !== "owner"
+    ) {
+      throw cannotModifyWorkspaceError();
+    }
+
+    // Never leave the workspace without an owner.
+    if (
+      target.role === "owner" &&
+      role !== "owner" &&
+      ownerCount(workspace) <= 1
+    ) {
+      throw cannotModifyWorkspaceError();
+    }
+
+    target.role = role;
+    await workspace.save();
+
+    workspaceControllerLogger.info(
+      { workspaceId, userId, memberId, role },
+      "Workspace member role updated",
+    );
+
+    return res.status(200).json(
+      new ApiResponse(200, "Member role updated successfully", {
+        member: { userId: memberId, role },
+      }),
+    );
+  },
+);
+
+/** DELETE /api/v1/workspaces/:workspaceId/members/:memberId */
+const removeWorkspaceMember = asyncHandler(
+  async (req: AuthenticatedRequest, res) => {
+    const { workspaceId, memberId } = req.params as {
+      workspaceId: string;
+      memberId: string;
+    };
+    const userId = requireUserId(req);
+
+    const workspace = await requireWorkspaceRole(workspaceId, userId, [
+      "owner",
+      "admin",
+    ]);
+
+    const target = workspace.members.find(
+      (m) => m.userId.toString() === memberId,
+    );
+
+    if (!target) {
+      throw notWorkspaceMemberError();
+    }
+
+    const caller = workspace.members.find(
+      (m) => m.userId.toString() === userId,
+    );
+
+    if (target.role === "owner") {
+      if (caller?.role !== "owner" || ownerCount(workspace) <= 1) {
+        throw cannotModifyWorkspaceError();
+      }
+    }
+
+    workspace.members = workspace.members.filter(
+      (m) => m.userId.toString() !== memberId,
+    );
+    await workspace.save();
+
+    workspaceControllerLogger.info(
+      { workspaceId, userId, memberId },
+      "Workspace member removed",
+    );
+
+    return res.status(200).json(
+      new ApiResponse(200, "Member removed successfully", {
+        member: { userId: memberId },
+      }),
+    );
+  },
+);
+
+/** POST /api/v1/workspaces/:workspaceId/leave */
+const leaveWorkspace = asyncHandler(async (req: AuthenticatedRequest, res) => {
+  const { workspaceId } = req.params as { workspaceId: string };
+  const userId = requireUserId(req);
+
+  if (!Types.ObjectId.isValid(workspaceId)) {
+    throw invalidObjectIdError();
+  }
+
+  const workspace = await WorkspaceModel.findById(workspaceId);
+
+  if (!workspace) {
+    throw workspaceNotFoundError();
+  }
+
+  const member = workspace.members.find((m) => m.userId.toString() === userId);
+
+  if (!member) {
+    throw notWorkspaceMemberError();
+  }
+
+  // The last owner cannot leave — someone has to own the workspace.
+  if (member.role === "owner" && ownerCount(workspace) <= 1) {
+    throw cannotModifyWorkspaceError();
+  }
+
+  workspace.members = workspace.members.filter(
+    (m) => m.userId.toString() !== userId,
+  );
+  await workspace.save();
+
+  workspaceControllerLogger.info(
+    { workspaceId, userId },
+    "Member left workspace",
+  );
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "You have left the workspace", null));
+});
+
 // EXPORTS
 
 export {
@@ -379,4 +571,7 @@ export {
   listWorkspaceMembers,
   updateWorkspace,
   deleteWorkspace,
+  updateWorkspaceMemberRole,
+  removeWorkspaceMember,
+  leaveWorkspace,
 };
