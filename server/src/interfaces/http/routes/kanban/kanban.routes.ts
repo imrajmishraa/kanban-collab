@@ -20,6 +20,12 @@ import {
 } from "../../controllers/cards/cards";
 import { searchCards } from "../../controllers/search/search";
 import { signUpload } from "../../controllers/fileUpload/fileUpload";
+import {
+  listComments,
+  createComment,
+  deleteComment,
+} from "../../controllers/comments/comments";
+import { listBoardActivity } from "../../controllers/activity/activity";
 
 import { authenticateJWT } from "../../middleware/auth.middleware";
 import { validateSchema } from "../../middleware/validate.middleware";
@@ -36,6 +42,11 @@ import {
   updateCardSchema,
   cardParamsSchema,
 } from "../../validators/kanban/card.validator";
+import {
+  cardCommentParamsSchema,
+  commentParamsSchema,
+  createCommentSchema,
+} from "../../validators/kanban/comment.validator";
 import {
   columnParamsSchema,
   createColumnSchema,
@@ -120,6 +131,34 @@ router.delete(
   "/cards/:cardId",
   validateSchema({ params: cardParamsSchema }),
   deleteCard,
+);
+
+// COMMENTS
+
+router.get(
+  "/cards/:cardId/comments",
+  validateSchema({ params: cardCommentParamsSchema }),
+  listComments,
+);
+
+router.post(
+  "/cards/:cardId/comments",
+  validateSchema(createCommentSchema),
+  createComment,
+);
+
+router.delete(
+  "/comments/:commentId",
+  validateSchema({ params: commentParamsSchema }),
+  deleteComment,
+);
+
+// ACTIVITY
+
+router.get(
+  "/boards/:boardId/activity",
+  validateSchema({ params: boardParamsSchema }),
+  listBoardActivity,
 );
 
 // ATTACHMENTS
