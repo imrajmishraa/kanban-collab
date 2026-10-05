@@ -7,7 +7,11 @@ import {
   getBoardDetails,
   deleteBoard,
 } from "../../controllers/boards/boards";
-import { createColumn, deleteColumn } from "../../controllers/columns/columns";
+import {
+  createColumn,
+  updateColumn,
+  deleteColumn,
+} from "../../controllers/columns/columns";
 import {
   createCard,
   moveCard,
@@ -35,6 +39,7 @@ import {
 import {
   columnParamsSchema,
   createColumnSchema,
+  updateColumnSchema,
 } from "../../validators/kanban/column.validator";
 
 const router = Router();
@@ -71,6 +76,15 @@ router.delete(
 // COLUMNS
 
 router.post("/columns", validateSchema(createColumnSchema), createColumn);
+
+router.patch(
+  "/columns/:columnId",
+  validateSchema({
+    ...updateColumnSchema,
+    params: columnParamsSchema,
+  }),
+  updateColumn,
+);
 
 router.delete(
   "/columns/:columnId",
