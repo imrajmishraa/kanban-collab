@@ -45,6 +45,7 @@ const MainBoard = lazy(() => import("@/features/boards/pages/MainBoard"));
 const MemberPage = lazy(
   () => import("@components/layout/dashboard/members/MemberPage"),
 );
+const NotesPage = lazy(() => import("@/features/notes/pages/NotesPage"));
 const ProfilePage = lazy(() => import("@/features/user/ProfilePage"));
 const SettingsPage = lazy(() => import("@/features/settings/SettingsPage"));
 
@@ -91,6 +92,7 @@ export function AppRouter() {
             />
             <Route path="/boards" element={<BoardPage />} />
             <Route path="/boards/:boardId" element={<MainBoard />} />
+            <Route path="/notes" element={<NotesPage />} />
             <Route path="/members" element={<MemberPage />} />
             <Route path="/user/profile" element={<ProfilePage />} />
             <Route path="/settings" element={<SettingsPage />} />
