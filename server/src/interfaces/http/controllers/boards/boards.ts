@@ -188,6 +188,17 @@ const updateBoard = asyncHandler(async (req: AuthenticatedRequest, res) => {
 
     await board.save();
 
+    // Invalidate the cached board-details payload so the next read is fresh.
+    try {
+      const cache = await getCacheClient();
+      await cache.del(`board:${board._id}`);
+    } catch (err) {
+      boardControllerLogger.warn(
+        { err, boardId: board._id },
+        "Board cache invalidate failed",
+      );
+    }
+
     boardControllerLogger.info(
       {
         boardId: board._id,
@@ -218,29 +229,15 @@ const getBoardDetails = asyncHandler(async (req: AuthenticatedRequest, res) => {
   const userId = req.user!.userId;
   const boardId = req.params["boardId"] || req.params["id"];
 
-  // Try cache
-  const cacheKey = `board:${boardId}`;
-
-  const cache = await getCacheClient();
-
-  let cached: string | null = null;
-  try {
-    cached = await cache.get(cacheKey);
-  } catch (err) {
-    console.warn("Cache read error:", err);
-  }
-
-  if (cached) {
-    return res.status(200).json(JSON.parse(cached));
-  }
-
   // 1. Fetch board
   const board = await BoardModel.findById(boardId).lean();
   if (!board) {
     throw boardNotFoundError();
   }
 
-  // 2. Verify workspace membership
+  // 2. Authorize BEFORE reading the cache. The cached payload is NOT
+  //    user-scoped, so serving it before this check would leak the board
+  //    (columns + cards) to a non-member who knows the boardId.
   const workspace = await WorkspaceModel.findOne({
     _id: board.workspaceId,
     "members.userId": new Types.ObjectId(userId),
@@ -250,7 +247,23 @@ const getBoardDetails = asyncHandler(async (req: AuthenticatedRequest, res) => {
     throw boardAccessDeniedError();
   }
 
-  // 3. Fetch columns and cards in PARALLEL (both use indexes)
+  // 3. Cache — safe now that membership is verified.
+  const cacheKey = `board:${boardId}`;
+
+  const cache = await getCacheClient();
+
+  let cached: string | null = null;
+  try {
+    cached = await cache.get(cacheKey);
+  } catch (err) {
+    boardControllerLogger.warn({ err, boardId }, "Board cache read failed");
+  }
+
+  if (cached) {
+    return res.status(200).json(JSON.parse(cached));
+  }
+
+  // 4. Fetch columns and cards in PARALLEL (both use indexes)
   const [columns, cards] = await Promise.all([
     ColumnModel.find({ boardId: board._id })
       .select("_id name orderIndex")
@@ -261,13 +274,13 @@ const getBoardDetails = asyncHandler(async (req: AuthenticatedRequest, res) => {
       isArchived: false,
     })
       .select(
-        "_id title description orderIndex dueDate labels checklists columnId",
+        "_id title description orderIndex dueDate labels checklists columnId members",
       )
       .sort({ orderIndex: 1 })
       .lean(),
   ]);
 
-  // 4. Assemble response (fast in‑memory)
+  // 5. Assemble response (fast in‑memory)
   const responseColumns = columns.map((col) => ({
     id: col._id,
     name: col.name,
@@ -276,12 +289,14 @@ const getBoardDetails = asyncHandler(async (req: AuthenticatedRequest, res) => {
       .filter((card) => card.columnId.equals(col._id))
       .map((card) => ({
         id: card._id,
+        columnId: card.columnId,
         title: card.title,
         description: card.description,
         orderIndex: card.orderIndex,
         dueDate: card.dueDate,
         labels: card.labels,
         checklists: card.checklists,
+        members: card.members ?? [],
       })),
   }));
 
@@ -303,7 +318,7 @@ const getBoardDetails = asyncHandler(async (req: AuthenticatedRequest, res) => {
   try {
     await cache.setEx(cacheKey, 60, JSON.stringify(response));
   } catch (err) {
-    console.warn("Cache write error:", err);
+    boardControllerLogger.warn({ err, boardId }, "Board cache write failed");
   }
   return res.status(200).json(response);
 });

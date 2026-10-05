@@ -9,7 +9,7 @@ import BoardPresence from "@components/layout/board/BoardPresence";
 import BoardToolbar from "@components/layout/board/BoardToolbar";
 import CardDetailModal from "@components/layout/board/CardDetailModal";
 
-import { useCollaboration } from "@/collaboration";
+import { buildCollaborationWsUrl, useCollaboration } from "@/collaboration";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { useAuthStore } from "@/stores/useAuthStore";
 
@@ -32,6 +32,7 @@ interface BoardViewProps {
 export default function BoardView({ board, boardId }: BoardViewProps) {
   const { activeWorkspaceName } = useActiveWorkspace();
   const currentUser = useAuthStore((state) => state.user);
+  const accessToken = useAuthStore((state) => state.accessToken);
   const members = useActiveWorkspaceMembers();
 
   /* ── Editable copy of the board, re-synced when the prop changes ── */
@@ -43,11 +44,13 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
   }
 
   /* ── Collaboration (presence only; idle without a WS URL) ── */
-  const wsUrl = useMemo(() => {
-    const base = import.meta.env.VITE_WS_URL as string | undefined;
-    if (!base || !boardId) return null;
-    return `${base.replace(/\/$/, "")}/collab?room=${encodeURIComponent(boardId)}`;
-  }, [boardId]);
+  // The server expects `{WS_BASE}/ws?token=…&boardId=…`. buildCollaborationWsUrl
+  // builds exactly that — the hand-rolled URL here was wrong (wrong path,
+  // wrong param name, and no token), so every upgrade was rejected.
+  const wsUrl = useMemo(
+    () => buildCollaborationWsUrl(boardId, accessToken),
+    [boardId, accessToken],
+  );
 
   const { status, peers } = useCollaboration({
     room: boardId ?? null,
