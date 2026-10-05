@@ -9,6 +9,15 @@ import {
 import { ApiResponse } from "../../../../shared/utils/ApiResponse";
 import { Types } from "mongoose";
 import { cardControllerLogger } from "../../../../infrastructure/logging/childLogger";
+import { ApiError } from "../../../../shared/utils/ApiError";
+
+/** Guard instead of `req.user!` — see the dashboard controller for rationale. */
+function requireUserId(req: AuthenticatedRequest): string {
+  if (!req.user) {
+    throw ApiError.unauthorized("Authentication required.");
+  }
+  return req.user.userId;
+}
 import {
   boardNotFoundError,
   guestCannotModifyBoardError,
@@ -18,7 +27,7 @@ import { cardNotFoundError } from "../../../../shared/errors/card/card";
 
 const createCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
   const { columnId, boardId, title, orderIndex } = req.body;
-  const userId = req.user!.userId;
+  const userId = requireUserId(req);
   try {
     const board = await BoardModel.findById(boardId);
     if (!board) {
@@ -94,12 +103,12 @@ const createCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
 });
 
 const updateCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
-  const cardId = req.params;
+  const cardId = req.params["cardId"] || req.params["id"];
   const { title, columnId } = req.body;
-  const userId = req.user!.userId;
+  const userId = requireUserId(req);
 
   try {
-    const card = await CardModel.findById({ cardId });
+    const card = await CardModel.findById(cardId);
 
     if (!card) {
       throw cardNotFoundError();
@@ -189,11 +198,11 @@ const updateCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
 });
 
 const moveCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
-  const { id } = req.params;
+  const cardId = req.params["cardId"] || req.params["id"];
   const { targetColumnId, targetOrderIndex } = req.body;
-  const userId = req.user!.userId;
+  const userId = requireUserId(req);
   try {
-    const card = await CardModel.findById(id);
+    const card = await CardModel.findById(cardId);
     if (!card) {
       throw cardNotFoundError();
     }
@@ -265,7 +274,7 @@ const moveCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
 
 const deleteCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
   const cardId = req.params["cardId"] || req.params["id"];
-  const userId = req.user!.userId;
+  const userId = requireUserId(req);
 
   try {
     const card = await CardModel.findById(cardId);

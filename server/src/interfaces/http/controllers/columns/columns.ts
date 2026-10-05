@@ -9,6 +9,15 @@ import {
 import { ApiResponse } from "../../../../shared/utils/ApiResponse";
 import { Types } from "mongoose";
 import { columnControllerLogger } from "../../../../infrastructure/logging/childLogger";
+import { ApiError } from "../../../../shared/utils/ApiError";
+
+/** Guard instead of `req.user!` — see the dashboard controller for rationale. */
+function requireUserId(req: AuthenticatedRequest): string {
+  if (!req.user) {
+    throw ApiError.unauthorized("Authentication required.");
+  }
+  return req.user.userId;
+}
 
 import {
   boardNotFoundError,
@@ -22,7 +31,7 @@ import {
 
 const createColumn = asyncHandler(async (req: AuthenticatedRequest, res) => {
   const { boardId, name, orderIndex } = req.body;
-  const userId = req.user!.userId;
+  const userId = requireUserId(req);
   try {
     const board = await BoardModel.findById(boardId);
 
@@ -50,6 +59,9 @@ const createColumn = asyncHandler(async (req: AuthenticatedRequest, res) => {
 
     const column = await ColumnModel.create({
       boardId: board._id,
+      // The schema requires workspaceId — without it, create() fails
+      // validation. Derive it from the board that was just authorized.
+      workspaceId: board.workspaceId,
       name,
       orderIndex: orderIndex || 0,
     });
@@ -88,7 +100,7 @@ const createColumn = asyncHandler(async (req: AuthenticatedRequest, res) => {
 
 const deleteColumn = asyncHandler(async (req: AuthenticatedRequest, res) => {
   const columnId = req.params["columnId"] || req.params["id"];
-  const userId = req.user!.userId;
+  const userId = requireUserId(req);
 
   try {
     const column = await ColumnModel.findById(columnId);
@@ -149,4 +161,69 @@ const deleteColumn = asyncHandler(async (req: AuthenticatedRequest, res) => {
   }
 });
 
-export { createColumn, deleteColumn };
+const updateColumn = asyncHandler(async (req: AuthenticatedRequest, res) => {
+  const columnId = req.params["columnId"] || req.params["id"];
+  const { name, orderIndex } = req.body;
+  const userId = requireUserId(req);
+
+  try {
+    const column = await ColumnModel.findById(columnId);
+
+    if (!column) {
+      throw columnNotFoundError();
+    }
+
+    const board = await BoardModel.findById(column.boardId);
+
+    if (!board) {
+      throw boardNotFoundError();
+    }
+
+    const workspace = await WorkspaceModel.findOne({
+      _id: board.workspaceId,
+      "members.userId": new Types.ObjectId(userId),
+    });
+
+    if (!workspace) {
+      throw notWorkspaceMemberError();
+    }
+
+    const member = workspace.members.find(
+      (m) => m.userId.toString() === userId,
+    );
+
+    if (!member || member.role === "guest") {
+      throw guestCannotModifyBoardError();
+    }
+
+    if (name !== undefined) column.name = name;
+    if (orderIndex !== undefined) column.orderIndex = orderIndex;
+
+    await column.save();
+
+    columnControllerLogger.info(
+      { columnId: column._id, boardId: board._id, userId },
+      "Column updated",
+    );
+
+    return res.status(200).json(
+      new ApiResponse(200, "Column updated successfully", {
+        data: {
+          id: column._id,
+          boardId: column.boardId,
+          workspaceId: column.workspaceId,
+          name: column.name,
+          orderIndex: column.orderIndex,
+        },
+      }),
+    );
+  } catch (error) {
+    columnControllerLogger.error(
+      { err: error, columnId, userId },
+      "Failed to update column",
+    );
+    throw error;
+  }
+});
+
+export { createColumn, updateColumn, deleteColumn };

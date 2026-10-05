@@ -7,6 +7,7 @@ import {
   WorkspaceModel,
 } from "../../../../infrastructure/db/mongoose/schemas";
 import { ApiResponse } from "../../../../shared/utils/ApiResponse";
+import { ApiError } from "../../../../shared/utils/ApiError";
 import { Types } from "mongoose";
 
 import { getCacheClient } from "../../../../infrastructure/cache/cacheClient";
@@ -21,9 +22,38 @@ import {
   guestCannotModifyBoardError,
 } from "../../../../shared/errors/board/board";
 
+/**
+ * Resolve the authenticated user's id, or reject.
+ *
+ * The routes are mounted behind `authenticateJWT`, but a non-null assertion
+ * (`req.user!.userId`) would crash with a TypeError if the middleware were ever
+ * missing. This mirrors the guard the dashboard controller already uses.
+ */
+function requireUserId(req: AuthenticatedRequest): string {
+  if (!req.user) {
+    throw ApiError.unauthorized("Authentication required.");
+  }
+  return req.user.userId;
+}
+
+/** Parse the `?include=columns,cards` opt-in used by the boards overview. */
+function parseInclude(raw: unknown): { columns: boolean; cards: boolean } {
+  const value = typeof raw === "string" ? raw : "";
+  const set = new Set(
+    value
+      .split(",")
+      .map((part) => part.trim().toLowerCase())
+      .filter(Boolean),
+  );
+  return {
+    columns: set.has("columns") || set.has("cards"),
+    cards: set.has("cards"),
+  };
+}
+
 const createBoard = asyncHandler(async (req: AuthenticatedRequest, res) => {
   const { workspaceId, name, backgroundColor, visibility } = req.body;
-  const userId = req.user!.userId;
+  const userId = requireUserId(req);
   try {
     // Verify workspace membership
     const workspace = await WorkspaceModel.findOne({
@@ -77,8 +107,8 @@ const createBoard = asyncHandler(async (req: AuthenticatedRequest, res) => {
 });
 
 const listBoards = asyncHandler(async (req: AuthenticatedRequest, res) => {
-  const { workspaceId, page = "1", limit = "10" } = req.query;
-  const userId = req.user!.userId;
+  const { workspaceId, page = "1", limit = "10", include } = req.query;
+  const userId = requireUserId(req);
   try {
     if (!workspaceId) {
       throw workspaceIdRequiredError();
@@ -115,6 +145,76 @@ const listBoards = asyncHandler(async (req: AuthenticatedRequest, res) => {
 
     const totalPages = Math.ceil(totalBoards / pageLimit);
 
+    // Optional heavy payload: nest columns (and cards) so the overview can
+    // render every board in a single request instead of one call per board.
+    const { columns: wantColumns, cards: wantCards } = parseInclude(include);
+
+    let payload: unknown[] = boards;
+
+    if (wantColumns && boards.length > 0) {
+      const boardIds = boards.map((board) => board._id);
+
+      const columns = await ColumnModel.find({ boardId: { $in: boardIds } })
+        .select("_id name orderIndex boardId workspaceId createdAt updatedAt")
+        .sort({ orderIndex: 1 })
+        .lean();
+
+      const cards = wantCards
+        ? await CardModel.find({
+            boardId: { $in: boardIds },
+            isArchived: false,
+          })
+            .select(
+              "_id title description orderIndex dueDate labels checklists columnId boardId workspaceId members isArchived createdAt updatedAt",
+            )
+            .sort({ orderIndex: 1 })
+            .lean()
+        : [];
+
+      payload = boards.map((board) => {
+        // `board` is a hydrated Mongoose document — spread its plain object
+        // form, not the document itself, or the fields won't survive.
+        const raw = board.toObject();
+        const boardColumns = columns
+          .filter((column) => column.boardId.equals(board._id))
+          .map((column) => ({
+            id: column._id,
+            boardId: column.boardId,
+            workspaceId: column.workspaceId,
+            name: column.name,
+            orderIndex: column.orderIndex,
+            createdAt: column.createdAt,
+            updatedAt: column.updatedAt,
+            cards: wantCards
+              ? cards
+                  .filter((card) => card.columnId.equals(column._id))
+                  .map((card) => ({
+                    id: card._id,
+                    columnId: card.columnId,
+                    boardId: card.boardId,
+                    workspaceId: card.workspaceId,
+                    title: card.title,
+                    description: card.description,
+                    orderIndex: card.orderIndex,
+                    dueDate: card.dueDate,
+                    labels: card.labels,
+                    checklists: card.checklists,
+                    members: card.members ?? [],
+                    isArchived: card.isArchived,
+                    createdAt: card.createdAt,
+                    updatedAt: card.updatedAt,
+                  }))
+              : [],
+          }));
+
+        return {
+          ...raw,
+          id: raw._id,
+          columns: boardColumns,
+        };
+      });
+    }
+
     boardControllerLogger.info(
       {
         workspaceId,
@@ -123,12 +223,17 @@ const listBoards = asyncHandler(async (req: AuthenticatedRequest, res) => {
         page: currentPage,
         limit: pageLimit,
         totalBoards,
+        include: wantColumns
+          ? wantCards
+            ? "columns,cards"
+            : "columns"
+          : "none",
       },
       "Boards listed",
     );
     return res.status(200).json(
       new ApiResponse(200, "Boards fetched successfully", {
-        boards,
+        boards: payload,
         pagination: {
           page: currentPage,
           limit: pageLimit,
@@ -156,7 +261,7 @@ const updateBoard = asyncHandler(async (req: AuthenticatedRequest, res) => {
   const boardId = req.params["boardId"] || req.params["id"];
   const { name, description, backgroundColor, coverImageUrl, visibility } =
     req.body;
-  const userId = req.user!.userId;
+  const userId = requireUserId(req);
   try {
     const board = await BoardModel.findById(boardId);
     if (!board) {
@@ -226,7 +331,7 @@ const updateBoard = asyncHandler(async (req: AuthenticatedRequest, res) => {
 });
 
 const getBoardDetails = asyncHandler(async (req: AuthenticatedRequest, res) => {
-  const userId = req.user!.userId;
+  const userId = requireUserId(req);
   const boardId = req.params["boardId"] || req.params["id"];
 
   // 1. Fetch board
@@ -266,7 +371,7 @@ const getBoardDetails = asyncHandler(async (req: AuthenticatedRequest, res) => {
   // 4. Fetch columns and cards in PARALLEL (both use indexes)
   const [columns, cards] = await Promise.all([
     ColumnModel.find({ boardId: board._id })
-      .select("_id name orderIndex")
+      .select("_id name orderIndex boardId workspaceId createdAt updatedAt")
       .sort({ orderIndex: 1 })
       .lean(),
     CardModel.find({
@@ -274,7 +379,7 @@ const getBoardDetails = asyncHandler(async (req: AuthenticatedRequest, res) => {
       isArchived: false,
     })
       .select(
-        "_id title description orderIndex dueDate labels checklists columnId members",
+        "_id title description orderIndex dueDate labels checklists columnId boardId workspaceId members isArchived createdAt updatedAt",
       )
       .sort({ orderIndex: 1 })
       .lean(),
@@ -283,13 +388,19 @@ const getBoardDetails = asyncHandler(async (req: AuthenticatedRequest, res) => {
   // 5. Assemble response (fast in‑memory)
   const responseColumns = columns.map((col) => ({
     id: col._id,
+    boardId: col.boardId,
+    workspaceId: col.workspaceId,
     name: col.name,
     orderIndex: col.orderIndex,
+    createdAt: col.createdAt,
+    updatedAt: col.updatedAt,
     cards: cards
       .filter((card) => card.columnId.equals(col._id))
       .map((card) => ({
         id: card._id,
         columnId: card.columnId,
+        boardId: card.boardId,
+        workspaceId: card.workspaceId,
         title: card.title,
         description: card.description,
         orderIndex: card.orderIndex,
@@ -297,6 +408,9 @@ const getBoardDetails = asyncHandler(async (req: AuthenticatedRequest, res) => {
         labels: card.labels,
         checklists: card.checklists,
         members: card.members ?? [],
+        isArchived: card.isArchived,
+        createdAt: card.createdAt,
+        updatedAt: card.updatedAt,
       })),
   }));
 
@@ -329,7 +443,7 @@ const getBoardDetails = asyncHandler(async (req: AuthenticatedRequest, res) => {
 });
 
 const deleteBoard = asyncHandler(async (req: AuthenticatedRequest, res) => {
-  const userId = req.user!.userId;
+  const userId = requireUserId(req);
   const boardId = req.params["boardId"] || req.params["id"];
 
   try {
