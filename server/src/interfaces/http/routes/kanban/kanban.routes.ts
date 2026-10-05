@@ -6,6 +6,7 @@ import {
   listBoards,
   getBoardDetails,
   deleteBoard,
+  shareBoard,
 } from "../../controllers/boards/boards";
 import {
   createColumn,
@@ -19,7 +20,12 @@ import {
   deleteCard,
 } from "../../controllers/cards/cards";
 import { searchCards } from "../../controllers/search/search";
-import { signUpload } from "../../controllers/fileUpload/fileUpload";
+import { getImageKitAuth } from "../../controllers/fileUpload/fileUpload";
+import {
+  listCardAttachments,
+  addCardAttachment,
+  removeCardAttachment,
+} from "../../controllers/attachments/cardAttachments";
 import {
   listComments,
   createComment,
@@ -47,6 +53,12 @@ import {
   commentParamsSchema,
   createCommentSchema,
 } from "../../validators/kanban/comment.validator";
+import { shareBoardSchema } from "../../validators/kanban/share.validator";
+import {
+  addAttachmentSchema,
+  cardAttachmentParamsSchema,
+  cardOnlyParamsSchema,
+} from "../../validators/kanban/attachment.validator";
 import {
   columnParamsSchema,
   createColumnSchema,
@@ -82,6 +94,13 @@ router.delete(
   "/boards/:boardId",
   validateSchema({ params: boardParamsSchema }),
   deleteBoard,
+);
+
+// POST /api/v1/boards/:boardId/share
+router.post(
+  "/boards/:boardId/share",
+  validateSchema(shareBoardSchema),
+  shareBoard,
 );
 
 // COLUMNS
@@ -163,6 +182,25 @@ router.get(
 
 // ATTACHMENTS
 
-router.post("/attachments/presign", signUpload);
+// ImageKit client-side upload auth (T15) — replaces the mock S3 presign.
+router.get("/attachments/imagekit-auth", getImageKitAuth);
+
+router.get(
+  "/cards/:cardId/attachments",
+  validateSchema({ params: cardOnlyParamsSchema }),
+  listCardAttachments,
+);
+
+router.post(
+  "/cards/:cardId/attachments",
+  validateSchema(addAttachmentSchema),
+  addCardAttachment,
+);
+
+router.delete(
+  "/cards/:cardId/attachments/:attachmentId",
+  validateSchema({ params: cardAttachmentParamsSchema }),
+  removeCardAttachment,
+);
 
 export default router;

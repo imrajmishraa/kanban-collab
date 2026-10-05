@@ -7,6 +7,9 @@ import {
   listWorkspaceMembers,
   updateWorkspace,
   deleteWorkspace,
+  updateWorkspaceMemberRole,
+  removeWorkspaceMember,
+  leaveWorkspace,
 } from "../../../controllers/workspaces/workspaces";
 
 import { authenticateJWT } from "../../../middleware/auth.middleware";
@@ -18,6 +21,10 @@ import {
   listWorkspacesQuerySchema,
   workspaceParamsSchema,
 } from "../../../validators/kanban/workspace/workspaceValidator";
+import {
+  workspaceMemberParamsSchema,
+  updateWorkspaceMemberRoleSchema,
+} from "../../../validators/kanban/workspace/workspaceMemberValidator";
 
 const router = Router();
 
@@ -65,6 +72,30 @@ router.post(
     params: workspaceParamsSchema,
   }),
   addWorkspaceMember,
+);
+
+// PATCH /api/v1/workspaces/:workspaceId/members/:memberId
+router.patch(
+  "/:workspaceId/members/:memberId",
+  validateSchema({
+    ...updateWorkspaceMemberRoleSchema,
+    params: workspaceMemberParamsSchema,
+  }),
+  updateWorkspaceMemberRole,
+);
+
+// DELETE /api/v1/workspaces/:workspaceId/members/:memberId
+router.delete(
+  "/:workspaceId/members/:memberId",
+  validateSchema({ params: workspaceMemberParamsSchema }),
+  removeWorkspaceMember,
+);
+
+// POST /api/v1/workspaces/:workspaceId/leave
+router.post(
+  "/:workspaceId/leave",
+  validateSchema({ params: workspaceParamsSchema }),
+  leaveWorkspace,
 );
 
 export default router;
