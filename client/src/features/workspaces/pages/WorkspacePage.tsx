@@ -3,7 +3,10 @@ import { useParams } from "react-router-dom";
 
 import BoardError from "@components/ui/board/BoardError";
 
-import { BoardMessage, BoardShell } from "@/features/boards/components/BoardStates";
+import {
+  BoardMessage,
+  BoardShell,
+} from "@/features/boards/components/BoardStates";
 import WorkspaceBoardCard from "@/features/boards/components/WorkspaceBoardCard";
 import WorkspaceOverview from "@/features/boards/components/WorkspaceOverview";
 import { useActiveWorkspaceMembers } from "@/features/boards/hooks/useActiveWorkspaceMembers";
@@ -27,12 +30,7 @@ export function WorkspacePage() {
     if (!workspaceId || workspaceId === activeWorkspaceId) return;
     const match = workspaces.find((workspace) => workspace.id === workspaceId);
     setActiveWorkspace(workspaceId, match?.name ?? "");
-  }, [
-    workspaceId,
-    activeWorkspaceId,
-    workspaces,
-    setActiveWorkspace,
-  ]);
+  }, [workspaceId, activeWorkspaceId, workspaces, setActiveWorkspace]);
 
   const {
     items,
