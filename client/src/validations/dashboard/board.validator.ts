@@ -2,6 +2,11 @@ import { z } from "zod";
 
 /* ── Shared primitives ───────────────────────────────────── */
 
+/**
+ * MongoDB ObjectId — 24-character lowercase hex. Mirrors the server's
+ * `objectIdSchema` (case-sensitive on purpose: MongoDB stores lowercase, so
+ * catching an uppercased id here surfaces a client bug before the request).
+ */
 export const objectIdSchema = z
   .string()
   .trim()
@@ -250,3 +255,12 @@ export const moveCardSchema = z.object({
 });
 
 export type MoveCardInput = z.infer<typeof moveCardSchema>;
+
+/* ── Board sharing ───────────────────────────────────────── */
+
+export const shareBoardSchema = z.object({
+  email: z.string().trim().email("A valid email is required."),
+  role: z.enum(["member", "guest"]).optional(),
+});
+
+export type ShareBoardInput = z.infer<typeof shareBoardSchema>;
