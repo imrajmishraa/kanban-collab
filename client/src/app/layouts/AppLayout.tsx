@@ -7,6 +7,8 @@ import { NewWorkspaceDialogProvider } from "@components/layout/dashboard/workspa
 
 import { useSidebarState } from "@/stores/sidebarState";
 import { useSearchStore } from "@/stores/searchStore";
+import { useEnsureActiveWorkspace } from "@/hooks/dashboard/useEnsureActiveWorkspace";
+import { useSyncSavedBoards } from "@/hooks/dashboard/useSyncSavedBoards";
 
 const SearchModal = lazy(() =>
   import("@components/layout/dashboard/search/SearchModal").then((m) => ({
@@ -21,6 +23,11 @@ function warmSearchModal() {
 export default function AppLayout() {
   const { collapsed, toggleCollapsed: toggleSidebar } = useSidebarState();
   const searchOpen = useSearchStore((s) => s.open);
+
+  // Restore the last-used workspace (no navigation), and keep the persisted
+  // boards store warm for the navbar.
+  useEnsureActiveWorkspace();
+  useSyncSavedBoards();
 
   // Prefetch the search chunk during idle time.
   // Fallback to a 2s timeout on browsers without requestIdleCallback.

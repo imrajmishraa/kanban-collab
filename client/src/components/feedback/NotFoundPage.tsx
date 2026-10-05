@@ -93,7 +93,7 @@ const MINI_COLUMNS = [
 
 export default function NotFound() {
   return (
-    <main className="relative min-h-screen overflow-hidden pt-16 text-(--text-primary) sm:pt-20">
+    <main className="relative min-h-screen overflow-hidden text-(--text-primary)">
       <Navbar />
 
       {/* BACKGROUND — dot matrix + rose-tinted bloom */}
@@ -137,16 +137,7 @@ export default function NotFound() {
 
       {/* CONTENT */}
 
-      <div className="relative mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
-        {/* Giant dimmed 404 numeral — texture, not headline */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute right-4 top-4 select-none font-mono font-normal leading-none tracking-[-0.06em] text-white/2.5 sm:text-[18rem] lg:text-[24rem]"
-          style={{ fontSize: "clamp(8rem, 18vw, 16rem)" }}
-        >
-          404
-        </div>
-
+      <div className="relative mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-18 lg:px-8 lg:py-18">
         {/* ── Main spread ─────────────────────────────────────── */}
         <div className="relative grid items-center gap-12 lg:grid-cols-[1fr_1.15fr] lg:gap-16">
           {/* LEFT: Copy */}

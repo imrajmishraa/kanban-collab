@@ -85,9 +85,12 @@ export function AppRouter() {
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/workspace/:workspaceId" element={<WorkspacePage />} />
+            <Route
+              path="/workspaces/:workspaceId"
+              element={<WorkspacePage />}
+            />
             <Route path="/boards" element={<BoardPage />} />
-            <Route path="/board/:boardId" element={<MainBoard />} />
+            <Route path="/boards/:boardId" element={<MainBoard />} />
             <Route path="/members" element={<MemberPage />} />
             <Route path="/user/profile" element={<ProfilePage />} />
             <Route path="/settings" element={<SettingsPage />} />

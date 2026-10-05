@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 
 import BoardError from "@components/ui/board/BoardError";
@@ -6,10 +7,17 @@ import BoardSkeleton from "@components/ui/board/BoardSkeleton";
 import BoardView from "../components/BoardView";
 import { BoardMessage, BoardShell } from "../components/BoardStates";
 import { useBoardForPage } from "../hooks/useBoardForPage";
+import { useBoardsStore } from "@/stores/boards";
 
 export default function MainBoard() {
   const { boardId } = useParams<{ boardId: string }>();
   const { board, isLoading, isError, refetch } = useBoardForPage(boardId);
+  const setLastBoard = useBoardsStore((s) => s.setLastBoard);
+
+  // Remember this board so the dashboard can feature it.
+  useEffect(() => {
+    if (board) setLastBoard(board.id);
+  }, [board, setLastBoard]);
 
   if (!boardId) {
     return (

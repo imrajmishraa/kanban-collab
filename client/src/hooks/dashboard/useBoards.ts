@@ -11,7 +11,16 @@ export const boardKeys = {
   detail: (boardId: string) => [...boardKeys.all, "detail", boardId] as const,
 };
 
-export function useBoards(limit = 20) {
+/**
+ * The single page size every boards list must use. `limit` is part of the
+ * query key, so callers passing different limits create separate cache
+ * entries — and therefore duplicate `/boards` requests. Keep everyone on
+ * this constant so the sidebar, navbar, dashboard and overview all share
+ * one query (one request).
+ */
+export const BOARDS_LIST_LIMIT = 6;
+
+export function useBoards(limit: number = BOARDS_LIST_LIMIT) {
   const { activeWorkspaceId } = useActiveWorkspace();
 
   return useInfiniteQuery({
