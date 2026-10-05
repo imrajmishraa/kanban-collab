@@ -43,7 +43,7 @@ export default function AppLayout() {
             "flex h-screen flex-col overflow-y-auto",
             "transition-[margin-left] duration-200 ease-out",
             "ml-0 pt-14 md:pt-0",
-            collapsed ? "md:ml-18" : "md:ml-64",
+            collapsed ? "md:ml-16" : "md:ml-54",
           ].join(" ")}
         >
           <DashboardNavbar />
