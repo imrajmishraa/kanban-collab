@@ -1,20 +1,5 @@
 import { logger } from "./logger";
 
-/**
- * Child logger registry.
- *
- * Design: one logger instance per functional area (`module`), plus
- * factories for scoped sub-loggers (`controller`, `component`, `job`,
- * `channel`). The scoping names are plain union types — nothing
- * iterates them at runtime, so no `as const` registry arrays are
- * needed (they would only be "assigned but used as a type" dead code).
- *
- * Keep this file append-only where possible: every export below is
- * imported somewhere, so renaming or removing one breaks callers.
- */
-
-// ─── SCOPING TYPES ──────────────────────────────────────────────────────────
-
 export type ModuleName =
   | "http"
   | "auth"
@@ -39,6 +24,7 @@ export type ControllerName =
   | "column"
   | "comment"
   | "notification"
+  | "note"
   | "activity"
   | "search"
   | "file-upload";
@@ -117,6 +103,7 @@ export const columnControllerLogger = createControllerLogger("column");
 export const commentControllerLogger = createControllerLogger("comment");
 export const notificationControllerLogger =
   createControllerLogger("notification");
+export const noteControllerLogger = createControllerLogger("note");
 export const activityControllerLogger = createControllerLogger("activity");
 export const searchControllerLogger = createControllerLogger("search");
 export const fileUploadControllerLogger = createControllerLogger("file-upload");
