@@ -1,10 +1,10 @@
 import { z } from "zod";
 import { objectIdSchema } from "../common/objectId";
 
+// NOTE: this is a schema for `req.params` directly (validateSchema passes it
+// as `params`), so it must NOT be wrapped in an extra `params` layer.
 export const cardParamsSchema = z.object({
-  params: z.object({
-    cardId: objectIdSchema,
-  }),
+  cardId: objectIdSchema,
 });
 
 export const createCardSchema = {

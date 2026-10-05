@@ -263,4 +263,60 @@ const moveCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
   }
 });
 
-export { createCard, moveCard, updateCard };
+const deleteCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
+  const cardId = req.params["cardId"] || req.params["id"];
+  const userId = req.user!.userId;
+
+  try {
+    const card = await CardModel.findById(cardId);
+
+    if (!card) {
+      throw cardNotFoundError();
+    }
+
+    const board = await BoardModel.findById(card.boardId);
+
+    if (!board) {
+      throw boardNotFoundError();
+    }
+
+    // Verify workspace membership
+    const workspace = await WorkspaceModel.findOne({
+      _id: board.workspaceId,
+      "members.userId": new Types.ObjectId(userId),
+    });
+
+    if (!workspace) {
+      throw notWorkspaceMemberError();
+    }
+
+    const member = workspace.members.find(
+      (m) => m.userId.toString() === userId,
+    );
+
+    if (!member || member.role === "guest") {
+      throw guestCannotModifyBoardError();
+    }
+
+    await card.deleteOne();
+
+    cardControllerLogger.info(
+      { cardId: card._id, boardId: board._id, userId },
+      "Card deleted",
+    );
+
+    return res.status(200).json(
+      new ApiResponse(200, "Card deleted successfully", {
+        data: { id: card._id },
+      }),
+    );
+  } catch (error) {
+    cardControllerLogger.error(
+      { err: error, cardId, userId },
+      "Failed to delete card",
+    );
+    throw error;
+  }
+});
+
+export { createCard, moveCard, updateCard, deleteCard };

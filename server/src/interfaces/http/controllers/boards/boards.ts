@@ -308,9 +308,14 @@ const getBoardDetails = asyncHandler(async (req: AuthenticatedRequest, res) => {
   const response = new ApiResponse(200, "Fetched board details", {
     data: {
       id: board._id,
+      workspaceId: board.workspaceId,
       name: board.name,
       description: board.description,
       backgroundColor: board.backgroundColor,
+      coverImageUrl: board.coverImageUrl,
+      visibility: board.visibility,
+      createdAt: board.createdAt,
+      updatedAt: board.updatedAt,
       columns: responseColumns,
     },
   });
@@ -323,4 +328,71 @@ const getBoardDetails = asyncHandler(async (req: AuthenticatedRequest, res) => {
   return res.status(200).json(response);
 });
 
-export { createBoard, updateBoard, listBoards, getBoardDetails };
+const deleteBoard = asyncHandler(async (req: AuthenticatedRequest, res) => {
+  const userId = req.user!.userId;
+  const boardId = req.params["boardId"] || req.params["id"];
+
+  try {
+    const board = await BoardModel.findById(boardId);
+
+    if (!board) {
+      throw boardNotFoundError();
+    }
+
+    // Verify workspace membership
+    const workspace = await WorkspaceModel.findOne({
+      _id: board.workspaceId,
+      "members.userId": new Types.ObjectId(userId),
+    });
+
+    if (!workspace) {
+      throw notWorkspaceMemberError();
+    }
+
+    const member = workspace.members.find(
+      (m) => m.userId.toString() === userId,
+    );
+
+    if (!member || member.role === "guest") {
+      throw guestCannotModifyBoardError();
+    }
+
+    // Cascade: a board owns its columns and cards.
+    await Promise.all([
+      ColumnModel.deleteMany({ boardId: board._id }),
+      CardModel.deleteMany({ boardId: board._id }),
+    ]);
+
+    await board.deleteOne();
+
+    // Drop the cached details payload.
+    try {
+      const cache = await getCacheClient();
+      await cache.del(`board:${board._id}`);
+    } catch (err) {
+      boardControllerLogger.warn(
+        { err, boardId: board._id },
+        "Board cache invalidate failed",
+      );
+    }
+
+    boardControllerLogger.info(
+      { boardId: board._id, workspaceId: board.workspaceId, userId },
+      "Board deleted",
+    );
+
+    return res.status(200).json(
+      new ApiResponse(200, "Board deleted successfully", {
+        data: { id: board._id },
+      }),
+    );
+  } catch (error) {
+    boardControllerLogger.error(
+      { err: error, boardId, userId },
+      "Delete board failed",
+    );
+    throw error;
+  }
+});
+
+export { createBoard, updateBoard, listBoards, getBoardDetails, deleteBoard };

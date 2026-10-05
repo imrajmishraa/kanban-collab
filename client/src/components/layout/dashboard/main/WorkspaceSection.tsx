@@ -1,5 +1,5 @@
 import { HugeiconsIcon } from "@hugeicons/react";
-import { ArrowRight01Icon, Folder01Icon } from "@hugeicons/core-free-icons";
+import { Folder01Icon } from "@hugeicons/core-free-icons";
 import { useNavigate } from "react-router-dom";
 import type { CSSProperties } from "react";
 
@@ -27,27 +27,6 @@ export default function WorkspaceSection({
             Your workspaces
           </h2>
         </div>
-
-        <button
-          type="button"
-          onClick={() => navigate("/workspaces")}
-          className="
-            group/view flex cursor-pointer items-center gap-1.5
-            rounded-md px-2 py-1
-            font-mono text-[10px] uppercase tracking-[0.14em]
-            text-(--text-muted)
-            transition-colors duration-200
-            hover:bg-white/4 hover:text-(--text-primary)
-          "
-        >
-          <span>View all</span>
-          <HugeiconsIcon
-            icon={ArrowRight01Icon}
-            size={11}
-            strokeWidth={1.8}
-            className="transition-transform duration-200 group-hover/view:translate-x-0.5"
-          />
-        </button>
       </div>
 
       {/* Body */}
