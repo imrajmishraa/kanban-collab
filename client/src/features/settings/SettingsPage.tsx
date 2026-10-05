@@ -5,6 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import { workspaceApi } from "@/api/dashboard/workspaceApi";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { useAuth } from "@/hooks/auth/useAuth";
+import NotificationPreferences from "@/components/layout/dashboard/NotificationPreferences";
 
 function SettingsPage() {
   const { user } = useAuth();
@@ -123,6 +124,8 @@ function SettingsPage() {
             </p>
           )}
         </section>
+
+        <NotificationPreferences />
       </div>
     </div>
   );

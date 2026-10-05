@@ -8,6 +8,7 @@ import BoardOverview from "@components/layout/board/BoardOverview";
 import BoardPresence from "@components/layout/board/BoardPresence";
 import BoardToolbar from "@components/layout/board/BoardToolbar";
 import CardDetailModal from "@components/layout/board/CardDetailModal";
+import BoardActivityPanel from "@components/layout/board/BoardActivityPanel";
 
 import {
   buildCollaborationWsUrl,
@@ -76,6 +77,7 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
   const [sortBy, setSortBy] = useState<SortKey>("manual");
   const [view, setView] = useState<ViewMode>("board");
   const [activeCard, setActiveCard] = useState<BoardCard | null>(null);
+  const [showActivity, setShowActivity] = useState(false);
   const [composerColumnId, setComposerColumnId] = useState<string | null>(null);
   const [draggingCardId, setDraggingCardId] = useState<string | null>(null);
   const [dragOverColumnId, setDragOverColumnId] = useState<string | null>(null);
@@ -317,6 +319,23 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
           doneCount={stats.doneCount}
           overdueCount={stats.overdueCount}
         />
+
+        <div className="mt-3 flex justify-end">
+          <button
+            type="button"
+            onClick={() => setShowActivity((prev) => !prev)}
+            className="rounded-lg border border-white/8 bg-white/4 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-(--text-secondary) transition-colors hover:text-(--text-primary)"
+          >
+            {showActivity ? "Hide activity" : "Activity"}
+          </button>
+        </div>
+
+        {showActivity && (
+          <BoardActivityPanel
+            boardId={boardId ?? state.id}
+            onClose={() => setShowActivity(false)}
+          />
+        )}
 
         <BoardToolbar
           search={search}
