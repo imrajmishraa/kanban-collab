@@ -129,14 +129,14 @@ export function RecentBoardsMenu() {
           role="menu"
           aria-label="Recent boards"
           className={[
-            "absolute left-0 top-full z-50 mt-1.5 flex w-64 flex-col overflow-hidden rounded-lg",
+            "absolute left-0 top-full z-50 mt-1.5 flex w-48 flex-col overflow-hidden rounded-lg",
             "border border-white/10 bg-(--bg-surface)",
             "shadow-[0_8px_24px_-6px_rgba(0,0,0,0.7)]",
           ].join(" ")}
         >
           <div className="shrink-0 border-b border-white/6 px-3 py-2">
             <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-(--text-muted)">
-              Recent boards
+              Boards
             </p>
           </div>
 
@@ -194,14 +194,6 @@ export function RecentBoardsMenu() {
               })
             )}
           </div>
-
-          <button
-            type="button"
-            onClick={() => go("/boards")}
-            className="shrink-0 border-t border-white/6 px-3 py-2 text-left font-mono text-[10px] uppercase tracking-[0.14em] text-(--text-muted) transition-colors duration-150 hover:bg-white/4 hover:text-(--text-primary)"
-          >
-            All boards
-          </button>
         </div>
       )}
     </div>

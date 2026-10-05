@@ -11,6 +11,7 @@ import { BoardActionsMenu } from "./BoardActionsMenu";
 import { groupBoardsByTime } from "@/utils/boardGrouping";
 
 import type { Board } from "@/types/api/dashboard/board";
+import { Tooltip } from "#components/Tooltips/ToolTip";
 
 interface SidebarSelectModeProps {
   boards: Board[];
@@ -117,26 +118,26 @@ export function SidebarSelectMode({
     <div className="flex min-h-0 flex-1 flex-col">
       {/* Header */}
       <div className="flex h-10 shrink-0 items-center justify-between px-3">
-        <h2 className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-(--text-secondary)">
-          Select boards
+        <h2 className=" text-[10px] tracking-[0.16em] text-(--text-secondary)">
+          Multi-Select mode
         </h2>
 
         <div className="group/tooltip relative">
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Exit multi-select"
-            className="flex size-6 cursor-pointer items-center justify-center rounded-full text-(--text-muted) transition-colors hover:bg-white/6 hover:text-(--text-primary)"
+          <Tooltip
+            label="Exit multi-select"
+            side="bottom"
+            shape="solid"
+            size="sm"
           >
-            <HugeiconsIcon icon={Cancel01Icon} size={13} strokeWidth={1.8} />
-          </button>
-
-          <div
-            role="tooltip"
-            className="pointer-events-none absolute right-0 top-full z-50 mt-1.5 hidden whitespace-nowrap rounded-md bg-white/12 px-2.5 py-1 text-[11px] font-medium text-white opacity-0 shadow-[0_8px_20px_-6px_rgba(0,0,0,0.7)] backdrop-blur-md transition-opacity duration-100 group-hover/tooltip:block group-hover/tooltip:opacity-100"
-          >
-            Exit multi-select
-          </div>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Exit multi-select"
+              className="flex size-6 cursor-pointer items-center justify-center rounded-full text-(--text-muted) transition-colors hover:bg-white/6 hover:text-(--text-primary)"
+            >
+              <HugeiconsIcon icon={Cancel01Icon} size={13} strokeWidth={1.8} />
+            </button>
+          </Tooltip>
         </div>
       </div>
 
