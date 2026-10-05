@@ -156,7 +156,7 @@ export function WorkspaceSelector({
             "border border-white/10 bg-(--bg-surface)",
             "shadow-[0_8px_24px_-6px_rgba(0,0,0,0.7)]",
             "max-h-[min(320px,calc(100vh-8rem))]",
-            dropdownClassName ?? "w-56",
+            dropdownClassName ?? "w-48",
           ].join(" ")}
         >
           {/* List */}
