@@ -35,6 +35,12 @@ export default function ActivitySection({
 }: ActivitySectionProps) {
   return (
     <section className="relative overflow-hidden rounded-xl border border-white/8 bg-white/3">
+      {/* Top hairline */}
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-white/15 to-transparent"
+      />
+
       {/* Header */}
       <header className="flex items-center justify-between border-b border-white/6 px-4 py-3">
         <div className="flex items-center gap-2">
@@ -53,27 +59,20 @@ export default function ActivitySection({
         )}
       </header>
 
-      {/* Body */}
+      {/* Body — tall, scrolls inside */}
       {activities.length === 0 ? (
-        <p className="px-4 py-8 text-center font-mono text-[11px] text-(--text-muted)">
+        <p className="px-4 py-16 text-center font-mono text-[11px] text-(--text-muted)">
           No recent activity.
         </p>
       ) : (
-        <ul className="max-h-112 divide-y divide-white/6 overflow-y-auto">
+        <ul className="h-130 max-h-[72vh] divide-y divide-white/6 overflow-y-auto">
           {activities.map((activity) => {
             const actor = activity.actor?.name?.trim() || "Someone";
 
             return (
-              <li key={activity.id} className="flex gap-3 px-4 py-3">
+              <li key={activity.id} className="flex gap-3 px-4 py-3.5">
                 {/* Avatar */}
-                <span
-                  className="
-                    mt-0.5 flex size-7 shrink-0 items-center justify-center
-                    rounded-full border border-white/10 bg-white/4
-                    font-mono text-[10px] font-semibold tracking-wider
-                    text-(--text-secondary)
-                  "
-                >
+                <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/4 font-mono text-[10px] font-semibold tracking-wider text-(--text-secondary)">
                   {initials(actor)}
                 </span>
 
@@ -91,9 +90,17 @@ export default function ActivitySection({
                     </time>
                   </div>
 
-                  <p className="mt-0.5 line-clamp-2 font-mono text-[11px] leading-5 text-(--text-secondary)">
+                  <p className="mt-1 font-mono text-[11px] leading-5 text-(--text-secondary)">
                     {activity.message}
                   </p>
+
+                  {(activity.boardName || activity.workspaceName) && (
+                    <p className="mt-1.5 truncate font-mono text-[9px] uppercase tracking-wider text-(--text-muted)">
+                      {[activity.workspaceName, activity.boardName]
+                        .filter(Boolean)
+                        .join(" / ")}
+                    </p>
+                  )}
                 </div>
               </li>
             );

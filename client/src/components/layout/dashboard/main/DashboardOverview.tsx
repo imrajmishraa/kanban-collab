@@ -1,8 +1,9 @@
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
-  Folder01Icon,
-  DashboardSquare01Icon,
   CheckListIcon,
+  Building02Icon,
+  KanbanIcon,
+  Note01Icon,
 } from "@hugeicons/core-free-icons";
 
 interface DashboardOverviewProps {
@@ -19,26 +20,15 @@ export default function DashboardOverview({
   taskCount,
 }: DashboardOverviewProps) {
   const stats = [
-    {
-      label: "Workspaces",
-      value: workspaceCount,
-      icon: Folder01Icon,
-    },
-    {
-      label: "Boards",
-      value: boardCount,
-      icon: DashboardSquare01Icon,
-    },
-    {
-      label: "Tasks",
-      value: taskCount,
-      icon: CheckListIcon,
-    },
+    { label: "Workspaces", value: workspaceCount, icon: Building02Icon },
+    { label: "Boards", value: boardCount, icon: KanbanIcon },
+    { label: "Tasks", value: taskCount, icon: CheckListIcon },
+    { label: "Notes", value: taskCount, icon: Note01Icon },
   ];
 
   return (
     <section aria-label="Workspace overview" className="mt-6">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {stats.map(({ label, value, icon }) => (
           <div
             key={label}
@@ -60,13 +50,7 @@ export default function DashboardOverview({
             />
 
             <div className="flex items-center justify-between">
-              <p
-                className="
-                  font-mono text-[10px] font-semibold uppercase
-                  tracking-[0.18em]
-                  text-(--text-muted)
-                "
-              >
+              <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-(--text-muted)">
                 {label}
               </p>
 
@@ -74,22 +58,11 @@ export default function DashboardOverview({
                 icon={icon}
                 size={14}
                 strokeWidth={1.6}
-                className="
-                  shrink-0 text-(--text-muted)
-                  transition-colors duration-200
-                  group-hover:text-(--brand)
-                "
+                className="shrink-0 text-(--text-muted) transition-colors duration-200 group-hover:text-(--brand)"
               />
             </div>
 
-            <p
-              className="
-                mt-3
-                font-mono text-[26px] font-semibold tabular-nums
-                tracking-tight leading-none
-                text-(--text-primary)
-              "
-            >
+            <p className="mt-3 font-mono text-[26px] font-semibold leading-none tracking-tight tabular-nums text-(--text-primary)">
               {pad(value)}
             </p>
           </div>

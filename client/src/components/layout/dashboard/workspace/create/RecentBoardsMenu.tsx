@@ -4,15 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowDown01Icon, KanbanIcon } from "@hugeicons/core-free-icons";
 
-import { useBoards } from "@/hooks/dashboard/useBoards";
-
-/**
- * Recent boards dropdown for the dashboard navbar.
- *
- * Reuses `useBoards(6)` — the same query key the sidebar uses — so this
- * shares its cache entry and issues no extra request.
- */
-const RECENT_LIMIT = 6;
+import { useBoardsStore } from "@/stores/boards";
 
 function relativeTime(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -30,6 +22,12 @@ function relativeTime(iso: string): string {
   });
 }
 
+/**
+ * Boards menu for the dashboard navbar.
+ *
+ * Lists boards from the persisted boards store (grabbed + saved by
+ * `useSyncSavedBoards`), sorted A–Z — not a live "recently opened" feed.
+ */
 export function RecentBoardsMenu() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -37,17 +35,13 @@ export function RecentBoardsMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const { data, isLoading, isError } = useBoards(RECENT_LIMIT);
+  const boards = useBoardsStore((s) => s.boards);
+  const setLastBoard = useBoardsStore((s) => s.setLastBoard);
 
-  const recentBoards = useMemo(() => {
-    const boards = data?.pages.flatMap((page) => page.boards) ?? [];
-    return [...boards]
-      .sort(
-        (a, b) =>
-          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-      )
-      .slice(0, RECENT_LIMIT);
-  }, [data]);
+  const sortedBoards = useMemo(
+    () => [...boards].sort((a, b) => a.name.localeCompare(b.name)),
+    [boards],
+  );
 
   const currentBoardId = location.pathname.startsWith("/board/")
     ? location.pathname.split("/")[2]
@@ -77,9 +71,10 @@ export function RecentBoardsMenu() {
     };
   }, [isOpen]);
 
-  const go = (path: string) => {
+  const open = (boardId: string) => {
+    setLastBoard(boardId);
     setIsOpen(false);
-    navigate(path);
+    navigate(`/boards/${boardId}`);
   };
 
   return (
@@ -127,32 +122,31 @@ export function RecentBoardsMenu() {
       {isOpen && (
         <div
           role="menu"
-          aria-label="Recent boards"
+          aria-label="Boards"
           className={[
-            "absolute left-0 top-full z-50 mt-1.5 flex w-48 flex-col overflow-hidden rounded-lg",
+            "absolute left-0 top-full z-50 mt-1.5 flex w-54 flex-col overflow-hidden rounded-lg",
             "border border-white/10 bg-(--bg-surface)",
             "shadow-[0_8px_24px_-6px_rgba(0,0,0,0.7)]",
           ].join(" ")}
         >
-          <div className="shrink-0 border-b border-white/6 px-3 py-2">
+          <div className="flex shrink-0 items-center justify-between border-b border-white/6 px-3 py-2">
             <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-(--text-muted)">
               Boards
             </p>
+            {sortedBoards.length > 0 && (
+              <span className="font-mono text-[10px] tabular-nums text-(--text-muted)">
+                {sortedBoards.length}
+              </span>
+            )}
           </div>
 
-          <div className="max-h-[min(320px,calc(100vh-8rem))] min-h-0 flex-1 overflow-y-auto p-1">
-            {isError ? (
-              <p className="px-2 py-2 font-mono text-[11px] text-(--danger)">
-                Unable to load boards.
-              </p>
-            ) : isLoading ? (
-              <RecentSkeleton />
-            ) : recentBoards.length === 0 ? (
+          <div className="max-h-[min(360px,calc(100vh-8rem))] min-h-0 flex-1 overflow-y-auto p-1">
+            {sortedBoards.length === 0 ? (
               <p className="px-2 py-3 text-center font-mono text-[11px] text-(--text-muted)">
                 No boards yet
               </p>
             ) : (
-              recentBoards.map((board) => {
+              sortedBoards.map((board) => {
                 const isActive = board.id === currentBoardId;
 
                 return (
@@ -160,7 +154,7 @@ export function RecentBoardsMenu() {
                     key={board.id}
                     type="button"
                     role="menuitem"
-                    onClick={() => go(`/board/${board.id}`)}
+                    onClick={() => open(board.id)}
                     className={[
                       "group flex w-full cursor-pointer items-center gap-2",
                       "rounded px-2 py-1.5 text-left font-mono text-[11px]",
@@ -196,24 +190,6 @@ export function RecentBoardsMenu() {
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-function RecentSkeleton() {
-  return (
-    <div className="space-y-0.5">
-      {[1, 2, 3, 4].map((i) => (
-        <div key={i} className="flex h-7 items-center gap-2 rounded px-2">
-          <div className="size-3.5 shrink-0 animate-pulse rounded bg-white/8" />
-          <div
-            className={[
-              "h-2.5 animate-pulse rounded bg-white/8",
-              i === 1 ? "w-28" : i === 2 ? "w-24" : i === 3 ? "w-20" : "w-16",
-            ].join(" ")}
-          />
-        </div>
-      ))}
     </div>
   );
 }

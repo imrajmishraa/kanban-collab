@@ -64,9 +64,6 @@ export default function RecentBoardsSection({
       {/* Header */}
       <div className="mb-3 flex items-end justify-between px-1">
         <div>
-          <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-(--text-muted)">
-            Boards
-          </p>
           <h2 className="mt-1.5 font-mono text-[13px] font-semibold text-(--text-primary)">
             Recent boards
           </h2>

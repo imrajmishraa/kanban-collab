@@ -11,7 +11,7 @@ import MobileSidebar from "../mobile/MobileSidebar";
 import SidebarMobileHeader from "../mobile/SidebarMobileHeader";
 
 import { useWorkspaces } from "@/hooks/dashboard/useWorkspaces";
-import { useBoards } from "@/hooks/dashboard/useBoards";
+import { useBoards, BOARDS_LIST_LIMIT } from "@/hooks/dashboard/useBoards";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { useSidebarState } from "@/stores/sidebarState";
 import { useAuth } from "@/hooks/auth/useAuth";
@@ -39,7 +39,9 @@ export default function DashboardSidebar({
     }
   });
 
-  const boardsLimit = 6;
+  // Same limit as every other boards consumer so the list shares one query
+  // (and one request) across the sidebar, navbar and dashboard.
+  const boardsLimit = BOARDS_LIST_LIMIT;
 
   // useWorkspaces returns { ...query, workspaces } — take the flat array.
   // `data` here is InfiniteData (pages), NOT a Workspace[].
