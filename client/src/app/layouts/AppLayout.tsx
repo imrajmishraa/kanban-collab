@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 
 import DashboardSidebar from "@components/layout/dashboard/sidebar/DashboardSidebar";
-import DashboardNavbar from "@components/layout/dashboard/workspace/create/DashboardNavbar";
+import DashboardNavbar from "#components/layout/dashboard/sidebar/DashboardNavbar";
 import { NewWorkspaceDialogProvider } from "@components/layout/dashboard/workspace/create/NewWorkspaceDialogProvider";
 
 import { useSidebarState } from "@/stores/sidebarState";
@@ -54,7 +54,7 @@ export default function AppLayout() {
           ].join(" ")}
         >
           <DashboardNavbar />
-          <div className="flex-1">
+          <div className="flex-1 mt-12">
             <Outlet />
           </div>
         </main>

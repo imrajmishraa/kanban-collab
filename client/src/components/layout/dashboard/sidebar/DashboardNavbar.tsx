@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { WorkspaceSelector } from "../selector/WorkspaceSelector";
-import { RecentBoardsMenu } from "./RecentBoardsMenu";
+import { WorkspaceSelector } from "../workspace/selector/WorkspaceSelector";
+import { RecentBoardsMenu } from "../workspace/create/RecentBoardsMenu";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { useSidebarState } from "@/stores/sidebarState";
 import {
@@ -10,7 +10,7 @@ import {
   DashIcon,
   NavbarSearchIcon,
   NotificationsButton,
-} from "./NavbarIcons";
+} from "../workspace/create/NavbarIcons";
 
 export default function DashboardNavbar() {
   const navigate = useNavigate();
@@ -40,8 +40,10 @@ export default function DashboardNavbar() {
 
       <header
         className={[
-          "sticky top-0 z-30 hidden h-14 shrink-0 items-center gap-2 px-5 md:flex",
-          "transition-colors duration-200",
+          "fixed top-0 right-0 z-50 hidden h-14 md:flex",
+          "items-center gap-2 px-5 ",
+          "transition-[left,background-color] duration-200",
+          sidebarCollapsed ? "left-16 ml-15" : "left-54",
           scrolled ? "bg-(--bg-root)/85 backdrop-blur-md" : "bg-transparent",
         ].join(" ")}
       >
@@ -65,8 +67,9 @@ export default function DashboardNavbar() {
           <RecentBoardsMenu key={activeWorkspaceId ?? "none"} />
         </nav>
 
-        <div className="ml-auto flex items-center gap-1">
+        <div className="ml-auto flex items-center justify-end gap-1">
           {sidebarCollapsed && <NavbarSearchIcon />}
+
           <NotificationsButton onClick={() => navigate("/notifications")} />
         </div>
       </header>
