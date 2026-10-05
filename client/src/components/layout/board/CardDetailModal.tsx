@@ -5,6 +5,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { Cancel01Icon, Delete02Icon } from "@hugeicons/core-free-icons";
 
 import { Avatar } from "./BoardAvatar";
+import CardComments from "./CardComments";
 
 import { avatarColor, labelColor, ui } from "@/features/boards/board.helpers";
 
@@ -409,6 +410,11 @@ export default function CardDetailModal({
             </div>
           </footer>
         </form>
+
+        {/* Comments render outside the edit form — a nested <form> is invalid. */}
+        <div className="px-5 pb-5">
+          <CardComments cardId={card.id} />
+        </div>
       </section>
     </div>
   );
