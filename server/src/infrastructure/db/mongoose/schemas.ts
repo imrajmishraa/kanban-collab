@@ -717,6 +717,52 @@ export const NotificationPreferenceModel: Model<INotificationPreference> =
     NotificationPreferenceSchema,
   );
 
+// 12. NOTE
+
+export interface INote extends Document {
+  _id: Types.ObjectId;
+  workspaceId: Types.ObjectId;
+  boardId?: Types.ObjectId | null;
+  userId: Types.ObjectId;
+  title: string;
+  body: string;
+  isPinned: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const NoteSchema = new Schema<INote>(
+  {
+    workspaceId: {
+      type: Schema.Types.ObjectId,
+      ref: "Workspace",
+      required: true,
+      index: true,
+    },
+    boardId: {
+      type: Schema.Types.ObjectId,
+      ref: "Board",
+      default: null,
+      index: true,
+    },
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
+    title: { type: String, required: true, trim: true, maxlength: 200 },
+    body: { type: String, default: "" },
+    isPinned: { type: Boolean, default: false, index: true },
+  },
+  { timestamps: true },
+);
+
+NoteSchema.index({ workspaceId: 1, isPinned: -1, updatedAt: -1 });
+NoteSchema.index({ userId: 1, updatedAt: -1 });
+
+export const NoteModel: Model<INote> = model<INote>("Note", NoteSchema);
+
 // MODELS AGGREGATOR
 
 export const models = {
@@ -731,4 +777,5 @@ export const models = {
   YjsUpdate: YjsUpdateModel,
   Notification: NotificationModel,
   NotificationPreference: NotificationPreferenceModel,
+  Note: NoteModel,
 } as const;
