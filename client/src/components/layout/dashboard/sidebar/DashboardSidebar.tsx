@@ -126,7 +126,7 @@ export default function DashboardSidebar({
           "bg-(--bg-surface)",
           "transition-[width] duration-200 ease-out",
           "md:flex",
-          collapsed ? "w-18 cursor-e-resize" : "w-64",
+          collapsed ? "w-16" : "w-54",
         ].join(" ")}
       >
         <div className="shrink-0">
