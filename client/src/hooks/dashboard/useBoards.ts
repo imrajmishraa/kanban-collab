@@ -8,6 +8,13 @@ export const boardKeys = {
   lists: () => [...boardKeys.all, "list"] as const,
   list: (workspaceId: string, limit: number) =>
     [...boardKeys.lists(), workspaceId, { limit }] as const,
+  /** Heavy overview list — boards with nested columns + cards. */
+  listWithDetails: (workspaceId: string, limit: number) =>
+    [
+      ...boardKeys.lists(),
+      workspaceId,
+      { limit, include: "columns,cards" },
+    ] as const,
   detail: (boardId: string) => [...boardKeys.all, "detail", boardId] as const,
 };
 
