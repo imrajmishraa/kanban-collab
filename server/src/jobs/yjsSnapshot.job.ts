@@ -1,4 +1,6 @@
 import { yjsSnapshotJobLogger as log } from "../infrastructure/logging/childLogger";
+import { documentManager } from "../interfaces/websockets/collaboration/yjs/documentManager";
+import { persistence } from "../interfaces/websockets/collaboration/persistence/mongoPersistence";
 
 /**
  * Cron job: safety-net snapshot for active Yjs documents.
@@ -8,26 +10,29 @@ import { yjsSnapshotJobLogger as log } from "../infrastructure/logging/childLogg
  *   - Server crashed before the debounce fired
  *   - A document never went idle (continuous editing) — periodic flush
  *
- * TODO:
- *   1. Get all ManagedDocuments from DocumentManager (active in memory)
- *   2. For each, encode Y.encodeStateAsUpdate(doc) → Buffer
- *   3. Upsert into YjsUpdateModel by docName
- *   4. Log snapshot count + duration
- *
  * Runs every 5 minutes. Safe to run when no documents are active.
  */
 export async function yjsSnapshotJob(): Promise<void> {
   const startedAt = Date.now();
 
   try {
-    // ── Stub ────────────────────────────────────────────────────────────────
-    // Replace with:
-    //   const activeDocs = documentManager.listActive();
-    //   for (const doc of activeDocs) { await persistSnapshot(doc); }
-    const snapshotted = 0;
+    const activeDocuments = documentManager.list();
+
+    let snapshotted = 0;
+
+    for (const managed of activeDocuments) {
+      // Reuses the same upsert the debounced writer uses, so a snapshot and a
+      // debounce write can never disagree about the persisted shape.
+      await persistence.writeState(managed.name, managed.doc);
+      snapshotted += 1;
+    }
 
     log.debug(
-      { snapshotted, durationMs: Date.now() - startedAt },
+      {
+        active: activeDocuments.length,
+        snapshotted,
+        durationMs: Date.now() - startedAt,
+      },
       "Yjs snapshot job tick.",
     );
   } catch (error) {

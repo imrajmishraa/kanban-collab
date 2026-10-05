@@ -1,24 +1,17 @@
 import { CardModel } from "../infrastructure/db/mongoose/schemas";
 import { ENV } from "../config/env";
 import { notificationDueReminderJobLogger as log } from "../infrastructure/logging/childLogger";
+import { createNotification } from "../application/notifications/createNotification";
 
 /**
  * Cron job: emit CARD_DUE_SOON notifications for cards approaching their due date.
  *
  * Runs every 15 minutes (configurable via NOTIF_DUE_REMINDER_CRON).
  *
- * TODO:
- *   1. Query cards where:
- *        dueDate between now and now + NOTIF_DUE_SOON_WINDOW_HOURS
- *        isArchived = false
- *        members[] not empty
- *   2. For each card, for each member:
- *        - build dedupeKey = `CARD_DUE_SOON:${cardId}:${userId}:${dueDateDate}`
- *        - call createNotification(...)  (dedupe handled by unique index)
- *   3. Log emitted / deduped counts
- *
- * Dedupe matters — this job runs 96× per day per card. Without the
- * dedupeKey unique index, users would drown in reminders.
+ * For each candidate card, every assigned member gets one notification per
+ * day, keyed by `CARD_DUE_SOON:<cardId>:<userId>:<YYYY-MM-DD>`. The unique
+ * index on `{ userId, dedupeKey }` makes re-runs idempotent — without it this
+ * job (96 runs/day) would flood users with duplicate reminders.
  */
 export async function notificationDueReminderJob(): Promise<void> {
   const startedAt = Date.now();
@@ -35,6 +28,7 @@ export async function notificationDueReminderJob(): Promise<void> {
       members: { $exists: true, $ne: [] },
     })
       .select("_id boardId workspaceId dueDate members title")
+      .limit(ENV.NOTIF_BATCH_SIZE)
       .lean();
 
     log.info(
@@ -46,11 +40,40 @@ export async function notificationDueReminderJob(): Promise<void> {
       "Due reminder job scanned cards.",
     );
 
-    // ── Stub ────────────────────────────────────────────────────────────────
-    // Replace with:
-    //   for (const card of candidates) { await emitDueSoon(card, now); }
-    const emitted = 0;
-    const deduped = 0;
+    let emitted = 0;
+    let deduped = 0;
+
+    for (const card of candidates) {
+      const dueDate = card.dueDate;
+      const dueDateKey = dueDate
+        ? dueDate.toISOString().slice(0, 10)
+        : "unknown";
+
+      for (const memberId of card.members) {
+        const result = await createNotification({
+          userId: memberId,
+          type: "CARD_DUE_SOON",
+          title: "A card is due soon",
+          message: `“${card.title}” is due ${
+            dueDate ? `on ${dueDate.toISOString().slice(0, 10)}` : "soon"
+          }.`,
+          workspaceId: card.workspaceId,
+          boardId: card.boardId,
+          cardId: card._id,
+          metadata: {
+            cardTitle: card.title,
+            dueDate: dueDate ?? null,
+          },
+          dedupeKey: `CARD_DUE_SOON:${card._id.toString()}:${memberId.toString()}:${dueDateKey}`,
+        });
+
+        if (result.created) {
+          emitted += 1;
+        } else {
+          deduped += 1;
+        }
+      }
+    }
 
     log.info(
       { emitted, deduped, durationMs: Date.now() - startedAt },
