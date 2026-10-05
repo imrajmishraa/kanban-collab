@@ -6,8 +6,17 @@ import {
   CardModel,
 } from "../../../../infrastructure/db/mongoose/schemas";
 import { ApiResponse } from "../../../../shared/utils/ApiResponse";
+import { ApiError } from "../../../../shared/utils/ApiError";
 import { Types } from "mongoose";
 import { fileUploadControllerLogger } from "../../../../infrastructure/logging/childLogger";
+
+/** Guard instead of `req.user!` — see the dashboard controller for rationale. */
+function requireUserId(req: AuthenticatedRequest): string {
+  if (!req.user) {
+    throw ApiError.unauthorized("Authentication required.");
+  }
+  return req.user.userId;
+}
 
 import {
   attachmentsRequiredError,
@@ -19,7 +28,7 @@ import { forbiddenWorkspaceError } from "../../../../shared/errors/workspace/wor
 
 const signUpload = asyncHandler(async (req: AuthenticatedRequest, res) => {
   const { fileName, fileType, cardId } = req.body;
-  const userId = req.user!.userId;
+  const userId = requireUserId(req);
   try {
     if (!fileName || !fileType || !cardId) {
       throw attachmentsRequiredError();

@@ -6,8 +6,17 @@ import {
   CardModel,
 } from "../../../../infrastructure/db/mongoose/schemas";
 import { ApiResponse } from "../../../../shared/utils/ApiResponse";
+import { ApiError } from "../../../../shared/utils/ApiError";
 import { Types } from "mongoose";
 import { searchControllerLogger } from "../../../../infrastructure/logging/childLogger";
+
+/** Guard instead of `req.user!` — see the dashboard controller for rationale. */
+function requireUserId(req: AuthenticatedRequest): string {
+  if (!req.user) {
+    throw ApiError.unauthorized("Authentication required.");
+  }
+  return req.user.userId;
+}
 
 import { forbiddenWorkspaceError } from "../../../../shared/errors/workspace/workspace";
 import {
@@ -17,7 +26,7 @@ import {
 
 const searchCards = asyncHandler(async (req: AuthenticatedRequest, res) => {
   const { boardId, q } = req.query;
-  const userId = req.user!.userId;
+  const userId = requireUserId(req);
   try {
     if (!boardId || !q) {
       throw boardIdAndQueryParametersRequiredError();

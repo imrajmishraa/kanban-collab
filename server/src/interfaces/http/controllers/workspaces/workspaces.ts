@@ -2,7 +2,16 @@ import { Types } from "mongoose";
 
 import { asyncHandler } from "../../../../shared/utils/asyncHandler";
 import { ApiResponse } from "../../../../shared/utils/ApiResponse";
+import { ApiError } from "../../../../shared/utils/ApiError";
 import type { AuthenticatedRequest } from "../../middleware/auth.middleware";
+
+/** Guard instead of `req.user!` — see the dashboard controller for rationale. */
+function requireUserId(req: AuthenticatedRequest): string {
+  if (!req.user) {
+    throw ApiError.unauthorized("Authentication required.");
+  }
+  return req.user.userId;
+}
 
 import {
   UserModel,
@@ -29,7 +38,7 @@ import { WORKSPACE_DELETION_GRACE_PERIOD_DAYS } from "../../../../shared/constan
 
 const createWorkspace = asyncHandler(async (req: AuthenticatedRequest, res) => {
   const { name, description, slug } = req.body;
-  const userId = req.user!.userId;
+  const userId = requireUserId(req);
 
   const userObjectId = new Types.ObjectId(userId);
 
@@ -55,7 +64,7 @@ const createWorkspace = asyncHandler(async (req: AuthenticatedRequest, res) => {
 
 const updateWorkspace = asyncHandler(async (req: AuthenticatedRequest, res) => {
   const { name, slug, description } = req.body;
-  const userId = req.user!.userId;
+  const userId = requireUserId(req);
   const { workspaceId } = req.params;
 
   if (!workspaceId || !Types.ObjectId.isValid(workspaceId)) {
@@ -112,7 +121,7 @@ const updateWorkspace = asyncHandler(async (req: AuthenticatedRequest, res) => {
 
 const deleteWorkspace = asyncHandler(async (req: AuthenticatedRequest, res) => {
   const { workspaceId } = req.params;
-  const userId = req.user!.userId;
+  const userId = requireUserId(req);
 
   if (!workspaceId || !Types.ObjectId.isValid(workspaceId)) {
     throw invalidObjectIdError();
@@ -182,7 +191,7 @@ const deleteWorkspace = asyncHandler(async (req: AuthenticatedRequest, res) => {
 
 const listWorkspaces = asyncHandler(async (req: AuthenticatedRequest, res) => {
   const { search, page = "1", limit = "10" } = req.query;
-  const userId = req.user!.userId;
+  const userId = requireUserId(req);
 
   const userObjectId = new Types.ObjectId(userId);
 
@@ -245,7 +254,7 @@ const addWorkspaceMember = asyncHandler(
   async (req: AuthenticatedRequest, res) => {
     const { workspaceId } = req.params;
     const { email, role } = req.body;
-    const userId = req.user!.userId;
+    const userId = requireUserId(req);
 
     if (!workspaceId || !Types.ObjectId.isValid(workspaceId)) {
       throw invalidObjectIdError();
@@ -312,7 +321,7 @@ const addWorkspaceMember = asyncHandler(
 const listWorkspaceMembers = asyncHandler(
   async (req: AuthenticatedRequest, res) => {
     const { workspaceId } = req.params;
-    const userId = req.user!.userId;
+    const userId = requireUserId(req);
 
     if (!workspaceId || !Types.ObjectId.isValid(workspaceId)) {
       throw invalidObjectIdError();
