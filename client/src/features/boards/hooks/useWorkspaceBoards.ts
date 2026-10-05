@@ -1,12 +1,15 @@
 import { useMemo } from "react";
 
-import { useQueries } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 
 import { boardApi } from "@/api/dashboard/boardApi";
-import { boardKeys, useBoards } from "@/hooks/dashboard/useBoards";
+import { boardKeys } from "@/hooks/dashboard/useBoards";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 
 import type { Board, BoardDetails } from "@/types/api/dashboard/board";
+
+/** Page size for the overview. Kept separate from the sidebar's light list. */
+export const BOARDS_OVERVIEW_LIMIT = 10;
 
 export interface WorkspaceBoardItem {
   board: Board;
@@ -26,39 +29,57 @@ export interface UseWorkspaceBoardsResult {
 }
 
 /**
- * Every board in the active workspace, each paired with its full details
- * (columns + cards) fetched from the API. No mock data anywhere.
+ * Every board in the active workspace, each paired with its columns and cards.
+ *
+ * Uses the opt-in heavy list (`?include=columns,cards`) so the whole overview
+ * is a **single** request per page — the previous implementation fetched the
+ * board list and then one `/boards/:id` per board (N+1).
  */
 export function useWorkspaceBoards(): UseWorkspaceBoardsResult {
   const { activeWorkspaceId } = useActiveWorkspace();
-  const boardsQuery = useBoards();
 
-  const boards = useMemo(
-    () => boardsQuery.data?.pages.flatMap((page) => page.boards) ?? [],
-    [boardsQuery.data],
-  );
+  const query = useInfiniteQuery({
+    queryKey: activeWorkspaceId
+      ? boardKeys.listWithDetails(activeWorkspaceId, BOARDS_OVERVIEW_LIMIT)
+      : boardKeys.lists(),
 
-  const detailQueries = useQueries({
-    queries: boards.map((board) => ({
-      queryKey: boardKeys.detail(board.id),
-      queryFn: () => boardApi.getBoardDetails(board.id),
-      enabled: Boolean(activeWorkspaceId),
-    })),
+    queryFn: ({ pageParam }) =>
+      boardApi.listBoardsWithColumns(activeWorkspaceId!, {
+        page: pageParam as number,
+        limit: BOARDS_OVERVIEW_LIMIT,
+      }),
+
+    initialPageParam: 1,
+
+    getNextPageParam: (lastPage) =>
+      lastPage.pagination.hasNextPage
+        ? lastPage.pagination.page + 1
+        : undefined,
+
+    enabled: Boolean(activeWorkspaceId),
   });
 
-  const items: WorkspaceBoardItem[] = boards.map((board, index) => ({
+  const boards = useMemo(
+    () => query.data?.pages.flatMap((page) => page.boards) ?? [],
+    [query.data],
+  );
+
+  const items: WorkspaceBoardItem[] = boards.map((board) => ({
     board,
-    details: detailQueries[index]?.data,
-    isLoadingDetails: detailQueries[index]?.isLoading ?? false,
+    details: {
+      ...board,
+      columns: board.columns ?? [],
+    },
+    isLoadingDetails: false,
   }));
 
   return {
     items,
-    isLoading: boardsQuery.isLoading,
-    isError: boardsQuery.isError,
-    refetch: boardsQuery.refetch,
-    hasNextPage: Boolean(boardsQuery.hasNextPage),
-    isFetchingNextPage: boardsQuery.isFetchingNextPage,
-    fetchNextPage: () => void boardsQuery.fetchNextPage(),
+    isLoading: query.isLoading,
+    isError: query.isError,
+    refetch: query.refetch,
+    hasNextPage: Boolean(query.hasNextPage),
+    isFetchingNextPage: query.isFetchingNextPage,
+    fetchNextPage: () => void query.fetchNextPage(),
   };
 }

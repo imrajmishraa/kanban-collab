@@ -13,13 +13,9 @@ import { buildCollaborationWsUrl, useCollaboration } from "@/collaboration";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { useAuthStore } from "@/stores/useAuthStore";
 
-import {
-  isOverdue,
-  reindex,
-  reindexColumns,
-  uid,
-} from "@/features/boards/board.helpers";
+import { isOverdue } from "@/features/boards/board.helpers";
 import { useActiveWorkspaceMembers } from "@/features/boards/hooks/useActiveWorkspaceMembers";
+import { useBoardMutations } from "@/features/boards/hooks/useBoardMutations";
 
 import type { BoardCard, BoardDetails } from "@/types/api/dashboard/board";
 import type { SortKey, ViewMode } from "@/features/boards/board.helpers";
@@ -35,6 +31,16 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
   const accessToken = useAuthStore((state) => state.accessToken);
   const members = useActiveWorkspaceMembers();
 
+  const {
+    createCard,
+    updateCard: updateCardMutation,
+    moveCard: moveCardMutation,
+    deleteCard: deleteCardMutation,
+    createColumn,
+    updateColumn,
+    deleteColumn: deleteColumnMutation,
+  } = useBoardMutations(boardId ?? board.id);
+
   /* ── Editable copy of the board, re-synced when the prop changes ── */
   const [state, setState] = useState<BoardDetails>(board);
   const [synced, setSynced] = useState<BoardDetails>(board);
@@ -43,10 +49,8 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
     setState(board);
   }
 
-  /* ── Collaboration (presence only; idle without a WS URL) ── */
-  // The server expects `{WS_BASE}/ws?token=…&boardId=…`. buildCollaborationWsUrl
-  // builds exactly that — the hand-rolled URL here was wrong (wrong path,
-  // wrong param name, and no token), so every upgrade was rejected.
+  /* ── Collaboration (presence only) ── */
+  // The server expects `{WS_BASE}/ws?token=…&boardId=…`.
   const wsUrl = useMemo(
     () => buildCollaborationWsUrl(boardId, accessToken),
     [boardId, accessToken],
@@ -136,112 +140,49 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
     return { columnCount, cardCount, doneCount, overdueCount };
   }, [state]);
 
-  /* ── Mutations (local) ── */
+  /* ── Mutations (server-backed; each invalidates the board query) ── */
 
   const addCard = (columnId: string, title: string) => {
-    setState((prev) => ({
-      ...prev,
-      columns: prev.columns.map((column) =>
-        column.id === columnId
-          ? {
-              ...column,
-              cards: [
-                ...column.cards,
-                {
-                  id: uid("card"),
-                  columnId,
-                  boardId: prev.id,
-                  workspaceId: prev.workspaceId,
-                  title,
-                  description: "",
-                  orderIndex: column.cards.length,
-                  members: [],
-                  labels: [],
-                  checklists: [],
-                  isArchived: false,
-                  createdAt: new Date().toISOString(),
-                  updatedAt: new Date().toISOString(),
-                },
-              ],
-            }
-          : column,
-      ),
-    }));
-  };
-
-  const moveCard = (cardId: string, toColumnId: string, toIndex: number) => {
-    setState((prev) => {
-      let movedCard: BoardCard | undefined;
-
-      const withoutCard = prev.columns.map((column) => {
-        const index = column.cards.findIndex((card) => card.id === cardId);
-        if (index === -1) return column;
-        movedCard = column.cards[index];
-        return {
-          ...column,
-          cards: reindex(column.cards.filter((card) => card.id !== cardId)),
-        };
-      });
-
-      if (!movedCard) return prev;
-      const cardToPlace = movedCard;
-
-      return {
-        ...prev,
-        columns: withoutCard.map((column) => {
-          if (column.id !== toColumnId) return column;
-          const cards = [...column.cards];
-          const clamped = Math.max(0, Math.min(toIndex, cards.length));
-          cards.splice(clamped, 0, { ...cardToPlace, columnId: toColumnId });
-          return { ...column, cards: reindex(cards) };
-        }),
-      };
+    const column = state.columns.find((c) => c.id === columnId);
+    createCard.mutate({
+      columnId,
+      boardId: state.id,
+      title,
+      orderIndex: column?.cards.length ?? 0,
     });
   };
 
-  const updateCard = (updated: BoardCard) => {
-    setState((prev) => ({
-      ...prev,
-      columns: prev.columns.map((column) => ({
-        ...column,
-        cards: column.cards.map((card) =>
-          card.id === updated.id ? updated : card,
-        ),
-      })),
-    }));
+  const moveCard = (cardId: string, toColumnId: string, toIndex: number) => {
+    moveCardMutation.mutate({
+      cardId,
+      targetColumnId: toColumnId,
+      targetOrderIndex: toIndex,
+    });
+  };
+
+  const handleUpdateCard = (updated: BoardCard) => {
+    updateCardMutation.mutate({
+      cardId: updated.id,
+      title: updated.title,
+      description: updated.description,
+      dueDate: updated.dueDate ?? null,
+      members: updated.members,
+      labels: updated.labels,
+    });
     setActiveCard(null);
   };
 
-  const deleteCard = (cardId: string) => {
-    setState((prev) => ({
-      ...prev,
-      columns: prev.columns.map((column) => ({
-        ...column,
-        cards: reindex(column.cards.filter((card) => card.id !== cardId)),
-      })),
-    }));
+  const handleDeleteCard = (cardId: string) => {
+    deleteCardMutation.mutate(cardId);
     setActiveCard(null);
   };
 
   const addColumn = () => {
-    setState((prev) => {
-      const orderIndex = prev.columns.length;
-      return {
-        ...prev,
-        columns: [
-          ...prev.columns,
-          {
-            id: uid("col"),
-            boardId: prev.id,
-            workspaceId: prev.workspaceId,
-            name: `Column ${orderIndex + 1}`,
-            orderIndex,
-            cards: [],
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-        ],
-      };
+    const orderIndex = state.columns.length;
+    createColumn.mutate({
+      boardId: state.id,
+      name: `Column ${orderIndex + 1}`,
+      orderIndex,
     });
   };
 
@@ -250,30 +191,25 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
     if (!column) return;
     const next = window.prompt("Rename column", column.name);
     if (!next || !next.trim()) return;
-    setState((prev) => ({
-      ...prev,
-      columns: prev.columns.map((c) =>
-        c.id === columnId ? { ...c, name: next.trim() } : c,
-      ),
-    }));
+    updateColumn.mutate({ columnId, name: next.trim() });
   };
 
-  const clearColumn = (columnId: string) => {
-    setState((prev) => ({
-      ...prev,
-      columns: prev.columns.map((column) =>
-        column.id === columnId ? { ...column, cards: [] } : column,
-      ),
-    }));
+  const clearColumn = async (columnId: string) => {
+    const column = state.columns.find((c) => c.id === columnId);
+    if (!column) return;
+    for (const card of column.cards) {
+      await deleteCardMutation.mutateAsync(card.id);
+    }
   };
 
-  const deleteColumn = (columnId: string) => {
-    setState((prev) => ({
-      ...prev,
-      columns: reindexColumns(
-        prev.columns.filter((column) => column.id !== columnId),
-      ),
-    }));
+  const handleDeleteColumn = async (columnId: string) => {
+    const column = state.columns.find((c) => c.id === columnId);
+    if (!column) return;
+    // The API refuses to delete a non-empty column — clear it first.
+    for (const card of column.cards) {
+      await deleteCardMutation.mutateAsync(card.id);
+    }
+    deleteColumnMutation.mutate(columnId);
   };
 
   /* ── Drag handlers ── */
@@ -356,7 +292,7 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
               }}
               onDropColumn={handleDropColumn}
               onRenameColumn={renameColumn}
-              onDeleteColumn={deleteColumn}
+              onDeleteColumn={handleDeleteColumn}
               onClearColumn={clearColumn}
             />
           ) : (
@@ -374,8 +310,8 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
           card={activeCard}
           members={members}
           onClose={() => setActiveCard(null)}
-          onSave={updateCard}
-          onDelete={deleteCard}
+          onSave={handleUpdateCard}
+          onDelete={handleDeleteCard}
         />
       )}
     </div>
