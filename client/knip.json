@@ -11,8 +11,6 @@
     "@validations/*": ["src/validations/*"]
   },
   "ignoreDependencies": [
-    "tailwindcss",
-    "tw-animate-css",
     "@testing-library/jest-dom",
     "@testing-library/react",
     "@testing-library/user-event"
