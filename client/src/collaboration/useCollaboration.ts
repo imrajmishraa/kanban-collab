@@ -67,11 +67,35 @@ export function useCollaboration({
 
   const providerRef = useRef<YjsProvider | null>(null);
 
+  const userId = user?.userId ?? null;
+  const userName = user?.name ?? null;
+  const userColor = user?.color ?? null;
+
+  /**
+   * Stable identity for the awareness user.
+   *
+   * Callers commonly pass a fresh object literal every render
+   * (`user: currentUser ? { userId, name, color } : null`). Depending on that
+   * object directly made the connect effect re-run on every render — tearing
+   * the socket down and reopening it, i.e. an endless stream of connections.
+   * Keying the memo on the primitive fields keeps the effect stable.
+   *
+   * Only the identity fields are carried; `cursor` is ephemeral and no caller
+   * sets it today, so it is intentionally not reconstructed here.
+   */
+  const stableUser = useMemo<AwarenessUser | null>(() => {
+    if (!userId) return null;
+    const next: AwarenessUser = { userId };
+    if (userName !== null) next.name = userName;
+    if (userColor !== null) next.color = userColor;
+    return next;
+  }, [userId, userName, userColor]);
+
   // Stable identity key — reconnect only when meaningful inputs change.
   const sessionKey = useMemo(() => {
-    if (!enabled || !room || !wsUrl || !user) return null;
-    return `${room}::${wsUrl}::${user.userId}`;
-  }, [enabled, room, wsUrl, user?.userId]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!enabled || !room || !wsUrl || !stableUser) return null;
+    return `${room}::${wsUrl}::${stableUser.userId}`;
+  }, [enabled, room, wsUrl, stableUser]);
 
   const publishProvider = useCallback((provider: YjsProvider | null) => {
     if (provider) {
@@ -96,13 +120,13 @@ export function useCollaboration({
   }, []);
 
   const connect = useCallback(() => {
-    if (!sessionKey || !wsUrl || !user) return;
+    if (!sessionKey || !wsUrl || !stableUser) return;
 
     destroyProvider();
 
     const options: YjsProviderOptions = {
       url: wsUrl,
-      user,
+      user: stableUser,
       onStatus: setStatus,
       onPeers: setPeers,
       onError: setError,
@@ -112,7 +136,7 @@ export function useCollaboration({
     providerRef.current = provider;
     publishProvider(provider);
     provider.connect();
-  }, [sessionKey, wsUrl, user, destroyProvider, publishProvider]);
+  }, [sessionKey, wsUrl, stableUser, destroyProvider, publishProvider]);
 
   const disconnect = useCallback(() => {
     destroyProvider();
@@ -136,7 +160,7 @@ export function useCollaboration({
       });
     };
 
-    if (!sessionKey || !wsUrl || !user) {
+    if (!sessionKey || !wsUrl || !stableUser) {
       destroyProvider();
       schedule(() => publishProvider(null));
       return () => {
@@ -147,7 +171,7 @@ export function useCollaboration({
 
     const options: YjsProviderOptions = {
       url: wsUrl,
-      user,
+      user: stableUser,
       onStatus: setStatus,
       onPeers: setPeers,
       onError: setError,
@@ -169,15 +193,15 @@ export function useCollaboration({
         providerRef.current = null;
       }
     };
-  }, [sessionKey, wsUrl, user, destroyProvider, publishProvider]);
+  }, [sessionKey, wsUrl, stableUser, destroyProvider, publishProvider]);
 
   // Push user metadata into the external awareness system only.
   // No React setState here.
   useEffect(() => {
     const provider = providerRef.current;
-    if (!provider || !user) return;
-    provider.updateUser(user);
-  }, [user]);
+    if (!provider || !stableUser) return;
+    provider.updateUser(stableUser);
+  }, [stableUser]);
 
   return {
     doc,

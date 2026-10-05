@@ -56,12 +56,21 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
     [boardId, accessToken],
   );
 
+  // Stable object — a fresh literal here re-runs the collab effect on every
+  // render and opens a new socket each time (the "infinite request" loop).
+  const collabUser = useMemo(() => {
+    if (!currentUser) return null;
+    return {
+      userId: currentUser.id,
+      name: currentUser.fullName,
+      color: "#ff6b35",
+    };
+  }, [currentUser]);
+
   const { status, peers } = useCollaboration({
     room: boardId ?? null,
     wsUrl,
-    user: currentUser
-      ? { userId: currentUser.id, name: currentUser.fullName, color: "#ff6b35" }
-      : null,
+    user: collabUser,
   });
 
   /* ── View state ── */

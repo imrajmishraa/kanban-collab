@@ -127,7 +127,19 @@ export class YjsProvider {
     this.intentionalClose = false;
     this.setStatus("connecting");
 
-    const ws = new WebSocket(this.url);
+    let ws: WebSocket;
+    try {
+      ws = new WebSocket(this.url);
+    } catch (err) {
+      // A malformed URL makes `new WebSocket` throw synchronously. Surface it
+      // as an error status instead of letting it escape the caller (which, from
+      // a React effect, would repeat on every render).
+      const error = err instanceof Error ? err : new Error(String(err));
+      this.onError?.(error);
+      this.setStatus("error");
+      return;
+    }
+
     ws.binaryType = "arraybuffer";
     this.ws = ws;
 
