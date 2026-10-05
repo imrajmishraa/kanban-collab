@@ -22,12 +22,12 @@ import { useAuth } from "@/hooks/auth/useAuth";
 import { boardApi } from "@/api/dashboard/boardApi";
 import { useQueryClient } from "@tanstack/react-query";
 
+import { ShareBoardDialog } from "./ShareBoardDialog";
+
 interface DashboardSidebarProps {
   collapsed: boolean;
   onToggle: () => void;
 }
-
-const noop = () => undefined;
 
 export default function DashboardSidebar({
   collapsed,
@@ -40,6 +40,7 @@ export default function DashboardSidebar({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectMode, setSelectMode] = useState(false);
   const [selectedBoards, setSelectedBoards] = useState<Set<string>>(new Set());
+  const [shareBoardId, setShareBoardId] = useState<string | null>(null);
   const [pinnedBoardIds, setPinnedBoardIds] = useState<string[]>(() => {
     try {
       return JSON.parse(localStorage.getItem("kanban.pinnedBoards") ?? "[]");
@@ -105,6 +106,25 @@ export default function DashboardSidebar({
       void queryClient.invalidateQueries({ queryKey: boardKeys.all });
     }
   };
+
+  /** Rename a board (T17), then refresh the affected lists. */
+  const handleRenameBoard = async (boardId: string) => {
+    const board = boards.find((b) => b.id === boardId);
+    const next = window.prompt("Rename board", board?.name ?? "");
+
+    if (!next || !next.trim()) return;
+
+    try {
+      await boardApi.updateBoard(boardId, { name: next.trim() });
+      void queryClient.invalidateQueries({ queryKey: boardKeys.all });
+    } catch {
+      // Validation / network failures surface through the API layer; the board
+      // simply stays as it was.
+    }
+  };
+
+  /** Open the share dialog for a board (T14). */
+  const handleShareBoard = (boardId: string) => setShareBoardId(boardId);
 
   const toggleBoardSelection = (id: string) => {
     setSelectedBoards((prev) => {
@@ -174,8 +194,8 @@ export default function DashboardSidebar({
               const isPinned = pinnedBoardIds.includes(id);
               handlePinBoard(id, !isPinned);
             }}
-            onRenameBoard={noop}
-            onShareBoard={noop}
+            onRenameBoard={handleRenameBoard}
+            onShareBoard={handleShareBoard}
             onDeleteBoard={handleDeleteBoard}
           />
         ) : (
@@ -198,8 +218,8 @@ export default function DashboardSidebar({
                   onLoadMore={handleLoadMoreBoards}
                   pinnedBoardIds={pinnedBoardIds}
                   onPin={handlePinBoard}
-                  onRename={noop}
-                  onShare={noop}
+                  onRename={handleRenameBoard}
+                  onShare={handleShareBoard}
                   onDelete={handleDeleteBoard}
                   onEnterSelectMode={() => setSelectMode(true)}
                 />
@@ -247,6 +267,14 @@ export default function DashboardSidebar({
         onLoadMoreBoards={handleLoadMoreBoards}
         onLogout={handleLogout}
       />
+
+      {shareBoardId && (
+        <ShareBoardDialog
+          boardId={shareBoardId}
+          boardName={boards.find((b) => b.id === shareBoardId)?.name}
+          onClose={() => setShareBoardId(null)}
+        />
+      )}
     </>
   );
 }
