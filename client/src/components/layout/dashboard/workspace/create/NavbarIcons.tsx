@@ -63,16 +63,31 @@ export function DashIcon() {
   );
 }
 
-export function NotificationsButton({ onClick }: { onClick: () => void }) {
+export function NotificationsButton({
+  onClick,
+  unreadCount = 0,
+}: {
+  onClick: () => void;
+  unreadCount?: number;
+}) {
   return (
     <Tooltip label="Notifications" side="bottom" shape="solid" size="sm">
       <button
         type="button"
         onClick={onClick}
-        aria-label="Notifications"
+        aria-label={
+          unreadCount > 0
+            ? `Notifications (${unreadCount} unread)`
+            : "Notifications"
+        }
         className="relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-white/8 bg-white/4 text-(--text-secondary) transition-colors duration-200 hover:border-white/14 hover:bg-white/8 hover:text-(--text-primary)"
       >
         <HugeiconsIcon icon={BellIcon} size={16} strokeWidth={1.6} />
+        {unreadCount > 0 && (
+          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-(--brand) px-1 font-mono text-[9px] font-semibold leading-none text-black">
+            {unreadCount > 9 ? "9+" : unreadCount}
+          </span>
+        )}
       </button>
     </Tooltip>
   );
