@@ -6,7 +6,7 @@ import axios, {
 import {
   getAccessToken,
   setAccessToken,
-  clearAccessToken,
+  clearAuthSession,
 } from "@/stores/authTokenAccessor";
 import { refreshRequest } from "@/api/authApi";
 
@@ -127,9 +127,12 @@ apiClient.interceptors.response.use(
     const originalConfig = error.config as RetryableRequestConfig | undefined;
     const code = data?.code;
 
+    // Any 401 from a non-auth endpoint gets ONE refresh attempt. The token may
+    // be expired, invalid, or simply missing (a half-cleared session), and all
+    // three are recoverable by refreshing. Previously only
+    // ACCESS_TOKEN_EXPIRED was handled, so a missing token could never recover.
     if (
       status === 401 &&
-      code === "ACCESS_TOKEN_EXPIRED" &&
       originalConfig &&
       !originalConfig._retriedAfterRefresh &&
       !isAuthEndpoint(originalConfig.url)
@@ -143,13 +146,18 @@ apiClient.interceptors.response.use(
         originalConfig.headers.Authorization = `Bearer ${refreshed.data.accessToken}`;
         return apiClient(originalConfig);
       } catch (refreshErr) {
-        clearAccessToken();
+        // Refresh failed → the session is gone. Clear ALL of it so the guards
+        // redirect to login; clearing only the token would leave an
+        // authenticated-looking shell that can never load data.
+        clearAuthSession();
         return Promise.reject(normalizeAxiosError(refreshErr));
       }
     }
 
     if (code === "REFRESH_TOKEN_REUSE_DETECTED") {
-      clearAccessToken();
+      // The server invalidated the session (a rotated token was replayed).
+      // Drop the whole session, not just the token.
+      clearAuthSession();
     }
 
     if (status === 429) {
