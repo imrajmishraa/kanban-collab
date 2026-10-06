@@ -77,7 +77,7 @@ export interface CreatedCard {
  * existing error handling in the UI treats local and server rejections the
  * same way.
  */
-function assertValid<Schema extends z.ZodType>(
+export function assertValid<Schema extends z.ZodType>(
   schema: Schema,
   value: unknown,
   label: string,

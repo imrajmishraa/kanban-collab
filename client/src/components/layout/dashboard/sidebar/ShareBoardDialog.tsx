@@ -125,5 +125,3 @@ export function ShareBoardDialog({
     document.body,
   );
 }
-
-export default ShareBoardDialog;

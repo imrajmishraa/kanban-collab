@@ -1,7 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { boardApi } from "@/api/dashboard/boardApi";
 import { boardKeys } from "@/hooks/dashboard/useBoards";
+import { cardApi } from "@/api/dashboard/cardApi";
+import { columnApi } from "@/api/dashboard/columnAPI";
 
 /**
  * Server-backed mutations for the kanban board view.
@@ -29,7 +30,7 @@ export function useBoardMutations(boardId: string | undefined) {
       boardId: string;
       title: string;
       orderIndex?: number;
-    }) => boardApi.createCard(input),
+    }) => cardApi.createCard(input),
     onSuccess: invalidate,
   });
 
@@ -41,7 +42,7 @@ export function useBoardMutations(boardId: string | undefined) {
       dueDate?: string | null;
       members?: string[];
       labels?: string[];
-    }) => boardApi.updateCard(input.cardId, input),
+    }) => cardApi.updateCard(input.cardId, input),
     onSuccess: invalidate,
   });
 
@@ -51,7 +52,7 @@ export function useBoardMutations(boardId: string | undefined) {
       targetColumnId: string;
       targetOrderIndex: number;
     }) =>
-      boardApi.moveCard(input.cardId, {
+      cardApi.moveCard(input.cardId, {
         targetColumnId: input.targetColumnId,
         targetOrderIndex: input.targetOrderIndex,
       }),
@@ -59,7 +60,7 @@ export function useBoardMutations(boardId: string | undefined) {
   });
 
   const deleteCard = useMutation({
-    mutationFn: (cardId: string) => boardApi.deleteCard(cardId),
+    mutationFn: (cardId: string) => cardApi.deleteCard(cardId),
     onSuccess: invalidate,
   });
 
@@ -68,18 +69,18 @@ export function useBoardMutations(boardId: string | undefined) {
       boardId: string;
       name: string;
       orderIndex: number;
-    }) => boardApi.createColumn(input),
+    }) => columnApi.createColumn(input),
     onSuccess: invalidate,
   });
 
   const updateColumn = useMutation({
     mutationFn: (input: { columnId: string; name?: string }) =>
-      boardApi.updateColumn(input.columnId, { name: input.name }),
+      columnApi.updateColumn(input.columnId, { name: input.name }),
     onSuccess: invalidate,
   });
 
   const deleteColumn = useMutation({
-    mutationFn: (columnId: string) => boardApi.deleteColumn(columnId),
+    mutationFn: (columnId: string) => columnApi.deleteColumn(columnId),
     onSuccess: invalidate,
   });
 

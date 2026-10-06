@@ -62,9 +62,15 @@ function SearchModalContent() {
 
   const results = useQuery({
     queryKey: ["card-search", lastBoardId, debouncedQuery],
-    queryFn: () => searchApi.searchCards(lastBoardId!, debouncedQuery.trim()),
+    queryFn: () =>
+      searchApi.searchCards({
+        boardId: lastBoardId!,
+        query: debouncedQuery.trim(),
+      }),
     enabled: Boolean(lastBoardId) && debouncedQuery.trim().length >= 2,
   });
+
+  const cards = results.data?.results ?? [];
 
   useEffect(() => {
     const t = setTimeout(() => inputRef.current?.focus(), 30);
@@ -121,7 +127,7 @@ function SearchModalContent() {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search boards, cards, workspaces…"
+            placeholder="Search cards in this board…"
             className="
               min-w-0 flex-1 bg-transparent
               font-mono text-[14px] text-(--text-primary)
@@ -174,13 +180,13 @@ function SearchModalContent() {
               <p className="px-4 py-5 font-mono text-[12px] text-(--danger)">
                 Search failed. Please try again.
               </p>
-            ) : (results.data?.length ?? 0) === 0 ? (
+            ) : cards.length === 0 ? (
               <p className="px-4 py-5 font-mono text-[12px] text-(--text-muted)">
                 No cards match “{debouncedQuery.trim()}”.
               </p>
             ) : (
               <ul className="max-h-[50vh] overflow-y-auto py-1">
-                {results.data?.map((card) => (
+                {cards.map((card) => (
                   <li key={card.id}>
                     <button
                       type="button"

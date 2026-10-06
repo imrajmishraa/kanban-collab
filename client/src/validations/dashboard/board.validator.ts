@@ -62,8 +62,6 @@ export const createBoardSchema = z.object({
   visibility: boardVisibilitySchema.optional(),
 });
 
-export type CreateBoardInput = z.infer<typeof createBoardSchema>;
-
 export const updateBoardSchema = z
   .object({
     name: z
@@ -101,8 +99,6 @@ export const updateBoardSchema = z
     message: "At least one field must be provided for update.",
   });
 
-export type UpdateBoardInput = z.infer<typeof updateBoardSchema>;
-
 /* ── Column ──────────────────────────────────────────────── */
 
 export const createColumnSchema = z.object({
@@ -122,8 +118,6 @@ export const createColumnSchema = z.object({
     .int()
     .min(0, "Order index must be greater than or equal to 0."),
 });
-
-export type CreateColumnInput = z.infer<typeof createColumnSchema>;
 
 export const updateColumnSchema = z
   .object({
@@ -146,8 +140,6 @@ export const updateColumnSchema = z
   .refine((body) => Object.keys(body).length > 0, {
     message: "At least one field must be provided for update.",
   });
-
-export type UpdateColumnInput = z.infer<typeof updateColumnSchema>;
 
 /* ── Card ────────────────────────────────────────────────── */
 
@@ -197,8 +189,6 @@ export const createCardSchema = z.object({
     .optional(),
 });
 
-export type CreateCardInput = z.infer<typeof createCardSchema>;
-
 export const updateCardSchema = z
   .object({
     title: z
@@ -243,8 +233,6 @@ export const updateCardSchema = z
     message: "At least one field must be provided for update.",
   });
 
-export type UpdateCardInput = z.infer<typeof updateCardSchema>;
-
 export const moveCardSchema = z.object({
   targetColumnId: objectIdSchema,
 
@@ -254,13 +242,9 @@ export const moveCardSchema = z.object({
     .min(0, "Order index must be greater than or equal to 0."),
 });
 
-export type MoveCardInput = z.infer<typeof moveCardSchema>;
-
 /* ── Board sharing ───────────────────────────────────────── */
 
 export const shareBoardSchema = z.object({
   email: z.string().trim().email("A valid email is required."),
   role: z.enum(["member", "guest"]).optional(),
 });
-
-export type ShareBoardInput = z.infer<typeof shareBoardSchema>;

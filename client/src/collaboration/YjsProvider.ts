@@ -34,7 +34,7 @@ import {
   subscribeToPeers,
   type AwarenessUser,
 } from "./awareness";
-import { ORIGIN_REMOTE } from "./origins";
+import { ORIGIN_REDIS, ORIGIN_REMOTE } from "./origins";
 import {
   CollaborationMessage,
   applySyncMessage,
@@ -299,7 +299,11 @@ export class YjsProvider {
 
   private handleDocUpdate(update: Uint8Array, origin: unknown): void {
     // Never echo a remote update, the socket, or a Redis-originated change.
-    if (origin === ORIGIN_REMOTE || origin === "redis" || origin === this.ws) {
+    if (
+      origin === ORIGIN_REMOTE ||
+      origin === ORIGIN_REDIS ||
+      origin === this.ws
+    ) {
       return;
     }
     this.send(CollaborationMessage.Sync, encodeSyncUpdate(update));
