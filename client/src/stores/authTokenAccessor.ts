@@ -11,3 +11,7 @@ export function setAccessToken(token: string | null): void {
 export function clearAccessToken(): void {
   useAuthStore.setState({ accessToken: null });
 }
+
+export function clearAuthSession(): void {
+  useAuthStore.getState().clearAuth();
+}

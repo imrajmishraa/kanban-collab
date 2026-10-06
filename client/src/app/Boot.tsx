@@ -11,7 +11,11 @@ export function Boot({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const handlePageShow = (event: PageTransitionEvent) => {
-      if (event.persisted) void restoreSession();
+      if (!event.persisted) return;
+
+      if (useAuthStore.getState().status === "authenticated") return;
+
+      void restoreSession();
     };
 
     window.addEventListener("pageshow", handlePageShow);
