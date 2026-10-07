@@ -67,7 +67,16 @@ export async function startWebSocketServer(httpServer: Server): Promise<void> {
       return;
     }
 
-    void handleUpgrade(request, socket, head, wss);
+    /**
+     * Defense in depth: `handleUpgrade` handles its own errors, but this
+     * catch guarantees that no rejection can ever escape the "upgrade"
+     * listener and reach `main.ts`'s unhandledRejection shutdown path.
+     */
+    void handleUpgrade(request, socket, head, wss).catch((error: unknown) => {
+      logger.error({ err: error }, "Unhandled WebSocket upgrade error.");
+
+      socket.destroy();
+    });
   });
 
   logger.info("WebSocket infrastructure initialized.");
