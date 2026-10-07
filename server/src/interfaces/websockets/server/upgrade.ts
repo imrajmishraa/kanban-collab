@@ -25,23 +25,38 @@ export async function handleUpgrade(
   head: Buffer,
   wss: WebSocketServer,
 ): Promise<void> {
-  const { pathname, boardId } = parseUpgradeRequest(request);
+  /**
+   * `handleUpgrade` is invoked as `void handleUpgrade(...)` from the HTTP
+   * server's "upgrade" listener, so any rejection that escapes this function
+   * becomes an `unhandledRejection`, which `main.ts` converts into a full
+   * process shutdown. Parsing therefore happens *inside* the try: an invalid
+   * upgrade (missing URL, wrong path, missing/invalid token or boardId) is an
+   * `ApiError` and is now handled by the catch below instead of crashing the
+   * server. The two locals exist so the catch can still log what was parsed.
+   */
+  let pathname: string | undefined;
+  let boardId: string | undefined;
+
   try {
+    const parsed = parseUpgradeRequest(request);
+    pathname = parsed.pathname;
+    boardId = parsed.boardId;
+
     const { userId } = await authenticate(request);
 
-    await authorize(userId, boardId);
+    await authorize(userId, parsed.boardId);
 
     const upgradedRequest = request as AuthenticatedRequest;
 
-    upgradedRequest.pathname = pathname;
+    upgradedRequest.pathname = parsed.pathname;
     upgradedRequest.userId = userId;
-    upgradedRequest.boardId = boardId;
+    upgradedRequest.boardId = parsed.boardId;
 
     websocketAuthLogger.info(
       {
         userId,
-        boardId,
-        pathname,
+        boardId: parsed.boardId,
+        pathname: parsed.pathname,
       },
       "WebSocket upgrade authorized",
     );
