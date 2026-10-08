@@ -43,16 +43,22 @@ export class GracefulShutdown {
       // Stop all pending idle document cleanup timers.
       idleCleanup.clear();
 
-      // Stop accepting new WebSocket connections.
+      // Close all currently connected clients FIRST so no further updates
+      // arrive while we persist below. This must happen before awaiting
+      // `wss.close()`: that callback only fires once the server has stopped
+      // AND every client has disconnected, so awaiting it first can deadlock.
+      this.closeActiveConnections();
+
+      // Persist and destroy all active Yjs documents. This is the
+      // data-safety-critical step, so it runs before the (potentially slow)
+      // WebSocket server close.
+      await this.destroyDocuments();
+
+      // Stop accepting new WebSocket connections (bounded by the configured
+      // shutdown timeout so a stuck client cannot block process exit).
       if (wss) {
         await this.closeWebSocketServer(wss);
       }
-
-      // Close all currently connected clients.
-      this.closeActiveConnections();
-
-      // Persist and destroy all active Yjs documents.
-      await this.destroyDocuments();
 
       // Remove all remaining connection references.
       connectionRegistry.clear();
@@ -75,8 +81,34 @@ export class GracefulShutdown {
    * new connections.
    */
   private async closeWebSocketServer(wss: WebSocketServer): Promise<void> {
+    const timeoutMs = websocketConfig.shutdownTimeoutMs;
+
     await new Promise<void>((resolve, reject) => {
+      let settled = false;
+
+      const timer = setTimeout(() => {
+        if (settled) {
+          return;
+        }
+
+        settled = true;
+
+        websocketLogger.warn(
+          { timeoutMs },
+          "Timed out waiting for the WebSocket server to close.",
+        );
+
+        resolve();
+      }, timeoutMs);
+
       wss.close((error?: Error) => {
+        if (settled) {
+          return;
+        }
+
+        settled = true;
+        clearTimeout(timer);
+
         if (error) {
           reject(error);
           return;
