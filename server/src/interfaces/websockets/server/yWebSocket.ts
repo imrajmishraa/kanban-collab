@@ -17,13 +17,11 @@ import {
 } from "../collaboration/heartbeat/heartbeat";
 
 import { connectionRegistry } from "../collaboration/lifecycle/connectionRegistry";
+import { idleCleanup } from "../collaboration/lifecycle/idleCleanup";
 
 import { documentManager } from "../collaboration/yjs/documentManager";
 import { messageHandler } from "../collaboration/yjs/messageHandler";
 import { updateBroadcaster } from "../collaboration/yjs/updateBroadcaster";
-
-import { persistence } from "../collaboration/persistence/mongoPersistence";
-import { idleCleanup } from "../collaboration/lifecycle/idleCleanup";
 
 import { CollaborationMessage } from "../collaboration/yjs/protocol";
 import type { CollaborationClient } from "../collaboration/yjs/types";
@@ -43,9 +41,7 @@ async function handleConnection(
   const { userId, boardId } = req;
 
   /*
-   * ---------------------------------------------------------
    * Validate authenticated WebSocket context
-   * ---------------------------------------------------------
    */
 
   if (!userId || !boardId) {
@@ -75,9 +71,7 @@ async function handleConnection(
 
   try {
     /*
-     * ---------------------------------------------------------
      * Register connection
-     * ---------------------------------------------------------
      */
 
     connectionRegistry.register(ws, userId, boardId, remoteAddress);
@@ -85,9 +79,7 @@ async function handleConnection(
     registered = true;
 
     /*
-     * ---------------------------------------------------------
      * Initialize heartbeat
-     * ---------------------------------------------------------
      */
 
     const heartbeatSocket = ws as HeartbeatConnection;
@@ -101,27 +93,21 @@ async function handleConnection(
     });
 
     /*
-     * ---------------------------------------------------------
      * Load or create collaborative document
-     * ---------------------------------------------------------
      */
 
     const document = await documentManager.getOrCreate(documentName);
 
     /*
-     * ---------------------------------------------------------
      * Attach Yjs update broadcaster.
      *
      * The broadcaster attaches exactly once per Y.Doc.
-     * ---------------------------------------------------------
      */
 
     updateBroadcaster.attach(document);
 
     /*
-     * ---------------------------------------------------------
      * Register collaboration client
-     * ---------------------------------------------------------
      */
 
     client = {
@@ -135,6 +121,12 @@ async function handleConnection(
     if (!added) {
       throw new Error("Failed to register collaboration client.");
     }
+
+    /*
+     * A client is now active: cancel any pending idle cleanup so the
+     * document is not destroyed underneath this new connection.
+     */
+    idleCleanup.cancel(documentName);
 
     /*
      * ---------------------------------------------------------
@@ -176,9 +168,7 @@ async function handleConnection(
     );
 
     /*
-     * ---------------------------------------------------------
      * Incoming WebSocket messages
-     * ---------------------------------------------------------
      */
 
     ws.on("message", (data, isBinary) => {
@@ -251,9 +241,7 @@ async function handleConnection(
     });
 
     /*
-     * ---------------------------------------------------------
      * Connection close
-     * ---------------------------------------------------------
      */
 
     ws.on("close", (code, reason) => {
@@ -262,14 +250,11 @@ async function handleConnection(
       }
 
       /*
-       * Last client out (T6): reconcile the CRDT into MongoDB immediately so
-       * the REST endpoints agree, then let the idle sweeper release the
-       * document after the configured idle window.
+       * If this was the last client, schedule idle cleanup so the document is
+       * eventually freed instead of living in memory forever. When other
+       * clients remain, schedule() is a no-op (connectionCount > 0).
        */
-      if (document.connectionCount === 0) {
-        void persistence.flush(documentName, document.doc);
-        idleCleanup.schedule(documentName);
-      }
+      idleCleanup.schedule(documentName);
 
       if (registered) {
         connectionRegistry.unregister(ws);
@@ -298,9 +283,7 @@ async function handleConnection(
     });
 
     /*
-     * ---------------------------------------------------------
      * Socket error
-     * ---------------------------------------------------------
      */
 
     ws.on("error", (error) => {
@@ -317,9 +300,7 @@ async function handleConnection(
     });
   } catch (error) {
     /*
-     * ---------------------------------------------------------
      * Connection initialization failure
-     * ---------------------------------------------------------
      */
 
     yjsLogger.error(
@@ -342,6 +323,12 @@ async function handleConnection(
     if (client) {
       documentManager.removeClient(documentName, client.id);
     }
+
+    /*
+     * Schedule idle cleanup in case this failed connection left the document
+     * with no active clients.
+     */
+    idleCleanup.schedule(documentName);
 
     /*
      * Remove global connection registry entry.
