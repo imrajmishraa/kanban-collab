@@ -7,6 +7,10 @@ import { logger } from "../../../infrastructure/logging/logger";
 
 import { initializeCollaboration } from "../bootstrap/initialize";
 
+import { heartbeatManager } from "../collaboration/heartbeat/heartbeatManager";
+import { gracefulShutdown } from "../collaboration/lifecycle/gracefulShutdown";
+import { persistence } from "../collaboration/persistence/mongoPersistence";
+
 import { handleUpgrade } from "./upgrade";
 import { registerYWebSocket } from "./yWebSocket";
 
@@ -93,20 +97,29 @@ export async function stopWebSocketServer(): Promise<void> {
   logger.info("Stopping WebSocket infrastructure...");
 
   const websocketServer = wss;
-
-  await new Promise<void>((resolve, reject) => {
-    websocketServer.close((error?: Error) => {
-      if (error) {
-        reject(error);
-
-        return;
-      }
-
-      resolve();
-    });
-  });
-
   wss = null;
+
+  try {
+    /*
+     * Full graceful shutdown: stop idle timers, close every client, then
+     * persist and destroy all active Yjs documents before closing the server.
+     * Previously this only closed the WebSocketServer, so up to
+     * `persistenceDebounceMs` of unsaved edits were lost on every restart.
+     */
+    await gracefulShutdown.shutdown(websocketServer);
+  } catch (error) {
+    logger.error({ err: error }, "WebSocket graceful shutdown failed.");
+  }
+
+  /*
+   * Stop the heartbeat interval so it cannot keep the event loop alive.
+   */
+  heartbeatManager.stop();
+
+  /*
+   * Flush any debounced Yjs writes that were still pending.
+   */
+  await persistence.shutdown();
 
   logger.info("WebSocket infrastructure stopped.");
 }
