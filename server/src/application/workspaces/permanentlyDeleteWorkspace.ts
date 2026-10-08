@@ -85,11 +85,11 @@ export const permanentlyDeleteWorkspace = async (
     await BoardModel.deleteMany({
       _id: { $in: boardIds },
     });
-
-    // 10. Finally delete the workspace
-    await WorkspaceModel.deleteOne({
-      _id: workspaceId,
-      status: "deletion_pending",
-    });
   }
+
+  // 10. Finally delete the workspace
+  await WorkspaceModel.deleteOne({
+    _id: workspaceId,
+    status: "deletion_pending",
+  });
 };
