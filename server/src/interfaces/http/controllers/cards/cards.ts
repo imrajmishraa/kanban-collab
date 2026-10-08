@@ -4,6 +4,7 @@ import {
   ActivityLogModel,
   BoardModel,
   CardModel,
+  ColumnModel,
   WorkspaceModel,
 } from "../../../../infrastructure/db/mongoose/schemas";
 import { ApiResponse } from "../../../../shared/utils/ApiResponse";
@@ -24,6 +25,7 @@ import {
 } from "../../../../shared/errors/board/board";
 import { notWorkspaceMemberError } from "../../../../shared/errors/workspace/workspace";
 import { cardNotFoundError } from "../../../../shared/errors/card/card";
+import { columnNotFoundError } from "../../../../shared/errors/column/column";
 
 const createCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
   const { columnId, boardId, title, orderIndex } = req.body;
@@ -48,6 +50,15 @@ const createCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
     );
     if (!member || member.role === "guest") {
       throw guestCannotModifyBoardError();
+    }
+
+    // Verify the target column belongs to this board (prevents cross-board cards)
+    const column = await ColumnModel.findOne({
+      _id: columnId,
+      boardId: board._id,
+    });
+    if (!column) {
+      throw columnNotFoundError();
     }
 
     const card = await CardModel.create({
@@ -149,6 +160,15 @@ const updateCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
     }
 
     if (columnId !== undefined) {
+      // Verify the target column belongs to this card's board
+      const column = await ColumnModel.findOne({
+        _id: columnId,
+        boardId: card.boardId,
+      });
+      if (!column) {
+        throw columnNotFoundError();
+      }
+
       card.columnId = new Types.ObjectId(columnId);
     }
 
@@ -229,6 +249,16 @@ const moveCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
     );
     if (!member || member.role === "guest") {
       throw guestCannotModifyBoardError();
+    }
+
+    // Verify the target column belongs to this card's board (prevents moving a
+    // card into a column of another board / workspace)
+    const targetColumn = await ColumnModel.findOne({
+      _id: targetColumnId,
+      boardId: card.boardId,
+    });
+    if (!targetColumn) {
+      throw columnNotFoundError();
     }
 
     const sourceCol = card.columnId;
