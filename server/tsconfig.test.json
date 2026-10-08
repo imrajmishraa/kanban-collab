@@ -4,6 +4,7 @@
     "noEmit": true,
     "rootDir": ".",
     "types": ["node", "jest"],
+    "isolatedModules": true,
 
     /* Slightly relaxed rules for tests */
     "noUnusedLocals": false,

@@ -1,5 +1,24 @@
+# Dependencies
 node_modules/
+
+# Build output
+dist/
+build/
+
+# Test coverage
+coverage/
+
+# Environment
 .env
-dist/.DS_Store
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+# OS
 .DS_Store
-dist
+
+# IDE
+.vscode/
+.idea/
