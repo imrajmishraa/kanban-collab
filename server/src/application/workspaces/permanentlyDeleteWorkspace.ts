@@ -58,7 +58,7 @@ export const permanentlyDeleteWorkspace = async (
     // 5. Delete cards
     if (cardIds.length > 0) {
       await CardModel.deleteMany({
-        cardId: { $in: cardIds },
+        _id: { $in: cardIds },
       });
     }
 
