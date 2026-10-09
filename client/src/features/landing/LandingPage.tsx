@@ -1,21 +1,25 @@
 import { lazy } from "react";
 
-import HeroSection from "@components/layout/landing/HeroSection";
+import HeroSection from "@components/layout/marketing/landing/HeroSection";
 const WhyKanbanSection = lazy(
-  () => import("@components/layout/landing/WhyKanbanSection"),
+  () => import("@components/layout/marketing/landing/WhyKanbanSection"),
 );
 const HowItWorksSection = lazy(
-  () => import("@components/layout/landing/HowItWorksSection"),
+  () => import("@components/layout/marketing/landing/HowItWorksSection"),
 );
 const CollaborationSection = lazy(
-  () => import("@components/layout/landing/CollaborationSection"),
+  () => import("@components/layout/marketing/landing/CollaborationSection"),
 );
 const OpenSourceSection = lazy(
-  () => import("@components/layout/landing/OpenSourceSection"),
+  () => import("@components/layout/marketing/landing/OpenSourceSection"),
 );
 
-const FaqSection = lazy(() => import("@components/layout/landing/FaqSection"));
-const CtaSection = lazy(() => import("@components/layout/landing/CtaSection"));
+const FaqSection = lazy(
+  () => import("@components/layout/marketing/landing/FaqSection"),
+);
+const CtaSection = lazy(
+  () => import("@components/layout/marketing/landing/CtaSection"),
+);
 
 /* NOTE: <LandingBackground /> moved into PublicLayout so every public
    route shares the same depth field. Remove any local import of it. */

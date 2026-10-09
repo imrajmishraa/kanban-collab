@@ -6,7 +6,7 @@ import { useMediaQuery } from "./useMediaQuery";
 import DesktopFrame from "./screen/DesktopFrame";
 
 const DashboardDemoPage = lazy(
-  () => import("@/components/layout/landing/DashboardDemoPage"),
+  () => import("@/components/layout/marketing/landing/DashboardDemoPage"),
 );
 /* ── Entrance choreography ──────────────────────────────────────────── */
 

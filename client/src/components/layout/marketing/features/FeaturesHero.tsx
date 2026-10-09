@@ -6,7 +6,7 @@ import {
   Tick02Icon,
 } from "@hugeicons/core-free-icons";
 
-import BoardPreview from "@components/layout/landing/BoardPreview";
+import BoardPreview from "@components/layout/marketing/landing/BoardPreview";
 
 const capabilities = [
   "Boards",

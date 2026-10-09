@@ -4,8 +4,8 @@ import { motion, useScroll, useSpring } from "framer-motion";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowUp01Icon } from "@hugeicons/core-free-icons";
 
-import Footer from "@/components/layout/landing/Footer";
-import Navbar from "@/components/layout/landing/Navbar";
+import Footer from "@/components/layout/marketing/landing/Footer";
+import Navbar from "@/components/layout/marketing/landing/Navbar";
 import { LandingBackground } from "@/features/landing/LandingBackground";
 
 function ScrollCorner() {

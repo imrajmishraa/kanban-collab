@@ -10,7 +10,7 @@ import {
   UserGroupIcon,
 } from "@hugeicons/core-free-icons";
 
-import Navbar from "@components/layout/landing/Navbar";
+import Navbar from "@components/layout/marketing/landing/Navbar";
 
 /* TYPES */
 
