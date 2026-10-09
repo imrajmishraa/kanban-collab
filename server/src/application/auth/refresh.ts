@@ -39,6 +39,8 @@ export async function refresh(params: RefreshInput): Promise<RefreshResult> {
   const now = new Date();
   const session = await SessionModel.findOne({
     userId,
+    // Ignore sessions that have already expired (the TTL index can lag).
+    expiresAt: { $gt: now },
     $or: [
       { jti: incomingJti },
       { previousJti: incomingJti, previousJtiExpiresAt: { $gt: now } },
@@ -46,10 +48,25 @@ export async function refresh(params: RefreshInput): Promise<RefreshResult> {
   });
 
   if (!session) {
-    await SessionModel.deleteMany({ userId });
+    // Reuse (or a stale/unknown token). Revoke ONLY the single session this
+    // token belongs to — identified by its jti lineage — never every session
+    // for the user. Deleting all sessions here let one stale token log the
+    // user out on every device (a self-inflicted DoS).
+    const revoked = await SessionModel.findOneAndUpdate(
+      { userId, previousJti: incomingJti, revokedAt: null },
+      { $set: { revokedAt: now } },
+      { new: true, projection: { _id: 1 } },
+    );
+
     authLogger.warn(
-      { userId, incomingJti, ipAddress, userAgent },
-      "Refresh token reuse detected — all sessions revoked.",
+      {
+        userId,
+        incomingJti,
+        ipAddress,
+        userAgent,
+        sessionRevoked: Boolean(revoked),
+      },
+      "Refresh token reuse detected — session revoked.",
     );
     throw refreshTokenReuseError();
   }
