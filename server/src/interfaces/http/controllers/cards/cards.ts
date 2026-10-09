@@ -28,7 +28,16 @@ import { cardNotFoundError } from "../../../../shared/errors/card/card";
 import { columnNotFoundError } from "../../../../shared/errors/column/column";
 
 const createCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
-  const { columnId, boardId, title, orderIndex } = req.body;
+  const {
+    columnId,
+    boardId,
+    title,
+    description,
+    orderIndex,
+    dueDate,
+    members,
+    labels,
+  } = req.body;
   const userId = requireUserId(req);
   try {
     const board = await BoardModel.findById(boardId);
@@ -70,7 +79,13 @@ const createCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
       title,
       orderIndex: orderIndex || 0,
       checklists: [],
-      labels: [],
+      labels: labels ?? [],
+      // Persist the remaining fields the create validator accepts.
+      ...(description !== undefined ? { description } : {}),
+      ...(dueDate !== undefined ? { dueDate: new Date(dueDate) } : {}),
+      ...(members !== undefined
+        ? { members: (members as string[]).map((id) => new Types.ObjectId(id)) }
+        : {}),
     });
 
     // Log Activity
@@ -118,7 +133,8 @@ const createCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
 
 const updateCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
   const cardId = req.params["cardId"] || req.params["id"];
-  const { title, columnId } = req.body;
+  const { title, columnId, description, dueDate, members, labels, isArchived } =
+    req.body;
   const userId = requireUserId(req);
 
   try {
@@ -157,6 +173,28 @@ const updateCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
     // Update only supplied fields
     if (title !== undefined) {
       card.title = title;
+    }
+
+    if (description !== undefined) {
+      card.description = description;
+    }
+
+    if (dueDate !== undefined) {
+      // `dueDate` is an ISO string or null (clear it). `set()` avoids the
+      // `exactOptionalPropertyTypes` rejection of assigning `undefined`.
+      card.set("dueDate", dueDate === null ? null : new Date(dueDate));
+    }
+
+    if (members !== undefined) {
+      card.members = (members as string[]).map((id) => new Types.ObjectId(id));
+    }
+
+    if (labels !== undefined) {
+      card.labels = labels as string[];
+    }
+
+    if (isArchived !== undefined) {
+      card.isArchived = isArchived;
     }
 
     if (columnId !== undefined) {
