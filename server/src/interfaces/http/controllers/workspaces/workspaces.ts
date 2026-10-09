@@ -294,6 +294,15 @@ const addWorkspaceMember = asyncHandler(
       throw userAlreadyWorkspaceMemberError();
     }
 
+    // Only an owner may grant ownership (mirrors updateWorkspaceMemberRole).
+    const caller = workspace.members.find(
+      (m) => m.userId.toString() === userId,
+    );
+
+    if (role === "owner" && caller?.role !== "owner") {
+      throw cannotModifyWorkspaceError();
+    }
+
     workspace.members.push({
       userId: userToAdd._id,
       role: role ?? "member",
