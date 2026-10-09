@@ -51,15 +51,14 @@ export class GoogleProvider implements OAuthProvider {
 
     const data = (await res.json()) as GoogleTokenResponse;
 
-    if (!data.refresh_token) {
-      throw oauthExchangeFailedError(
-        "Google token exchange returned no refresh token.",
-      );
-    }
-
+    // Google only returns a refresh_token on first consent (or with
+    // prompt=consent); this app never uses it, so a missing one must not fail
+    // an otherwise-valid login.
     return {
       accessToken: data.access_token,
-      refreshToken: data.refresh_token,
+      ...(data.refresh_token !== undefined
+        ? { refreshToken: data.refresh_token }
+        : {}),
       expiresIn: data.expires_in,
     };
   }
