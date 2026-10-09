@@ -1,9 +1,9 @@
 import crypto from "node:crypto";
 import type { NextFunction, Request, Response } from "express";
 
-import { ENV } from "../../../config/env";
 import { ApiError } from "../../../shared/utils/ApiError";
 import { securityLogger } from "../../../infrastructure/logging/childLogger";
+import { COOKIE_SECURE, SAME_SITE } from "../utils/cookies";
 
 /**
  * CSRF protection — double-submit cookie.
@@ -63,8 +63,10 @@ export function issueCsrfCookie(
     const token = crypto.randomBytes(32).toString("hex");
     res.cookie(CSRF_COOKIE, token, {
       httpOnly: false, // the client must read it to echo it back
-      sameSite: "lax",
-      secure: ENV.COOKIE_SECURE,
+      // Mirror the refresh cookie's SameSite/Secure so the double-submit
+      // cookie is actually sent on the same (possibly cross-site) requests.
+      sameSite: SAME_SITE,
+      secure: COOKIE_SECURE,
       path: "/",
       maxAge: 1000 * 60 * 60 * 24 * 30, // keep it aligned with the refresh cookie
     });
