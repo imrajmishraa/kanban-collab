@@ -57,7 +57,14 @@ function parseInclude(raw: unknown): { columns: boolean; cards: boolean } {
 }
 
 const createBoard = asyncHandler(async (req: AuthenticatedRequest, res) => {
-  const { workspaceId, name, backgroundColor, visibility } = req.body;
+  const {
+    workspaceId,
+    name,
+    description,
+    backgroundColor,
+    coverImageUrl,
+    visibility,
+  } = req.body;
   const userId = requireUserId(req);
   try {
     // Verify workspace membership
@@ -83,6 +90,9 @@ const createBoard = asyncHandler(async (req: AuthenticatedRequest, res) => {
       name,
       backgroundColor: backgroundColor || "#2b6cb0",
       visibility: visibility || "workspace",
+      // Persist the optional fields the create validator already accepts.
+      ...(description !== undefined ? { description } : {}),
+      ...(coverImageUrl !== undefined ? { coverImageUrl } : {}),
     });
 
     boardControllerLogger.info(
