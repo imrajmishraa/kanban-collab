@@ -1,14 +1,14 @@
-// server/src/interfaces/http/utils/cookies.ts
 import type { CookieOptions } from "express";
 import { ENV } from "../../../config/env";
 
 const IS_PROD = ENV.NODE_ENV === "production";
+export const SAME_SITE: CookieOptions["sameSite"] = IS_PROD ? "none" : "lax";
 
 /**
- * sameSite must be a narrow literal type — otherwise TS widens to `string`
- * and `res.cookie` / `res.clearCookie` reject the options.
+ * Single source of truth for the `Secure` flag, so the refresh cookie and the
+ * CSRF cookie (see middleware/csrf.middleware.ts) can never disagree.
  */
-const SAME_SITE: CookieOptions["sameSite"] = IS_PROD ? "none" : "lax";
+export const COOKIE_SECURE: boolean = ENV.COOKIE_SECURE;
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
@@ -23,7 +23,7 @@ export const REFRESH_COOKIE_NAME = "refreshToken";
  */
 const BASE_COOKIE_OPTIONS: CookieOptions = {
   httpOnly: true,
-  secure: IS_PROD,
+  secure: COOKIE_SECURE,
   sameSite: SAME_SITE,
   path: "/api/v1/auth",
 };
