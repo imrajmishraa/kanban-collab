@@ -143,7 +143,14 @@ export function useCollaboration({
     providerRef.current = provider;
     publishProvider(provider);
     provider.connect();
-  }, [sessionKey, wsUrl, getToken, stableUser, destroyProvider, publishProvider]);
+  }, [
+    sessionKey,
+    wsUrl,
+    getToken,
+    stableUser,
+    destroyProvider,
+    publishProvider,
+  ]);
 
   const disconnect = useCallback(() => {
     destroyProvider();
@@ -201,7 +208,14 @@ export function useCollaboration({
         providerRef.current = null;
       }
     };
-  }, [sessionKey, wsUrl, getToken, stableUser, destroyProvider, publishProvider]);
+  }, [
+    sessionKey,
+    wsUrl,
+    getToken,
+    stableUser,
+    destroyProvider,
+    publishProvider,
+  ]);
 
   // Push user metadata into the external awareness system only.
   // No React setState here.

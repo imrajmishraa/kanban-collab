@@ -44,10 +44,7 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
 
   // Stable accessor: the provider reads the *current* token at connect and
   // reconnect time, so a refresh doesn't require rebuilding the connection.
-  const getToken = useCallback(
-    () => useAuthStore.getState().accessToken,
-    [],
-  );
+  const getToken = useCallback(() => useAuthStore.getState().accessToken, []);
 
   // Stable object — a fresh literal here re-runs the collab effect on every
   // render and opens a new socket each time (the "infinite request" loop).
