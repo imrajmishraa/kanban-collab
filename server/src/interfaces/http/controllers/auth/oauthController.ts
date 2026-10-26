@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import type { Request, Response } from "express";
 
 import { asyncHandler } from "../../../../shared/utils/asyncHandler";
@@ -14,6 +15,14 @@ import {
   REFRESH_COOKIE_NAME,
   getRefreshCookieOptions,
 } from "../../utils/cookies";
+
+/** Constant-time string comparison (O-4) — avoids leaking the state via timing. */
+function safeEqual(a: string, b: string): boolean {
+  const left = Buffer.from(a);
+  const right = Buffer.from(b);
+  if (left.length !== right.length) return false;
+  return crypto.timingSafeEqual(left, right);
+}
 
 export const listProviders = asyncHandler(
   async (_req: Request, res: Response) => {
@@ -55,7 +64,7 @@ export const oauthCallback = asyncHandler(
       path: "/api/v1/auth/oauth",
     });
 
-    if (!code || !state || !expectedState || state !== expectedState) {
+    if (!code || !state || !expectedState || !safeEqual(state, expectedState)) {
       authLogger.warn(
         { provider, hasCode: Boolean(code), hasState: Boolean(state) },
         "OAuth callback rejected — invalid state or missing code.",

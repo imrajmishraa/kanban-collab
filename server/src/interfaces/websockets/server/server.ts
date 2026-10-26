@@ -69,7 +69,7 @@ export async function startWebSocketServer(httpServer: Server): Promise<void> {
 
   logger.info("Initializing WebSocket infrastructure...");
 
-  initializeCollaboration();
+  await initializeCollaboration();
 
   wss = createWebSocketServer();
 

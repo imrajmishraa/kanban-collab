@@ -22,6 +22,7 @@ import { idleCleanup } from "../collaboration/lifecycle/idleCleanup";
 import { documentManager } from "../collaboration/yjs/documentManager";
 import { messageHandler } from "../collaboration/yjs/messageHandler";
 import { updateBroadcaster } from "../collaboration/yjs/updateBroadcaster";
+import { awarenessBroadcaster } from "../collaboration/yjs/awarenessProtocol";
 
 import { CollaborationMessage } from "../collaboration/yjs/protocol";
 import type { CollaborationClient } from "../collaboration/yjs/types";
@@ -112,6 +113,11 @@ async function handleConnection(
     updateBroadcaster.attach(document);
 
     /*
+     * Attach the awareness (presence) broadcaster — once per document.
+     */
+    awarenessBroadcaster.attach(document);
+
+    /*
      * Register collaboration client
      */
 
@@ -132,6 +138,12 @@ async function handleConnection(
      * document is not destroyed underneath this new connection.
      */
     idleCleanup.cancel(documentName);
+
+    /*
+     * H-5: seed the new client with the current presence of everyone already
+     * connected, so it sees existing collaborators immediately.
+     */
+    awarenessBroadcaster.sendCurrentTo(document, ws);
 
     /*
      * ---------------------------------------------------------
@@ -252,6 +264,11 @@ async function handleConnection(
       if (client) {
         documentManager.removeClient(documentName, client.id);
       }
+
+      /*
+       * H-5: remove this socket's presence so peers don't see a ghost cursor.
+       */
+      awarenessBroadcaster.removeSocket(document, ws);
 
       /*
        * If this was the last client, schedule idle cleanup so the document is

@@ -2,7 +2,6 @@ import {
   NotificationModel,
   NotificationPreferenceModel,
 } from "../infrastructure/db/mongoose/schemas";
-import { ENV } from "../config/env";
 import { notificationDigestJobLogger as log } from "../infrastructure/logging/childLogger";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -15,30 +14,30 @@ const DAY_MS = 24 * 60 * 60 * 1000;
  * gather their unread notifications in the digest window and emit a summary.
  *
  * Delivery note: there is no email/push transport wired into the server yet,
- * so the digest is emitted to the delivery log — swap the `emitDigest` body
- * for the real transport when one exists. The selection logic here is the
- * part that was missing.
+ * so the digest is emitted to the delivery log — swap the `log.info` body for
+ * the real transport when one exists. The selection logic here is the part
+ * that was missing.
  */
 export async function notificationDigestJob(): Promise<void> {
   const startedAt = Date.now();
 
   try {
-    const eligible = await NotificationPreferenceModel.find({
+    let sent = 0;
+    let skipped = 0;
+    let scanned = 0;
+
+    // H-6: iterate every eligible user with a cursor. The previous `.limit()`
+    // silently capped delivery to the first N users, so everyone past the cap
+    // never received a digest.
+    const cursor = NotificationPreferenceModel.find({
       digestFrequency: { $in: ["daily", "weekly"] },
     })
       .select("userId digestFrequency")
-      .limit(ENV.NOTIF_BATCH_SIZE)
-      .lean();
+      .cursor();
 
-    log.info(
-      { eligibleUsers: eligible.length, durationMs: Date.now() - startedAt },
-      "Digest job scanned users.",
-    );
+    for await (const preference of cursor) {
+      scanned += 1;
 
-    let sent = 0;
-    let skipped = 0;
-
-    for (const preference of eligible) {
       const windowDays = preference.digestFrequency === "weekly" ? 7 : 1;
       const since = new Date(Date.now() - windowDays * DAY_MS);
 
@@ -79,7 +78,7 @@ export async function notificationDigestJob(): Promise<void> {
     }
 
     log.info(
-      { sent, skipped, durationMs: Date.now() - startedAt },
+      { scanned, sent, skipped, durationMs: Date.now() - startedAt },
       "Digest job completed.",
     );
   } catch (error) {
