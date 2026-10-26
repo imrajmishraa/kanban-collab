@@ -34,14 +34,19 @@ interface BoardViewProps {
 export default function BoardView({ board, boardId }: BoardViewProps) {
   const { activeWorkspaceName } = useActiveWorkspace();
   const currentUser = useAuthStore((state) => state.user);
-  const accessToken = useAuthStore((state) => state.accessToken);
   const members = useActiveWorkspaceMembers();
 
   /* ── Collaboration (live board state) ── */
-  // The server expects `{WS_BASE}/ws?token=…&boardId=…`.
-  const wsUrl = useMemo(
-    () => buildCollaborationWsUrl(boardId, accessToken),
-    [boardId, accessToken],
+  // F-8: the URL carries only the board id — the access token travels in the
+  // `kanban.auth` subprotocol — so the URL is stable across token refreshes and
+  // no longer tears the Y.Doc down every 15 minutes.
+  const wsUrl = useMemo(() => buildCollaborationWsUrl(boardId), [boardId]);
+
+  // Stable accessor: the provider reads the *current* token at connect and
+  // reconnect time, so a refresh doesn't require rebuilding the connection.
+  const getToken = useCallback(
+    () => useAuthStore.getState().accessToken,
+    [],
   );
 
   // Stable object — a fresh literal here re-runs the collab effect on every
@@ -58,6 +63,7 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
   const { doc, awareness, status, peers } = useCollaboration({
     room: boardId ?? null,
     wsUrl,
+    getToken,
     user: collabUser,
   });
 

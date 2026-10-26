@@ -4,6 +4,7 @@ import { WebSocketServer } from "ws";
 
 import { websocketConfig } from "../../../config/websocket";
 import { logger } from "../../../infrastructure/logging/logger";
+import { WS_AUTH_SUBPROTOCOL } from "../../../shared/constants/websocket";
 
 import { initializeCollaboration } from "../bootstrap/initialize";
 
@@ -29,6 +30,14 @@ function createWebSocketServer(): WebSocketServer {
     maxPayload: websocketConfig.maxPayload,
 
     perMessageDeflate: websocketConfig.perMessageDeflate,
+
+    /**
+     * H-2: the client offers `["kanban.auth", <token>]` as subprotocols.
+     * Select `kanban.auth` so the browser accepts the handshake; the token is
+     * read from the header by parseUpgradeRequest and never echoed back.
+     */
+    handleProtocols: (protocols) =>
+      protocols.has(WS_AUTH_SUBPROTOCOL) ? WS_AUTH_SUBPROTOCOL : false,
   });
 
   server.on("error", (error) => {

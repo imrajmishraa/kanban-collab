@@ -56,6 +56,11 @@ export const updateCardSchema = {
         .max(200, "Card title cannot exceed 200 characters.")
         .optional(),
 
+      // H-1/M-7: `updateCard` reads `columnId` (to move a card between
+      // columns), so it must be part of the validated body — otherwise
+      // applying the parsed result would strip it.
+      columnId: objectIdSchema.optional(),
+
       description: z
         .string()
         .trim()

@@ -1,48 +1,27 @@
-import type { IncomingMessage } from "http";
-
 import { verifyAccessToken } from "../../../infrastructure/security/jwt";
-import {
-  expiredAccessTokenError,
-  missingAccessTokenError,
-} from "../../../shared/errors/auth/accessToken";
-import { boardIdRequiredError } from "../../../shared/errors/board/board";
-import { InvalidWebSocketRequestError } from "../../../shared/errors/websocket/websocket";
+import { missingAccessTokenError } from "../../../shared/errors/auth/accessToken";
 
 export interface AuthenticatedSocketContext {
   userId: string;
-  boardId: string;
 }
 
+/**
+ * Verify the access token carried by an upgrade request (H-2).
+ *
+ * The token is extracted by `parseUpgradeRequest` — preferably from the
+ * `Sec-WebSocket-Protocol` subprotocol, with the legacy `?token=` query as a
+ * deprecated fallback — and passed in here. This function only verifies it, so
+ * the token is parsed in exactly one place.
+ */
 export async function authenticate(
-  request: IncomingMessage,
+  token: string,
 ): Promise<AuthenticatedSocketContext> {
-  let url: URL;
-
-  try {
-    url = new URL(request.url ?? "", "http://localhost");
-  } catch {
-    throw InvalidWebSocketRequestError();
-  }
-
-  const token = url.searchParams.get("token");
-  const boardId = url.searchParams.get("boardId");
-
   if (!token) {
     throw missingAccessTokenError();
   }
 
-  if (!boardId) {
-    throw boardIdRequiredError();
-  }
-
+  // `verifyAccessToken` maps expired/invalid tokens to domain errors and throws.
   const payload = verifyAccessToken(token);
 
-  if (!payload) {
-    throw expiredAccessTokenError();
-  }
-
-  return {
-    userId: payload.userId,
-    boardId,
-  };
+  return { userId: payload.userId };
 }

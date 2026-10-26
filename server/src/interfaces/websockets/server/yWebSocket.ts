@@ -40,6 +40,11 @@ async function handleConnection(
 
   const { userId, boardId } = req;
 
+  // H-3: guests are read-only. `canWrite` is set by the upgrade handler from
+  // the caller's workspace role; only an explicit `false` makes it read-only.
+  const canWrite =
+    (request as IncomingMessage & { canWrite?: boolean }).canWrite !== false;
+
   /*
    * Validate authenticated WebSocket context
    */
@@ -47,7 +52,7 @@ async function handleConnection(
   if (!userId || !boardId) {
     yjsLogger.warn(
       {
-        url: request.url,
+        boardId,
       },
       "Missing authenticated WebSocket context. Closing connection.",
     );
@@ -162,7 +167,6 @@ async function handleConnection(
         connections: document.connectionCount,
         bytes: initialSync.length,
         remoteAddress,
-        url: request.url,
       },
       "Yjs collaboration connection established.",
     );
@@ -235,7 +239,7 @@ async function handleConnection(
        * Delegate protocol processing.
        */
 
-      messageHandler.handleMessage(ws, document, message);
+      messageHandler.handleMessage(ws, document, message, { canWrite });
 
       connectionRegistry.updateLastSeen(ws);
     });
@@ -311,7 +315,6 @@ async function handleConnection(
         boardId,
         clientId,
         remoteAddress,
-        url: request.url,
       },
       "Failed to initialize Yjs collaboration connection.",
     );

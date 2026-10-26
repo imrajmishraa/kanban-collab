@@ -35,6 +35,7 @@ import {
   type AwarenessUser,
 } from "./awareness";
 import { ORIGIN_REDIS, ORIGIN_REMOTE } from "./origins";
+import { WS_AUTH_SUBPROTOCOL } from "./buildWsUrl";
 import {
   CollaborationMessage,
   applySyncMessage,
@@ -58,6 +59,11 @@ export interface YjsProviderOptions {
   url: string;
   /** Local user identity for awareness. */
   user: AwarenessUser;
+  /**
+   * Returns the current access token, read at connect/reconnect time. The token
+   * is sent via the `kanban.auth` subprotocol, never in the URL (H-2).
+   */
+  getToken?: () => string | null;
   /** Optional existing Y.Doc (a new one is created otherwise). */
   doc?: Y.Doc;
   /** Called whenever connection status changes. */
@@ -89,6 +95,7 @@ export class YjsProvider {
 
   private readonly url: string;
   private readonly user: AwarenessUser;
+  private readonly getToken?: () => string | null;
   private readonly onStatus?: (status: ProviderStatus) => void;
   private readonly onPeers?: (peers: AwarenessUser[]) => void;
   private readonly onError?: (error: Error) => void;
@@ -120,6 +127,7 @@ export class YjsProvider {
   constructor(options: YjsProviderOptions) {
     this.url = options.url;
     this.user = options.user;
+    this.getToken = options.getToken;
     this.onStatus = options.onStatus;
     this.onPeers = options.onPeers;
     this.onError = options.onError;
@@ -159,7 +167,13 @@ export class YjsProvider {
 
     let ws: WebSocket;
     try {
-      ws = new WebSocket(this.url);
+      // H-2: carry the token in the subprotocol, not the URL. Read it now so a
+      // reconnect always uses the latest token without rebuilding the provider.
+      const token = this.getToken?.() ?? null;
+      const protocols: string[] = token
+        ? [WS_AUTH_SUBPROTOCOL, token]
+        : [WS_AUTH_SUBPROTOCOL];
+      ws = new WebSocket(this.url, protocols);
     } catch (err) {
       // A malformed URL makes `new WebSocket` throw synchronously. Surface it
       // as an error status instead of letting it escape the caller (which, from

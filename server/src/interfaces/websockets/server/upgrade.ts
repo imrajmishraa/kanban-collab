@@ -17,6 +17,8 @@ interface AuthenticatedRequest extends IncomingMessage {
   pathname?: string;
   userId?: string;
   boardId?: string;
+  role?: string;
+  canWrite?: boolean;
 }
 
 export async function handleUpgrade(
@@ -31,8 +33,11 @@ export async function handleUpgrade(
    * becomes an `unhandledRejection`, which `main.ts` converts into a full
    * process shutdown. Parsing therefore happens *inside* the try: an invalid
    * upgrade (missing URL, wrong path, missing/invalid token or boardId) is an
-   * `ApiError` and is now handled by the catch below instead of crashing the
+   * `ApiError` and is handled by the catch below instead of crashing the
    * server. The two locals exist so the catch can still log what was parsed.
+   *
+   * H-2: the raw request URL is never logged (it may carry a deprecated
+   * `?token=`). Only the pathname and board id are logged.
    */
   let pathname: string | undefined;
   let boardId: string | undefined;
@@ -42,21 +47,33 @@ export async function handleUpgrade(
     pathname = parsed.pathname;
     boardId = parsed.boardId;
 
-    const { userId } = await authenticate(request);
+    const { userId } = await authenticate(parsed.token);
 
-    await authorize(userId, parsed.boardId);
+    // H-3: enforce visibility + role, and carry `canWrite` onto the connection
+    // so guests are made read-only downstream.
+    const auth = await authorize(userId, parsed.boardId);
+
+    // `authorize` always returns a role in production. The optional access keeps
+    // upgrade robust when authorization is mocked (integration tests) or
+    // returns nothing, defaulting to write-capable.
+    const role = auth?.role;
+    const canWrite = auth?.canWrite ?? true;
 
     const upgradedRequest = request as AuthenticatedRequest;
 
     upgradedRequest.pathname = parsed.pathname;
     upgradedRequest.userId = userId;
     upgradedRequest.boardId = parsed.boardId;
+    upgradedRequest.role = role;
+    upgradedRequest.canWrite = canWrite;
 
     websocketAuthLogger.info(
       {
         userId,
         boardId: parsed.boardId,
         pathname: parsed.pathname,
+        role,
+        canWrite,
       },
       "WebSocket upgrade authorized",
     );
@@ -68,7 +85,6 @@ export async function handleUpgrade(
       websocketAuthLogger.warn(
         {
           statusCode: error.statusCode,
-          url: request.url,
           boardId,
           message: error.message,
         },
@@ -82,7 +98,6 @@ export async function handleUpgrade(
     websocketAuthLogger.error(
       {
         err: error,
-        url: request.url,
         pathname,
         boardId,
       },

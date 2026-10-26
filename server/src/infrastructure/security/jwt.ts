@@ -51,6 +51,13 @@ export interface SignRefreshOptions {
   rememberMe?: boolean;
 }
 
+/**
+ * The only JWT algorithm this service issues or accepts (M-13).
+ * Pinning it on `verify` prevents algorithm-confusion attacks (e.g. `alg: none`
+ * or an asymmetric algorithm substituted for HMAC).
+ */
+const JWT_ALGORITHM = "HS256" as const;
+
 // SIGN
 
 /**
@@ -65,7 +72,7 @@ export function signAccessToken(
       payload,
       ENV.JWT_SECRET,
       {
-        algorithm: "HS256",
+        algorithm: JWT_ALGORITHM,
         expiresIn: ENV.JWT_ACCESS_EXPIRES_IN as ms.StringValue,
       },
       (err, token) => {
@@ -106,7 +113,7 @@ export function signRefreshToken(
       { ...payload, jti },
       ENV.JWT_REFRESH_SECRET,
       {
-        algorithm: "HS256",
+        algorithm: JWT_ALGORITHM,
         expiresIn: refreshExpiresIn as ms.StringValue,
       },
       (err, token) => {
@@ -131,7 +138,9 @@ export function signRefreshToken(
  */
 export function verifyAccessToken(token: string): AccessTokenPayload {
   try {
-    return jwt.verify(token, ENV.JWT_SECRET) as AccessTokenPayload;
+    return jwt.verify(token, ENV.JWT_SECRET, {
+      algorithms: [JWT_ALGORITHM],
+    }) as AccessTokenPayload;
   } catch (error) {
     if (error instanceof TokenExpiredError) throw expiredAccessTokenError();
     if (error instanceof NotBeforeError) throw accessTokenNotActiveError();
@@ -146,7 +155,9 @@ export function verifyAccessToken(token: string): AccessTokenPayload {
  */
 export function verifyRefreshToken(token: string): RefreshTokenPayload {
   try {
-    return jwt.verify(token, ENV.JWT_REFRESH_SECRET) as RefreshTokenPayload;
+    return jwt.verify(token, ENV.JWT_REFRESH_SECRET, {
+      algorithms: [JWT_ALGORITHM],
+    }) as RefreshTokenPayload;
   } catch (error) {
     if (error instanceof TokenExpiredError) throw expiredRefreshTokenError();
     if (error instanceof NotBeforeError) throw refreshTokenNotActiveError();

@@ -1,3 +1,5 @@
+import * as decoding from "lib0/decoding";
+import * as ySyncProtocol from "y-protocols/sync";
 import type { WebSocket } from "ws";
 
 import { yjsLogger } from "../../../../infrastructure/logging/childLogger";
@@ -7,6 +9,15 @@ import { CollaborationMessage } from "./protocol";
 import { syncProtocol } from "./syncProtocol";
 import type { ManagedDocument } from "./types";
 import { collaborationMessageDecoder } from "./collaborationMessageDecoder";
+
+export interface MessageHandlerOptions {
+  /**
+   * Whether this connection may mutate the document (H-3). Guests are
+   * read-only: their sync *updates* are dropped, while the sync handshake
+   * (step 1/step 2) and awareness still flow so they can see the board live.
+   */
+  canWrite?: boolean;
+}
 
 export class MessageHandler {
   /**
@@ -27,6 +38,7 @@ export class MessageHandler {
     socket: WebSocket,
     document: ManagedDocument,
     message: Buffer,
+    options: MessageHandlerOptions = {},
   ): void {
     if (message.length === 0) {
       yjsLogger.warn(
@@ -56,7 +68,12 @@ export class MessageHandler {
 
       switch (decoded.type) {
         case CollaborationMessage.Sync:
-          this.handleSync(socket, document, decoded.payload);
+          this.handleSync(
+            socket,
+            document,
+            decoded.payload,
+            options.canWrite ?? true,
+          );
           break;
 
         case CollaborationMessage.Awareness:
@@ -85,7 +102,8 @@ export class MessageHandler {
   private handleSync(
     socket: WebSocket,
     document: ManagedDocument,
-    payload?: Uint8Array,
+    payload: Uint8Array | undefined,
+    canWrite: boolean,
   ): void {
     if (!payload || payload.length === 0) {
       yjsLogger.warn(
@@ -93,6 +111,18 @@ export class MessageHandler {
           documentName: document.name,
         },
         "Received synchronization message without payload.",
+      );
+
+      return;
+    }
+
+    // H-3: a read-only (guest) connection may run the sync handshake but must
+    // not apply document updates. Peek the inner y-protocols/sync message type;
+    // messageYjsUpdate is the only one that mutates the document.
+    if (!canWrite && isDocumentUpdate(payload)) {
+      yjsLogger.warn(
+        { documentName: document.name },
+        "Dropped sync update from a read-only (guest) connection.",
       );
 
       return;
@@ -136,6 +166,20 @@ export class MessageHandler {
       },
       "Received unknown collaboration message type.",
     );
+  }
+}
+
+/**
+ * True when the y-protocols/sync payload is a document update (as opposed to
+ * a sync step 1/2 handshake message). Falls back to `false` on malformed
+ * input so the normal decoder handles (and rejects) it.
+ */
+function isDocumentUpdate(payload: Uint8Array): boolean {
+  try {
+    const decoder = decoding.createDecoder(payload);
+    return decoding.readVarUint(decoder) === ySyncProtocol.messageYjsUpdate;
+  } catch {
+    return false;
   }
 }
 

@@ -15,8 +15,11 @@ interface ValidationSchemas {
 
 /**
  * Augment Express's Request with validated, typed payloads.
- * The originals (`req.body`, `req.params`, `req.query`) remain untouched
- * so downstream middleware doesn't depend on this file's mutations.
+ *
+ * The parsed result is applied back onto `req.body`/`req.params`/`req.query`
+ * (H-1) so that schema transforms (`.trim()`, `.toLowerCase()`), coercions
+ * (`.coerce.number()`) and defaults actually reach the controllers. `req.validated`
+ * is still populated for controllers that prefer to read the typed copy.
  */
 declare module "express-serve-static-core" {
   interface Request {
@@ -76,6 +79,33 @@ export const validateSchema = (schemas: ValidationSchemas): RequestHandler => {
           },
         ),
       );
+    }
+
+    /*
+     * Apply the parsed result (H-1). Before this, only `req.validated` was set
+     * and the raw, un-transformed input was what every controller actually
+     * read — so `.trim()`, `.toLowerCase()`, `.coerce` and defaults were all
+     * silently discarded.
+     *
+     * `req.body` and `req.params` are plain writable properties. Express
+     * exposes `req.query` through a getter, so it must be redefined rather
+     * than assigned.
+     */
+    if (validated.body !== undefined) {
+      req.body = validated.body;
+    }
+
+    if (validated.params !== undefined) {
+      req.params = validated.params as typeof req.params;
+    }
+
+    if (validated.query !== undefined) {
+      Object.defineProperty(req, "query", {
+        value: validated.query,
+        writable: true,
+        configurable: true,
+        enumerable: true,
+      });
     }
 
     req.validated = validated;

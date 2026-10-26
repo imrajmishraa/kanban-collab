@@ -35,8 +35,13 @@ export type CollabStatus = ProviderStatus;
 export interface UseCollaborationOptions {
   /** Document / room name (e.g. boardId). Null disables collaboration. */
   room: string | null;
-  /** Full WebSocket URL including auth query params. Null disables. */
+  /** WebSocket URL (board id only — the token travels via subprotocol). */
   wsUrl: string | null;
+  /**
+   * Returns the current access token, read by the provider at connect/reconnect
+   * time. Must be a stable function (e.g. wrapped in useCallback).
+   */
+  getToken?: () => string | null;
   /** Local user identity for awareness. Null disables. */
   user: AwarenessUser | null;
   /** When false the provider will not connect. Default true. */
@@ -56,6 +61,7 @@ export interface UseCollaborationResult {
 export function useCollaboration({
   room,
   wsUrl,
+  getToken,
   user,
   enabled = true,
 }: UseCollaborationOptions): UseCollaborationResult {
@@ -127,6 +133,7 @@ export function useCollaboration({
     const options: YjsProviderOptions = {
       url: wsUrl,
       user: stableUser,
+      getToken,
       onStatus: setStatus,
       onPeers: setPeers,
       onError: setError,
@@ -136,7 +143,7 @@ export function useCollaboration({
     providerRef.current = provider;
     publishProvider(provider);
     provider.connect();
-  }, [sessionKey, wsUrl, stableUser, destroyProvider, publishProvider]);
+  }, [sessionKey, wsUrl, getToken, stableUser, destroyProvider, publishProvider]);
 
   const disconnect = useCallback(() => {
     destroyProvider();
@@ -172,6 +179,7 @@ export function useCollaboration({
     const options: YjsProviderOptions = {
       url: wsUrl,
       user: stableUser,
+      getToken,
       onStatus: setStatus,
       onPeers: setPeers,
       onError: setError,
@@ -193,7 +201,7 @@ export function useCollaboration({
         providerRef.current = null;
       }
     };
-  }, [sessionKey, wsUrl, stableUser, destroyProvider, publishProvider]);
+  }, [sessionKey, wsUrl, getToken, stableUser, destroyProvider, publishProvider]);
 
   // Push user metadata into the external awareness system only.
   // No React setState here.
