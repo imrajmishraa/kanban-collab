@@ -21,6 +21,8 @@
  *   - The backoff resets on a successful open.
  */
 
+import * as decoding from "lib0/decoding";
+import * as ySyncProtocol from "y-protocols/sync";
 import * as Y from "yjs";
 import type { Awareness } from "y-protocols/awareness";
 
@@ -72,6 +74,8 @@ export interface YjsProviderOptions {
   onPeers?: (peers: AwarenessUser[]) => void;
   /** Called on unrecoverable errors. */
   onError?: (error: Error) => void;
+  /** Called once the first server sync (state) has been applied. */
+  onSynced?: () => void;
   /** First reconnect delay in ms (default 1000). */
   reconnectBaseDelayMs?: number;
   /** Maximum reconnect delay in ms (default 15000). */
@@ -89,6 +93,23 @@ function toSendBuffer(data: Uint8Array): Uint8Array<ArrayBuffer> {
   return copy;
 }
 
+/**
+ * True when an inbound y-protocols/sync payload carries document state
+ * (a step-2 response or an update) as opposed to a step-1 state-vector request.
+ */
+function syncMessageCarriesState(payload: Uint8Array): boolean {
+  try {
+    const decoder = decoding.createDecoder(payload);
+    const type = decoding.readVarUint(decoder);
+    return (
+      type === ySyncProtocol.messageYjsSyncStep2 ||
+      type === ySyncProtocol.messageYjsUpdate
+    );
+  } catch {
+    return false;
+  }
+}
+
 export class YjsProvider {
   readonly doc: Y.Doc;
   readonly awareness: Awareness;
@@ -99,11 +120,14 @@ export class YjsProvider {
   private readonly onStatus?: (status: ProviderStatus) => void;
   private readonly onPeers?: (peers: AwarenessUser[]) => void;
   private readonly onError?: (error: Error) => void;
+  private readonly onSynced?: () => void;
   private readonly reconnectBaseDelayMs: number;
   private readonly reconnectMaxDelayMs: number;
 
   private ws: WebSocket | null = null;
   private status: ProviderStatus = "idle";
+  /** True once the first server sync (state) has been applied. */
+  private synced = false;
   private intentionalClose = false;
   private peersUnsub: (() => void) | null = null;
 
@@ -131,6 +155,7 @@ export class YjsProvider {
     this.onStatus = options.onStatus;
     this.onPeers = options.onPeers;
     this.onError = options.onError;
+    this.onSynced = options.onSynced;
     this.reconnectBaseDelayMs = options.reconnectBaseDelayMs ?? 1_000;
     this.reconnectMaxDelayMs = options.reconnectMaxDelayMs ?? 15_000;
 
@@ -144,6 +169,11 @@ export class YjsProvider {
   /** Current connection status. */
   getStatus(): ProviderStatus {
     return this.status;
+  }
+
+  /** True once the first server sync has been applied. */
+  getSynced(): boolean {
+    return this.synced;
   }
 
   /** Number of consecutive failed attempts (0 once connected). */
@@ -163,6 +193,7 @@ export class YjsProvider {
 
     this.clearReconnectTimer();
     this.intentionalClose = false;
+    this.synced = false;
     this.setStatus(this.reconnectAttempt > 0 ? "reconnecting" : "connecting");
 
     let ws: WebSocket;
@@ -231,6 +262,7 @@ export class YjsProvider {
     this.intentionalClose = true;
     this.clearReconnectTimer();
     this.reconnectAttempt = 0;
+    this.synced = false;
     removeLocalAwareness(this.awareness);
 
     if (this.ws) {
@@ -294,6 +326,12 @@ export class YjsProvider {
     this.onStatus?.(status);
   }
 
+  private markSynced(): void {
+    if (this.synced) return;
+    this.synced = true;
+    this.onSynced?.();
+  }
+
   private send(type: CollaborationMessageType, payload?: Uint8Array): void {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
     const message = encodeCollaborationMessage(type, payload);
@@ -347,7 +385,11 @@ export class YjsProvider {
       switch (type) {
         case CollaborationMessage.Sync: {
           if (payload.length === 0) return;
+          const carriesState = syncMessageCarriesState(payload);
           const response = applySyncMessage(this.doc, payload, ORIGIN_REMOTE);
+          // The first step-2/update from the server means the document has
+          // caught up — safe to mark synced (F-10).
+          if (carriesState) this.markSynced();
           if (response.length > 0) {
             this.send(CollaborationMessage.Sync, response);
           }

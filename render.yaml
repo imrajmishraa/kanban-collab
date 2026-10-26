@@ -11,6 +11,10 @@ services:
       # Pin the build to Node 22 to match client/package.json "engines".
       - key: NODE_VERSION
         value: "22"
+      # F-3: Vite inlines VITE_* at build time. The static client and the API are
+      # separate origins on Render, so point the socket at the API host.
+      - key: VITE_WS_URL
+        value: wss://kanban-collab-server.vercel.app/ws
 
     routes:
       # /api → the API. A rewrite is server-side and keeps the browser on this
@@ -19,7 +23,7 @@ services:
       # swallows it.
       - type: rewrite
         source: /api/*
-        destination: https://kanban-collab-server.onrender.com/api/:splat
+        destination: https://kanban-collab-server.vercel.app/api/:splat
 
       # SPA fallback — everything else serves index.html and react-router takes over.
       - type: rewrite

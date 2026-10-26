@@ -52,6 +52,8 @@ export interface UseCollaborationResult {
   doc: Y.Doc | null;
   awareness: Awareness | null;
   status: CollabStatus;
+  /** True once the first server sync has been applied (see F-9/F-10). */
+  synced: boolean;
   peers: AwarenessUser[];
   error: Error | null;
   connect: () => void;
@@ -66,6 +68,7 @@ export function useCollaboration({
   enabled = true,
 }: UseCollaborationOptions): UseCollaborationResult {
   const [status, setStatus] = useState<CollabStatus>("idle");
+  const [synced, setSynced] = useState(false);
   const [peers, setPeers] = useState<AwarenessUser[]>([]);
   const [error, setError] = useState<Error | null>(null);
   const [doc, setDoc] = useState<Y.Doc | null>(null);
@@ -114,6 +117,7 @@ export function useCollaboration({
       setAwareness(null);
       setPeers([]);
       setError(null);
+      setSynced(false);
       setStatus("idle");
     }
   }, []);
@@ -134,9 +138,17 @@ export function useCollaboration({
       url: wsUrl,
       user: stableUser,
       getToken,
-      onStatus: setStatus,
+      onStatus: (next) => {
+        setStatus(next);
+        // Reset `synced` whenever the socket leaves `connected`, so the board
+        // falls back to REST until the next sync completes. This runs in the
+        // provider's status callback (an external-system notification), not in
+        // an effect body, which would cause a cascading render.
+        if (next !== "connected") setSynced(false);
+      },
       onPeers: setPeers,
       onError: setError,
+      onSynced: () => setSynced(true),
     };
 
     const provider = new YjsProvider(options);
@@ -158,6 +170,7 @@ export function useCollaboration({
     setAwareness(null);
     setPeers([]);
     setError(null);
+    setSynced(false);
     setStatus("disconnected");
   }, [destroyProvider]);
 
@@ -187,9 +200,17 @@ export function useCollaboration({
       url: wsUrl,
       user: stableUser,
       getToken,
-      onStatus: setStatus,
+      onStatus: (next) => {
+        setStatus(next);
+        // Reset `synced` whenever the socket leaves `connected`, so the board
+        // falls back to REST until the next sync completes. This runs in the
+        // provider's status callback (an external-system notification), not in
+        // an effect body, which would cause a cascading render.
+        if (next !== "connected") setSynced(false);
+      },
       onPeers: setPeers,
       onError: setError,
+      onSynced: () => setSynced(true),
     };
 
     const provider = new YjsProvider(options);
@@ -229,6 +250,7 @@ export function useCollaboration({
     doc,
     awareness,
     status,
+    synced,
     peers,
     error,
     connect,

@@ -18,6 +18,14 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
+# F-3: Vite inlines VITE_* at build time, so the collaboration URL must be a
+# build arg. Set it to the WebSocket URL the browser will use, e.g.
+#   ws://localhost:8080/ws      (Docker: nginx proxies /ws to the api)
+#   wss://<api-host>/ws         (static client + separate API)
+# Leave it empty to disable collaboration.
+ARG VITE_WS_URL=""
+ENV VITE_WS_URL=${VITE_WS_URL}
+
 COPY . .
 RUN npm run build
 

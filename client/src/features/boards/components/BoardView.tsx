@@ -57,7 +57,7 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
     };
   }, [currentUser]);
 
-  const { doc, awareness, status, peers } = useCollaboration({
+  const { doc, awareness, status, peers, synced } = useCollaboration({
     room: boardId ?? null,
     wsUrl,
     getToken,
@@ -65,10 +65,12 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
   });
 
   /* ── Board state: CRDT-backed when connected, REST otherwise ── */
-  const docApi = useBoardDoc({ doc, board });
+  const docApi = useBoardDoc({ doc, board, synced });
   const rest = useBoardMutations(boardId ?? board.id);
 
-  const live = Boolean(doc);
+  // F-9: "live" means connected AND synced — not merely "a doc exists". While
+  // connecting/reconnecting, mutations fall back to REST so nothing is dropped.
+  const live = status === "connected" && synced;
   const state = docApi.board;
 
   /* ── Presence cursors (T7) ── */

@@ -22,6 +22,10 @@ services:
     build:
       context: ./client
       dockerfile: Dockerfile
+      args:
+        # F-3: nginx in this container proxies /ws to the api, so the browser's
+        # socket is same-origin. Override VITE_WS_URL to point elsewhere.
+        VITE_WS_URL: ${VITE_WS_URL:-ws://localhost:8080/ws}
     image: kanban-collab-client:latest
     container_name: kanban-web
     ports:

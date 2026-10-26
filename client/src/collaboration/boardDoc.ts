@@ -125,17 +125,18 @@ export function readBoard(doc: Y.Doc): BoardDetails | null {
   }
 
   const orderedColumns: BoardColumn[] = [...columns.values()]
-    .sort((a, b) => a.orderIndex - b.orderIndex)
+    .sort((a, b) => a.orderIndex - b.orderIndex || a.id.localeCompare(b.id))
     .map((record) => ({
       id: record.id,
       boardId: record.boardId,
       workspaceId: record.workspaceId,
       name: record.name,
       orderIndex: record.orderIndex,
+      // Preserve `cardIds` order — it is the authoritative ordering. Sorting by
+      // `orderIndex` would make duplicate indices (after a move) nondeterministic.
       cards: (record.cardIds ?? [])
         .map((cardId) => cards.get(cardId))
         .filter((card): card is CardRecord => Boolean(card))
-        .sort((a, b) => a.orderIndex - b.orderIndex)
         .map(toBoardCard),
       createdAt: "",
       updatedAt: "",
@@ -215,6 +216,22 @@ export function observeBoard(doc: Y.Doc, onChange: () => void): () => void {
   return () => doc.off("update", onChange);
 }
 
+/**
+ * Rewrite every card's `orderIndex` to its position in `cardIds` (F-11).
+ *
+ * `cardIds` is the source of truth for order; keeping `orderIndex` in lockstep
+ * means the server reconciler receives collision-free indices and any read that
+ * does sort by `orderIndex` stays deterministic. Must run inside a transaction.
+ */
+function reindexCards(cards: Y.Map<CardRecord>, cardIds: string[]): void {
+  cardIds.forEach((id, index) => {
+    const card = cards.get(id);
+    if (card && card.orderIndex !== index) {
+      cards.set(id, { ...card, orderIndex: index });
+    }
+  });
+}
+
 // ── mutations (all local, all origin-tagged) ────────────────
 
 export interface NewCardInput {
@@ -258,6 +275,7 @@ export function addCard(
       const cardIds = [...column.cardIds];
       cardIds.splice(orderIndex, 0, id);
       columns.set(column.id, { ...column, cardIds });
+      reindexCards(cards, cardIds);
     }
   }, ORIGIN_LOCAL);
 
@@ -290,10 +308,9 @@ export function removeCard(doc: Y.Doc, cardId: string): void {
 
     const column = columns.get(existing.columnId);
     if (column) {
-      columns.set(column.id, {
-        ...column,
-        cardIds: column.cardIds.filter((id) => id !== cardId),
-      });
+      const cardIds = column.cardIds.filter((id) => id !== cardId);
+      columns.set(column.id, { ...column, cardIds });
+      reindexCards(cards, cardIds);
     }
   }, ORIGIN_LOCAL);
 }
@@ -333,6 +350,13 @@ export function moveCard(
 
     columns.set(target.id, { ...target, cardIds: targetIds });
     cards.set(cardId, { ...card, columnId: target.id, orderIndex: index });
+    reindexCards(cards, targetIds);
+
+    // Removing the card from the source column shifts its siblings' indices.
+    if (source && source.id !== target.id) {
+      const sourceIds = columns.get(source.id)?.cardIds ?? [];
+      reindexCards(cards, sourceIds);
+    }
   }, ORIGIN_LOCAL);
 }
 

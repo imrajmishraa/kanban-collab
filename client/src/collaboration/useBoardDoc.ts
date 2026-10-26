@@ -49,6 +49,8 @@ export interface UseBoardDocOptions {
   /** The REST snapshot used to seed an empty document. */
   board: BoardDetails;
   enabled?: boolean;
+  /** True once the document has synced with the server (F-10). */
+  synced?: boolean;
 }
 
 export interface BoardDocApi {
@@ -73,6 +75,7 @@ export function useBoardDoc({
   doc,
   board,
   enabled = true,
+  synced = true,
 }: UseBoardDocOptions): BoardDocApi {
   const [state, setState] = useState<BoardDetails>(() =>
     doc ? (readBoard(doc) ?? board) : board,
@@ -100,9 +103,10 @@ export function useBoardDoc({
       };
     }
 
-    // Seed once, only when the CRDT is empty. This is an external-system
-    // write (into the Y.Doc), not a React state update.
-    if (!isBoardSeeded(doc)) {
+    // Seed once — but only AFTER the first server sync (F-10), and only when
+    // the CRDT is still empty. Seeding before sync races the server's state and
+    // a stale REST snapshot could clobber a live document.
+    if (synced && !isBoardSeeded(doc)) {
       seedBoard(doc, board);
     }
 
@@ -117,7 +121,7 @@ export function useBoardDoc({
       cancelAnimationFrame(frame);
       unsubscribe();
     };
-  }, [doc, enabled, board]);
+  }, [doc, enabled, board, synced]);
 
   const boardId = state.id;
 
@@ -177,10 +181,7 @@ export function useBoardDoc({
     [doc],
   );
 
-  const live = useMemo(
-    () => Boolean(doc) && isBoardSeeded(doc as Y.Doc),
-    [doc],
-  );
+  const live = useMemo(() => Boolean(doc) && synced, [doc, synced]);
 
   return {
     board: state,
