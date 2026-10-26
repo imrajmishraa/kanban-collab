@@ -6,6 +6,7 @@ import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { useAuth } from "@/hooks/auth/useAuth";
 
 import { Avatar } from "@components/layout/board/BoardAvatar";
+import ConfirmDialog from "@components/ui/dialog/ConfirmDialog";
 
 import { avatarColor } from "@/features/boards/board.helpers";
 
@@ -50,6 +51,8 @@ function MemberPage() {
     onError: () => setMessage("Couldn't update that role."),
   });
 
+  const [pendingRemove, setPendingRemove] = useState<string | null>(null);
+
   const removeMember = useMutation({
     mutationFn: (memberId: string) =>
       workspaceApi.removeMember(activeWorkspaceId!, memberId),
@@ -71,6 +74,21 @@ function MemberPage() {
 
   return (
     <div className="min-h-screen bg-(--bg-root) px-6 py-10 text-(--text-primary)">
+      {pendingRemove && (
+        <ConfirmDialog
+          open
+          title="Remove member"
+          message="Remove this member from the workspace? They will lose access immediately."
+          confirmLabel="Remove"
+          destructive
+          onConfirm={() => {
+            const id = pendingRemove;
+            setPendingRemove(null);
+            removeMember.mutate(id);
+          }}
+          onCancel={() => setPendingRemove(null)}
+        />
+      )}
       <div className="mx-auto w-full max-w-3xl">
         <header className="border-b border-white/8 pb-6">
           <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-(--text-muted)">
@@ -170,7 +188,7 @@ function MemberPage() {
                     <button
                       type="button"
                       disabled={busy}
-                      onClick={() => removeMember.mutate(member.userId)}
+                      onClick={() => setPendingRemove(member.userId)}
                       className="shrink-0 rounded-lg border border-(--danger)/40 bg-(--danger)/10 px-2.5 py-1 font-mono text-[10px] text-(--danger) transition-colors hover:bg-(--danger)/20 disabled:opacity-50"
                     >
                       Remove

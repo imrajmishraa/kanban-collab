@@ -81,6 +81,20 @@ export const updateCardSchema = {
         )
         .optional(),
 
+      // F-2: the card modal edits checklists; persist them on update.
+      checklists: z
+        .array(
+          z.object({
+            title: z
+              .string()
+              .trim()
+              .min(1, "Checklist item cannot be empty.")
+              .max(200, "Checklist item cannot exceed 200 characters."),
+            isCompleted: z.boolean().optional(),
+          }),
+        )
+        .optional(),
+
       isArchived: z.boolean().optional(),
     })
     .refine((body) => Object.keys(body).length > 0, {

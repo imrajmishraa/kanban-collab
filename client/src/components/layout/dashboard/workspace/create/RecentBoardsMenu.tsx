@@ -43,7 +43,7 @@ export function RecentBoardsMenu() {
     [boards],
   );
 
-  const currentBoardId = location.pathname.startsWith("/board/")
+  const currentBoardId = location.pathname.startsWith("/boards/")
     ? location.pathname.split("/")[2]
     : null;
 

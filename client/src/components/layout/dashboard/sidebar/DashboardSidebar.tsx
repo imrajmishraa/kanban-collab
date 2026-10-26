@@ -23,6 +23,7 @@ import { boardApi } from "@/api/dashboard/boardApi";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { ShareBoardDialog } from "./ShareBoardDialog";
+import ConfirmDialog from "@components/ui/dialog/ConfirmDialog";
 
 interface DashboardSidebarProps {
   collapsed: boolean;
@@ -41,6 +42,10 @@ export default function DashboardSidebar({
   const [selectMode, setSelectMode] = useState(false);
   const [selectedBoards, setSelectedBoards] = useState<Set<string>>(new Set());
   const [shareBoardId, setShareBoardId] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<{
+    ids: string[];
+    label: string;
+  } | null>(null);
   const [pinnedBoardIds, setPinnedBoardIds] = useState<string[]>(() => {
     try {
       return JSON.parse(localStorage.getItem("kanban.pinnedBoards") ?? "[]");
@@ -145,8 +150,30 @@ export default function DashboardSidebar({
     closeSelectMode();
   };
 
-  const handleBulkDelete = async () => {
-    const ids = Array.from(selectedBoards);
+  const requestDeleteBoards = (ids: string[], label: string) => {
+    if (ids.length === 0) return;
+    setPendingDelete({ ids, label });
+  };
+
+  const handleBulkDelete = () => {
+    requestDeleteBoards(
+      Array.from(selectedBoards),
+      `Delete ${selectedBoards.size} board(s)? This can't be undone.`,
+    );
+  };
+
+  const requestDeleteBoard = (boardId: string) => {
+    const board = boards.find((b) => b.id === boardId);
+    requestDeleteBoards(
+      [boardId],
+      `Delete “${board?.name ?? "this board"}”? This can't be undone.`,
+    );
+  };
+
+  const confirmDelete = async () => {
+    if (!pendingDelete) return;
+    const { ids } = pendingDelete;
+    setPendingDelete(null);
     await Promise.all(
       ids.map((id) => handleDeleteBoard(id).catch(() => undefined)),
     );
@@ -196,7 +223,7 @@ export default function DashboardSidebar({
             }}
             onRenameBoard={handleRenameBoard}
             onShareBoard={handleShareBoard}
-            onDeleteBoard={handleDeleteBoard}
+            onDeleteBoard={requestDeleteBoard}
           />
         ) : (
           <>
@@ -220,7 +247,7 @@ export default function DashboardSidebar({
                   onPin={handlePinBoard}
                   onRename={handleRenameBoard}
                   onShare={handleShareBoard}
-                  onDelete={handleDeleteBoard}
+                  onDelete={requestDeleteBoard}
                   onEnterSelectMode={() => setSelectMode(true)}
                 />
               </div>
@@ -273,6 +300,20 @@ export default function DashboardSidebar({
           boardId={shareBoardId}
           boardName={boards.find((b) => b.id === shareBoardId)?.name}
           onClose={() => setShareBoardId(null)}
+        />
+      )}
+
+      {pendingDelete && (
+        <ConfirmDialog
+          open
+          title="Delete board"
+          message={pendingDelete.label}
+          confirmLabel="Delete"
+          destructive
+          onConfirm={() => {
+            void confirmDelete();
+          }}
+          onCancel={() => setPendingDelete(null)}
         />
       )}
     </>

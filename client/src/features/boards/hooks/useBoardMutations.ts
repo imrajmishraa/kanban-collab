@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { boardKeys } from "@/hooks/dashboard/useBoards";
+import type { BoardCardChecklistItem } from "@/types/api/dashboard/board";
 import { cardApi } from "@/api/dashboard/cardApi";
 import { columnApi } from "@/api/dashboard/columnAPI";
 
@@ -42,6 +43,7 @@ export function useBoardMutations(boardId: string | undefined) {
       dueDate?: string | null;
       members?: string[];
       labels?: string[];
+      checklists?: BoardCardChecklistItem[];
     }) => cardApi.updateCard(input.cardId, input),
     onSuccess: invalidate,
   });

@@ -36,7 +36,7 @@ function OverviewSkeleton() {
  * Board page — an overview of every board in the active workspace,
  * with each board's columns, cards and member count.
  *
- * Individual boards open on the kanban view at `/board/:boardId`.
+ * Individual boards open on the kanban view at `/boards/:boardId`.
  */
 export function BoardPage() {
   const { activeWorkspaceId } = useActiveWorkspace();

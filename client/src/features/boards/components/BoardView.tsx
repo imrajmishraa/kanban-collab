@@ -9,6 +9,7 @@ import BoardPresence from "@components/layout/board/BoardPresence";
 import BoardToolbar from "@components/layout/board/BoardToolbar";
 import CardDetailModal from "@components/layout/board/CardDetailModal";
 import BoardActivityPanel from "@components/layout/board/BoardActivityPanel";
+import ConfirmDialog from "@components/ui/dialog/ConfirmDialog";
 
 import {
   buildCollaborationWsUrl,
@@ -83,6 +84,12 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
   const [view, setView] = useState<ViewMode>("board");
   const [activeCard, setActiveCard] = useState<BoardCard | null>(null);
   const [showActivity, setShowActivity] = useState(false);
+  const [confirm, setConfirm] = useState<{
+    title: string;
+    message: string;
+    confirmLabel: string;
+    run: () => void;
+  } | null>(null);
   const [composerColumnId, setComposerColumnId] = useState<string | null>(null);
   const [draggingCardId, setDraggingCardId] = useState<string | null>(null);
   const [dragOverColumnId, setDragOverColumnId] = useState<string | null>(null);
@@ -201,6 +208,7 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
         dueDate: updated.dueDate ?? null,
         members: updated.members,
         labels: updated.labels,
+        checklists: updated.checklists,
       });
     } else {
       rest.updateCard.mutate({
@@ -210,18 +218,32 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
         dueDate: updated.dueDate ?? null,
         members: updated.members,
         labels: updated.labels,
+        checklists: updated.checklists,
       });
     }
     closeCard();
   };
 
-  const handleDeleteCard = (cardId: string) => {
+  const performDeleteCard = (cardId: string) => {
     if (live) {
       docApi.deleteCard(cardId);
     } else {
       rest.deleteCard.mutate(cardId);
     }
     closeCard();
+  };
+
+  const handleDeleteCard = (cardId: string) => {
+    const card = state.columns
+      .flatMap((c) => c.cards)
+      .find((c) => c.id === cardId);
+
+    setConfirm({
+      title: "Delete card",
+      message: `Delete “${card?.title ?? "this card"}”? This can't be undone.`,
+      confirmLabel: "Delete",
+      run: () => performDeleteCard(cardId),
+    });
   };
 
   const addColumn = () => {
@@ -253,7 +275,7 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
     rest.updateColumn.mutate({ columnId, name: next.trim() });
   };
 
-  const clearColumn = async (columnId: string) => {
+  const performClearColumn = async (columnId: string) => {
     const column = state.columns.find((c) => c.id === columnId);
     if (!column) return;
 
@@ -266,7 +288,21 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
     }
   };
 
-  const handleDeleteColumn = async (columnId: string) => {
+  const clearColumn = (columnId: string) => {
+    const column = state.columns.find((c) => c.id === columnId);
+    if (!column || column.cards.length === 0) return;
+
+    setConfirm({
+      title: "Clear column",
+      message: `Remove all ${column.cards.length} card(s) from “${column.name}”? This can't be undone.`,
+      confirmLabel: "Clear cards",
+      run: () => {
+        void performClearColumn(columnId);
+      },
+    });
+  };
+
+  const performDeleteColumn = async (columnId: string) => {
     const column = state.columns.find((c) => c.id === columnId);
     if (!column) return;
 
@@ -284,6 +320,20 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
     } else {
       rest.deleteColumn.mutate(columnId);
     }
+  };
+
+  const handleDeleteColumn = (columnId: string) => {
+    const column = state.columns.find((c) => c.id === columnId);
+    if (!column) return;
+
+    setConfirm({
+      title: "Delete column",
+      message: `Delete “${column.name}” and its ${column.cards.length} card(s)? This can't be undone.`,
+      confirmLabel: "Delete column",
+      run: () => {
+        void performDeleteColumn(columnId);
+      },
+    });
   };
 
   /* ── Drag handlers ── */
@@ -401,6 +451,22 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
           onSave={handleUpdateCard}
           onDelete={handleDeleteCard}
           watchers={peersOnCard(activeCard.id)}
+        />
+      )}
+
+      {confirm && (
+        <ConfirmDialog
+          open
+          title={confirm.title}
+          message={confirm.message}
+          confirmLabel={confirm.confirmLabel}
+          destructive
+          onConfirm={() => {
+            const run = confirm.run;
+            setConfirm(null);
+            run();
+          }}
+          onCancel={() => setConfirm(null)}
         />
       )}
     </div>

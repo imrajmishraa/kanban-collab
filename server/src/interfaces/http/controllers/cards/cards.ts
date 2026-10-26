@@ -133,8 +133,16 @@ const createCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
 
 const updateCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
   const cardId = req.params["cardId"] || req.params["id"];
-  const { title, columnId, description, dueDate, members, labels, isArchived } =
-    req.body;
+  const {
+    title,
+    columnId,
+    description,
+    dueDate,
+    members,
+    labels,
+    checklists,
+    isArchived,
+  } = req.body;
   const userId = requireUserId(req);
 
   try {
@@ -191,6 +199,20 @@ const updateCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
 
     if (labels !== undefined) {
       card.labels = labels as string[];
+    }
+
+    if (checklists !== undefined) {
+      // F-2: persist checklist edits. `set()` keeps the sub-document typing
+      // happy and defaults `isCompleted` to false.
+      card.set(
+        "checklists",
+        (checklists as { title: string; isCompleted?: boolean }[]).map(
+          (item) => ({
+            title: item.title,
+            isCompleted: item.isCompleted ?? false,
+          }),
+        ),
+      );
     }
 
     if (isArchived !== undefined) {

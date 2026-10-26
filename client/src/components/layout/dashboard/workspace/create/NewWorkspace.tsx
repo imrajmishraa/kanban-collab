@@ -52,7 +52,7 @@ export default function NewWorkspace({ onClose }: NewWorkspaceProps = {}) {
       );
 
       onClose?.();
-      navigate(`/workspaces/${workspace.slug}`, { replace: true });
+      navigate(`/workspaces/${workspace.id}`, { replace: true });
     } catch (err) {
       if (err instanceof ApiClientError) {
         // Field-level errors → inline under the inputs

@@ -35,6 +35,8 @@ export interface UpdateCardRequest {
   dueDate?: string | null; // null clears it
   members?: string[];
   labels?: string[];
+  // F-2: the card modal edits checklists — persist them on update.
+  checklists?: BoardCardChecklistItem[];
   isArchived?: boolean;
 }
 
