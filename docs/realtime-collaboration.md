@@ -93,7 +93,7 @@ On connect, the server loads (or creates) the board's document, registers the cl
 | `persistence/mongoPersistence.ts` | Loads/saves the document to the `yjsupdates` collection |
 | `persistence/debounce.ts` | Debounces writes |
 | `persistence/boardReconciler.ts` | Projects the CRDT into `columns`/`cards` documents |
-| `persistence/redisSync.ts` | (Intended) cross-instance fan-out via Redis pub/sub |
+| `persistence/redisSync.ts` | Cross-instance fan-out via Redis pub/sub — bound per document in `documentManager`, connected during `initializeCollaboration` |
 | `jobs/yjsSnapshot.job.ts` | Periodic snapshot |
 
 State is persisted by writing the encoded Yjs update to `yjsupdates` (keyed by `docName` = boardId), debounced. Separately, `boardReconciler` reads the document and **upserts `Column` and `Card` rows** so ordinary REST queries see the latest state. Reconciliation runs on the debounce, on last-close, and via the snapshot job.
