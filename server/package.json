@@ -25,7 +25,7 @@
     "dev:debug": "nodemon --watch src -e ts --exec \"node --inspect=0.0.0.0:9229 -r ts-node/register src/main.ts\"",
     "dev:pretty": "NODE_ENV=development nodemon --watch src -e ts --exec \"ts-node --files src/main.ts\" | pino-pretty",
     "// ── Build ────────────────────────────────────────────": "",
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.build.json",
     "build:watch": "tsc -p tsconfig.json --watch",
     "clean": "rm -rf dist coverage .tsbuildinfo",
     "rebuild": "npm run clean && npm run build",

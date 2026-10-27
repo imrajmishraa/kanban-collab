@@ -9,7 +9,7 @@
 
     /* ── Output ────────────────────────────────────────── */
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": ".",
     "sourceMap": true,
     "declaration": false,
     "declarationMap": false,
@@ -44,7 +44,7 @@
     /* ── Types ─────────────────────────────────────────── */
     "types": ["node"]
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts"],
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "api/**/*.ts"],
   "exclude": [
     "node_modules",
     "dist",
