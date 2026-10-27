@@ -161,6 +161,14 @@ const envSchema = z.object({
   WORKSPACE_CLEANUP_CRON: zCron.default("0 * * * *"),
   SELF_PING_CRON: zCron.default("*/10 * * * *"),
 
+  /**
+   * Shared secret for HTTP-invoked scheduled jobs. Required by
+   * `GET /api/v1/internal/cron/:job`; when unset that route refuses to run
+   * anything. On Vercel, setting this variable also makes the platform send
+   * `Authorization: Bearer $CRON_SECRET` on every Vercel Cron invocation.
+   */
+  CRON_SECRET: z.string().min(16).optional(),
+
   // Render keep-alive — self-ping the service's own public URL so a Free
   // instance doesn't spin down. RENDER_EXTERNAL_URL is injected by Render
   // automatically; SELF_PING_URL overrides it for other hosts / custom domains.

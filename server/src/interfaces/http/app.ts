@@ -21,6 +21,7 @@ import dashboardRoutes from "./routes/dashboard/dashboard";
 import workspaceRoute from "./routes/kanban/workspace/workspaceRoutes";
 import notesRoute from "./routes/notes/notes.routes";
 import notificationsRoute from "./routes/notifications/notifications.routes";
+import cronRoute from "./routes/internal/cron.route";
 
 import { errorHandler } from "./middleware/errorHandler";
 import { notFoundHandler } from "./middleware/notFoundHandler";
@@ -162,6 +163,10 @@ app.use("/api/v1/workspaces", workspaceRoute);
 app.use("/api/v1/dashboard", dashboardRoutes);
 app.use("/api/v1/notes", notesRoute);
 app.use("/api/v1/notifications", notificationsRoute);
+
+// Scheduled jobs, invoked over HTTP by an external scheduler. Secret-guarded;
+// serverless has no long-lived process for `node-cron` to live in.
+app.use("/api/v1/internal/cron", cronRoute);
 
 // TERMINAL
 

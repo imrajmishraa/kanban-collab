@@ -60,11 +60,24 @@ function createWebSocketServer(): WebSocketServer {
  * Does NOT create or start an HTTP server.
  * It attaches itself to the existing Express server.
  */
-export async function startWebSocketServer(httpServer: Server): Promise<void> {
-  if (wss) {
-    logger.warn("WebSocket server already initialized.");
+/**
+ * Initializes the collaboration layer and returns the shared WebSocketServer.
+ *
+ * Does NOT attach an `upgrade` listener — callers own that:
+ *
+ *   - `startWebSocketServer` below wires it for the long-lived process.
+ *   - `src/serverless/handler.ts` wires its own, because on Vercel the
+ *     listener must be registered before infrastructure finishes connecting.
+ *
+ * Idempotent: repeated calls return the existing server.
+ */
+export async function attachWebSocketServer(
+  httpServer: Server,
+): Promise<WebSocketServer> {
+  void httpServer;
 
-    return;
+  if (wss) {
+    return wss;
   }
 
   logger.info("Initializing WebSocket infrastructure...");
@@ -73,26 +86,40 @@ export async function startWebSocketServer(httpServer: Server): Promise<void> {
 
   wss = createWebSocketServer();
 
+  logger.info("WebSocket infrastructure initialized.");
+
+  return wss;
+}
+
+/**
+ * Initializes the WebSocket layer.
+ *
+ * Does NOT create or start an HTTP server.
+ * It attaches itself to the existing Express server.
+ */
+export async function startWebSocketServer(httpServer: Server): Promise<void> {
+  if (wss) {
+    logger.warn("WebSocket server already initialized.");
+
+    return;
+  }
+
+  const server = await attachWebSocketServer(httpServer);
+
   httpServer.on("upgrade", (request, socket, head) => {
-    if (!wss) {
-      socket.destroy();
-
-      return;
-    }
-
     /**
      * Defense in depth: `handleUpgrade` handles its own errors, but this
      * catch guarantees that no rejection can ever escape the "upgrade"
      * listener and reach `main.ts`'s unhandledRejection shutdown path.
      */
-    void handleUpgrade(request, socket, head, wss).catch((error: unknown) => {
-      logger.error({ err: error }, "Unhandled WebSocket upgrade error.");
+    void handleUpgrade(request, socket, head, server).catch(
+      (error: unknown) => {
+        logger.error({ err: error }, "Unhandled WebSocket upgrade error.");
 
-      socket.destroy();
-    });
+        socket.destroy();
+      },
+    );
   });
-
-  logger.info("WebSocket infrastructure initialized.");
 }
 
 /**

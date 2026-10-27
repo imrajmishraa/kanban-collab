@@ -10,9 +10,32 @@ import { notificationDueReminderJob } from "../../jobs/notificationDueReminder.j
 import { notificationDigestJob } from "../../jobs/notificationDigest.job";
 import { selfPingJob } from "../../jobs/selfPing.job";
 
+/**
+ * Every job this service can run, by name.
+ *
+ * The same registry backs two triggers:
+ *
+ *   1. `startCronJobs()` — in-process `node-cron`, for the long-lived process
+ *      (Docker Compose, Render web service).
+ *   2. `runJob(name)` — HTTP invocation via `GET /api/v1/internal/cron/:job`,
+ *      for serverless, where no process outlives a request.
+ *
+ * Adding a job: create `server/src/jobs/<name>.job.ts`, add an entry to
+ * `buildJobDefinitions()`, and add the name to `SCHEDULED_JOB_NAMES`.
+ */
+export const SCHEDULED_JOB_NAMES = [
+  "workspace-cleanup",
+  "yjs-snapshot",
+  "notification-due-reminder",
+  "notification-digest",
+  "self-ping",
+] as const;
+
+export type ScheduledJobName = (typeof SCHEDULED_JOB_NAMES)[number];
+
 interface CronJobDefinition {
   /** Human-readable name — shows up in logs and shutdown messages. */
-  name: string;
+  name: ScheduledJobName;
   /** 5-field cron expression. */
   schedule: string;
   /** The async job function to run. */
@@ -59,14 +82,43 @@ function buildJobDefinitions(): CronJobDefinition[] {
   ];
 }
 
+let cachedDefinitions: CronJobDefinition[] | null = null;
+
+function getJobDefinitions(): CronJobDefinition[] {
+  cachedDefinitions ??= buildJobDefinitions();
+
+  return cachedDefinitions;
+}
+
+/** Type guard for the `:job` path parameter. */
+export function isScheduledJobName(value: string): value is ScheduledJobName {
+  return (SCHEDULED_JOB_NAMES as readonly string[]).includes(value);
+}
+
+/**
+ * Runs a single job by name, bypassing the scheduler.
+ *
+ * Used by the HTTP trigger. Errors propagate so the caller can answer 500.
+ */
+export async function runJob(name: ScheduledJobName): Promise<void> {
+  const definition = getJobDefinitions().find((job) => job.name === name);
+
+  if (!definition) {
+    throw new Error(`Unknown scheduled job: ${name}`);
+  }
+
+  await definition.handler();
+}
+
 /** Active tasks — kept so we can stop them on shutdown. */
-const scheduledTasks: Array<{ name: string; task: ScheduledTask }> = [];
+const scheduledTasks: Array<{ name: ScheduledJobName; task: ScheduledTask }> =
+  [];
 
 /**
  * Register all cron jobs.
  *
  * Behavior:
- *   - No-op when `SCHEDULER_ENABLED=false` (tests, one-off scripts, etc.)
+ *   - No-op when `SCHEDULER_ENABLED=false` (tests, one-off scripts, serverless)
  *   - Runs jobs in the server's local timezone unless `SCHEDULER_TIMEZONE` is set
  *   - Prevents overlap — a slow run won't have concurrent siblings
  *   - All job errors are caught, logged, and do NOT crash the process
@@ -80,7 +132,7 @@ export function startCronJobs(): void {
     return;
   }
 
-  const jobs = buildJobDefinitions();
+  const jobs = getJobDefinitions();
 
   for (const { name, schedule, handler, runOnStartup } of jobs) {
     const task = cron.schedule(
