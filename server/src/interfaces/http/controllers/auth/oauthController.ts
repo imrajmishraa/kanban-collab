@@ -1,4 +1,3 @@
-import crypto from "node:crypto";
 import type { Request, Response } from "express";
 
 import { asyncHandler } from "../../../../shared/utils/asyncHandler";
@@ -7,6 +6,7 @@ import { authLogger } from "../../../../infrastructure/logging/childLogger";
 
 import { startOAuthFlow } from "../../../../application/auth/oauth/startOAuthFlow";
 import { handleOAuthCallback } from "../../../../application/auth/oauth/handleOAuthCallback";
+import { verifyStateToken } from "../../../../application/auth/oauth/stateToken";
 import { listEnabledProviders } from "../../../../infrastructure/auth/providers";
 
 import { unknownProviderError } from "../../../../shared/errors/auth/oauth";
@@ -16,12 +16,30 @@ import {
   getRefreshCookieOptions,
 } from "../../utils/cookies";
 
-/** Constant-time string comparison (O-4) — avoids leaking the state via timing. */
-function safeEqual(a: string, b: string): boolean {
-  const left = Buffer.from(a);
-  const right = Buffer.from(b);
-  if (left.length !== right.length) return false;
-  return crypto.timingSafeEqual(left, right);
+/**
+ * Sends the browser back to the SPA with a machine-readable outcome.
+ *
+ * Every failure path ends here rather than with a JSON error, because the user
+ * arrives via a top-level navigation from the provider — a bare JSON body
+ * would strand them on the API origin.
+ */
+function redirectToClient(res: Response, query: Record<string, string>): void {
+  const url = new URL("/auth/callback", ENV.CLIENT_URL);
+
+  for (const [key, value] of Object.entries(query)) {
+    url.searchParams.set(key, value);
+  }
+
+  res.redirect(url.toString());
+}
+
+/** `?rememberMe=true|false` from the login page. Defaults to off. */
+function parseRememberMe(value: unknown): boolean {
+  const raw = Array.isArray(value) ? value[0] : value;
+
+  if (typeof raw !== "string") return false;
+
+  return ["true", "1", "yes", "on"].includes(raw.trim().toLowerCase());
 }
 
 export const listProviders = asyncHandler(
@@ -39,17 +57,14 @@ export const startOAuth = asyncHandler(async (req: Request, res: Response) => {
   const provider = req.params["provider"];
   if (!provider) throw unknownProviderError("(missing)");
 
-  const flow = startOAuthFlow(provider);
-
-  res.cookie(flow.cookieName, flow.stateToken, {
-    httpOnly: true,
-    secure: ENV.COOKIE_SECURE,
-    sameSite: "lax",
-    path: "/api/v1/auth/oauth",
-    maxAge: flow.cookieMaxAgeMs,
+  const flow = startOAuthFlow({
+    providerName: provider,
+    rememberMe: parseRememberMe(req.query["rememberMe"]),
   });
 
-  return res.redirect(flow.authorizeUrl);
+  // No state cookie: the state is signed and self-verifying, so it survives a
+  // redirect to a different host and browsers that block third-party cookies.
+  res.redirect(flow.authorizeUrl);
 });
 
 export const oauthCallback = asyncHandler(
@@ -57,27 +72,63 @@ export const oauthCallback = asyncHandler(
     const provider = req.params["provider"];
     if (!provider) throw unknownProviderError("(missing)");
 
-    const { code, state } = req.query as { code?: string; state?: string };
+    const {
+      code,
+      state,
+      error: providerError,
+    } = req.query as {
+      code?: string;
+      state?: string;
+      error?: string;
+    };
 
-    const expectedState = req.cookies?.[ENV.OAUTH_STATE_COOKIE_NAME];
-    res.clearCookie(ENV.OAUTH_STATE_COOKIE_NAME, {
-      path: "/api/v1/auth/oauth",
-    });
+    // The user cancelled on the consent screen, or the provider rejected the
+    // request (e.g. redirect_uri_mismatch). Send them back with a reason.
+    if (providerError) {
+      authLogger.warn(
+        { provider, providerError },
+        "OAuth provider returned an error instead of a code.",
+      );
 
-    if (!code || !state || !expectedState || !safeEqual(state, expectedState)) {
+      redirectToClient(res, {
+        status: "error",
+        reason:
+          providerError === "access_denied" ? "cancelled" : "provider_error",
+      });
+      return;
+    }
+
+    if (!code || !state) {
       authLogger.warn(
         { provider, hasCode: Boolean(code), hasState: Boolean(state) },
-        "OAuth callback rejected — invalid state or missing code.",
+        "OAuth callback missing code or state.",
       );
-      return res.redirect(
-        `${ENV.CLIENT_URL}/auth/callback?status=error&reason=invalid_state`,
+
+      redirectToClient(res, { status: "error", reason: "invalid_state" });
+      return;
+    }
+
+    // Throws invalidOAuthStateError for a bad signature, wrong provider or an
+    // expired token; the signed state carries the rememberMe choice.
+    let rememberMe: boolean;
+
+    try {
+      ({ rememberMe } = verifyStateToken(state, provider));
+    } catch {
+      authLogger.warn(
+        { provider },
+        "OAuth callback rejected — invalid or expired state.",
       );
+
+      redirectToClient(res, { status: "error", reason: "invalid_state" });
+      return;
     }
 
     try {
       const result = await handleOAuthCallback({
         providerName: provider,
         code,
+        rememberMe,
         ...(req.ip !== undefined ? { ipAddress: req.ip } : {}),
         ...(req.headers["user-agent"] !== undefined
           ? { userAgent: req.headers["user-agent"] }
@@ -90,18 +141,16 @@ export const oauthCallback = asyncHandler(
         getRefreshCookieOptions(result.rememberMe),
       );
 
-      const status = result.isNewUser ? "new" : "existing";
-      return res.redirect(
-        `${ENV.CLIENT_URL}/auth/callback?status=success&user=${status}`,
-      );
+      redirectToClient(res, {
+        status: "success",
+        user: result.isNewUser ? "new" : "existing",
+      });
     } catch (error) {
       authLogger.error({ err: error, provider }, "OAuth callback failed.");
 
-      // Do not put internal/provider error text in the redirect URL — the
-      // server-side log above already carries the detail.
-      return res.redirect(
-        `${ENV.CLIENT_URL}/auth/callback?status=error&reason=oauth_failed`,
-      );
+      // Do not leak provider error text into the redirect URL — the log above
+      // carries the detail.
+      redirectToClient(res, { status: "error", reason: "oauth_failed" });
     }
   },
 );

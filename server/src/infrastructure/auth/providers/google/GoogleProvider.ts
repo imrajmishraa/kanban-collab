@@ -22,22 +22,8 @@ export class GoogleProvider implements OAuthProvider {
     url.searchParams.set("response_type", "code");
     url.searchParams.set("scope", GOOGLE_CONFIG.scopes.join(" "));
     url.searchParams.set("state", state);
-    /**
-     * Deliberately no `prompt=consent` and no `access_type=offline`.
-     *
-     * `prompt=consent` makes Google re-display the account chooser and the
-     * consent screen on *every* sign-in, even when the browser already has an
-     * active Google session — which users read as "it made me log in again".
-     * Omitting it lets a single signed-in account pass straight through.
-     *
-     * `access_type=offline` exists only to obtain a refresh token, and this app
-     * never uses one (see `exchangeCode` below), so requesting it just widens
-     * the consent scope for nothing.
-     *
-     * If you later want the chooser when several accounts are signed in, use
-     * `prompt=select_account` — that still lets a single existing session skip
-     * the prompt.
-     */
+    url.searchParams.set("access_type", "offline");
+    url.searchParams.set("prompt", "consent");
     return url.toString();
   }
 

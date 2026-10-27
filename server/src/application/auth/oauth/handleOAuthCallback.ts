@@ -5,6 +5,13 @@ import type { Platform } from "../../../infrastructure/db/mongoose/schemas";
 export interface HandleOAuthCallbackInput {
   providerName: string;
   code: string;
+  /**
+   * Whether the session cookie should persist (30d) or expire with the browser.
+   * Comes from the signed state, which carries the choice made on the login
+   * page — previously this was hardcoded to `true`, so the "keep me signed in"
+   * checkbox silently had no effect for OAuth sign-ins.
+   */
+  rememberMe?: boolean;
   userAgent?: string;
   ipAddress?: string;
   deviceId?: string;
@@ -12,8 +19,15 @@ export interface HandleOAuthCallbackInput {
 }
 
 export async function handleOAuthCallback(input: HandleOAuthCallbackInput) {
-  const { providerName, code, userAgent, ipAddress, deviceId, platform } =
-    input;
+  const {
+    providerName,
+    code,
+    rememberMe,
+    userAgent,
+    ipAddress,
+    deviceId,
+    platform,
+  } = input;
 
   const provider = getProvider(providerName);
 
@@ -22,7 +36,7 @@ export async function handleOAuthCallback(input: HandleOAuthCallbackInput) {
 
   return signInWithProvider({
     profile,
-    rememberMe: true,
+    rememberMe: rememberMe ?? true,
     ...(userAgent ? { userAgent } : {}),
     ...(ipAddress ? { ipAddress } : {}),
     ...(deviceId ? { deviceId } : {}),
