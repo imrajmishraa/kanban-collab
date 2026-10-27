@@ -2,13 +2,44 @@ name: Keep Render Client Alive
 
 on:
   schedule:
-    - cron: '*/12 * * * *'   
-  workflow_dispatch:         
+    # Every 12 minutes. Render free instances sleep after ~15 min idle, and
+    # GitHub's scheduler routinely runs several minutes late, so keep a margin.
+    - cron: '*/12 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A late-scheduled run should never overlap the next one.
+concurrency:
+  group: keep-alive
+  cancel-in-progress: false
 
 jobs:
   ping:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-      - name: Ping Render Client
+      - name: Ping Render client
+        env:
+          URL: https://kanban-collab-client.onrender.com
         run: |
-          curl -s -o /dev/null -w "%{http_code}\n" https://kanban-collab-client.onrender.com
+          code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 --retry 2 --retry-delay 5 "$URL" || echo 000)
+          echo "client: HTTP $code"
+          case "$code" in
+            2*|3*) ;;
+            *) echo "::warning::Render client answered $code" ;;
+          esac
+
+      # if: always() so a Render hiccup doesn't skip the second check.
+      - name: Ping Vercel server
+        if: always()
+        env:
+          URL: https://kanban-collab-server.vercel.app/healthz
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 --retry 2 --retry-delay 5 "$URL" || echo 000)
+          echo "server: HTTP $code"
+          case "$code" in
+            2*|3*) ;;
+            *) echo "::warning::Vercel API answered $code" ;;
+          esac

@@ -6,6 +6,10 @@ services:
     rootDir: client
     buildCommand: npm ci && npm run build
     staticPublishPath: dist
+    # Deploy only when the CI/CD workflow fires the deploy hook for this
+    # service (see .github/workflows/ci-cd.yml), not on every push to main.
+    # `off` is the current spelling; `autoDeploy: false` is the deprecated alias.
+    autoDeployTrigger: 'off'
     pullRequestPreviewsEnabled: true
     envVars:
       # Pin the build to Node 22 to match client/package.json "engines".

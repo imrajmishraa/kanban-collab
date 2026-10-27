@@ -1,5 +1,14 @@
 name: CI/CD
 
+# One workflow for both checking and deploying.
+#
+#   server/**  -> Vercel  (kanban-collab-server)   secret: VERCEL_DEPLOY_HOOK_SERVER
+#   client/**  -> Render  (kanban-collab-client)   secret: RENDER_DEPLOY_HOOK_WEB
+#   render.yaml -> Render  (it is the client service definition)
+#
+# Checks always run for the side that changed. Deploys run only on main, only
+# for the side that actually changed, and only after that side's checks passed.
+
 on:
   push:
     branches: [main]
@@ -11,33 +20,46 @@ concurrency:
 
 permissions:
   contents: read
+  # paths-filter reads the changed-file list over the API on pull_request events.
+  pull-requests: read
+
+env:
+  # Live origins, used for the post-deploy health probe.
+  CLIENT_URL: https://kanban-collab-client.onrender.com
+  SERVER_URL: https://kanban-collab-server.vercel.app
 
 jobs:
   changes:
     name: Detect changes
     runs-on: ubuntu-latest
     outputs:
-      server: ${{ steps.filter.outputs.server }}
-      client: ${{ steps.filter.outputs.client }}
+      server_app: ${{ steps.filter.outputs.server_app }}
+      client_app: ${{ steps.filter.outputs.client_app }}
+      ci: ${{ steps.filter.outputs.ci }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          # paths-filter diffs the pushed range against its parent commit.
+          fetch-depth: 0
       - uses: dorny/paths-filter@v3
         id: filter
         with:
           filters: |
-            server:
+            # Application code — these decide whether we DEPLOY.
+            server_app:
               - 'server/**'
-              - 'docker-compose*.yml'
-              - '.github/workflows/**'
-            client:
+            client_app:
               - 'client/**'
-              - 'docker-compose*.yml'
+              - 'render.yaml'
+            # CI plumbing — these only decide whether we run CHECKS.
+            ci:
               - '.github/workflows/**'
+              - 'docker-compose*.yml'
 
   server:
     name: Server
     needs: changes
-    if: needs.changes.outputs.server == 'true'
+    if: needs.changes.outputs.server_app == 'true' || needs.changes.outputs.ci == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -65,7 +87,7 @@ jobs:
   client:
     name: Client
     needs: changes
-    if: needs.changes.outputs.client == 'true'
+    if: needs.changes.outputs.client_app == 'true' || needs.changes.outputs.ci == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -84,18 +106,78 @@ jobs:
       - run: npm test
       - run: npm run build
 
-  deploy-api:
-    name: Deploy API → Render
-    needs: [changes, server]
-    if: always() && github.ref == 'refs/heads/main' && needs.server.result == 'success'
-    runs-on: ubuntu-latest
-    steps:
-      - run: curl -fsSL -X POST "${{ secrets.RENDER_DEPLOY_HOOK_API }}"
+  # ───────────────────────────────────────────────────────────────────────────
+  # Deploys — main only, changed side only, checks green only.
+  # ───────────────────────────────────────────────────────────────────────────
 
-  deploy-web:
+  deploy-server:
+    name: Deploy API → Vercel
+    needs: [changes, server]
+    if: >
+      github.ref == 'refs/heads/main' &&
+      needs.changes.outputs.server_app == 'true' &&
+      needs.server.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Trigger Vercel deploy hook
+        env:
+          HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK_SERVER }}
+        run: |
+          set -euo pipefail
+          if [ -z "${HOOK:-}" ]; then
+            echo "::error::Secret VERCEL_DEPLOY_HOOK_SERVER is not set (Repo → Settings → Secrets and variables → Actions)."
+            exit 1
+          fi
+          curl -fsS -X POST --retry 3 --retry-delay 5 --max-time 30 "$HOOK"
+
+      - name: Wait for the API to answer /healthz
+        continue-on-error: true
+        env:
+          URL: ${{ env.SERVER_URL }}
+        run: |
+          for i in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "$URL/healthz" || true)
+            case "$code" in
+              2*|3*) echo "API is up (HTTP $code)"; exit 0 ;;
+            esac
+            echo "attempt $i: HTTP ${code:-000}, retrying…"
+            sleep 10
+          done
+          echo "::warning::API did not answer /healthz within ~5 minutes — check the Vercel dashboard."
+
+  deploy-client:
     name: Deploy Web → Render
     needs: [changes, client]
-    if: always() && github.ref == 'refs/heads/main' && needs.client.result == 'success'
+    if: >
+      github.ref == 'refs/heads/main' &&
+      needs.changes.outputs.client_app == 'true' &&
+      needs.client.result == 'success'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - run: curl -fsSL -X POST "${{ secrets.RENDER_DEPLOY_HOOK_WEB }}"
+      - name: Trigger Render deploy hook
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_WEB }}
+        run: |
+          set -euo pipefail
+          if [ -z "${HOOK:-}" ]; then
+            echo "::error::Secret RENDER_DEPLOY_HOOK_WEB is not set (Repo → Settings → Secrets and variables → Actions)."
+            exit 1
+          fi
+          curl -fsS -X POST --retry 3 --retry-delay 5 --max-time 30 "$HOOK"
+
+      - name: Wait for Render to serve the new build
+        continue-on-error: true
+        env:
+          URL: ${{ env.CLIENT_URL }}
+        run: |
+          for i in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "$URL" || true)
+            case "$code" in
+              2*|3*) echo "Client is up (HTTP $code)"; exit 0 ;;
+            esac
+            echo "attempt $i: HTTP ${code:-000}, retrying…"
+            sleep 10
+          done
+          echo "::warning::Client did not respond within ~5 minutes — check the Render dashboard."
