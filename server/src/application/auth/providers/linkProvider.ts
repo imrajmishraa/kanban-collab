@@ -19,14 +19,20 @@ export async function linkProvider(
   }
 
   const alreadyLinked = user.authProviders.some(
-    (p) => p.provider === profile.provider,
+    (p) =>
+      p.provider === profile.provider && p.providerId === profile.providerId,
   );
   if (alreadyLinked) throw providerAlreadyLinkedError(profile.provider);
 
+  // `$elemMatch` so provider and providerId must be on the same linked account.
   const conflict = await UserModel.findOne({
     _id: { $ne: user._id },
-    "authProviders.provider": profile.provider,
-    "authProviders.providerId": profile.providerId,
+    authProviders: {
+      $elemMatch: {
+        provider: profile.provider,
+        providerId: profile.providerId,
+      },
+    },
   });
   if (conflict) throw providerAlreadyLinkedError(profile.provider);
 

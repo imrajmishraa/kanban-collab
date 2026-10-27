@@ -40,9 +40,16 @@ export async function signInWithProvider(
   const { profile, userAgent, ipAddress, deviceId, platform } = input;
   const rememberMe = Boolean(input.rememberMe ?? true);
 
+  // Match provider + providerId on the SAME array element. Without
+  // `$elemMatch`, Mongo satisfies the two conditions independently, so a user
+  // with two different linked accounts could match the wrong combination.
   let user = await UserModel.findOne({
-    "authProviders.provider": profile.provider,
-    "authProviders.providerId": profile.providerId,
+    authProviders: {
+      $elemMatch: {
+        provider: profile.provider,
+        providerId: profile.providerId,
+      },
+    },
   });
 
   let isNewUser = false;
@@ -59,7 +66,9 @@ export async function signInWithProvider(
       }
 
       const alreadyLinked = user.authProviders.some(
-        (p) => p.provider === profile.provider,
+        (p) =>
+          p.provider === profile.provider &&
+          p.providerId === profile.providerId,
       );
 
       if (!alreadyLinked) {
@@ -85,7 +94,13 @@ export async function signInWithProvider(
         );
       }
     } else {
-      // Create new user
+      // Create new user. Require a provider-verified email so an unverified
+      // provider address cannot be used to squat an existing owner's email
+      // (the account-linking branch below already requires this).
+      if (!profile.emailVerified) {
+        throw oauthEmailNotVerifiedError(profile.provider);
+      }
+
       const email = profile.email;
       if (!email) throw oauthEmailNotVerifiedError(profile.provider);
 

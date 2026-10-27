@@ -97,10 +97,10 @@ export const oauthCallback = asyncHandler(
     } catch (error) {
       authLogger.error({ err: error, provider }, "OAuth callback failed.");
 
-      const reason =
-        error instanceof Error ? encodeURIComponent(error.message) : "unknown";
+      // Do not put internal/provider error text in the redirect URL — the
+      // server-side log above already carries the detail.
       return res.redirect(
-        `${ENV.CLIENT_URL}/auth/callback?status=error&reason=${reason}`,
+        `${ENV.CLIENT_URL}/auth/callback?status=error&reason=oauth_failed`,
       );
     }
   },
