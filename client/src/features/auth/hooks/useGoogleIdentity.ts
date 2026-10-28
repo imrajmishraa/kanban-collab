@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import axios from "axios";
+import { apiClient } from "@/api/client";
 
 declare global {
   interface Window {
@@ -61,8 +62,8 @@ export function useGoogleIdentity({
   // 1. Fetch available provider config to get client_id
   useEffect(() => {
     let unmounted = false;
-    axios
-      .get("/api/v1/auth/oauth")
+    apiClient
+      .get("/auth/oauth")
       .then((res) => {
         if (!unmounted && res.data?.data?.googleClientId) {
           setGoogleClientId(res.data.data.googleClientId);
@@ -101,7 +102,7 @@ export function useGoogleIdentity({
     async (response: { credential: string }) => {
       setIsLoading(true);
       try {
-        await axios.post("/api/v1/auth/oauth/google/token", {
+        await apiClient.post("/auth/oauth/google/token", {
           credential: response.credential,
           rememberMe: rememberMeRef.current,
         });
