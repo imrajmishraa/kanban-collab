@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from "react";
+import { useId, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -22,8 +22,7 @@ import {
 import { OAuthButton } from "@components/ui/auth/OAuthButton";
 import { LiveBoardPreview } from "#components/ui/auth/LiveBoardPreview";
 import { StatBlock } from "#components/ui/auth/StatBlock";
-import { useOAuthPopup } from "../hooks/useOAuthPopup";
-import { useGoogleIdentity } from "../hooks/useGoogleIdentity";
+import { useUnifiedOAuth } from "../hooks/useUnifiedOAuth";
 
 interface RegisterLocationState {
   from?: { pathname?: string; search?: string; hash?: string };
@@ -74,28 +73,24 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
-  const [oauthLoading, setOauthLoading] = useState<"google" | "github" | null>(
-    null,
-  );
 
-  const { openPopup } = useOAuthPopup();
-
-  const handleGoogleSuccess = async () => {
+  const handleOAuthSuccess = async () => {
     const ok = await refresh();
     if (ok) {
       navigate(destination, { replace: true });
     }
   };
 
-  const handleGoogleError = (errorMsg: string) => {
+  const handleOAuthError = (errorMsg: string) => {
     setError("root", { message: errorMsg });
   };
 
-  const { isReady: isGoogleReady, promptGoogle } = useGoogleIdentity({
-    onSuccess: handleGoogleSuccess,
-    onError: handleGoogleError,
-    rememberMe: true,
-  });
+  const { signInWithGoogle, signInWithGithub, loadingProvider } =
+    useUnifiedOAuth({
+      onSuccess: handleOAuthSuccess,
+      onError: handleOAuthError,
+      rememberMe: true,
+    });
 
   const {
     register: registerField,
@@ -112,19 +107,6 @@ export default function RegisterPage() {
       confirmPassword: "",
     },
   });
-
-  // Returning from an OAuth provider via the browser Back button restores this
-  // page from the back/forward cache with `oauthLoading` still set, which would
-  // leave the OAuth buttons (and the whole form) stuck in a loading state.
-  // Clear it whenever the page is restored.
-  useEffect(() => {
-    const handlePageShow = (event: PageTransitionEvent) => {
-      if (event.persisted) setOauthLoading(null);
-    };
-
-    window.addEventListener("pageshow", handlePageShow);
-    return () => window.removeEventListener("pageshow", handlePageShow);
-  }, []);
 
   const onSubmit = handleSubmit(async (values) => {
     try {
@@ -157,42 +139,6 @@ export default function RegisterPage() {
       }
     }
   });
-
-  const handleOauth = async (provider: "google" | "github") => {
-    setOauthLoading(provider);
-
-    // If Google and client-side GIS prompt is available, try it first
-    if (provider === "google" && isGoogleReady) {
-      const prompted = promptGoogle();
-      if (prompted) {
-        setOauthLoading(null);
-        return;
-      }
-    }
-
-    const url = `/api/v1/auth/oauth/${provider}?rememberMe=true`;
-
-    try {
-      const result = await openPopup(url, `${provider.toUpperCase()} Sign In`);
-      if (result.status === "success") {
-        const ok = await refresh();
-        if (ok) {
-          navigate(destination, { replace: true });
-          return;
-        }
-      } else if (result.reason && result.reason !== "cancelled") {
-        setError("root", {
-          message: `Failed to sign up with ${provider}. Please try again.`,
-        });
-      }
-    } catch {
-      setError("root", {
-        message: `An unexpected error occurred during ${provider} sign-up.`,
-      });
-    } finally {
-      setOauthLoading(null);
-    }
-  };
 
   return (
     <main className="relative h-full overflow-hidden text-(--text-primary)">
@@ -290,15 +236,15 @@ export default function RegisterPage() {
               <div className="mt-6 grid grid-cols-2 gap-2.5">
                 <OAuthButton
                   provider="google"
-                  loading={oauthLoading === "google"}
-                  disabled={oauthLoading !== null || isSubmitting}
-                  onClick={() => handleOauth("google")}
+                  loading={loadingProvider === "google"}
+                  disabled={loadingProvider !== null || isSubmitting}
+                  onClick={signInWithGoogle}
                 />
                 <OAuthButton
                   provider="github"
-                  loading={oauthLoading === "github"}
-                  disabled={oauthLoading !== null || isSubmitting}
-                  onClick={() => handleOauth("github")}
+                  loading={loadingProvider === "github"}
+                  disabled={loadingProvider !== null || isSubmitting}
+                  onClick={signInWithGithub}
                 />
               </div>
 
@@ -561,7 +507,7 @@ export default function RegisterPage() {
                 <button
                   type="submit"
                   disabled={
-                    isSubmitting || oauthLoading !== null || !agreeToTerms
+                    isSubmitting || loadingProvider !== null || !agreeToTerms
                   }
                   className="
                     group/cta relative mt-1 flex w-full items-center justify-center gap-2

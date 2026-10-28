@@ -23,3 +23,10 @@ export const googleFederatedAuthSchema = z.object({
   credential: z.string().min(1),
   rememberMe: z.boolean().optional(),
 });
+
+export const verifyOAuthSchema = z.object({
+  provider: z.enum(["google", "github"]),
+  token: z.string().min(1),
+  redirectUri: z.string().optional(),
+  rememberMe: z.boolean().optional(),
+});

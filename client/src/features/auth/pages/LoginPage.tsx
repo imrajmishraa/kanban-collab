@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from "react";
+import { useId, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,8 +19,7 @@ import {
 import { OAuthButton } from "#components/ui/auth/OAuthButton";
 import { StatBlock } from "#components/ui/auth/StatBlock";
 import { LiveBoardPreview } from "#components/ui/auth/LiveBoardPreview";
-import { useOAuthPopup } from "../hooks/useOAuthPopup";
-import { useGoogleIdentity } from "../hooks/useGoogleIdentity";
+import { useUnifiedOAuth } from "../hooks/useUnifiedOAuth";
 
 /* TYPES */
 
@@ -50,11 +49,6 @@ export default function LoginPage() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(true);
-  const [oauthLoading, setOauthLoading] = useState<"google" | "github" | null>(
-    null,
-  );
-
-  const { openPopup } = useOAuthPopup();
 
   const {
     register: registerField,
@@ -67,35 +61,23 @@ export default function LoginPage() {
     defaultValues: { email: "", password: "" },
   });
 
-  const handleGoogleSuccess = async () => {
+  const handleOAuthSuccess = async () => {
     const ok = await refresh();
     if (ok) {
       navigate(destination, { replace: true });
     }
   };
 
-  const handleGoogleError = (errorMsg: string) => {
+  const handleOAuthError = (errorMsg: string) => {
     setError("root", { message: errorMsg });
   };
 
-  const { isReady: isGoogleReady, promptGoogle } = useGoogleIdentity({
-    onSuccess: handleGoogleSuccess,
-    onError: handleGoogleError,
-    rememberMe: remember,
-  });
-
-  // Returning from an OAuth provider via the browser Back button restores this
-  // page from the back/forward cache with `oauthLoading` still set, which would
-  // leave the OAuth buttons (and the whole form) stuck in a loading state.
-  // Clear it whenever the page is restored.
-  useEffect(() => {
-    const handlePageShow = (event: PageTransitionEvent) => {
-      if (event.persisted) setOauthLoading(null);
-    };
-
-    window.addEventListener("pageshow", handlePageShow);
-    return () => window.removeEventListener("pageshow", handlePageShow);
-  }, []);
+  const { signInWithGoogle, signInWithGithub, loadingProvider } =
+    useUnifiedOAuth({
+      onSuccess: handleOAuthSuccess,
+      onError: handleOAuthError,
+      rememberMe: remember,
+    });
 
   const onSubmit = handleSubmit(async (values) => {
     try {
@@ -109,43 +91,6 @@ export default function LoginPage() {
       });
     }
   });
-
-  const handleOauth = async (provider: "google" | "github") => {
-    setOauthLoading(provider);
-
-    // If Google and client-side GIS prompt is available, try it first
-    if (provider === "google" && isGoogleReady) {
-      const prompted = promptGoogle();
-      if (prompted) {
-        setOauthLoading(null);
-        return;
-      }
-    }
-
-    const params = new URLSearchParams({ rememberMe: String(remember) });
-    const url = `/api/v1/auth/oauth/${provider}?${params}`;
-
-    try {
-      const result = await openPopup(url, `${provider.toUpperCase()} Sign In`);
-      if (result.status === "success") {
-        const ok = await refresh();
-        if (ok) {
-          navigate(destination, { replace: true });
-          return;
-        }
-      } else if (result.reason && result.reason !== "cancelled") {
-        setError("root", {
-          message: `Failed to sign in with ${provider}. Please try again.`,
-        });
-      }
-    } catch {
-      setError("root", {
-        message: `An unexpected error occurred during ${provider} sign-in.`,
-      });
-    } finally {
-      setOauthLoading(null);
-    }
-  };
 
   return (
     <main className="relative h-full overflow-hidden text-(--text-primary)">
@@ -243,15 +188,15 @@ export default function LoginPage() {
               <div className="mt-6 grid grid-cols-2 gap-2.5">
                 <OAuthButton
                   provider="google"
-                  loading={oauthLoading === "google"}
-                  disabled={oauthLoading !== null || isSubmitting}
-                  onClick={() => handleOauth("google")}
+                  loading={loadingProvider === "google"}
+                  disabled={loadingProvider !== null || isSubmitting}
+                  onClick={signInWithGoogle}
                 />
                 <OAuthButton
                   provider="github"
-                  loading={oauthLoading === "github"}
-                  disabled={oauthLoading !== null || isSubmitting}
-                  onClick={() => handleOauth("github")}
+                  loading={loadingProvider === "github"}
+                  disabled={loadingProvider !== null || isSubmitting}
+                  onClick={signInWithGithub}
                 />
               </div>
 
@@ -415,7 +360,7 @@ export default function LoginPage() {
 
                 <button
                   type="submit"
-                  disabled={isSubmitting || oauthLoading !== null}
+                  disabled={isSubmitting || loadingProvider !== null}
                   className="
                     group/cta relative mt-1 flex w-full items-center justify-center gap-2
                     overflow-hidden rounded-lg

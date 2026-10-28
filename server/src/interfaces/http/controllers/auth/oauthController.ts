@@ -44,6 +44,7 @@ function parseRememberMe(value: unknown): boolean {
 
 import { verifyGoogleIdToken } from "../../../../infrastructure/auth/providers/googleTokenVerifier";
 import { signInWithProvider } from "../../../../application/auth/providers/signInWithProvider";
+import { verifyOAuthToken } from "../../../../application/auth/oauth/verifyOAuthToken";
 
 export const listProviders = asyncHandler(
   async (_req: Request, res: Response) => {
@@ -57,10 +58,50 @@ export const listProviders = asyncHandler(
         googleClientId: enabledProviders.includes("google")
           ? ENV.GOOGLE_CLIENT_ID
           : undefined,
+        githubClientId: enabledProviders.includes("github")
+          ? ENV.GITHUB_CLIENT_ID
+          : undefined,
       },
     });
   },
 );
+
+export const verifyOAuth = asyncHandler(async (req: Request, res: Response) => {
+  const { provider, token, redirectUri, rememberMe } = req.body as {
+    provider: "google" | "github";
+    token: string;
+    redirectUri?: string;
+    rememberMe?: boolean;
+  };
+
+  const result = await verifyOAuthToken({
+    provider,
+    token,
+    ...(redirectUri ? { redirectUri } : {}),
+    rememberMe: rememberMe ?? true,
+    ...(req.ip !== undefined ? { ipAddress: req.ip } : {}),
+    ...(req.headers["user-agent"] !== undefined
+      ? { userAgent: req.headers["user-agent"] }
+      : {}),
+  });
+
+  res.cookie(
+    REFRESH_COOKIE_NAME,
+    result.refreshToken,
+    getRefreshCookieOptions(result.rememberMe),
+  );
+
+  res.json({
+    statusCode: 200,
+    success: true,
+    message: "OAuth sign-in successful.",
+    data: {
+      user: result.user,
+      accessToken: result.accessToken,
+      isNewUser: result.isNewUser,
+    },
+  });
+});
 
 export const federatedGoogleAuth = asyncHandler(
   async (req: Request, res: Response) => {
