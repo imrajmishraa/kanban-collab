@@ -9,6 +9,7 @@ export interface DashboardWorkspace {
   name: string;
   boardCount: number;
   activeTaskCount: number;
+  avatarUrl?: string | null;
 }
 
 export interface DashboardBoard {

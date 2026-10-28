@@ -58,8 +58,27 @@ export default function DashboardNavbar() {
     return () => observer.disconnect();
   }, []);
 
-  const { activeWorkspaceId, activeWorkspaceName, setActiveWorkspace } =
-    useActiveWorkspace();
+  const {
+    activeWorkspaceId,
+    activeWorkspaceName,
+    setActiveWorkspace,
+    clearActiveWorkspace,
+  } = useActiveWorkspace();
+
+  /* What the centred title says. The workspace route shows the workspace
+     itself, so the header reads as "you are in this workspace".
+     Declared after the store hook, which is where the name comes from. */
+  const pageTitle = onOverview
+    ? "Overview"
+    : onWorkspaceRoute
+      ? "Workspaces"
+      : location.pathname.startsWith("/boards")
+        ? "Boards"
+        : location.pathname.startsWith("/members")
+          ? "Members"
+          : location.pathname.startsWith("/notes")
+            ? "Notes"
+            : null;
 
   const sidebarCollapsed = useSidebarState((s) => s.collapsed);
 
@@ -112,7 +131,15 @@ export default function DashboardNavbar() {
                 : () => navigate(`/workspaces/${activeWorkspaceId}`)
             }
             onClose={
-              onWorkspaceRoute ? () => navigate("/dashboard") : undefined
+              onWorkspaceRoute
+                ? () => {
+                    // Leaving the workspace clears it, so the next gated page
+                    // asks which workspace to use instead of silently reusing
+                    // the one that was just closed.
+                    clearActiveWorkspace();
+                    navigate("/dashboard");
+                  }
+                : undefined
             }
           />
 
@@ -134,9 +161,11 @@ export default function DashboardNavbar() {
           )}
         </nav>
 
-        {onOverview && (
-          <span className="pointer-events-none absolute left-1/2 -translate-x-1/2 text-[12.5px] font-medium tracking-tight text-neutral-300">
-            Overview
+        {/* Centred page title: the workspace name inside a workspace, and a
+            plain label everywhere else. */}
+        {pageTitle && (
+          <span className="pointer-events-none absolute left-1/2 max-w-[40%] -translate-x-1/2 truncate text-[12.5px] font-medium tracking-tight text-neutral-300">
+            {pageTitle}
           </span>
         )}
 

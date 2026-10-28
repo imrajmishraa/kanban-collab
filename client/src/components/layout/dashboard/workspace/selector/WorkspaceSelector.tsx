@@ -3,10 +3,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Add01Icon,
+  ChevronsLeftRightIcon,
   Cancel01Icon,
   Search01Icon,
   Tick02Icon,
-  ChevronsLeftRightIcon,
 } from "@hugeicons/core-free-icons";
 
 import { useWorkspaces } from "@/hooks/dashboard/useWorkspaces";
@@ -18,29 +18,67 @@ const SEARCH_DEBOUNCE_MS = 300;
 interface PickerItem {
   id: string;
   name: string;
+  avatarUrl?: string | null;
 }
 
 interface WorkspaceSelectorProps {
   activeWorkspaceId: string | null;
   activeWorkspaceName: string | null;
   onWorkspaceChange: (id: string, name: string) => void;
+  /** Clicking the name goes straight to that workspace page. */
   onOpenActive?: () => void;
+  /** The close button leaves the workspace and returns to the overview. */
   onClose?: () => void;
+  /**
+   * Optional pre-loaded list. When given, the component renders it instead of
+   * fetching, which lets a caller that already holds workspaces (the dashboard
+   * summary, the mobile sidebar) reuse this switcher. Structural type on
+   * purpose: `Workspace` and `DashboardWorkspace` both satisfy it.
+   */
   workspaces?: ReadonlyArray<PickerItem>;
+  /**
+   * Render one pill instead of the split cluster. Used on the overview, where
+   * there is no single workspace to open and nothing to close, so the extra
+   * targets would be dead weight.
+   */
   unified?: boolean;
   triggerClassName?: string;
   dropdownClassName?: string;
 }
 
-/** Monogram tile, so every row has an anchor without needing an image. */
-function WorkspaceAvatar({ name }: { name: string }) {
+/**
+ * Workspace tile: the uploaded avatar when there is one, else the monogram.
+ * Matches the cards on the overview, so the same workspace looks the same in
+ * both places.
+ */
+function WorkspaceAvatar({
+  name,
+  imageUrl,
+}: {
+  name: string;
+  imageUrl?: string | null;
+}) {
+  const [failed, setFailed] = useState(false);
   const initial = name.trim().charAt(0).toUpperCase() || "W";
 
+  const className =
+    "flex size-5 shrink-0 items-center justify-center overflow-hidden rounded-md border border-orange-50/15 bg-white/6 text-[10px] font-semibold text-neutral-300";
+
+  if (imageUrl && !failed) {
+    return (
+      <span className={className}>
+        <img
+          src={imageUrl}
+          alt=""
+          className="size-full object-cover"
+          onError={() => setFailed(true)}
+        />
+      </span>
+    );
+  }
+
   return (
-    <span
-      aria-hidden="true"
-      className="flex size-5 shrink-0 items-center justify-center rounded-md border border-orange-50/15 bg-white/6 text-[10px] font-semibold text-neutral-300"
-    >
+    <span aria-hidden="true" className={className}>
       {initial}
     </span>
   );
@@ -95,6 +133,15 @@ export function WorkspaceSelector({
               .includes(debouncedSearch.toLowerCase()),
       )
     : fetched.workspaces;
+
+  /* Avatar lookup, so the trigger and every row can show the uploaded image
+     instead of a letter. */
+  const avatarById = new Map<string, string | null>(
+    (providedWorkspaces ?? fetched.workspaces).map((workspace) => [
+      workspace.id,
+      workspace.avatarUrl ?? null,
+    ]),
+  );
 
   const isLoading = providedWorkspaces ? false : fetched.isLoading;
   const isError = providedWorkspaces ? false : fetched.isError;
@@ -177,22 +224,29 @@ export function WorkspaceSelector({
             "transition-colors duration-200",
             isOpen
               ? "bg-white/10 text-neutral-100"
-              : " text-neutral-300 hover:bg-white/9 hover:text-neutral-100",
+              : "bg-white/6 text-neutral-300 hover:bg-white/9 hover:text-neutral-100",
             triggerClassName,
           ]
             .filter(Boolean)
             .join(" ")}
         >
+          {activeWorkspaceId && (
+            <WorkspaceAvatar
+              name={resolvedActiveName ?? "Workspace"}
+              imageUrl={avatarById.get(activeWorkspaceId) ?? null}
+            />
+          )}
+
           <span className="max-w-40 truncate">
             {resolvedActiveName ?? "All Workspaces"}
           </span>
 
           <HugeiconsIcon
             icon={ChevronsLeftRightIcon}
-            size={14}
+            size={11}
             strokeWidth={2}
             className={[
-              "shrink-0 text-neutral-400 transition-transform rotate-90 duration-200",
+              "shrink-0 text-neutral-400 rotate-90 transition-transform duration-200",
               isOpen && "",
             ].join(" ")}
           />
@@ -207,14 +261,21 @@ export function WorkspaceSelector({
               "flex h-7 cursor-pointer items-center gap-2 rounded-md px-2",
               "text-[11.5px] tracking-tight",
               "transition-colors duration-200",
-              "text-neutral-300 hover:text-neutral-100",
+              "text-neutral-300 hover:bg-white/6 hover:text-neutral-100",
               "disabled:cursor-default disabled:hover:bg-transparent",
               triggerClassName,
             ]
               .filter(Boolean)
               .join(" ")}
           >
-            <WorkspaceAvatar name={resolvedActiveName ?? "Workspace"} />
+            <WorkspaceAvatar
+              name={resolvedActiveName ?? "Workspace"}
+              imageUrl={
+                activeWorkspaceId
+                  ? (avatarById.get(activeWorkspaceId) ?? null)
+                  : null
+              }
+            />
 
             <span className="max-w-32 truncate">
               {resolvedActiveName ?? "Select workspace"}
@@ -232,15 +293,15 @@ export function WorkspaceSelector({
               "transition-colors duration-200",
               isOpen
                 ? "bg-white/10 text-neutral-100"
-                : "text-neutral-400 hover:bg-white/8 hover:text-neutral-100",
+                : "bg-white/5 text-neutral-400 hover:bg-white/8 hover:text-neutral-100",
             ].join(" ")}
           >
             <HugeiconsIcon
               icon={ChevronsLeftRightIcon}
-              size={14}
+              size={11}
               strokeWidth={2}
               className={[
-                "shrink-0 transition-transform duration-200 rotate-90",
+                "shrink-0 transition-transform rotate-90 duration-200",
                 isOpen && "",
               ].join(" ")}
             />
@@ -257,9 +318,9 @@ export function WorkspaceSelector({
                 type="button"
                 onClick={onClose}
                 aria-label="Close workspace"
-                className="flex size-6 cursor-pointer items-center justify-center rounded-md text-neutral-500 transition-colors duration-200 hover:bg-white/10 hover:text-neutral-200"
+                className="flex size-6 cursor-pointer items-center justify-center rounded-md text-neutral-500 transition-colors duration-200 hover:bg-white/6 hover:text-neutral-200"
               >
-                <HugeiconsIcon icon={Cancel01Icon} size={14} strokeWidth={2} />
+                <HugeiconsIcon icon={Cancel01Icon} size={12} strokeWidth={2} />
               </button>
             </div>
           )}
@@ -345,7 +406,10 @@ export function WorkspaceSelector({
                           : "text-neutral-300 hover:bg-white/5 hover:text-neutral-100",
                       ].join(" ")}
                     >
-                      <WorkspaceAvatar name={workspace.name} />
+                      <WorkspaceAvatar
+                        name={workspace.name}
+                        imageUrl={workspace.avatarUrl ?? null}
+                      />
 
                       <span className="min-w-0 flex-1 truncate">
                         {workspace.name}

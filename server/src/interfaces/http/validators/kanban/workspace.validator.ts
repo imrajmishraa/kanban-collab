@@ -61,6 +61,15 @@ export const updateWorkspaceSchema = {
         .trim()
         .max(500, "Description cannot exceed 500 characters.")
         .optional(),
+
+      /** ImageKit URL produced by the client-side upload. */
+      avatarUrl: z
+        .string()
+        .trim()
+        .url("Avatar must be a valid URL.")
+        .max(2048, "Avatar URL is too long.")
+        .nullable()
+        .optional(),
     })
     .refine((body) => Object.keys(body).length > 0, {
       message: "At least one field must be provided for update.",

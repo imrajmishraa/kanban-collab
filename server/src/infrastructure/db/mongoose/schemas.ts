@@ -128,6 +128,8 @@ export interface IWorkspace extends Document {
   name: string;
   slug: string;
   description?: string;
+  /** ImageKit URL for the workspace avatar. */
+  avatarUrl?: string | null;
   ownerId: Types.ObjectId;
   members: IWorkspaceMember[];
   status: WorkspaceStatus;
@@ -148,6 +150,7 @@ const WorkspaceSchema = new Schema<IWorkspace>(
       unique: true,
     },
     description: { type: String },
+    avatarUrl: { type: String, trim: true, default: null },
     ownerId: {
       type: Schema.Types.ObjectId,
       ref: "User",

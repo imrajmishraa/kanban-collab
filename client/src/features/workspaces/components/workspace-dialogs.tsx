@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -6,6 +6,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Cancel01Icon, Loading03Icon } from "@hugeicons/core-free-icons";
 
+import { attachmentsApi } from "@/api/dashboard/attachmentsApi";
 import { boardApi } from "@/api/dashboard/boardApi";
 import { workspaceApi } from "@/api/dashboard/workspaceApi";
 import { boardKeys } from "@/hooks/dashboard/useBoards";
@@ -25,7 +26,7 @@ interface DialogShellProps {
 }
 
 /** Shared shell: portal, backdrop, Escape, scroll lock. */
-function DialogShell({
+export function DialogShell({
   title,
   description,
   onClose,
@@ -194,60 +195,94 @@ export function AddMemberDialog({
   );
 }
 
-/* ── Rename workspace ───────────────────────────────────────────────────── */
+/* ── Edit workspace ─────────────────────────────────────────────────────── */
 
-export function RenameWorkspaceDialog({
+export function EditWorkspaceDialog({
   workspaceId,
   currentName,
+  currentDescription,
   onClose,
 }: {
   workspaceId: string;
   currentName: string;
+  currentDescription?: string | null;
   onClose: () => void;
 }) {
   const queryClient = useQueryClient();
-  const [name, setName] = useState(currentName);
 
-  const rename = useMutation({
-    mutationFn: () =>
-      workspaceApi.updateWorkspace(workspaceId, { name: name.trim() }),
+  const [name, setName] = useState(currentName);
+  const [description, setDescription] = useState(currentDescription ?? "");
+
+  const nameChanged = name.trim() !== currentName.trim() && name.trim() !== "";
+  const descriptionChanged =
+    description.trim() !== (currentDescription ?? "").trim();
+  const dirty = nameChanged || descriptionChanged;
+
+  const save = useMutation({
+    mutationFn: () => {
+      /* Only send what changed. The endpoint rejects an empty body, and
+         sending unchanged fields just risks clobbering a concurrent edit. */
+      const payload: { name?: string; description?: string } = {};
+      if (nameChanged) payload.name = name.trim();
+      if (descriptionChanged) payload.description = description.trim();
+
+      return workspaceApi.updateWorkspace(workspaceId, payload);
+    },
     onSuccess: (workspace) => {
       void queryClient.invalidateQueries({ queryKey: workspaceKeys.all });
-      // The dashboard payload carries the names, so refresh that too.
       void queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-      toastSuccess("Workspace renamed", `Now called ${workspace.name}.`);
+      toastSuccess("Workspace updated", `${workspace.name} has been saved.`);
       onClose();
     },
     onError: toastError,
   });
 
-  const unchanged = name.trim() === currentName.trim() || name.trim() === "";
-
   return (
     <DialogShell
-      title="Rename workspace"
-      description="Everyone in the workspace sees the new name"
+      title="Edit workspace"
+      description="Everyone in the workspace sees these details"
       onClose={onClose}
     >
       <form
         onSubmit={(event) => {
           event.preventDefault();
-          if (!unchanged) rename.mutate();
+          if (dirty) save.mutate();
         }}
         className="p-5"
       >
-        <label htmlFor="workspace-name" className={labelClass}>
-          Name
-        </label>
-        <input
-          id="workspace-name"
-          type="text"
-          required
-          autoFocus
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-          className={`mt-1.5 ${inputClass}`}
-        />
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="workspace-name" className={labelClass}>
+              Name
+            </label>
+            <input
+              id="workspace-name"
+              type="text"
+              required
+              autoFocus
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              className={`mt-1.5 ${inputClass}`}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="workspace-description" className={labelClass}>
+              Description (optional)
+            </label>
+            <textarea
+              id="workspace-description"
+              rows={3}
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+              placeholder="What is this workspace for?"
+              className={`mt-1.5 resize-none ${inputClass}`}
+            />
+            <p className="mt-1.5 text-[11px] text-neutral-600">
+              {description.trim().length}/500
+            </p>
+          </div>
+        </div>
 
         <div className="mt-6 flex items-center justify-end gap-2">
           <button type="button" onClick={onClose} className={cancelClass}>
@@ -255,10 +290,10 @@ export function RenameWorkspaceDialog({
           </button>
           <button
             type="submit"
-            disabled={rename.isPending || unchanged}
+            disabled={save.isPending || !dirty}
             className={submitClass}
           >
-            {rename.isPending && (
+            {save.isPending && (
               <HugeiconsIcon
                 icon={Loading03Icon}
                 size={13}
@@ -270,6 +305,167 @@ export function RenameWorkspaceDialog({
           </button>
         </div>
       </form>
+    </DialogShell>
+  );
+}
+
+/* ── Workspace avatar ───────────────────────────────────────────────────── */
+
+const MAX_AVATAR_BYTES = 4 * 1024 * 1024;
+
+export function WorkspaceAvatarDialog({
+  workspaceId,
+  currentAvatarUrl,
+  workspaceName,
+  onClose,
+}: {
+  workspaceId: string;
+  currentAvatarUrl?: string | null;
+  workspaceName: string;
+  onClose: () => void;
+}) {
+  const queryClient = useQueryClient();
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const save = useMutation({
+    mutationFn: async (nextFile: File) => {
+      // Credentials first, then the bytes go straight to ImageKit.
+      const auth = await attachmentsApi.getImageKitAuth();
+      const uploaded = await attachmentsApi.uploadToImageKit(nextFile, auth);
+
+      return workspaceApi.updateWorkspace(workspaceId, {
+        avatarUrl: uploaded.url,
+      });
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: workspaceKeys.all });
+      void queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      toastSuccess("Avatar updated", "The new image is now in use.");
+      onClose();
+    },
+    onError: (err) => {
+      setError(
+        err instanceof Error ? err.message : "Could not upload the image.",
+      );
+    },
+  });
+
+  const clearAvatar = useMutation({
+    mutationFn: () =>
+      workspaceApi.updateWorkspace(workspaceId, { avatarUrl: null }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: workspaceKeys.all });
+      void queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      toastSuccess("Avatar removed", "The workspace shows its initials again.");
+      onClose();
+    },
+    onError: toastError,
+  });
+
+  const pick = (next: File | null) => {
+    setError(null);
+
+    if (!next) return;
+
+    if (!next.type.startsWith("image/")) {
+      setError("Choose an image file.");
+      return;
+    }
+
+    if (next.size > MAX_AVATAR_BYTES) {
+      setError("Image must be 4 MB or smaller.");
+      return;
+    }
+
+    setFile(next);
+    setPreview(URL.createObjectURL(next));
+  };
+
+  const shown = preview ?? currentAvatarUrl ?? null;
+  const initial = workspaceName.trim().charAt(0).toUpperCase() || "W";
+
+  return (
+    <DialogShell
+      title="Workspace avatar"
+      description="Shown on your workspace cards and in the switcher"
+      onClose={onClose}
+    >
+      <div className="p-5">
+        <div className="flex items-center gap-4">
+          <span className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-orange-50/20 bg-white/3 text-[20px] font-semibold text-neutral-300">
+            {shown ? (
+              <img src={shown} alt="" className="size-full object-cover" />
+            ) : (
+              initial
+            )}
+          </span>
+
+          <div className="min-w-0 flex-1">
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              className={cancelClass}
+            >
+              Choose image
+            </button>
+
+            <p className="mt-2 text-[11px] text-neutral-600">
+              PNG, JPG or WebP, up to 4 MB
+            </p>
+          </div>
+
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(event) => pick(event.target.files?.[0] ?? null)}
+          />
+        </div>
+
+        {error && <p className="mt-3 text-[11.5px] text-rose-300">{error}</p>}
+
+        <div className="mt-6 flex items-center justify-between gap-2">
+          {currentAvatarUrl ? (
+            <button
+              type="button"
+              onClick={() => clearAvatar.mutate()}
+              disabled={clearAvatar.isPending}
+              className="cursor-pointer text-[11.5px] text-neutral-500 transition-colors duration-200 hover:text-rose-300 disabled:opacity-50"
+            >
+              Remove avatar
+            </button>
+          ) : (
+            <span />
+          )}
+
+          <div className="flex items-center gap-2">
+            <button type="button" onClick={onClose} className={cancelClass}>
+              Cancel
+            </button>
+            <button
+              type="button"
+              disabled={!file || save.isPending}
+              onClick={() => file && save.mutate(file)}
+              className={submitClass}
+            >
+              {save.isPending && (
+                <HugeiconsIcon
+                  icon={Loading03Icon}
+                  size={13}
+                  strokeWidth={2}
+                  className="animate-spin"
+                />
+              )}
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
     </DialogShell>
   );
 }

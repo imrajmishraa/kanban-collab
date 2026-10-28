@@ -13,6 +13,7 @@ export interface DashboardWorkspace {
   name: string;
   boardCount: number;
   activeTaskCount: number;
+  avatarUrl?: string | null;
 }
 
 export interface DashboardBoard {
@@ -93,7 +94,7 @@ export const getDashboard = async (
   const workspaces = await WorkspaceModel.find({
     "members.userId": userObjectId,
   })
-    .select("name")
+    .select("name avatarUrl")
     .lean();
 
   if (workspaces.length === 0) {
@@ -226,6 +227,7 @@ export const getDashboard = async (
         name: workspace.name,
         boardCount: boardCountByWorkspaceId.get(id) ?? 0,
         activeTaskCount: activeTaskCountByWorkspaceId.get(id) ?? 0,
+        avatarUrl: workspace.avatarUrl ?? null,
       };
     },
   );

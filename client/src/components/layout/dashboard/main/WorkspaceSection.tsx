@@ -12,7 +12,7 @@ import {
 import { WorkspaceCard } from "@/components/layout/dashboard/workspace/WorkspaceCard";
 import {
   AddMemberDialog,
-  RenameWorkspaceDialog,
+  EditWorkspaceDialog,
 } from "@/features/workspaces/components/workspace-dialogs";
 import { useWorkspaces } from "@/hooks/dashboard/useWorkspaces";
 import { useStarredWorkspaces } from "@/stores/starredWorkspaces";
@@ -237,7 +237,7 @@ export default function WorkspaceSection({
       )}
 
       {renameFor && (
-        <RenameWorkspaceDialog
+        <EditWorkspaceDialog
           workspaceId={renameFor.id}
           currentName={renameFor.name}
           onClose={() => setRenameFor(null)}

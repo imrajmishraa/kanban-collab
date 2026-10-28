@@ -61,6 +61,21 @@ export const updateWorkspaceSchema = {
         .trim()
         .max(500, "Description cannot exceed 500 characters.")
         .optional(),
+
+      /**
+       * ImageKit URL produced by the client-side upload, or null to remove it.
+       *
+       * Without this key zod strips it as unknown, which leaves an empty body
+       * and trips the refinement below, so the PATCH answers 422 even though
+       * the upload itself succeeded.
+       */
+      avatarUrl: z
+        .string()
+        .trim()
+        .url("Avatar must be a valid URL.")
+        .max(2048, "Avatar URL is too long.")
+        .nullable()
+        .optional(),
     })
     .refine((body) => Object.keys(body).length > 0, {
       message: "At least one field must be provided for update.",

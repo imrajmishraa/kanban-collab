@@ -4,6 +4,7 @@ import { useLocation } from "react-router-dom";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Add01Icon,
+  ArrowRight01Icon,
   Folder01Icon,
   KanbanIcon,
   Note01Icon,
@@ -59,26 +60,30 @@ export function RequireWorkspace({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex min-h-[70vh] items-center justify-center px-5 py-12 text-(--text-primary)">
-      <div className="w-full max-w-sm">
+      <div className="w-full max-w-85">
         <div className="flex flex-col items-center text-center">
-          <span className="flex size-9 items-center justify-center rounded-lg border border-orange-50/15 bg-white/3 text-neutral-400">
+          <span className="flex size-10 items-center justify-center rounded-xl border border-orange-50/15 bg-white/3 text-orange-100">
             <HugeiconsIcon
               icon={destination.icon}
-              size={16}
+              size={17}
               strokeWidth={1.7}
             />
           </span>
 
-          <h1 className="mt-4 text-[14px] font-medium tracking-tight text-neutral-100">
+          <h1 className="mt-4 text-[15px] font-medium tracking-tight text-neutral-100">
             Continue to {destination.label}
           </h1>
 
-          <p className="mt-1 text-[12px] text-neutral-500">
-            Choose a workspace to continue
+          <p className="mt-1.5 max-w-65 text-[12.5px] leading-5 text-neutral-500">
+            Pick a{" "}
+            <span className="font-medium capitalize text-orange-100">
+              workspace
+            </span>{" "}
+            and you will land straight on {destination.label.toLowerCase()}
           </p>
         </div>
 
-        <div className="mt-6 space-y-1">
+        <div className="mt-6">
           <div className="flex h-9 items-center gap-2 rounded-lg border border-orange-50/15 bg-white/3 px-3 transition-colors duration-200 focus-within:border-orange-50/30">
             <HugeiconsIcon
               icon={Search01Icon}
@@ -89,6 +94,7 @@ export function RequireWorkspace({ children }: { children: ReactNode }) {
 
             <input
               type="text"
+              autoFocus
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Find workspace"
@@ -98,22 +104,22 @@ export function RequireWorkspace({ children }: { children: ReactNode }) {
           </div>
 
           {isLoading ? (
-            <div className="space-y-1 pt-1">
+            <div className="mt-1 space-y-1">
               {[0, 1, 2].map((row) => (
                 <div
                   key={row}
-                  className="h-9 animate-pulse rounded-lg bg-white/4"
+                  className="h-10 animate-pulse rounded-lg bg-white/4"
                 />
               ))}
             </div>
           ) : workspaces.length === 0 ? (
-            <p className="px-2 py-6 text-center text-[12px] text-neutral-500">
+            <p className="px-2 py-8 text-center text-[12px] text-neutral-500">
               {debounced
                 ? `No workspaces match “${debounced}”`
                 : "You are not in a workspace yet"}
             </p>
           ) : (
-            <ul className="max-h-64 overflow-y-auto pt-1">
+            <ul className="mt-1 max-h-64 overflow-y-auto">
               {workspaces.map((workspace) => (
                 <li key={workspace.id}>
                   <button
@@ -121,12 +127,12 @@ export function RequireWorkspace({ children }: { children: ReactNode }) {
                     onClick={() =>
                       setActiveWorkspace(workspace.id, workspace.name)
                     }
-                    className="flex h-9 w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 text-left transition-colors duration-200 hover:bg-white/5"
+                    className="group/row flex h-10 w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 text-left transition-colors duration-200 hover:bg-white/5"
                   >
-                    <span className="flex size-5 shrink-0 items-center justify-center rounded-md border border-orange-50/15 text-neutral-500">
+                    <span className="flex size-6 shrink-0 items-center justify-center rounded-md border border-orange-50/15 text-neutral-500 transition-colors duration-200 group-hover/row:text-neutral-300">
                       <HugeiconsIcon
                         icon={Folder01Icon}
-                        size={11}
+                        size={12}
                         strokeWidth={1.7}
                       />
                     </span>
@@ -138,25 +144,29 @@ export function RequireWorkspace({ children }: { children: ReactNode }) {
                     <span className="shrink-0 font-mono text-[10px] tabular-nums text-neutral-600">
                       {workspace.members.length}
                     </span>
+
+                    <HugeiconsIcon
+                      icon={ArrowRight01Icon}
+                      size={12}
+                      strokeWidth={2}
+                      className="shrink-0 text-neutral-700 opacity-0 transition-all duration-200 group-hover/row:translate-x-0.5 group-hover/row:text-orange-100 group-hover/row:opacity-100"
+                    />
                   </button>
                 </li>
               ))}
             </ul>
           )}
 
-          <button
-            type="button"
-            onClick={openNewWorkspace}
-            className="flex h-9 w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 text-left text-[12.5px] text-neutral-300 transition-colors duration-200 hover:bg-white/5 hover:text-neutral-100"
-          >
-            <HugeiconsIcon
-              icon={Add01Icon}
-              size={13}
-              strokeWidth={2}
-              className="shrink-0 text-neutral-500"
-            />
-            Create workspace
-          </button>
+          <div className="mt-3 border-t border-orange-50/10 pt-3">
+            <button
+              type="button"
+              onClick={openNewWorkspace}
+              className="flex h-9 w-full cursor-pointer items-center justify-center gap-1.5 rounded-none rounded-tr-lg rounded-bl-lg border border-orange-50/20 text-[12px] text-neutral-200 transition-colors duration-200 hover:border-orange-50/35 hover:bg-white/4 hover:text-neutral-100"
+            >
+              <HugeiconsIcon icon={Add01Icon} size={13} strokeWidth={2} />
+              Create workspace
+            </button>
+          </div>
         </div>
       </div>
     </div>

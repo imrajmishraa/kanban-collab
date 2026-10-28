@@ -50,6 +50,38 @@ export const useActiveWorkspace = create<ActiveWorkspaceState>()(
       clearActiveWorkspace: () =>
         set({ activeWorkspaceId: null, activeWorkspaceName: null }),
     }),
-    { name: "kanban.activeWorkspace" },
+    {
+      name: "kanban.activeWorkspace",
+
+      /**
+       * v2 drops any selection persisted by older builds.
+       *
+       * Those builds auto-selected `workspaces[0]` for everyone, so every
+       * existing browser has an `activeWorkspaceId` in localStorage that the
+       * user never chose. Because the store rehydrates it, `RequireWorkspace`
+       * saw a selection and never asked. Bumping the version clears the stale
+       * value once, after which a choice is only ever something the user made.
+       */
+      version: 2,
+
+      migrate: (persisted, version) => {
+        if (version < 2) {
+          return {
+            activeWorkspaceId: null,
+            activeWorkspaceName: null,
+            lastWorkspaceByUser: {},
+          };
+        }
+
+        return persisted as ActiveWorkspaceState;
+      },
+
+      // Only data is worth persisting; the setters are recreated on load.
+      partialize: (state) => ({
+        activeWorkspaceId: state.activeWorkspaceId,
+        activeWorkspaceName: state.activeWorkspaceName,
+        lastWorkspaceByUser: state.lastWorkspaceByUser,
+      }),
+    },
   ),
 );

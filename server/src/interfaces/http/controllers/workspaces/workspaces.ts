@@ -63,7 +63,7 @@ const createWorkspace = asyncHandler(async (req: AuthenticatedRequest, res) => {
 // UPDATE
 
 const updateWorkspace = asyncHandler(async (req: AuthenticatedRequest, res) => {
-  const { name, slug, description } = req.body;
+  const { name, slug, description, avatarUrl } = req.body;
   const userId = requireUserId(req);
   const { workspaceId } = req.params;
 
@@ -94,11 +94,14 @@ const updateWorkspace = asyncHandler(async (req: AuthenticatedRequest, res) => {
     name?: string;
     slug?: string;
     description?: string;
+    avatarUrl?: string | null;
   } = {};
 
   if (name !== undefined) updateData.name = name;
   if (slug !== undefined) updateData.slug = slug;
   if (description !== undefined) updateData.description = description;
+  // Explicitly whitelisted, otherwise the body field is dropped silently.
+  if (avatarUrl !== undefined) updateData.avatarUrl = avatarUrl;
 
   workspace.set(updateData);
   await workspace.save();

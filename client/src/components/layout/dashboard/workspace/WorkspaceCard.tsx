@@ -198,7 +198,7 @@ export function WorkspaceCard({
             className="absolute right-0 top-full z-20 mt-1 w-44 rounded-lg border border-orange-50/15 bg-[#141416] p-1"
           >
             {item("Open workspace", ArrowUpRight01Icon, onClick)}
-            {onRename && item("Rename", Edit02Icon, onRename)}
+            {onRename && item("Edit workspace", Edit02Icon, onRename)}
             {onToggleStar &&
               item(
                 isStarred ? "Remove star" : "Star workspace",

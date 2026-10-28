@@ -3,6 +3,8 @@ export interface Workspace {
   name: string;
   slug: string;
   description?: string;
+  /** ImageKit URL of the workspace avatar. */
+  avatarUrl?: string | null;
   ownerId: string;
   members: WorkspaceMember[];
   status: "active" | "deletion_pending";
@@ -44,6 +46,7 @@ export interface UpdateWorkspacePayload {
   name?: string;
   slug?: string;
   description?: string;
+  avatarUrl?: string | null;
 }
 
 export interface AddWorkspaceMemberPayload {
