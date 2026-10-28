@@ -5,6 +5,8 @@ import {
   listNotifications,
   markNotificationRead,
   markAllNotificationsRead,
+  clearNotification,
+  clearAllNotifications,
 } from "../../controllers/notifications/notifications";
 import {
   getNotificationPreferences,
@@ -48,6 +50,19 @@ router.patch(
     params: z.object({ notificationId: objectIdSchema }),
   }),
   markNotificationRead,
+);
+
+// DELETE /api/v1/notifications
+// Declared before `/:notificationId` so the bare path is not captured as an id.
+router.delete("/", clearAllNotifications);
+
+// DELETE /api/v1/notifications/:notificationId
+router.delete(
+  "/:notificationId",
+  validateSchema({
+    params: z.object({ notificationId: objectIdSchema }),
+  }),
+  clearNotification,
 );
 
 export default router;

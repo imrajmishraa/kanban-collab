@@ -13,6 +13,7 @@ import {
 import { workspaceApi } from "@/api/dashboard/workspaceApi";
 import { ApiClientError } from "@/api/client";
 import { toastSuccess, toastError } from "@/lib/toast";
+import { Tooltip } from "#components/Tooltips/ToolTip";
 
 interface NewWorkspaceProps {
   onClose?: () => void;
@@ -81,36 +82,46 @@ export default function NewWorkspace({ onClose }: NewWorkspaceProps = {}) {
   });
 
   return (
-    <div className="w-full rounded-lg border border-white/10 bg-(--bg-elevated) shadow-[0_20px_60px_-10px_rgba(0,0,0,0.8)]">
+    <div className="w-full rounded-xl border border-orange-50/15 bg-[#0a0a0a]/95 backdrop-blur-sm">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-white/6 px-5 py-3.5">
+      <div className="flex items-start justify-between gap-4 border-b border-orange-50/10 px-5 py-4">
         <div>
-          <h1 className="text-[14px] font-medium text-(--text-primary)">
+          <h1 className="text-[14px] font-medium tracking-tight text-neutral-100">
             New workspace
           </h1>
-          <p className="mt-0.5 text-[11px] text-(--text-muted)">
-            Create a space for your team.
+          <p className="mt-0.5 text-[11px] text-neutral-400">
+            Create a space for your{" "}
+            <span className="font-medium text-orange-100 capitalize">team</span>
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={handleCancel}
-          aria-label="Close"
-          className="flex size-7 cursor-pointer items-center justify-center rounded-md text-(--text-muted) transition-colors hover:bg-white/6 hover:text-(--text-primary)"
+        {/* Icon only, so the shortcut lives in the tooltip rather than on screen. */}
+        <Tooltip
+          label="Close"
+          highlight="Esc"
+          side="bottom"
+          shape="solid"
+          size="sm"
         >
-          <HugeiconsIcon icon={Cancel01Icon} size={14} strokeWidth={1.8} />
-        </button>
+          <button
+            type="button"
+            onClick={handleCancel}
+            aria-label="Close"
+            className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-transparent text-neutral-500 transition-colors duration-200 hover:border-orange-50/15 hover:bg-white/5 hover:text-neutral-200"
+          >
+            <HugeiconsIcon icon={Cancel01Icon} size={14} strokeWidth={1.8} />
+          </button>
+        </Tooltip>
       </div>
 
       {/* Form */}
       <form onSubmit={onSubmit} noValidate className="p-5">
-        <div className="space-y-3.5">
+        <div className="space-y-4">
           {/* Name */}
           <div>
             <label
               htmlFor="ws-name"
-              className="mb-1 block text-[11px] font-medium text-(--text-secondary)"
+              className="mb-1.5 block text-[11px] font-medium text-neutral-300"
             >
               Name
             </label>
@@ -121,16 +132,20 @@ export default function NewWorkspace({ onClose }: NewWorkspaceProps = {}) {
               placeholder="Acme Inc."
               autoFocus
               className={[
-                "w-full rounded-md border bg-(--bg-card) px-2.5 py-1.5",
-                "text-[13px] text-(--text-primary) placeholder:text-(--text-subtle)",
-                "outline-none transition-colors",
+                "w-full rounded-lg border px-3 py-2",
+                "text-[13px] text-neutral-100 placeholder:text-neutral-600",
+                "outline-none transition-colors duration-200",
+                // focus-visible:outline-none wins over the global
+                // `:focus-visible { outline: 2px solid var(--brand) }` in
+                // index.css, which is what painted the orange ring.
+                "focus-visible:outline-none",
                 errors.name
-                  ? "border-red-500/40 focus:border-red-500/60"
-                  : "border-white/8 hover:border-white/12 focus:border-white/25",
+                  ? "border-rose-400/40 bg-white/3 focus:border-rose-400/60"
+                  : "border-orange-50/15 bg-white/3 hover:border-orange-50/25 focus:border-white/25 focus:bg-white/5",
               ].join(" ")}
             />
             {errors.name && (
-              <p className="mt-1 text-[10px] text-red-400/90">
+              <p className="mt-1.5 text-[10px] text-rose-300">
                 {errors.name.message}
               </p>
             )}
@@ -140,12 +155,10 @@ export default function NewWorkspace({ onClose }: NewWorkspaceProps = {}) {
           <div>
             <label
               htmlFor="ws-desc"
-              className="mb-1 block text-[11px] font-medium text-(--text-secondary)"
+              className="mb-1.5 block text-[11px] font-medium text-neutral-300"
             >
               Description{" "}
-              <span className="font-normal text-(--text-muted)">
-                (optional)
-              </span>
+              <span className="font-normal text-neutral-500">(optional)</span>
             </label>
             <textarea
               id="ws-desc"
@@ -153,16 +166,17 @@ export default function NewWorkspace({ onClose }: NewWorkspaceProps = {}) {
               placeholder="What is this workspace for?"
               rows={3}
               className={[
-                "w-full resize-none rounded-md border bg-(--bg-card) px-2.5 py-1.5",
-                "text-[13px] text-(--text-primary) placeholder:text-(--text-subtle)",
-                "outline-none transition-colors",
+                "w-full resize-none rounded-lg border px-3 py-2",
+                "text-[13px] text-neutral-100 placeholder:text-neutral-600",
+                "outline-none transition-colors duration-200",
+                "focus-visible:outline-none",
                 errors.description
-                  ? "border-red-500/40 focus:border-red-500/60"
-                  : "border-white/8 hover:border-white/12 focus:border-white/25",
+                  ? "border-rose-400/40 bg-white/3 focus:border-rose-400/60"
+                  : "border-orange-50/15 bg-white/3 hover:border-orange-50/25 focus:border-white/25 focus:bg-white/5",
               ].join(" ")}
             />
             {errors.description && (
-              <p className="mt-1 text-[10px] text-red-400/90">
+              <p className="mt-1.5 text-[10px] text-rose-300">
                 {errors.description.message}
               </p>
             )}
@@ -171,18 +185,20 @@ export default function NewWorkspace({ onClose }: NewWorkspaceProps = {}) {
 
         {/* Footer */}
         <div className="mt-6 flex items-center justify-end gap-2">
+          {/* Outline: mirrored corners of the solid button */}
           <button
             type="button"
             onClick={handleCancel}
-            className="flex h-8 cursor-pointer items-center rounded-md border border-white/8 bg-transparent px-3 text-[12px] text-(--text-secondary) transition-colors hover:bg-white/4 hover:text-(--text-primary)"
+            className="flex h-9 cursor-pointer items-center rounded-none rounded-tl-lg rounded-br-lg border border-orange-50/20 px-4 text-[12px] text-neutral-300 transition-colors duration-200 hover:border-orange-50/35 hover:bg-white/4 hover:text-neutral-100"
           >
             Cancel
           </button>
 
+          {/* Solid: the one white button. Orange is never a fill in ChaiUI. */}
           <button
             type="submit"
             disabled={isSubmitting}
-            className="flex h-8 cursor-pointer items-center gap-1.5 rounded-md bg-(--brand) px-3 text-[12px] font-medium text-white transition-colors hover:bg-(--brand-hover) disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex h-9 cursor-pointer items-center gap-1.5 rounded-none rounded-tr-lg rounded-bl-lg bg-white px-4 text-[12px] font-semibold text-black transition-colors duration-200 hover:bg-neutral-200 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isSubmitting ? (
               <>

@@ -13,6 +13,12 @@ interface WorkspaceOverviewProps {
   columnCount: number;
   cardCount: number;
   memberCount: number;
+  /**
+   * True while only some boards have been loaded. Columns and cards are then
+   * counted from what is loaded, so they get a "+" instead of pretending to
+   * be totals.
+   */
+  isPartial?: boolean;
 }
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -22,18 +28,35 @@ export default function WorkspaceOverview({
   columnCount,
   cardCount,
   memberCount,
+  isPartial = false,
 }: WorkspaceOverviewProps) {
   const stats = [
-    { label: "Boards", value: boardCount, icon: DashboardSquare01Icon },
-    { label: "Columns", value: columnCount, icon: Layout01Icon },
-    { label: "Cards", value: cardCount, icon: KanbanIcon },
-    { label: "Members", value: memberCount, icon: UserGroupIcon },
+    // The board count is a real total from the API's pagination.
+    {
+      label: "Boards",
+      value: boardCount,
+      icon: DashboardSquare01Icon,
+      partial: false,
+    },
+    {
+      label: "Columns",
+      value: columnCount,
+      icon: Layout01Icon,
+      partial: isPartial,
+    },
+    { label: "Cards", value: cardCount, icon: KanbanIcon, partial: isPartial },
+    {
+      label: "Members",
+      value: memberCount,
+      icon: UserGroupIcon,
+      partial: false,
+    },
   ];
 
   return (
     <section aria-label="Workspace overview" className="mt-6">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {stats.map(({ label, value, icon }) => (
+        {stats.map(({ label, value, icon, partial }) => (
           <div
             key={label}
             className={[ui.panel, ui.panelHover, "group p-4"].join(" ")}
@@ -46,12 +69,13 @@ export default function WorkspaceOverview({
                 icon={icon}
                 size={14}
                 strokeWidth={1.6}
-                className="shrink-0 text-(--text-muted) transition-colors duration-200 group-hover:text-(--brand)"
+                className="shrink-0 text-neutral-600 transition-colors duration-200 group-hover:text-orange-100"
               />
             </div>
 
-            <p className="mt-3 font-mono text-[26px] font-semibold leading-none tracking-tight tabular-nums text-(--text-primary)">
+            <p className="mt-3 text-[26px] font-semibold leading-none tracking-tight tabular-nums text-neutral-100">
               {pad(value)}
+              {partial && <span className="text-neutral-500">+</span>}
             </p>
           </div>
         ))}

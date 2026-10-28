@@ -134,6 +134,24 @@ select:disabled {
   outline-offset: 2px;
 }
 
+/**
+ * Text fields are excluded from the brand outline.
+ *
+ * On a field the outline is drawn 2px outside the border, so a focused input
+ * shows two lines at once and the orange reads as a second border. Fields
+ * already signal focus through their own border and caret, so the outline is
+ * dropped for them only. Buttons, links and other controls keep it.
+ *
+ * This rule has to live here rather than as a utility: `@import "tailwindcss"`
+ * puts utilities in `@layer utilities`, and unlayered CSS always wins over
+ * layered CSS, so `focus-visible:outline-none` cannot override the rule above.
+ */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+}
+
 /* LINKS */
 
 a {

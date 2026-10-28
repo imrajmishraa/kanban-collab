@@ -5,14 +5,20 @@ import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { useAuthStore } from "@/stores/useAuthStore";
 
 /**
- * Restores the signed-in user's last-used workspace so they never have to
- * pick one manually. It does NOT navigate anywhere — it only selects the
- * workspace; the user stays on whatever route they landed on.
+ * Restores the workspace the user picked last time. It does NOT navigate
+ * anywhere — it only selects the workspace; the user stays on whatever route
+ * they landed on.
  *
  * Resolution order:
  *   1. the current selection, if it still exists;
  *   2. the user's last-used workspace, if it still exists;
- *   3. the first workspace in the list.
+ *   3. nothing. The user has never chosen, so `RequireWorkspace` asks.
+ *
+ * There used to be a third fallback to `workspaces[0]`, which silently picked
+ * a workspace for every user. That made the "choose a workspace" screen
+ * unreachable: by the time a gated route rendered, something was always
+ * selected. Guessing a workspace is also wrong on its own terms, since it can
+ * drop you into someone else's project.
  *
  * Mounted once in AppLayout.
  */
@@ -38,15 +44,14 @@ export function useEnsureActiveWorkspace() {
 
     if (!activeWorkspaceId || !exists(activeWorkspaceId)) {
       const remembered = lastWorkspaceByUser[userId];
-      const chosen =
-        remembered && exists(remembered.id)
-          ? { id: remembered.id, name: remembered.name }
-          : workspaces[0]
-            ? { id: workspaces[0].id, name: workspaces[0].name }
-            : null;
 
-      if (!chosen) return; // user has no workspaces yet — nothing to select
-      setActiveWorkspace(chosen.id, chosen.name);
+      // Only restore a workspace the user actually chose. No guessing.
+      if (!remembered || !exists(remembered.id)) {
+        resolvedFor.current = userId;
+        return;
+      }
+
+      setActiveWorkspace(remembered.id, remembered.name);
     }
 
     resolvedFor.current = userId;

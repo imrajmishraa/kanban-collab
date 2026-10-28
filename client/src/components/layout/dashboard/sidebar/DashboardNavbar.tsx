@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { useQuery } from "@tanstack/react-query";
 
 import { WorkspaceSelector } from "../workspace/selector/WorkspaceSelector";
-import { RecentBoardsMenu } from "../workspace/create/RecentBoardsMenu";
+import { BoardSelector } from "../board/selector/BoardSelector";
 import { notificationKeys } from "../notifications/index";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
+import { useBoardsStore } from "@/stores/boards";
 import { useSidebarState } from "@/stores/sidebarState";
 import { notificationsApi } from "@/api/dashboard/notificationsApi";
 import {
@@ -18,6 +20,29 @@ import NotificationsPanel from "../notifications/NotificationsPanel";
 
 export default function DashboardNavbar() {
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const bellRef = useRef<HTMLDivElement>(null);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  /* The boards menu is a "where am I" control: it belongs to a board route.
+     On the dashboard it listed an arbitrary subset of the active workspace's
+     boards, which read as stale, so it is only rendered inside a board. */
+  const onBoardRoute = location.pathname.startsWith("/boards/");
+
+  /* The overview is not scoped to one workspace, so the switcher reads
+     "All Workspaces" there and reverts to the active name elsewhere. */
+  const onOverview = location.pathname === "/dashboard";
+
+  /* The close button only makes sense while a workspace page is open: there it
+     means "leave this workspace". Anywhere else it would have nothing to
+     close, so it is not rendered at all. */
+  const onWorkspaceRoute = location.pathname.startsWith("/workspaces/");
+
+  const currentBoardId = onBoardRoute
+    ? (location.pathname.split("/")[2] ?? null)
+    : null;
+
+  const setLastBoard = useBoardsStore((s) => s.setLastBoard);
   const [scrolled, setScrolled] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
 
@@ -68,21 +93,60 @@ export default function DashboardNavbar() {
           <Chevron />
 
           <WorkspaceSelector
-            activeWorkspaceId={activeWorkspaceId ?? null}
-            activeWorkspaceName={activeWorkspaceName ?? null}
-            onWorkspaceChange={setActiveWorkspace}
+            activeWorkspaceId={onOverview ? null : (activeWorkspaceId ?? null)}
+            activeWorkspaceName={
+              onOverview ? "All Workspaces" : (activeWorkspaceName ?? null)
+            }
+            onWorkspaceChange={(id, name) => {
+              setActiveWorkspace(id, name);
+              // Picking a workspace takes you to its page.
+              navigate(`/workspaces/${id}`);
+            }}
+            // Overview: one pill that opens the list, no close button.
+            unified={onOverview}
+            // Workspace: the name opens it, the close button (hover only)
+            // leaves it for the overview.
+            onOpenActive={
+              onOverview
+                ? undefined
+                : () => navigate(`/workspaces/${activeWorkspaceId}`)
+            }
+            onClose={
+              onWorkspaceRoute ? () => navigate("/dashboard") : undefined
+            }
           />
 
-          <Chevron />
+          {onBoardRoute && (
+            <>
+              <Chevron />
 
-          {/* Remounts on workspace change, which also closes its menu. */}
-          <RecentBoardsMenu key={activeWorkspaceId ?? "none"} />
+              {/* Mirrors the workspace switcher. Remounts on workspace change,
+                  which also closes its menu. */}
+              <BoardSelector
+                key={activeWorkspaceId ?? "none"}
+                activeBoardId={currentBoardId}
+                onSelect={(boardId) => {
+                  setLastBoard(boardId);
+                  navigate(`/boards/${boardId}`);
+                }}
+              />
+            </>
+          )}
         </nav>
 
-        <div className="ml-auto flex items-center justify-end gap-1">
-          {sidebarCollapsed && <NavbarSearchIcon />}
+        {onOverview && (
+          <span className="pointer-events-none absolute left-1/2 -translate-x-1/2 text-[12.5px] font-medium tracking-tight text-neutral-300">
+            Overview
+          </span>
+        )}
 
-          <div className="relative">
+        <div className="ml-auto flex items-center justify-end gap-1">
+          {/* Always rendered, and always immediately before notifications.
+              It used to appear only when the sidebar was collapsed, so the
+              button moved around as the rail was toggled. */}
+          <NavbarSearchIcon />
+
+          <div ref={bellRef} className="relative">
             <NotificationsButton
               unreadCount={notificationsData?.unreadCount ?? 0}
               onClick={() => setNotificationsOpen((open) => !open)}
@@ -90,6 +154,7 @@ export default function DashboardNavbar() {
             <NotificationsPanel
               open={notificationsOpen}
               onClose={() => setNotificationsOpen(false)}
+              ignoreRef={bellRef}
             />
           </div>
         </div>

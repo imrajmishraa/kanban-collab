@@ -2,11 +2,9 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ArrowLeftDoubleIcon,
   ArrowRightDoubleIcon,
-  Search01Icon,
 } from "@hugeicons/core-free-icons";
 import { useNavigate } from "react-router-dom";
 
-import { useSearchStore } from "@/stores/searchStore";
 import logo from "@/assets/logo.svg?inline";
 import { Tooltip } from "#components/Tooltips/ToolTip";
 interface SidebarHeaderProps {
@@ -17,7 +15,6 @@ interface SidebarHeaderProps {
 
 const SidebarHeader = ({ collapsed, onToggle }: SidebarHeaderProps) => {
   const navigate = useNavigate();
-  const openSearch = useSearchStore((s) => s.openSearch);
 
   if (collapsed) {
     return (
@@ -98,15 +95,6 @@ const SidebarHeader = ({ collapsed, onToggle }: SidebarHeaderProps) => {
       </button>
 
       <div className="flex items-center gap-0.5">
-        <Tooltip label="Search ⌘K" side="bottom" shape="solid" size="md">
-          <HeaderIconButton
-            icon={
-              <HugeiconsIcon icon={Search01Icon} size={15} strokeWidth={1.6} />
-            }
-            onClick={openSearch}
-          />
-        </Tooltip>
-
         <Tooltip label="Collaspe" side="bottom" shape="solid" size="md">
           <HeaderIconButton
             icon={

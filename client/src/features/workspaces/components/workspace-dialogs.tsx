@@ -1,0 +1,373 @@
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Cancel01Icon, Loading03Icon } from "@hugeicons/core-free-icons";
+
+import { boardApi } from "@/api/dashboard/boardApi";
+import { workspaceApi } from "@/api/dashboard/workspaceApi";
+import { boardKeys } from "@/hooks/dashboard/useBoards";
+import { workspaceKeys } from "@/hooks/dashboard/useWorkspaces";
+import { toastSuccess, toastError } from "@/lib/toast";
+
+import type { AddWorkspaceMemberPayload } from "@/types/api/dashboard/workspace";
+
+/** The server's own union, so a new role can never be invented here. */
+type MemberRole = NonNullable<AddWorkspaceMemberPayload["role"]>;
+
+interface DialogShellProps {
+  title: string;
+  description: string;
+  onClose: () => void;
+  children: React.ReactNode;
+}
+
+/** Shared shell: portal, backdrop, Escape, scroll lock. */
+function DialogShell({
+  title,
+  description,
+  onClose,
+  children,
+}: DialogShellProps) {
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", onKey);
+
+    return () => {
+      document.body.style.overflow = previous;
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [onClose]);
+
+  return createPortal(
+    <div className="fixed inset-0 z-100 flex items-start justify-center overflow-y-auto p-4 pt-24">
+      <div
+        aria-hidden="true"
+        onClick={onClose}
+        className="fixed inset-0 bg-black/70 backdrop-blur-sm motion-safe:animate-in motion-safe:fade-in-0 motion-safe:duration-200"
+      />
+
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        className="relative z-10 w-full max-w-md overflow-hidden rounded-xl border border-orange-50/15 bg-[#0a0a0a]/95 backdrop-blur-sm motion-safe:animate-in motion-safe:fade-in-0 motion-safe:zoom-in-95 motion-safe:duration-200"
+      >
+        <div className="flex items-start justify-between gap-4 border-b border-orange-50/10 px-5 py-4">
+          <div>
+            <h2 className="text-[14px] font-medium tracking-tight text-neutral-100">
+              {title}
+            </h2>
+            <p className="mt-0.5 text-[11.5px] text-neutral-500">
+              {description}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-transparent text-neutral-500 transition-colors duration-200 hover:border-orange-50/15 hover:bg-white/5 hover:text-neutral-200"
+          >
+            <HugeiconsIcon icon={Cancel01Icon} size={14} strokeWidth={1.8} />
+          </button>
+        </div>
+
+        {children}
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
+const inputClass =
+  "w-full rounded-lg border border-orange-50/15 bg-white/[0.03] px-3 py-2 text-[13px] text-neutral-100 placeholder:text-neutral-600 outline-none transition-colors duration-200 hover:border-orange-50/25 focus:border-white/25 focus:bg-white/[0.05] focus-visible:outline-none";
+
+const labelClass = "text-[11px] font-medium text-neutral-300";
+
+const cancelClass =
+  "flex h-9 cursor-pointer items-center rounded-none rounded-tl-lg rounded-br-lg border border-orange-50/20 px-4 text-[12px] text-neutral-300 transition-colors duration-200 hover:border-orange-50/35 hover:bg-white/[0.04] hover:text-neutral-100";
+
+const submitClass =
+  "flex h-9 cursor-pointer items-center gap-1.5 rounded-none rounded-tr-lg rounded-bl-lg bg-white px-4 text-[12px] font-semibold text-black transition-colors duration-200 hover:bg-neutral-200 disabled:cursor-not-allowed disabled:opacity-50";
+
+/* ── Add member ─────────────────────────────────────────────────────────── */
+
+export function AddMemberDialog({
+  workspaceId,
+  onClose,
+}: {
+  workspaceId: string;
+  onClose: () => void;
+}) {
+  const queryClient = useQueryClient();
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState<MemberRole>("member");
+
+  const add = useMutation({
+    mutationFn: () =>
+      workspaceApi.addWorkspaceMember(workspaceId, { email, role }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: workspaceKeys.all });
+      toastSuccess("Member added", `${email} can now open this workspace.`);
+      onClose();
+    },
+    onError: toastError,
+  });
+
+  return (
+    <DialogShell
+      title="Add member"
+      description="Invite someone by the email on their account"
+      onClose={onClose}
+    >
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          add.mutate();
+        }}
+        className="p-5"
+      >
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="member-email" className={labelClass}>
+              Email
+            </label>
+            <input
+              id="member-email"
+              type="email"
+              required
+              autoFocus
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="teammate@example.com"
+              className={`mt-1.5 ${inputClass}`}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="member-role" className={labelClass}>
+              Role
+            </label>
+            <select
+              id="member-role"
+              value={role}
+              onChange={(event) => setRole(event.target.value as MemberRole)}
+              className={`mt-1.5 ${inputClass}`}
+            >
+              <option value="admin">Admin</option>
+              <option value="member">Member</option>
+              <option value="guest">Guest</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="mt-6 flex items-center justify-end gap-2">
+          <button type="button" onClick={onClose} className={cancelClass}>
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={add.isPending}
+            className={submitClass}
+          >
+            {add.isPending && (
+              <HugeiconsIcon
+                icon={Loading03Icon}
+                size={13}
+                strokeWidth={2}
+                className="animate-spin"
+              />
+            )}
+            Add member
+          </button>
+        </div>
+      </form>
+    </DialogShell>
+  );
+}
+
+/* ── Rename workspace ───────────────────────────────────────────────────── */
+
+export function RenameWorkspaceDialog({
+  workspaceId,
+  currentName,
+  onClose,
+}: {
+  workspaceId: string;
+  currentName: string;
+  onClose: () => void;
+}) {
+  const queryClient = useQueryClient();
+  const [name, setName] = useState(currentName);
+
+  const rename = useMutation({
+    mutationFn: () =>
+      workspaceApi.updateWorkspace(workspaceId, { name: name.trim() }),
+    onSuccess: (workspace) => {
+      void queryClient.invalidateQueries({ queryKey: workspaceKeys.all });
+      // The dashboard payload carries the names, so refresh that too.
+      void queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      toastSuccess("Workspace renamed", `Now called ${workspace.name}.`);
+      onClose();
+    },
+    onError: toastError,
+  });
+
+  const unchanged = name.trim() === currentName.trim() || name.trim() === "";
+
+  return (
+    <DialogShell
+      title="Rename workspace"
+      description="Everyone in the workspace sees the new name"
+      onClose={onClose}
+    >
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (!unchanged) rename.mutate();
+        }}
+        className="p-5"
+      >
+        <label htmlFor="workspace-name" className={labelClass}>
+          Name
+        </label>
+        <input
+          id="workspace-name"
+          type="text"
+          required
+          autoFocus
+          value={name}
+          onChange={(event) => setName(event.target.value)}
+          className={`mt-1.5 ${inputClass}`}
+        />
+
+        <div className="mt-6 flex items-center justify-end gap-2">
+          <button type="button" onClick={onClose} className={cancelClass}>
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={rename.isPending || unchanged}
+            className={submitClass}
+          >
+            {rename.isPending && (
+              <HugeiconsIcon
+                icon={Loading03Icon}
+                size={13}
+                strokeWidth={2}
+                className="animate-spin"
+              />
+            )}
+            Save
+          </button>
+        </div>
+      </form>
+    </DialogShell>
+  );
+}
+
+/* ── Create board ───────────────────────────────────────────────────────── */
+
+export function CreateBoardDialog({
+  workspaceId,
+  onClose,
+}: {
+  workspaceId: string;
+  onClose: () => void;
+}) {
+  const queryClient = useQueryClient();
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+
+  const create = useMutation({
+    mutationFn: () =>
+      boardApi.createBoard({
+        workspaceId,
+        name,
+        ...(description.trim() ? { description: description.trim() } : {}),
+      }),
+    onSuccess: (board) => {
+      void queryClient.invalidateQueries({ queryKey: boardKeys.all });
+      toastSuccess("Board created", `${board.name} is ready.`);
+      onClose();
+    },
+    onError: toastError,
+  });
+
+  return (
+    <DialogShell
+      title="Create board"
+      description="Boards hold the columns and cards for one project"
+      onClose={onClose}
+    >
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          create.mutate();
+        }}
+        className="p-5"
+      >
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="board-name" className={labelClass}>
+              Name
+            </label>
+            <input
+              id="board-name"
+              type="text"
+              required
+              autoFocus
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              placeholder="Roadmap"
+              className={`mt-1.5 ${inputClass}`}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="board-description" className={labelClass}>
+              Description (optional)
+            </label>
+            <textarea
+              id="board-description"
+              rows={3}
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+              placeholder="What is this board for?"
+              className={`mt-1.5 resize-none ${inputClass}`}
+            />
+          </div>
+        </div>
+
+        <div className="mt-6 flex items-center justify-end gap-2">
+          <button type="button" onClick={onClose} className={cancelClass}>
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={create.isPending}
+            className={submitClass}
+          >
+            {create.isPending && (
+              <HugeiconsIcon
+                icon={Loading03Icon}
+                size={13}
+                strokeWidth={2}
+                className="animate-spin"
+              />
+            )}
+            Create board
+          </button>
+        </div>
+      </form>
+    </DialogShell>
+  );
+}

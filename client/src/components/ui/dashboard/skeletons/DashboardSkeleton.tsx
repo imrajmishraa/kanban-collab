@@ -26,7 +26,7 @@ const SkeletonBar = ({ className, tone = "base" }: SkeletonBarProps) => (
   <div
     className={cx(
       "rounded-sm",
-      tone === "dim" ? "bg-neutral-900" : "bg-neutral-800",
+      tone === "dim" ? "bg-white/4" : "bg-white/[0.07]",
       className,
     )}
   />
@@ -39,7 +39,12 @@ type SkeletonPanelProps = {
 
 /** Bordered surface that wraps a group of placeholder bars. */
 const SkeletonPanel = ({ className, children }: SkeletonPanelProps) => (
-  <div className={cx("border border-neutral-800 bg-[#0b0b0b]", className)}>
+  <div
+    className={cx(
+      "rounded-xl border border-orange-50/15 bg-white/2",
+      className,
+    )}
+  >
     {children}
   </div>
 );
@@ -102,24 +107,12 @@ const DashboardSkeleton = () => {
                 key={index}
                 className="flex h-12 items-center gap-3 px-4"
               >
-                <div className="h-6 w-6 shrink-0 rounded-full bg-neutral-800" />
+                <div className="h-6 w-6 shrink-0 rounded-full bg-white/[0.07]" />
 
                 <div className="min-w-0 flex-1">
                   <SkeletonBar className="h-2.5 w-2/3" />
                   <SkeletonBar className="mt-2 h-2 w-1/3" tone="dim" />
                 </div>
-              </SkeletonPanel>
-            ))}
-          </div>
-        </SkeletonSection>
-
-        {/* Recent boards */}
-        <SkeletonSection label="w-32">
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {times(3).map((index) => (
-              <SkeletonPanel key={index} className="h-24 p-4">
-                <SkeletonBar className="h-3 w-36" />
-                <SkeletonBar className="mt-4 h-2.5 w-24" tone="dim" />
               </SkeletonPanel>
             ))}
           </div>

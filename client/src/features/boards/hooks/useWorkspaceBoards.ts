@@ -20,6 +20,8 @@ export interface WorkspaceBoardItem {
 
 export interface UseWorkspaceBoardsResult {
   items: WorkspaceBoardItem[];
+  /** Every board in the workspace, not just the pages loaded so far. */
+  totalBoards: number;
   isLoading: boolean;
   isError: boolean;
   refetch: () => Promise<unknown>;
@@ -75,6 +77,7 @@ export function useWorkspaceBoards(): UseWorkspaceBoardsResult {
 
   return {
     items,
+    totalBoards: query.data?.pages[0]?.pagination.totalBoards ?? 0,
     isLoading: query.isLoading,
     isError: query.isError,
     refetch: query.refetch,

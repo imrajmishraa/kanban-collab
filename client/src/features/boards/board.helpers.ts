@@ -19,18 +19,19 @@ export type ViewMode = "board" | "list";
 /* ------------------------------------------------------------------ */
 
 export const ui = {
-  /** Rounded panel with the dashboard's white/opacity surface. */
-  panel: "relative overflow-hidden rounded-xl border border-white/8 bg-white/4",
+  /** Rounded panel on the ChaiUI near-black surface with a warm hairline. */
+  panel:
+    "relative overflow-hidden rounded-xl border border-orange-50/15 bg-white/[0.03]",
   panelHover:
-    "transition-colors duration-200 hover:border-white/14 hover:bg-white/6",
-  /** Gradient hairline that sits on the top edge of every panel. */
-  hairline:
-    "pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-white/15 to-transparent",
-  /** Small uppercase mono label used above headings. */
+    "transition-colors duration-200 hover:border-orange-50/25 hover:bg-white/[0.05]",
+  /** Kept for call sites that still render it, but flat: ChaiUI panels carry
+      no gradient glint, the hairline border does the work. */
+  hairline: "hidden",
+  /** Small uppercase mono label used above headings: caps are fine for data. */
   eyebrow:
-    "font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-(--text-muted)",
-  /** Pill button — the dashboard's default secondary action. */
-  pill: "inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/8 bg-white/6 px-4 py-2 font-mono text-[12px] text-(--text-primary) transition-colors duration-200 hover:bg-white/10",
+    "font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-neutral-500",
+  /** Outline action, mirrored corners, the partner to the solid primary. */
+  pill: "inline-flex cursor-pointer items-center gap-2 rounded-none rounded-tl-lg rounded-br-lg border border-orange-50/20 px-4 py-2 text-[12px] text-neutral-200 transition-colors duration-200 hover:border-orange-50/35 hover:bg-white/[0.04] hover:text-neutral-100",
 } as const;
 
 /* ------------------------------------------------------------------ */

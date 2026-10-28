@@ -127,4 +127,74 @@ const markAllNotificationsRead = asyncHandler(
   },
 );
 
-export { listNotifications, markNotificationRead, markAllNotificationsRead };
+/** DELETE /api/v1/notifications/:notificationId */
+const clearNotification = asyncHandler(
+  async (req: AuthenticatedRequest, res) => {
+    const userId = requireUserId(req);
+    const notificationId = req.params["notificationId"] || req.params["id"];
+
+    if (!notificationId || !Types.ObjectId.isValid(notificationId)) {
+      throw ApiError.badRequest("Invalid notification id.");
+    }
+
+    const result = await NotificationModel.deleteOne({
+      _id: notificationId,
+      userId: new Types.ObjectId(userId),
+    });
+
+    if (result.deletedCount === 0) {
+      throw ApiError.notFound("Notification not found.");
+    }
+
+    notificationControllerLogger.info(
+      { userId, notificationId },
+      "Notification cleared",
+    );
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(200, "Notification cleared", { id: notificationId }),
+      );
+  },
+);
+
+/**
+ * DELETE /api/v1/notifications
+ *
+ * `?read=true` clears only what has been read, which is what the panel's
+ * "Clear read" action uses; without it everything goes.
+ */
+const clearAllNotifications = asyncHandler(
+  async (req: AuthenticatedRequest, res) => {
+    const userId = requireUserId(req);
+    const readOnly = req.query["read"] === "true";
+
+    const filter: Record<string, unknown> = {
+      userId: new Types.ObjectId(userId),
+    };
+
+    if (readOnly) filter["isRead"] = true;
+
+    const result = await NotificationModel.deleteMany(filter);
+
+    notificationControllerLogger.info(
+      { userId, deleted: result.deletedCount, readOnly },
+      "Notifications cleared",
+    );
+
+    return res.status(200).json(
+      new ApiResponse(200, "Notifications cleared", {
+        deleted: result.deletedCount,
+      }),
+    );
+  },
+);
+
+export {
+  listNotifications,
+  markNotificationRead,
+  markAllNotificationsRead,
+  clearNotification,
+  clearAllNotifications,
+};

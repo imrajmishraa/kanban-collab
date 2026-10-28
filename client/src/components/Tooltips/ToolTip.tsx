@@ -27,7 +27,7 @@ const ORIGIN: Record<Side, string> = {
   right: "left center",
 };
 
-/** Hover-capable devices only — prevents ghost tooltips after taps on touch. */
+/** Hover-capable devices only, prevents ghost tooltips after taps on touch. */
 const canHover =
   typeof window !== "undefined" &&
   window.matchMedia("(hover: hover) and (pointer: fine)").matches;
@@ -35,7 +35,7 @@ const canHover =
 /* ── Bubble shapes ───────────────────────────────────────────────
    Classic five : default · sharp · soft · pill · card
    Creative set : glass · neon · gradient · ink · outline · terminal · badge
-   Editorial    : solid — the "Toggle side panel" look: black capsule,
+   Editorial    : solid, the "Toggle side panel" look: black capsule,
                   white text, soft floating shadow. The timeless one. */
 
 export type TooltipShape =
@@ -57,79 +57,75 @@ export type TooltipShape =
    so every variant can override the base, and tone can override shape. */
 
 const SHAPE_CLASS: Record<TooltipShape, string> = {
-  /* ── Classic five (unchanged) ── */
-  default: "rounded-md px-2.5 py-1",
+  /* ChaiUI material rules applied to every bubble:
+     near-black surface, warm hairline (orange-50/15), no shadow.
+     Orange is never a fill, so the "loud" shapes use a cream tint and a
+     hairline instead of an orange background. */
+
+  /* ── Classic five ── */
+  default: "rounded-lg px-2.5 py-1",
   sharp: "rounded-[3px] px-2.5 py-1",
   soft: "rounded-xl px-3 py-1.5",
   pill: "rounded-full px-3.5 py-1",
-  card: "rounded-2xl px-3.5 py-2.5",
+  card: "rounded-xl px-3.5 py-2.5",
 
   /* ── Creative set ── */
 
-  // Frosted glass — translucent blur with a light sheen top-left
+  // Frosted: warm white wash over the near-black surface
   glass: [
     "rounded-xl px-3 py-1.5",
-    "border-line backdrop-blur-md",
-    "bg-[linear-gradient(135deg,rgba(255,255,255,0.14),rgba(255,255,255,0.03))]",
-    "text-ink shadow-none",
+    "border-orange-50/20 bg-white/[0.06] backdrop-blur-md",
+    "text-neutral-100",
   ].join(" "),
 
-  // Neon — brand-tinted glow ring, for the one thing on screen that matters
+  // Cream ring: the one bubble that carries the highlight accent
   neon: [
     "rounded-lg px-3 py-1.5",
-    "border-(--brand)/50 bg-(--brand)/10 text-(--brand-hover)",
-    "shadow-[0_0_18px_-2px_var(--brand),0_0_5px_var(--brand)]",
+    "border-orange-100/40 bg-orange-100/10 text-orange-100",
   ].join(" "),
 
-  // Gradient — solid brand gradient bubble, white text, heavy lift
+  // Cream wash: solid-looking without being an orange fill
   gradient: [
-    "rounded-lg px-3 py-1.5 font-semibold",
-    "border-white/10 text-white",
-    "bg-[linear-gradient(135deg,var(--brand),rgba(0,0,0,0.55))]",
-    "shadow-[0_8px_24px_-6px_var(--brand)]",
+    "rounded-lg px-3 py-1.5 font-medium",
+    "border-orange-100/30 bg-orange-100/12 text-orange-100",
   ].join(" "),
 
-  // Ink — inverted "paper": light bubble, dark text
+  // Ink: inverted paper, the only light bubble
   ink: [
     "rounded-md px-2.5 py-1",
-    "border-ink bg-ink text-(--bg-root)",
-    "shadow-none",
+    "border-black/10 bg-white/90 text-neutral-900",
   ].join(" "),
 
-  // Outline — ghost bubble: no fill, no shadow, just a strong border
+  // Outline: hairline only
   outline: [
     "rounded-md px-2.5 py-1",
-    "border-line-strong bg-transparent text-ink-secondary",
-    "shadow-none backdrop-blur-none",
+    "border-orange-50/25 bg-transparent text-neutral-300",
   ].join(" "),
 
-  // Terminal — mono, squared, muted — reads like a CLI hint
+  // Terminal: mono data label, quiet surface
   terminal: [
     "rounded-[4px] px-2.5 py-1",
-    "border-line bg-card",
-    "font-mono text-[10px] tracking-wider text-ink-muted",
-    "shadow-none",
+    "border-orange-50/15 bg-(--bg-card)",
+    "font-mono text-[10px] tracking-wider text-(--text-muted)",
   ].join(" "),
 
-  // Badge — accent-tinted pill, for counts and labels that pop politely
+  // Badge: cream tint pill, text carries the accent
   badge: [
     "rounded-full px-3.5 py-1",
-    "border-accent/25 bg-accent/10 text-accent font-semibold",
-    "shadow-none",
+    "border-orange-100/25 bg-orange-100/10 text-orange-100 font-medium",
   ].join(" "),
 
   /* ── Editorial ── */
 
-  // Solid — black capsule, white text, soft floating shadow.
-  // The classic VS Code / macOS tooltip from the reference.
+  // Solid: the capsule every call site uses. Black, white text, warm hairline,
+  // flat on purpose (ChaiUI cards carry no shadow).
   solid: [
     "rounded-[10px] px-3 py-1.5",
-    "border border-white/10 bg-black text-white",
-    "shadow-[0_4px_12px_-2px_rgba(0,0,0,0.35),0_12px_36px_-6px_rgba(0,0,0,0.55)]",
+    "border border-orange-50/15 bg-black/95 text-white backdrop-blur-sm",
   ].join(" "),
 };
 
-/* ── Colour tones — a semantic layer that sits ON TOP of any shape.────
+/* ── Colour tones, a semantic layer that sits ON TOP of any shape.────
    Use tone for MEANING (this board is archived, this action deletes),
    use shape for VOICE (quiet glass vs loud neon). They compose. */
 
@@ -138,40 +134,41 @@ export type TooltipTone =
 
 const TONE_CLASS: Record<TooltipTone, string> = {
   neutral: "",
-  brand: "border-(--brand)/40 bg-(--brand)/15 text-(--brand-hover)",
-  success: "border-emerald-500/40 bg-emerald-500/15 text-emerald-300",
-  warning: "border-amber-500/40 bg-amber-500/15 text-amber-300",
-  danger: "border-coral/40 bg-coral/15 text-coral",
+  // Cream, the highlight accent. Never an orange fill.
+  brand: "border-orange-100/35 text-orange-100",
+  success: "border-emerald-400/35 text-emerald-300",
+  warning: "border-amber-400/35 text-amber-300",
+  danger: "border-rose-400/35 text-rose-300",
 };
 
 /* The little rotated-square tail must match its bubble's fill,
    or every non-default shape would wear a mismatched arrow. */
 
 const ARROW_CLASS: Record<TooltipShape, string> = {
-  default: "border-line-strong bg-elevated",
-  sharp: "border-line-strong bg-elevated",
-  soft: "border-line-strong bg-elevated",
-  pill: "border-line-strong bg-elevated",
-  card: "border-line-strong bg-elevated",
-  glass: "border-line bg-elevated/70",
-  neon: "border-(--brand)/50 bg-(--brand)/10",
-  gradient: "border-white/10 bg-(--brand)",
-  ink: "border-ink bg-ink",
-  outline: "border-line-strong bg-transparent",
-  terminal: "border-line bg-card",
-  badge: "border-accent/25 bg-accent/10",
-  solid: "border-white/10 bg-black",
+  default: "border-orange-50/15 bg-black/95",
+  sharp: "border-orange-50/15 bg-black/95",
+  soft: "border-orange-50/15 bg-black/95",
+  pill: "border-orange-50/15 bg-black/95",
+  card: "border-orange-50/15 bg-black/95",
+  glass: "border-orange-50/20 bg-white/[0.06]",
+  neon: "border-orange-100/40 bg-orange-100/10",
+  gradient: "border-orange-100/30 bg-orange-100/12",
+  ink: "border-black/10 bg-white/90",
+  outline: "border-orange-50/25 bg-transparent",
+  terminal: "border-orange-50/15 bg-(--bg-card)",
+  badge: "border-orange-100/25 bg-orange-100/10",
+  solid: "border-orange-50/15 bg-black/95",
 };
 
 const ARROW_TONE_CLASS: Record<TooltipTone, string> = {
   neutral: "",
-  brand: "border-(--brand)/40 bg-(--brand)/15",
-  success: "border-emerald-500/40 bg-emerald-500/15",
-  warning: "border-amber-500/40 bg-amber-500/15",
-  danger: "border-coral/40 bg-coral/15",
+  brand: "border-orange-100/35",
+  success: "border-emerald-400/35",
+  warning: "border-amber-400/35",
+  danger: "border-rose-400/35",
 };
 
-/* ── Typography scale — the bubble's voice, independent of shape. ── */
+/* ── Typography scale, the bubble's voice, independent of shape. ── */
 
 export type TooltipSize = "sm" | "md" | "lg";
 
@@ -182,9 +179,9 @@ const SIZE_CLASS: Record<TooltipSize, string> = {
 };
 
 interface TooltipProps {
-  /** Bubble content — string, or any node for icon + label combos. */
+  /** Bubble content, string, or any node for icon + label combos. */
   label: ReactNode;
-  /** Preferred side — flips automatically when there's no room. */
+  /** Preferred side, flips automatically when there's no room. */
   side?: Side;
   children: ReactNode;
   className?: string;
@@ -197,13 +194,13 @@ interface TooltipProps {
   width?: number | string;
   /** Max bubble width. Enables wrapping. */
   maxWidth?: number | string;
-  /** Fixed bubble height — content centers vertically. */
+  /** Fixed bubble height, content centers vertically. */
   height?: number | string;
-  /** Max bubble height — content clips gracefully. */
+  /** Max bubble height, content clips gracefully. */
   maxHeight?: number | string;
   /** Text alignment when the bubble wraps (default: left) */
   align?: Align;
-  /** Pre-defined bubble shape (default: 'default' — the original look) */
+  /** Pre-defined bubble shape (default: 'default', the original look) */
   shape?: TooltipShape;
   /** Semantic colour layer on top of the shape (default: 'neutral') */
   tone?: TooltipTone;
@@ -211,12 +208,17 @@ interface TooltipProps {
   size?: TooltipSize;
   /** Show the arrow tail. 'none' hides it (default: 'auto') */
   caret?: "auto" | "none";
+  /**
+   * One cream highlight phrase, ChaiUI's signature accent, rendered after the
+   * label. Keep it to a short phrase: it is the only accent in the bubble.
+   */
+  highlight?: ReactNode;
   /** px between anchor and bubble (default 8) */
   gap?: number;
   /**
    * Extra classes merged into the BUBBLE itself (not the wrapper span).
    * NOTE: the bubble is portalled to document.body, so it does NOT
-   * inherit styles from `className` — use this for per-usage tweaks.
+   * inherit styles from `className`, use this for per-usage tweaks.
    * Merged last, so it overrides everything.
    */
   bubbleClassName?: string;
@@ -247,6 +249,7 @@ export function Tooltip({
   tone = "neutral",
   size = "md",
   caret = "auto",
+  highlight,
   gap = DEFAULT_GAP,
   bubbleClassName,
 }: TooltipProps) {
@@ -415,7 +418,7 @@ export function Tooltip({
     });
   })();
 
-  /* Hover handlers only on hover-capable devices — no ghost tooltips on phones */
+  /* Hover handlers only on hover-capable devices, no ghost tooltips on phones */
   const hoverProps = canHover ? { onMouseEnter: show, onMouseLeave: hide } : {};
 
   return (
@@ -483,23 +486,33 @@ export function Tooltip({
               "max-w-[min(60vw,18rem)] whitespace-normal",
               height !== undefined && "flex items-center overflow-hidden",
               maxHeight !== undefined && "overflow-hidden",
-              "border border-line-strong bg-elevated/95 backdrop-blur-sm",
-              "text-[11px] font-medium tracking-[0.01em] text-ink",
+              /* ChaiUI base surface: near-black, warm hairline, flat. No shadow,
+                 which is why the border has to carry the separation. */
+              "border border-orange-50/15 bg-black/95 backdrop-blur-sm",
+              "text-[11px] font-medium tracking-[0.01em] text-neutral-100",
               align === "center" && "text-center",
               align === "right" && "text-right",
-              "shadow-[0_1px_2px_rgba(0,0,0,0.10),0_6px_20px_rgba(0,0,0,0.20)]",
               /* Shape classes come AFTER the base fill/text/shadow
                  so creative variants can override all of them;
                  tone and size then layer on top of shape. */
               SHAPE_CLASS[shape],
               TONE_CLASS[tone],
               SIZE_CLASS[size],
-              "transition-[opacity,transform] duration-150 ease-[cubic-bezier(0.22,1,0.36,1)]",
-              placed ? "scale-100 opacity-100" : "scale-[0.96] opacity-0",
+              /* 200ms sits inside ChaiUI's 200 to 300ms band. */
+              "transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]",
+              "motion-reduce:transition-none",
+              placed
+                ? "scale-100 opacity-100"
+                : "scale-[0.96] opacity-0 motion-reduce:scale-100",
               bubbleClassName,
             )}
           >
             {label}
+            {highlight ? (
+              <span className="ml-1 font-medium text-orange-100 capitalize">
+                {highlight}
+              </span>
+            ) : null}
             {caret !== "none" && (
               <span
                 aria-hidden

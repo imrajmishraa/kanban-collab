@@ -4,6 +4,7 @@ import {
   ActivityLogModel,
   BoardModel,
   CardModel,
+  UserModel,
   WorkspaceModel,
 } from "../../infrastructure/db/mongoose/schemas";
 
@@ -32,6 +33,14 @@ export interface DashboardActivity {
   boardId: string;
   boardName: string;
   userId: string;
+  /**
+   * Who did it. The client reads `actor.name`, so emitting only `userId` left
+   * every row rendering as "Someone".
+   */
+  actor: {
+    id: string;
+    name: string;
+  };
   createdAt: string;
 }
 
@@ -259,6 +268,19 @@ export const getDashboard = async (
     activityBoards.map((board) => [board._id.toString(), board.name]),
   );
 
+  const activityUserIds = [...new Set(activityLogs.map((a) => a.userId))];
+
+  const activityUsers =
+    activityUserIds.length > 0
+      ? await UserModel.find({ _id: { $in: activityUserIds } })
+          .select("fullName")
+          .lean()
+      : [];
+
+  const actorNameById = new Map(
+    activityUsers.map((user) => [user._id.toString(), user.fullName]),
+  );
+
   const recentActivity: DashboardActivity[] = activityLogs.map((activity) => ({
     id: activity._id.toString(),
     type: activity.actionType,
@@ -275,6 +297,10 @@ export const getDashboard = async (
     boardName:
       boardNameById.get(activity.boardId.toString()) ?? "Unknown board",
     userId: activity.userId.toString(),
+    actor: {
+      id: activity.userId.toString(),
+      name: actorNameById.get(activity.userId.toString()) ?? "Unknown member",
+    },
     createdAt: activity.createdAt.toISOString(),
   }));
 

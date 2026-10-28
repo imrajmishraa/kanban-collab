@@ -1,9 +1,8 @@
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
-  CheckListIcon,
   Building02Icon,
+  CheckListIcon,
   KanbanIcon,
-  Note01Icon,
 } from "@hugeicons/core-free-icons";
 
 interface DashboardOverviewProps {
@@ -14,6 +13,13 @@ interface DashboardOverviewProps {
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
+/**
+ * The four-up stat strip.
+ *
+ * Three tiles, not four: the old "Notes" tile was wired to `taskCount` as
+ * well, so it repeated the Tasks figure under a different label. The dashboard
+ * API has no note count, so the tile is gone until there is one to show.
+ */
 export default function DashboardOverview({
   workspaceCount,
   boardCount,
@@ -22,35 +28,26 @@ export default function DashboardOverview({
   const stats = [
     { label: "Workspaces", value: workspaceCount, icon: Building02Icon },
     { label: "Boards", value: boardCount, icon: KanbanIcon },
-    { label: "Tasks", value: taskCount, icon: CheckListIcon },
-    { label: "Notes", value: taskCount, icon: Note01Icon },
+    { label: "Active tasks", value: taskCount, icon: CheckListIcon },
   ];
 
   return (
     <section aria-label="Workspace overview" className="mt-6">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {stats.map(({ label, value, icon }) => (
           <div
             key={label}
             className="
-              group relative overflow-hidden rounded-xl
-              border border-white/8 bg-white/4
+              group relative rounded-xl
+              border border-orange-50/15 bg-white/3
               p-4
               transition-colors duration-200
-              hover:border-white/14 hover:bg-white/6
+              hover:border-orange-50/25 hover:bg-white/5
             "
           >
-            {/* Top hairline — same accent as every other panel */}
-            <span
-              aria-hidden="true"
-              className="
-                pointer-events-none absolute inset-x-0 top-0 h-px
-                bg-linear-to-r from-transparent via-white/15 to-transparent
-              "
-            />
-
-            <div className="flex items-center justify-between">
-              <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-(--text-muted)">
+            <div className="flex items-center justify-between gap-3">
+              {/* Caps are fine here: these are data labels. */}
+              <p className="font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-neutral-500">
                 {label}
               </p>
 
@@ -58,11 +55,11 @@ export default function DashboardOverview({
                 icon={icon}
                 size={14}
                 strokeWidth={1.6}
-                className="shrink-0 text-(--text-muted) transition-colors duration-200 group-hover:text-(--brand)"
+                className="shrink-0 text-neutral-600 transition-colors duration-200 group-hover:text-orange-100"
               />
             </div>
 
-            <p className="mt-3 font-mono text-[26px] font-semibold leading-none tracking-tight tabular-nums text-(--text-primary)">
+            <p className="mt-3 text-[26px] font-semibold leading-none tracking-tight tabular-nums text-neutral-100">
               {pad(value)}
             </p>
           </div>

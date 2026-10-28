@@ -1,7 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect } from "react";
 
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AddCircleIcon } from "@hugeicons/core-free-icons";
+
+import { Tooltip } from "#components/Tooltips/ToolTip";
+
 import { useNewWorkspaceDialog } from "./newWorkspaceDialog.context";
 
 interface SidebarNewWorkspaceProps {
@@ -12,22 +15,18 @@ const isMac =
   typeof navigator !== "undefined" &&
   /Mac|iPhone|iPad|iPod/.test(navigator.platform);
 
+/** Rendered inside the bubble's cream highlight slot. */
+const SHORTCUT = isMac ? "⌘ ⇧ K" : "Ctrl ⇧ K";
+
 export default function SidebarNewWorkspace({
   collapsed,
 }: SidebarNewWorkspaceProps) {
   const { open } = useNewWorkspaceDialog();
 
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const [tooltip, setTooltip] = useState<{ top: number; left: number } | null>(
-    null,
-  );
-
-  const handleCreate = () => open();
-
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       const modKey = isMac ? event.metaKey : event.ctrlKey;
-      // Require Shift — ⌘K belongs to search, ⌘⇧K opens new workspace
+      // Require Shift, ⌘K belongs to search, ⌘⇧K opens new workspace
       if (modKey && event.shiftKey && event.key.toLowerCase() === "k") {
         event.preventDefault();
         open();
@@ -37,123 +36,79 @@ export default function SidebarNewWorkspace({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [open]);
 
-  const handleMouseEnter = () => {
-    if (!collapsed) return;
-
-    const rect = buttonRef.current?.getBoundingClientRect();
-    if (!rect) return;
-
-    setTooltip({
-      top: rect.bottom, // 6px below the button
-      left: rect.right + 2, // left-aligned with the button
-    });
-  };
-
-  const handleMouseLeave = () => setTooltip(null);
-
   /* ── Collapsed ──────────────────────────────────────────── */
   if (collapsed) {
     return (
-      <>
-        <div className="shrink-0 px-2 pt-3">
+      <div className="shrink-0 px-2 pt-3">
+        <Tooltip
+          label="New workspace"
+          highlight={SHORTCUT}
+          side="right"
+          shape="solid"
+          size="md"
+          gap={10}
+        >
           <button
-            ref={buttonRef}
             type="button"
             onClick={(event) => {
+              // The collapsed rail expands on any click, keep this one.
               event.stopPropagation();
-              handleCreate();
+              open();
             }}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-            aria-label="New workspace"
+            aria-label={`New workspace (${SHORTCUT})`}
             className="
-              mx-auto flex size-9 cursor-pointer items-center justify-center
-              rounded-full border border-white/8 bg-white/6
+              mx-auto flex size-9 ml-1 cursor-pointer items-center justify-center
+              rounded-xl border border-orange-50/15 bg-white/5
               text-(--text-primary)
               transition-colors duration-200
-              hover:bg-white/10
+              hover:border-orange-50/25 hover:bg-white/8
+              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20
             "
           >
             <HugeiconsIcon icon={AddCircleIcon} size={18} strokeWidth={1.6} />
           </button>
-        </div>
-
-        {tooltip && (
-          <div
-            role="tooltip"
-            className="pointer-events-none fixed z-50"
-            style={{ top: tooltip.top, left: tooltip.left }}
-          >
-            <div
-              className="
-                flex items-center gap-2 whitespace-nowrap
-                rounded-md border border-white/12 bg-(--bg-elevated)
-                px-2.5 py-1.5
-                font-mono text-[11px] text-white/85
-                shadow-[0_8px_20px_-6px_rgba(0,0,0,0.7)]
-              "
-            >
-              <span>New workspace</span>
-
-              <kbd
-                className="
-                  flex items-center gap-0.5 rounded border border-white/12
-                  bg-white/6 px-1 py-0.5
-                  font-mono text-[9px] text-white/70
-                "
-              >
-                {isMac ? (
-                  <>
-                    <span className="text-[10px] leading-none">⌘</span>
-                    <span className="leading-none">⇧</span>
-                    <span className="leading-none">K</span>
-                  </>
-                ) : (
-                  <>
-                    <span className="leading-none">Ctrl</span>
-                    <span className="leading-none">⇧</span>
-                    <span className="leading-none">K</span>
-                  </>
-                )}
-              </kbd>
-            </div>
-          </div>
-        )}
-      </>
+        </Tooltip>
+      </div>
     );
   }
 
   /* ── Expanded ───────────────────────────────────────────── */
+  // The label and shortcut are both visible here, so a tooltip would only
+  // repeat them. It is added on the icon-only (collapsed) state instead.
   return (
     <div className="shrink-0 px-3 pt-3 pb-2">
       <button
         type="button"
-        onClick={handleCreate}
+        onClick={open}
         className="
-          group/new relative flex h-9 w-full cursor-pointer items-center
-          rounded-full border border-white/8 bg-white/6
+          group/new flex h-9 w-full cursor-pointer items-center gap-2.5
+          rounded-xl border border-orange-50/15 bg-white/5
           px-3 text-(--text-primary)
           transition-colors duration-200
-          hover:bg-white/10
+          hover:border-orange-50/25 hover:bg-white/8
+          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20
         "
       >
         <HugeiconsIcon
           icon={AddCircleIcon}
           size={16}
           strokeWidth={1.6}
-          className="shrink-0"
+          className="shrink-0 text-(--text-secondary) transition-colors duration-200 group-hover/new:text-(--text-primary)"
         />
 
-        <span className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap font-mono text-[13px]">
+        {/* Left aligned, in flow. It used to be absolutely centred on the pill,
+            so the icon on the left and the kbd on the right pushed it visually
+            left of centre. */}
+        <span className="min-w-0 flex-1 truncate text-left text-[12.5px] font-medium tracking-tight">
           New workspace
         </span>
 
         <kbd
           className="
-            ml-auto flex items-center gap-0.5 rounded-lg border border-white/10
-            bg-white/6 px-1.5 py-0.5 font-mono text-[10px]
-            text-(--text-secondary)
-            opacity-0 transition-all duration-200 ease-out
+            ml-auto flex shrink-0 items-center gap-0.5 rounded-md
+            border border-orange-50/15 bg-white/6 px-1.5 py-0.5
+            font-mono text-[10px] text-(--text-secondary)
+            opacity-0 transition-[opacity,transform] duration-200 ease-out
             translate-x-1
             group-hover/new:translate-x-0
             group-hover/new:opacity-100

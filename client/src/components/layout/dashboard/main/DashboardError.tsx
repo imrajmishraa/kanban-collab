@@ -15,67 +15,42 @@ const DashboardError = ({
       role="alert"
       className="flex min-h-[40vh] items-center justify-center px-4"
     >
-      <div
-        className="
-          relative w-full max-w-sm overflow-hidden rounded-xl
-          border border-white/8 bg-white/4
-          px-6 py-8 text-center
-        "
-      >
-        {/* Top hairline */}
-        <span
-          aria-hidden="true"
-          className="
-            pointer-events-none absolute inset-x-0 top-0 h-px
-            bg-linear-to-r from-transparent via-white/15 to-transparent
-          "
-        />
-
-        {/* Icon */}
-        <div
-          className="
-            mx-auto flex size-10 items-center justify-center
-            rounded-md border border-white/10 bg-white/4
-          "
-        >
+      <div className="w-full max-w-sm rounded-xl border border-orange-50/15 bg-white/3 px-6 py-8 text-center">
+        <div className="mx-auto flex size-10 items-center justify-center rounded-md border border-orange-50/15">
           <HugeiconsIcon
             icon={Alert02Icon}
             size={16}
             strokeWidth={1.6}
-            className="text-(--warning)"
+            className="text-amber-300"
           />
         </div>
 
-        {/* Content */}
         <div className="mt-5">
-          <h2 className="font-mono text-[13px] font-semibold text-(--text-primary)">
+          <h2 className="text-[13px] font-medium tracking-tight text-neutral-100">
             Dashboard unavailable
           </h2>
 
-          <p
-            className="
-              mx-auto mt-2 max-w-xs
-              font-mono text-[11px] leading-5
-              text-(--text-secondary)
-            "
-          >
-            We couldn&apos;t load your dashboard data. Please try again.
+          <p className="mx-auto mt-2 max-w-xs text-[12px] leading-5 text-neutral-400">
+            We could not load your dashboard data. Please try{" "}
+            <span className="font-medium text-orange-100 capitalize">
+              again
+            </span>
           </p>
         </div>
 
-        {/* Retry */}
+        {/* The outline partner to the header's solid primary: mirrored corners. */}
         <button
           type="button"
           onClick={onRetry}
           disabled={isRetrying}
           className="
             group/retry mx-auto mt-6 flex h-9 cursor-pointer items-center gap-2
-            rounded-full border border-white/8 bg-white/6 px-4
-            font-mono text-[12px] text-(--text-primary)
+            rounded-none rounded-tl-lg rounded-br-lg
+            border border-orange-50/20 px-4
+            text-[12px] text-neutral-200
             transition-colors duration-200
-            hover:bg-white/10
+            hover:border-orange-50/35 hover:bg-white/4 hover:text-neutral-100
             disabled:cursor-not-allowed disabled:opacity-50
-            disabled:hover:bg-white/6
           "
         >
           <HugeiconsIcon
@@ -83,9 +58,9 @@ const DashboardError = ({
             size={14}
             strokeWidth={1.6}
             className={[
-              "shrink-0 text-(--text-muted)",
+              "shrink-0 text-neutral-500",
               "transition-colors duration-200",
-              !isRetrying && "group-hover/retry:text-(--brand)",
+              !isRetrying && "group-hover/retry:text-orange-100",
               isRetrying && "animate-spin",
             ]
               .filter(Boolean)

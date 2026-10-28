@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import ProtectedRoute from "./ProtectedRoute";
+import { RequireWorkspace } from "./RequireWorkspace.tsx";
 import GuestRoute from "./GuestRoute";
 
 import PublicLayout from "./layouts/PublicLayout";
@@ -90,10 +91,32 @@ export function AppRouter() {
               path="/workspaces/:workspaceId"
               element={<WorkspacePage />}
             />
-            <Route path="/boards" element={<BoardPage />} />
+            {/* These read the active workspace, so ask for one first. */}
+            <Route
+              path="/boards"
+              element={
+                <RequireWorkspace>
+                  <BoardPage />
+                </RequireWorkspace>
+              }
+            />
             <Route path="/boards/:boardId" element={<MainBoard />} />
-            <Route path="/notes" element={<NotesPage />} />
-            <Route path="/members" element={<MemberPage />} />
+            <Route
+              path="/notes"
+              element={
+                <RequireWorkspace>
+                  <NotesPage />
+                </RequireWorkspace>
+              }
+            />
+            <Route
+              path="/members"
+              element={
+                <RequireWorkspace>
+                  <MemberPage />
+                </RequireWorkspace>
+              }
+            />
             <Route path="/user/profile" element={<ProfilePage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Route>

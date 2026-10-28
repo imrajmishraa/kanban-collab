@@ -19,7 +19,8 @@ export function NavbarSearchIcon() {
   return (
     <div className="group/tt relative">
       <Tooltip
-        label={isMac ? "Search  ⌘K" : "Search  Ctrl+K"}
+        label="Search"
+        highlight={isMac ? "⌘K" : "Ctrl K"}
         side="bottom"
         shape="solid"
         size="sm"
@@ -27,7 +28,7 @@ export function NavbarSearchIcon() {
         <button
           type="button"
           onClick={openSearch}
-          aria-label="Notifications"
+          aria-label="Search"
           className="relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-white/8 bg-white/4 text-(--text-secondary) transition-colors duration-200 hover:border-white/14 hover:bg-white/8 hover:text-(--text-primary)"
         >
           <HugeiconsIcon icon={Search01Icon} size={16} strokeWidth={1.6} />
@@ -71,7 +72,13 @@ export function NotificationsButton({
   unreadCount?: number;
 }) {
   return (
-    <Tooltip label="Notifications" side="bottom" shape="solid" size="sm">
+    <Tooltip
+      label="Notifications"
+      highlight={unreadCount > 0 ? `${unreadCount} new` : undefined}
+      side="bottom"
+      shape="solid"
+      size="sm"
+    >
       <button
         type="button"
         onClick={onClick}

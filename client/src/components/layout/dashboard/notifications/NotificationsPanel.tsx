@@ -1,38 +1,58 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode, type RefObject } from "react";
+import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Cancel01Icon } from "@hugeicons/core-free-icons";
+
 import { notificationsApi } from "@/api/dashboard/notificationsApi";
+import { toastSuccess, toastError } from "@/lib/toast";
 
 import type { AppNotification } from "@/types/api/dashboard/notification";
 import { notificationKeys } from ".";
 
+import { NotificationRow } from "./NotificationRow";
+
 interface NotificationsPanelProps {
   open: boolean;
   onClose: () => void;
+  /**
+   * The trigger's container. Clicks inside it must not count as "outside",
+   * or the button cannot close the panel it opened: the document
+   * `pointerdown` fires before the button's `click`, so the panel would close
+   * and immediately reopen.
+   */
+  ignoreRef?: RefObject<HTMLElement | null>;
 }
 
-function formatRelative(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  const minutes = Math.round(diff / 60000);
-  if (minutes < 1) return "just now";
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.round(hours / 24)}d ago`;
+function SectionLabel({ children }: { children: ReactNode }) {
+  return (
+    <p className="px-4 pb-1 pt-4 text-[11px] font-medium text-neutral-500">
+      {children}
+    </p>
+  );
 }
 
 /**
- * The bell's dropdown — the in-app notification feed. Replaces the previous
- * dead `/notifications` navigation with a component that reads the real
- * notifications API.
+ * The bell's feed, as a full-height sheet under the navbar.
+ *
+ * Portalled to `document.body`: the panel is rendered inside the navbar, which
+ * is `fixed z-50` and therefore establishes a stacking context. A descendant
+ * can never paint above its own stacking context's level, so raising its
+ * z-index in place did nothing. Escaping the header puts it in the root
+ * context, where `z-[90]` sits above the navbar (50) and the sidebar (40) and
+ * below the modals and search palette (100).
  */
 export default function NotificationsPanel({
   open,
   onClose,
+  ignoreRef,
 }: NotificationsPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const { data, isLoading, isError } = useQuery({
     queryKey: notificationKeys.all,
@@ -47,107 +67,192 @@ export default function NotificationsPanel({
   const markRead = useMutation({
     mutationFn: (id: string) => notificationsApi.markRead(id),
     onSuccess: invalidate,
+    onError: toastError,
   });
 
   const markAllRead = useMutation({
     mutationFn: () => notificationsApi.markAllRead(),
     onSuccess: invalidate,
+    onError: toastError,
+  });
+
+  const clearOne = useMutation({
+    mutationFn: (id: string) => notificationsApi.clear(id),
+    onSuccess: invalidate,
+    onError: toastError,
+  });
+
+  const clearAll = useMutation({
+    mutationFn: () => notificationsApi.clearAll({ readOnly: true }),
+    onSuccess: (result) => {
+      invalidate();
+      toastSuccess("Cleared", `${result.deleted} read notifications removed.`);
+    },
+    onError: toastError,
+  });
+
+  const muteType = useMutation({
+    mutationFn: (type: AppNotification["type"]) =>
+      notificationsApi.muteType(type),
+    onSuccess: () => {
+      toastSuccess("Muted", "This notification type is off in app.");
+    },
+    onError: toastError,
   });
 
   useEffect(() => {
     if (!open) return;
+
     const onDown = (event: PointerEvent) => {
-      if (!panelRef.current?.contains(event.target as Node)) onClose();
+      const target = event.target as Node;
+
+      if (panelRef.current?.contains(target)) return;
+      if (ignoreRef?.current?.contains(target)) return;
+
+      onClose();
     };
+
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
     };
+
     document.addEventListener("pointerdown", onDown);
     document.addEventListener("keydown", onKey);
+
     return () => {
       document.removeEventListener("pointerdown", onDown);
       document.removeEventListener("keydown", onKey);
     };
-  }, [open, onClose]);
+  }, [open, onClose, ignoreRef]);
 
   if (!open) return null;
 
   const notifications: AppNotification[] = data?.notifications ?? [];
+  const unread = notifications.filter((n) => !n.isRead);
+  const read = notifications.filter((n) => n.isRead);
 
-  return (
+  /** Rows are links: open the board the notification is about. */
+  const openNotification = (notification: AppNotification) => {
+    if (!notification.isRead) markRead.mutate(notification.id);
+
+    onClose();
+
+    if (notification.boardId) {
+      navigate(`/boards/${notification.boardId}`);
+      return;
+    }
+
+    if (notification.workspaceId) {
+      navigate(`/workspaces/${notification.workspaceId}`);
+    }
+  };
+
+  return createPortal(
     <div
       ref={panelRef}
       role="dialog"
       aria-label="Notifications"
-      className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-xl border border-white/10 bg-(--bg-elevated) shadow-[0_16px_40px_-12px_rgba(0,0,0,0.7)]"
+      className="fixed right-0 top-14 mr-5 mb-1 rounded-2xl bottom-0 z-90 flex w-90 max-w-[calc(100vw-1rem)] flex-col border border-orange-50/15 bg-[#0a0a0a]/95 backdrop-blur-sm motion-safe:animate-in motion-safe:slide-in-from-right-2 motion-safe:fade-in-0 motion-safe:duration-200"
     >
-      <header className="flex items-center justify-between border-b border-white/8 px-3.5 py-2.5">
-        <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-(--text-primary)">
-          Notifications
-        </span>
-        <button
-          type="button"
-          onClick={() => markAllRead.mutate()}
-          disabled={markAllRead.isPending || notifications.length === 0}
-          className="font-mono text-[10px] uppercase tracking-wider text-(--text-muted) transition-colors hover:text-(--text-primary) disabled:opacity-40"
-        >
-          Mark all read
-        </button>
+      <header className="flex shrink-0 items-center justify-between gap-3 border-b border-orange-50/10 px-4 py-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="text-[13px] font-medium tracking-tight text-neutral-100">
+            Notifications
+          </span>
+          {unread.length > 0 && (
+            <span className="shrink-0 rounded-full border border-orange-100/25 bg-orange-100/10 px-1.5 py-0.5 text-[10px] font-medium text-orange-100">
+              {unread.length > 9 ? "9+" : unread.length}
+            </span>
+          )}
+        </div>
+
+        <div className="flex shrink-0 items-center gap-1">
+          <button
+            type="button"
+            onClick={() => markAllRead.mutate()}
+            disabled={markAllRead.isPending || unread.length === 0}
+            className="rounded-md px-2 py-1 text-[11px] text-neutral-400 transition-colors duration-200 hover:bg-white/6 hover:text-neutral-100 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Mark all read
+          </button>
+
+          <button
+            type="button"
+            onClick={() => clearAll.mutate()}
+            disabled={clearAll.isPending || read.length === 0}
+            className="rounded-md px-2 py-1 text-[11px] text-neutral-400 transition-colors duration-200 hover:bg-white/6 hover:text-neutral-100 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Clear read
+          </button>
+
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close notifications"
+            className="rounded-md p-1.5 text-neutral-500 transition-colors duration-200 hover:bg-white/6 hover:text-neutral-200"
+          >
+            <HugeiconsIcon icon={Cancel01Icon} size={14} strokeWidth={1.8} />
+          </button>
+        </div>
       </header>
 
-      <div className="max-h-96 overflow-y-auto">
+      <div className="min-h-0 flex-1 overflow-y-auto">
         {isLoading ? (
           <div className="space-y-2 p-3">
-            {[0, 1, 2].map((row) => (
+            {[0, 1, 2, 3].map((row) => (
               <div
                 key={row}
-                className="h-12 animate-pulse rounded-lg bg-white/6"
+                className="h-16 animate-pulse rounded-lg bg-white/5"
               />
             ))}
           </div>
         ) : isError ? (
-          <p className="px-4 py-8 text-center font-mono text-[11px] text-(--text-muted)">
-            Couldn't load notifications.
+          <p className="px-4 py-10 text-center text-[12px] text-rose-300">
+            Could not load notifications.
           </p>
         ) : notifications.length === 0 ? (
-          <p className="px-4 py-8 text-center font-mono text-[11px] text-(--text-muted)">
-            You're all caught up.
+          <p className="px-4 py-10 text-center text-[12px] text-neutral-500">
+            You are all caught up
           </p>
         ) : (
-          notifications.map((notification) => (
-            <button
-              key={notification.id}
-              type="button"
-              onClick={() =>
-                !notification.isRead && markRead.mutate(notification.id)
-              }
-              className={[
-                "flex w-full items-start gap-2.5 border-b border-white/6 px-3.5 py-3 text-left transition-colors hover:bg-white/4",
-                notification.isRead ? "opacity-60" : "",
-              ].join(" ")}
-            >
-              <span
-                aria-hidden="true"
-                className={[
-                  "mt-1.5 size-1.5 shrink-0 rounded-full",
-                  notification.isRead ? "bg-white/20" : "bg-(--brand)",
-                ].join(" ")}
-              />
-              <span className="min-w-0 flex-1">
-                <span className="block truncate font-mono text-[12px] font-medium text-(--text-primary)">
-                  {notification.title}
-                </span>
-                <span className="mt-0.5 block font-mono text-[11px] leading-4 text-(--text-secondary)">
-                  {notification.message}
-                </span>
-                <span className="mt-1 block font-mono text-[9px] uppercase tracking-wider text-(--text-muted)">
-                  {formatRelative(notification.createdAt)}
-                </span>
-              </span>
-            </button>
-          ))
+          <>
+            {unread.length > 0 && (
+              <>
+                <SectionLabel>New</SectionLabel>
+                {unread.map((notification) => (
+                  <NotificationRow
+                    key={notification.id}
+                    notification={notification}
+                    onOpen={openNotification}
+                    onMarkRead={(id) => markRead.mutate(id)}
+                    onClear={(id) => clearOne.mutate(id)}
+                    onMute={(type) => muteType.mutate(type)}
+                  />
+                ))}
+              </>
+            )}
+
+            {read.length > 0 && (
+              <>
+                <SectionLabel>
+                  {unread.length > 0 ? "Earlier" : "Notifications"}
+                </SectionLabel>
+                {read.map((notification) => (
+                  <NotificationRow
+                    key={notification.id}
+                    notification={notification}
+                    onOpen={openNotification}
+                    onMarkRead={(id) => markRead.mutate(id)}
+                    onClear={(id) => clearOne.mutate(id)}
+                    onMute={(type) => muteType.mutate(type)}
+                  />
+                ))}
+              </>
+            )}
+          </>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

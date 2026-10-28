@@ -1,11 +1,39 @@
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Message01Icon } from "@hugeicons/core-free-icons";
+import {
+  ArrowRight01Icon,
+  KanbanIcon,
+  RefreshIcon,
+  Message01Icon,
+  Note01Icon,
+  Tick02Icon,
+  UserGroupIcon,
+} from "@hugeicons/core-free-icons";
 
-import type { DashboardActivity } from "@/types/dashboard/dashboard";
+import type {
+  DashboardActivity,
+  DashboardActivityType,
+} from "@/types/dashboard/dashboard";
 
 interface ActivitySectionProps {
   activities?: DashboardActivity[];
+  /** Renders a "View all" affordance in the header when supplied. */
+  onViewAll?: () => void;
+  /** Refetches the feed. The button only renders when this is supplied. */
+  onRefresh?: () => void;
+  isRefreshing?: boolean;
+  /** Clicking a row opens the board the activity happened on. */
+  onOpenBoard?: (boardId: string) => void;
 }
+
+/** Each activity type gets its own glyph, so the feed scans by shape. */
+const ACTIVITY_ICON: Record<DashboardActivityType, typeof Note01Icon> = {
+  board_created: KanbanIcon,
+  board_updated: KanbanIcon,
+  card_created: Note01Icon,
+  card_updated: Note01Icon,
+  card_completed: Tick02Icon,
+  member_added: UserGroupIcon,
+};
 
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -32,76 +60,132 @@ function relativeTime(iso: string): string {
 
 export default function ActivitySection({
   activities = [],
+  onViewAll,
+  onRefresh,
+  isRefreshing = false,
+  onOpenBoard,
 }: ActivitySectionProps) {
   return (
-    <section className="relative overflow-hidden rounded-xl border border-white/8 bg-white/3">
-      {/* Top hairline */}
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-white/15 to-transparent"
-      />
-
-      {/* Header */}
-      <header className="flex items-center justify-between border-b border-white/6 px-4 py-3">
+    <section className="overflow-hidden rounded-xl border border-orange-50/15 bg-white/3">
+      <header className="flex items-center justify-between border-b border-orange-50/10 px-4 py-3">
         <div className="flex items-center gap-2">
-          <span className="flex size-6 items-center justify-center rounded-md border border-white/10 bg-white/4 text-(--text-muted)">
+          <span className="flex size-6 items-center justify-center rounded-md border border-orange-50/15 text-neutral-500">
             <HugeiconsIcon icon={Message01Icon} size={12} strokeWidth={1.7} />
           </span>
-          <p className="font-mono text-[11px] text-(--text-primary)">
+          <p className="text-[12.5px] font-medium tracking-tight text-neutral-100">
             Recent activity
           </p>
         </div>
 
-        {activities.length > 0 && (
-          <span className="font-mono text-[10px] tabular-nums text-(--text-muted)">
-            {activities.length}
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {activities.length > 0 && (
+            <span className="font-mono text-[10px] tabular-nums text-neutral-500">
+              {activities.length}
+            </span>
+          )}
+
+          {onRefresh && (
+            <button
+              type="button"
+              onClick={onRefresh}
+              disabled={isRefreshing}
+              aria-label="Refresh activity"
+              className="flex size-6 cursor-pointer items-center justify-center rounded-md text-neutral-500 transition-colors duration-200 hover:bg-white/6 hover:text-neutral-200 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <HugeiconsIcon
+                icon={RefreshIcon}
+                size={12}
+                strokeWidth={1.8}
+                className={isRefreshing ? "animate-spin" : undefined}
+              />
+            </button>
+          )}
+
+          {onViewAll && (
+            <button
+              type="button"
+              onClick={onViewAll}
+              className="group/all flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] text-neutral-500 transition-colors duration-200 hover:bg-white/6 hover:text-neutral-200"
+            >
+              View all
+              <HugeiconsIcon
+                icon={ArrowRight01Icon}
+                size={11}
+                strokeWidth={2}
+                className="shrink-0 transition-transform duration-200 group-hover/all:translate-x-0.5"
+              />
+            </button>
+          )}
+        </div>
       </header>
 
-      {/* Body — tall, scrolls inside */}
       {activities.length === 0 ? (
-        <p className="px-4 py-16 text-center font-mono text-[11px] text-(--text-muted)">
-          No recent activity.
+        <p className="px-4 py-16 text-center text-[12px] text-neutral-500">
+          Nothing here yet
         </p>
       ) : (
-        <ul className="h-130 max-h-[72vh] divide-y divide-white/6 overflow-y-auto">
+        <ul className="h-130 max-h-[72vh] divide-y divide-orange-50/6 overflow-y-auto">
           {activities.map((activity) => {
-            const actor = activity.actor?.name?.trim() || "Someone";
+            const actor = activity.actor?.name?.trim() || "Unknown member";
+            const icon = ACTIVITY_ICON[activity.type] ?? Message01Icon;
+            const place = [activity.workspaceName, activity.boardName]
+              .filter(Boolean)
+              .join(" / ");
+
+            const boardId = activity.boardId;
+            const clickable = Boolean(boardId && onOpenBoard);
 
             return (
-              <li key={activity.id} className="flex gap-3 px-4 py-3.5">
-                {/* Avatar */}
-                <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/4 font-mono text-[10px] font-semibold tracking-wider text-(--text-secondary)">
-                  {initials(actor)}
-                </span>
+              <li key={activity.id}>
+                <button
+                  type="button"
+                  disabled={!clickable}
+                  onClick={() => {
+                    if (boardId && onOpenBoard) onOpenBoard(boardId);
+                  }}
+                  className={[
+                    "flex w-full gap-3 px-4 py-3.5 text-left transition-colors duration-200",
+                    clickable
+                      ? "cursor-pointer hover:bg-white/4"
+                      : "cursor-default",
+                  ].join(" ")}
+                >
+                  <span className="relative mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full border border-orange-50/15 bg-white/4 text-[10px] font-semibold tracking-wider text-neutral-300">
+                    {initials(actor)}
+                  </span>
 
-                {/* Content */}
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-baseline justify-between gap-2">
-                    <p className="min-w-0 truncate font-mono text-[11px] text-(--text-primary)">
-                      {actor}
-                    </p>
-                    <time
-                      dateTime={activity.createdAt}
-                      className="shrink-0 font-mono text-[9px] tabular-nums text-(--text-muted)"
-                    >
-                      {relativeTime(activity.createdAt)}
-                    </time>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-baseline justify-between gap-2">
+                      <p className="min-w-0 truncate text-[12px] font-medium tracking-tight text-neutral-100">
+                        {actor}
+                      </p>
+                      <time
+                        dateTime={activity.createdAt}
+                        className="shrink-0 font-mono text-[9px] tabular-nums text-neutral-600"
+                      >
+                        {relativeTime(activity.createdAt)}
+                      </time>
+                    </div>
+
+                    <div className="mt-1 flex items-start gap-1.5">
+                      <HugeiconsIcon
+                        icon={icon}
+                        size={12}
+                        strokeWidth={1.6}
+                        className="mt-1 shrink-0 text-neutral-600"
+                      />
+                      <p className="min-w-0 text-[11.5px] leading-5 text-neutral-400">
+                        {activity.message}
+                      </p>
+                    </div>
+
+                    {place && (
+                      <p className="mt-1.5 truncate pl-4.5 font-mono text-[9px] uppercase tracking-wider text-neutral-600">
+                        {place}
+                      </p>
+                    )}
                   </div>
-
-                  <p className="mt-1 font-mono text-[11px] leading-5 text-(--text-secondary)">
-                    {activity.message}
-                  </p>
-
-                  {(activity.boardName || activity.workspaceName) && (
-                    <p className="mt-1.5 truncate font-mono text-[9px] uppercase tracking-wider text-(--text-muted)">
-                      {[activity.workspaceName, activity.boardName]
-                        .filter(Boolean)
-                        .join(" / ")}
-                    </p>
-                  )}
-                </div>
+                </button>
               </li>
             );
           })}
