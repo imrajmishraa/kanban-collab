@@ -22,8 +22,9 @@ export class GoogleProvider implements OAuthProvider {
     url.searchParams.set("response_type", "code");
     url.searchParams.set("scope", GOOGLE_CONFIG.scopes.join(" "));
     url.searchParams.set("state", state);
-    url.searchParams.set("access_type", "offline");
-    url.searchParams.set("prompt", "consent");
+    // Do not force prompt=consent or access_type=offline.
+    // The app does not use Google's refresh token, and forcing consent on
+    // every login creates unnecessary friction for returning users.
     return url.toString();
   }
 
@@ -50,6 +51,13 @@ export class GoogleProvider implements OAuthProvider {
     }
 
     const data = (await res.json()) as GoogleTokenResponse;
+
+    // Defensive: ensure we actually received an access token.
+    if (typeof data.access_token !== "string" || !data.access_token) {
+      throw oauthExchangeFailedError(
+        "Google token exchange failed: missing access_token in response",
+      );
+    }
 
     // Google only returns a refresh_token on first consent (or with
     // prompt=consent); this app never uses it, so a missing one must not fail

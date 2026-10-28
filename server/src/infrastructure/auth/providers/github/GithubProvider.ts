@@ -41,12 +41,39 @@ export class GithubProvider implements OAuthProvider {
       }),
     });
 
-    if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      throw oauthExchangeFailedError(`GitHub token exchange failed: ${text}`);
+    // GitHub often returns HTTP 200 even on failure and puts the error in the
+    // JSON body. Always parse the body and check for `error` / missing token.
+    let data:
+      | (GithubTokenResponse & {
+          error?: string;
+          error_description?: string;
+        })
+      | null = null;
+
+    try {
+      data = (await res.json()) as GithubTokenResponse & {
+        error?: string;
+        error_description?: string;
+      };
+    } catch {
+      // fall through to the generic error below
     }
 
-    const data = (await res.json()) as GithubTokenResponse;
+    if (
+      !res.ok ||
+      !data ||
+      data.error ||
+      typeof data.access_token !== "string" ||
+      !data.access_token
+    ) {
+      const detail =
+        data?.error_description ||
+        data?.error ||
+        (await res.text().catch(() => "")) ||
+        `HTTP ${res.status}`;
+      throw oauthExchangeFailedError(`GitHub token exchange failed: ${detail}`);
+    }
+
     return { accessToken: data.access_token };
   }
 
