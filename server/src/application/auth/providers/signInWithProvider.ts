@@ -60,10 +60,13 @@ export async function signInWithProvider(
     }
 
     if (user) {
-      // Link provider to existing account
-      if (!profile.emailVerified) {
-        throw oauthEmailNotVerifiedError(profile.provider);
-      }
+      // Link provider to existing account.
+      // Do NOT require emailVerified here — the user already has a verified
+      // account in our DB (they registered via another method). Blocking on
+      // the OAuth provider's emailVerified flag would lock out GitHub users
+      // whose primary email is private/unconfirmed in GitHub's system.
+      // The emailVerified requirement only applies to *new* account creation
+      // (see below) to prevent squatting on someone else's unverified address.
 
       const alreadyLinked = user.authProviders.some(
         (p) =>

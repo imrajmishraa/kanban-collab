@@ -196,11 +196,17 @@ export function useUnifiedOAuth({
 
     window.addEventListener("message", messageListener);
 
+    // Give the popup 500 ms after it closes before treating it as a cancellation,
+    // in case the postMessage from OAuthCallback arrives just before window.closed
+    // flips to true (race condition on slow networks).
     const pollTimer = setInterval(() => {
       if (!popup || popup.closed) {
         clearInterval(pollTimer);
-        window.removeEventListener("message", messageListener);
-        setLoadingProvider(null);
+        // Small grace period so a final postMessage can still arrive
+        setTimeout(() => {
+          window.removeEventListener("message", messageListener);
+          setLoadingProvider(null);
+        }, 600);
       }
     }, 500);
   }, [onSuccess, onError]);
