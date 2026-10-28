@@ -23,10 +23,29 @@ export default function OAuthCallback() {
     let cancelled = false;
 
     const status = params.get("status");
+    const reason = params.get("reason") ?? "unknown";
+    const user = params.get("user") ?? undefined;
+
+    // If running inside a popup, post the outcome back to the parent window and close immediately
+    if (window.opener && window.opener !== window) {
+      try {
+        window.opener.postMessage(
+          {
+            type: "OAUTH_RESPONSE",
+            status,
+            reason: status === "success" ? undefined : reason,
+            user,
+          },
+          window.location.origin,
+        );
+        window.close();
+        return;
+      } catch {
+        // Fallback to normal redirect if opener communication fails
+      }
+    }
 
     if (status !== "success") {
-      const reason = params.get("reason") ?? "unknown";
-
       navigate(`/auth/login?error=oauth&reason=${encodeURIComponent(reason)}`, {
         replace: true,
       });

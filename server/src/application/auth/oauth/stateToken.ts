@@ -24,7 +24,10 @@ import { invalidOAuthStateError } from "../../../shared/errors/auth/oauth";
  * but authorization codes are single-use at the provider, so the window is the
  * provider's, not ours. The TTL below bounds it further.
  */
-const STATE_TTL_MS = 10 * 60 * 1000;
+// 15-minute TTL to comfortably accommodate slower user consent decisions.
+const STATE_TTL_MS = 15 * 60 * 1000;
+// Allow up to 60s clock drift between distributed servers/containers.
+const CLOCK_SKEW_TOLERANCE_MS = 60 * 1000;
 
 interface StatePayload {
   /** Provider the state was minted for — binds the callback to the right one. */
@@ -130,8 +133,10 @@ export function verifyStateToken(
 
   const age = Date.now() - t;
 
-  // Reject both expired and clock-skewed (future) tokens.
-  if (age < 0 || age > STATE_TTL_MS) throw invalidOAuthStateError();
+  // Reject both expired tokens and tokens with unrealistic future timestamps beyond allowed clock skew.
+  if (age < -CLOCK_SKEW_TOLERANCE_MS || age > STATE_TTL_MS) {
+    throw invalidOAuthStateError();
+  }
 
   return { rememberMe: r === 1 };
 }

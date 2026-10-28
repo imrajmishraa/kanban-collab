@@ -7,6 +7,7 @@ import type {
   OAuthProfile,
   OAuthProvider,
 } from "../types";
+import { fetchWithRetry } from "../fetchWithRetry";
 import {
   oauthExchangeFailedError,
   oauthProfileFetchFailedError,
@@ -39,7 +40,7 @@ export class GoogleProvider implements OAuthProvider {
       grant_type: "authorization_code",
     });
 
-    const res = await fetch(GOOGLE_CONFIG.tokenUrl, {
+    const res = await fetchWithRetry(GOOGLE_CONFIG.tokenUrl, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body,
@@ -72,7 +73,7 @@ export class GoogleProvider implements OAuthProvider {
   }
 
   async fetchProfile(accessToken: string): Promise<OAuthProfile> {
-    const res = await fetch(GOOGLE_CONFIG.userInfoUrl, {
+    const res = await fetchWithRetry(GOOGLE_CONFIG.userInfoUrl, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
 

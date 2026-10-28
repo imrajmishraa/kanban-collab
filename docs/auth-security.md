@@ -66,7 +66,10 @@ Credential-establishing endpoints (`/auth/login`, `/auth/register`, `/auth/oauth
 ## OAuth (Google & GitHub)
 
 - Each provider is enabled only when all three of `*_CLIENT_ID`, `*_CLIENT_SECRET`, `*_REDIRECT_URI` are set (all-or-nothing — enforced at boot).
-- `GET /auth/oauth/:provider` starts the flow with a signed `state` value (stored in the `oauth_state` cookie) to prevent CSRF on the callback.
+- **Google Identity Services (Direct Federation)**: Supports client-side direct token verification via `POST /api/v1/auth/oauth/google/token`, bypassing multi-hop browser redirects and third-party cookie restrictions entirely.
+- **Popup & In-page Handshake**: OAuth flows support centered popups communicating via `window.opener.postMessage`, avoiding page unloads and back/forward cache state issues.
+- **Self-Verifying Signed State**: `GET /auth/oauth/:provider` issues a self-verifying HMAC-signed state token with a 15-minute TTL and 60-second clock-skew tolerance, surviving cross-origin setups and third-party cookie blocks without state cookies.
+- **Resilient Network Retries**: Token exchange and profile fetch requests to GitHub and Google use exponential backoff retries against transient network glitches.
 - `GET /auth/oauth/:provider/callback` validates state, exchanges the code, fetches the profile, and links or creates the user via the `authProviders[]` array.
 - A user may link multiple providers; a user must always have **at least one** auth provider (schema-level validation).
 

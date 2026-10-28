@@ -42,13 +42,59 @@ function parseRememberMe(value: unknown): boolean {
   return ["true", "1", "yes", "on"].includes(raw.trim().toLowerCase());
 }
 
+import { verifyGoogleIdToken } from "../../../../infrastructure/auth/providers/googleTokenVerifier";
+import { signInWithProvider } from "../../../../application/auth/providers/signInWithProvider";
+
 export const listProviders = asyncHandler(
   async (_req: Request, res: Response) => {
+    const enabledProviders = listEnabledProviders();
     res.json({
       statusCode: 200,
       success: true,
       message: "Available OAuth providers.",
-      data: { providers: listEnabledProviders() },
+      data: {
+        providers: enabledProviders,
+        googleClientId: enabledProviders.includes("google")
+          ? ENV.GOOGLE_CLIENT_ID
+          : undefined,
+      },
+    });
+  },
+);
+
+export const federatedGoogleAuth = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { credential, rememberMe } = req.body as {
+      credential: string;
+      rememberMe?: boolean;
+    };
+
+    const profile = await verifyGoogleIdToken(credential);
+
+    const result = await signInWithProvider({
+      profile,
+      rememberMe: rememberMe ?? true,
+      ...(req.ip !== undefined ? { ipAddress: req.ip } : {}),
+      ...(req.headers["user-agent"] !== undefined
+        ? { userAgent: req.headers["user-agent"] }
+        : {}),
+    });
+
+    res.cookie(
+      REFRESH_COOKIE_NAME,
+      result.refreshToken,
+      getRefreshCookieOptions(result.rememberMe),
+    );
+
+    res.json({
+      statusCode: 200,
+      success: true,
+      message: "Google federated sign-in successful.",
+      data: {
+        user: result.user,
+        accessToken: result.accessToken,
+        isNewUser: result.isNewUser,
+      },
     });
   },
 );

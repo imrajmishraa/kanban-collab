@@ -22,6 +22,8 @@ import {
 import { OAuthButton } from "@components/ui/auth/OAuthButton";
 import { LiveBoardPreview } from "#components/ui/auth/LiveBoardPreview";
 import { StatBlock } from "#components/ui/auth/StatBlock";
+import { useOAuthPopup } from "../hooks/useOAuthPopup";
+import { useGoogleIdentity } from "../hooks/useGoogleIdentity";
 
 interface RegisterLocationState {
   from?: { pathname?: string; search?: string; hash?: string };
@@ -58,7 +60,7 @@ function getRegisterErrorMessage(err: unknown): string {
 }
 
 export default function RegisterPage() {
-  const { register, login } = useAuth();
+  const { register, login, refresh } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const destination = getPostRegisterDestination(location.state);
@@ -75,6 +77,25 @@ export default function RegisterPage() {
   const [oauthLoading, setOauthLoading] = useState<"google" | "github" | null>(
     null,
   );
+
+  const { openPopup } = useOAuthPopup();
+
+  const handleGoogleSuccess = async () => {
+    const ok = await refresh();
+    if (ok) {
+      navigate(destination, { replace: true });
+    }
+  };
+
+  const handleGoogleError = (errorMsg: string) => {
+    setError("root", { message: errorMsg });
+  };
+
+  const { isReady: isGoogleReady, promptGoogle } = useGoogleIdentity({
+    onSuccess: handleGoogleSuccess,
+    onError: handleGoogleError,
+    rememberMe: true,
+  });
 
   const {
     register: registerField,
@@ -137,11 +158,40 @@ export default function RegisterPage() {
     }
   });
 
-  const handleOauth = (provider: "google" | "github") => {
+  const handleOauth = async (provider: "google" | "github") => {
     setOauthLoading(provider);
-    // Register is OAuth-first — no rememberMe checkbox on this page,
-    // default to true (30-day session).
-    window.location.href = `/api/v1/auth/oauth/${provider}?rememberMe=true`;
+
+    // If Google and client-side GIS prompt is available, try it first
+    if (provider === "google" && isGoogleReady) {
+      const prompted = promptGoogle();
+      if (prompted) {
+        setOauthLoading(null);
+        return;
+      }
+    }
+
+    const url = `/api/v1/auth/oauth/${provider}?rememberMe=true`;
+
+    try {
+      const result = await openPopup(url, `${provider.toUpperCase()} Sign In`);
+      if (result.status === "success") {
+        const ok = await refresh();
+        if (ok) {
+          navigate(destination, { replace: true });
+          return;
+        }
+      } else if (result.reason && result.reason !== "cancelled") {
+        setError("root", {
+          message: `Failed to sign up with ${provider}. Please try again.`,
+        });
+      }
+    } catch {
+      setError("root", {
+        message: `An unexpected error occurred during ${provider} sign-up.`,
+      });
+    } finally {
+      setOauthLoading(null);
+    }
   };
 
   return (

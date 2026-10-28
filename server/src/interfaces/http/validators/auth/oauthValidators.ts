@@ -18,3 +18,8 @@ export const oauthCallbackQuerySchema = z.object({
   error: z.string().min(1).optional(),
   error_description: z.string().min(1).optional(),
 });
+
+export const googleFederatedAuthSchema = z.object({
+  credential: z.string().min(1),
+  rememberMe: z.boolean().optional(),
+});

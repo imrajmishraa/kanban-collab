@@ -19,6 +19,8 @@ import {
 import { OAuthButton } from "#components/ui/auth/OAuthButton";
 import { StatBlock } from "#components/ui/auth/StatBlock";
 import { LiveBoardPreview } from "#components/ui/auth/LiveBoardPreview";
+import { useOAuthPopup } from "../hooks/useOAuthPopup";
+import { useGoogleIdentity } from "../hooks/useGoogleIdentity";
 
 /* TYPES */
 
@@ -37,7 +39,7 @@ function getLoginDestination(state: unknown): string {
 /* PAGE */
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const { login, refresh } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const destination = getLoginDestination(location.state);
@@ -52,6 +54,8 @@ export default function LoginPage() {
     null,
   );
 
+  const { openPopup } = useOAuthPopup();
+
   const {
     register: registerField,
     handleSubmit,
@@ -61,6 +65,23 @@ export default function LoginPage() {
     resolver: zodResolver(loginSchema),
     mode: "onBlur",
     defaultValues: { email: "", password: "" },
+  });
+
+  const handleGoogleSuccess = async () => {
+    const ok = await refresh();
+    if (ok) {
+      navigate(destination, { replace: true });
+    }
+  };
+
+  const handleGoogleError = (errorMsg: string) => {
+    setError("root", { message: errorMsg });
+  };
+
+  const { isReady: isGoogleReady, promptGoogle } = useGoogleIdentity({
+    onSuccess: handleGoogleSuccess,
+    onError: handleGoogleError,
+    rememberMe: remember,
   });
 
   // Returning from an OAuth provider via the browser Back button restores this
@@ -89,10 +110,41 @@ export default function LoginPage() {
     }
   });
 
-  const handleOauth = (provider: "google" | "github") => {
+  const handleOauth = async (provider: "google" | "github") => {
     setOauthLoading(provider);
+
+    // If Google and client-side GIS prompt is available, try it first
+    if (provider === "google" && isGoogleReady) {
+      const prompted = promptGoogle();
+      if (prompted) {
+        setOauthLoading(null);
+        return;
+      }
+    }
+
     const params = new URLSearchParams({ rememberMe: String(remember) });
-    window.location.href = `/api/v1/auth/oauth/${provider}?${params}`;
+    const url = `/api/v1/auth/oauth/${provider}?${params}`;
+
+    try {
+      const result = await openPopup(url, `${provider.toUpperCase()} Sign In`);
+      if (result.status === "success") {
+        const ok = await refresh();
+        if (ok) {
+          navigate(destination, { replace: true });
+          return;
+        }
+      } else if (result.reason && result.reason !== "cancelled") {
+        setError("root", {
+          message: `Failed to sign in with ${provider}. Please try again.`,
+        });
+      }
+    } catch {
+      setError("root", {
+        message: `An unexpected error occurred during ${provider} sign-in.`,
+      });
+    } finally {
+      setOauthLoading(null);
+    }
   };
 
   return (

@@ -7,6 +7,7 @@ import type {
   OAuthProfile,
   OAuthProvider,
 } from "../types";
+import { fetchWithRetry } from "../fetchWithRetry";
 import {
   oauthExchangeFailedError,
   oauthProfileFetchFailedError,
@@ -27,7 +28,7 @@ export class GithubProvider implements OAuthProvider {
   async exchangeCode({
     code,
   }: ExchangeCodeParams): Promise<ExchangeCodeResult> {
-    const res = await fetch(GITHUB_CONFIG.tokenUrl, {
+    const res = await fetchWithRetry(GITHUB_CONFIG.tokenUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -84,14 +85,16 @@ export class GithubProvider implements OAuthProvider {
       "User-Agent": "kanban-collab",
     };
 
-    const userRes = await fetch(GITHUB_CONFIG.userUrl, { headers });
+    const userRes = await fetchWithRetry(GITHUB_CONFIG.userUrl, { headers });
     if (!userRes.ok) throw oauthProfileFetchFailedError();
     const user = (await userRes.json()) as GithubUser;
 
     let email: string | null = user.email?.toLowerCase() ?? null;
     let emailVerified = false;
 
-    const emailsRes = await fetch(GITHUB_CONFIG.emailsUrl, { headers });
+    const emailsRes = await fetchWithRetry(GITHUB_CONFIG.emailsUrl, {
+      headers,
+    });
     if (emailsRes.ok) {
       const emails = (await emailsRes.json()) as GithubEmail[];
 
