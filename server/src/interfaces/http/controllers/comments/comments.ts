@@ -367,13 +367,11 @@ const createComment = asyncHandler(async (req: AuthenticatedRequest, res) => {
     "Comment created",
   );
 
-  return res
-    .status(201)
-    .json(
-      new ApiResponse(201, "Comment created successfully", {
-        comment: serialized,
-      }),
-    );
+  return res.status(201).json(
+    new ApiResponse(201, "Comment created successfully", {
+      comment: serialized,
+    }),
+  );
 });
 
 /* ── GET /comments/:commentId/replies ────────────────────────────────────── */

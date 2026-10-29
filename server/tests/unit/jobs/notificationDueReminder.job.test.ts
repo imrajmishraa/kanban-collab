@@ -1,31 +1,31 @@
-import { beforeEach, describe, expect, it, jest } from "@jest/globals";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-jest.mock("../../../src/config/env", () => ({
+vi.mock("../../../src/config/env", () => ({
   ENV: { NOTIF_DUE_SOON_WINDOW_HOURS: 24, NOTIF_BATCH_SIZE: 200 },
 }));
 
-jest.mock("../../../src/infrastructure/logging/childLogger", () => ({
+vi.mock("../../../src/infrastructure/logging/childLogger", () => ({
   notificationDueReminderJobLogger: {
-    info: jest.fn(),
-    error: jest.fn(),
-    debug: jest.fn(),
+    info: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
   },
 }));
 
-jest.mock("../../../src/infrastructure/db/mongoose/schemas", () => ({
-  CardModel: { find: jest.fn() },
+vi.mock("../../../src/infrastructure/db/mongoose/schemas", () => ({
+  CardModel: { find: vi.fn() },
 }));
 
-jest.mock("../../../src/application/notifications/createNotification", () => ({
-  createNotification: jest.fn(),
+vi.mock("../../../src/application/notifications/createNotification", () => ({
+  createNotification: vi.fn(),
 }));
 
 import { notificationDueReminderJob } from "../../../src/jobs/notificationDueReminder.job";
 import { CardModel } from "../../../src/infrastructure/db/mongoose/schemas";
 import { createNotification } from "../../../src/application/notifications/createNotification";
 
-const findMock = jest.mocked(CardModel.find);
-const createNotificationMock = jest.mocked(createNotification);
+const findMock = vi.mocked(CardModel.find);
+const createNotificationMock = vi.mocked(createNotification);
 
 const MEMBER_A = "507f1f77bcf86cd799439021";
 const MEMBER_B = "507f1f77bcf86cd799439022";

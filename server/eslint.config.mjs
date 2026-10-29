@@ -10,7 +10,6 @@ export default tseslint.config(
       "node_modules/**",
       "logs/**",
       "**/*.js", // ignore compiled JS
-      "jest.config.js", // CommonJS config
     ],
   },
 
@@ -75,21 +74,4 @@ export default tseslint.config(
     },
   },
 
-  // ── Jest config (CommonJS) ──────────────────────────────
-  {
-    files: ["jest.config.js"],
-    languageOptions: {
-      sourceType: "commonjs",
-      globals: {
-        module: "writable",
-        require: "readonly",
-        __dirname: "readonly",
-        __filename: "readonly",
-        process: "readonly",
-      },
-    },
-    rules: {
-      "@typescript-eslint/no-require-imports": "off",
-    },
-  },
 );

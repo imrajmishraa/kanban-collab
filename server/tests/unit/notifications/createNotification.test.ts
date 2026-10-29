@@ -1,15 +1,15 @@
-import { beforeEach, describe, expect, it, jest } from "@jest/globals";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-jest.mock("../../../src/infrastructure/logging/childLogger", () => ({
+vi.mock("../../../src/infrastructure/logging/childLogger", () => ({
   notificationLogger: {
-    info: jest.fn(),
-    debug: jest.fn(),
-    error: jest.fn(),
+    info: vi.fn(),
+    debug: vi.fn(),
+    error: vi.fn(),
   },
 }));
 
-jest.mock("../../../src/infrastructure/db/mongoose/schemas", () => ({
-  NotificationModel: { create: jest.fn() },
+vi.mock("../../../src/infrastructure/db/mongoose/schemas", () => ({
+  NotificationModel: { create: vi.fn() },
   DEFAULT_NOTIFICATION_PREFERENCES: {
     CARD_DUE_SOON: { inApp: true, email: true, push: true, sms: false },
   },
@@ -18,7 +18,7 @@ jest.mock("../../../src/infrastructure/db/mongoose/schemas", () => ({
 import { createNotification } from "../../../src/application/notifications/createNotification";
 import { NotificationModel } from "../../../src/infrastructure/db/mongoose/schemas";
 
-const createMock = jest.mocked(NotificationModel.create);
+const createMock = vi.mocked(NotificationModel.create);
 
 const baseInput = {
   userId: "507f1f77bcf86cd799439011",

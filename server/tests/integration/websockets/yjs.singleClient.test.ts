@@ -8,47 +8,47 @@ import {
   describe,
   expect,
   it,
-  jest,
-} from "@jest/globals";
+  vi,
+} from "vitest";
 
 import * as decoding from "lib0/decoding";
 import * as Y from "yjs";
 import WebSocket, { WebSocketServer } from "ws";
 
-jest.mock(
+vi.mock(
   "../../../src/interfaces/websockets/collaboration/persistence/mongoPersistence",
   () => ({
     persistence: {
-      bindState: jest.fn(async (_documentName: string, _document: Y.Doc) => {
+      bindState: vi.fn(async (_documentName: string, _document: Y.Doc) => {
         // Persistence is intentionally disabled for this protocol test.
       }),
 
-      writeState: jest.fn(async (_documentName: string, _document: Y.Doc) => {
+      writeState: vi.fn(async (_documentName: string, _document: Y.Doc) => {
         // Persistence is tested separately.
       }),
 
-      flush: jest.fn(async (_documentName: string, _document: Y.Doc) => {
+      flush: vi.fn(async (_documentName: string, _document: Y.Doc) => {
         // Called on last-client-close (T6); persistence is tested separately.
       }),
     },
   }),
 );
 
-jest.mock(
+vi.mock(
   "../../../src/interfaces/websockets/collaboration/persistence/redisSync",
   () => ({
-    bindRedisSync: jest.fn((_documentName: string, _document: Y.Doc) => {
+    bindRedisSync: vi.fn((_documentName: string, _document: Y.Doc) => {
       // Redis synchronization is tested separately.
     }),
 
-    cleanupRedisRoom: jest.fn(async (_documentName: string) => {
+    cleanupRedisRoom: vi.fn(async (_documentName: string) => {
       // Redis synchronization is tested separately.
     }),
   }),
 );
 
-jest.mock("../../../src/interfaces/websockets/middlewares/authorize", () => ({
-  authorize: jest.fn(async () => {
+vi.mock("../../../src/interfaces/websockets/middlewares/authorize", () => ({
+  authorize: vi.fn(async () => {
     // Board authorization is tested separately.
   }),
 }));
@@ -65,6 +65,41 @@ import { idleCleanup } from "../../../src/interfaces/websockets/collaboration/li
 import { CollaborationMessage } from "../../../src/interfaces/websockets/collaboration/yjs/protocol";
 
 describe("Yjs Collaboration - Single Client", () => {
+  /**
+   * Waits until the managed document reports the expected connection count.
+   *
+   * A single `setImmediate` was enough under Jest but not under Vitest: the
+   * client's `close` event can arrive before the server's close handler has
+   * unregistered the collaboration client, so asserting straight away races
+   * the server. Poll with a deadline instead of guessing a delay.
+   */
+  async function waitForConnectionCount(
+    documentName: string,
+    expectedCount: number,
+    timeoutMs = 2000,
+  ): Promise<void> {
+    const start = Date.now();
+
+    while (Date.now() - start < timeoutMs) {
+      const managed = documentManager.get(documentName);
+
+      if ((managed?.connectionCount ?? 0) === expectedCount) {
+        return;
+      }
+
+      await new Promise<void>((resolve) => {
+        setImmediate(resolve);
+      });
+    }
+
+    const managed = documentManager.get(documentName);
+
+    throw new Error(
+      `Timed out waiting for ${expectedCount} WebSocket connections. ` +
+        `Actual connection count: ${managed?.connectionCount ?? 0}.`,
+    );
+  }
+
   let httpServer: http.Server;
   let wss: WebSocketServer;
   let ws: WebSocket | undefined;
@@ -210,12 +245,10 @@ describe("Yjs Collaboration - Single Client", () => {
     client.removeAllListeners();
 
     /*
-     * Give the WebSocket server close handler a turn to
-     * unregister the collaboration client.
+     * Wait for the WebSocket server close handler to unregister the
+     * collaboration client rather than assuming one tick is enough.
      */
-    await new Promise<void>((resolve) => {
-      setImmediate(resolve);
-    });
+    await waitForConnectionCount(boardId, 0);
 
     documentManager.clear();
     connectionRegistry.clear();
@@ -465,12 +498,10 @@ describe("Yjs Collaboration - Single Client", () => {
     });
 
     /*
-     * Give the server close handler a turn to finish
-     * removing the collaboration client.
+     * Wait for the server close handler to finish removing the collaboration
+     * client, then assert. Polling here is what makes this deterministic.
      */
-    await new Promise<void>((resolve) => {
-      setImmediate(resolve);
-    });
+    await waitForConnectionCount(boardId, 0);
 
     expect(documentManager.get(boardId)?.connectionCount ?? 0).toBe(0);
 

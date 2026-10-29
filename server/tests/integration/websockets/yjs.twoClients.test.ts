@@ -8,8 +8,8 @@ import {
   describe,
   expect,
   it,
-  jest,
-} from "@jest/globals";
+  vi,
+} from "vitest";
 
 import * as decoding from "lib0/decoding";
 import * as encoding from "lib0/encoding";
@@ -17,40 +17,40 @@ import * as ySyncProtocol from "y-protocols/sync";
 import * as Y from "yjs";
 import WebSocket, { WebSocketServer } from "ws";
 
-jest.mock(
+vi.mock(
   "../../../src/interfaces/websockets/collaboration/persistence/mongoPersistence",
   () => ({
     persistence: {
-      bindState: jest.fn(async (_documentName: string, _document: Y.Doc) => {
+      bindState: vi.fn(async (_documentName: string, _document: Y.Doc) => {
         // Persistence is intentionally disabled for this protocol test.
       }),
 
-      writeState: jest.fn(async (_documentName: string, _document: Y.Doc) => {
+      writeState: vi.fn(async (_documentName: string, _document: Y.Doc) => {
         // Persistence is tested separately.
       }),
 
-      flush: jest.fn(async (_documentName: string, _document: Y.Doc) => {
+      flush: vi.fn(async (_documentName: string, _document: Y.Doc) => {
         // Called on last-client-close (T6); persistence is tested separately.
       }),
     },
   }),
 );
 
-jest.mock(
+vi.mock(
   "../../../src/interfaces/websockets/collaboration/persistence/redisSync",
   () => ({
-    bindRedisSync: jest.fn((_documentName: string, _document: Y.Doc) => {
+    bindRedisSync: vi.fn((_documentName: string, _document: Y.Doc) => {
       // Redis synchronization is tested separately.
     }),
 
-    cleanupRedisRoom: jest.fn(async (_documentName: string) => {
+    cleanupRedisRoom: vi.fn(async (_documentName: string) => {
       // Redis synchronization is tested separately.
     }),
   }),
 );
 
-jest.mock("../../../src/interfaces/websockets/middlewares/authorize", () => ({
-  authorize: jest.fn(async () => {
+vi.mock("../../../src/interfaces/websockets/middlewares/authorize", () => ({
+  authorize: vi.fn(async () => {
     // Board authorization is tested separately.
   }),
 }));
