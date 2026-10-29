@@ -76,8 +76,17 @@ export function useBoardMutations(boardId: string | undefined) {
   });
 
   const updateColumn = useMutation({
-    mutationFn: (input: { columnId: string; name?: string }) =>
-      columnApi.updateColumn(input.columnId, { name: input.name }),
+    // The wrapper has its own payload type, so a new field has to be added
+    // here too or callers get "does not exist in type".
+    mutationFn: (input: {
+      columnId: string;
+      name?: string;
+      description?: string | null;
+    }) =>
+      columnApi.updateColumn(input.columnId, {
+        name: input.name,
+        description: input.description,
+      }),
     onSuccess: invalidate,
   });
 

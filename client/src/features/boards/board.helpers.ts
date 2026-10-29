@@ -8,6 +8,8 @@ import type { BoardCard, BoardColumn } from "@/types/api/dashboard/board";
 export interface BoardMember {
   id: string;
   name?: string;
+  /** Profile image URL; the avatar falls back to initials when absent. */
+  avatarUrl?: string | null;
   color: string;
 }
 

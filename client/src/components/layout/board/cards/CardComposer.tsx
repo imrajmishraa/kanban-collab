@@ -42,14 +42,14 @@ export default function CardComposer({
         }}
         rows={2}
         placeholder="Card title…"
-        className="w-full resize-none bg-transparent font-mono text-[12px] text-(--text-primary) outline-none placeholder:text-(--text-muted)"
+        className="w-full resize-none bg-transparent font-mono text-[12px] text-neutral-100 outline-none placeholder:text-neutral-500"
       />
 
       <div className="mt-2 flex items-center justify-between">
         <button
           type="button"
           onClick={submit}
-          className="rounded-full border border-(--brand-border) bg-(--brand-muted) px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-(--brand-hover) transition-colors duration-200 hover:bg-[rgba(255,107,53,0.18)] hover:text-(--text-primary)"
+          className="rounded-md border border-orange-50/20 bg-white/4 px-3 py-1.5 text-[10px] uppercase tracking-wider text-neutral-300 transition-colors duration-200 hover:border-orange-50/35 hover:text-neutral-100"
         >
           Add
         </button>
@@ -58,7 +58,7 @@ export default function CardComposer({
           type="button"
           onClick={onCancel}
           aria-label="Cancel"
-          className="flex size-7 items-center justify-center rounded-full text-(--text-muted) transition-colors hover:text-(--text-primary)"
+          className="flex size-7 items-center justify-center rounded-full text-neutral-500 transition-colors hover:text-neutral-100"
         >
           <HugeiconsIcon icon={Cancel01Icon} size={14} strokeWidth={1.6} />
         </button>

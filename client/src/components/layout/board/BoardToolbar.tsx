@@ -65,12 +65,12 @@ export default function BoardToolbar({
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         {/* Search + label filter */}
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
-          <div className="flex h-9 w-full max-w-xs items-center rounded-full border border-white/8 bg-white/6 transition-colors duration-200 focus-within:border-white/16">
+          <div className="flex h-9 w-full max-w-xs items-center gap-1.5 rounded-lg border border-orange-50/15 bg-white/3 px-3 transition-colors duration-200 focus-within:border-orange-50/30">
             <HugeiconsIcon
               icon={Search01Icon}
               size={14}
               strokeWidth={1.6}
-              className="ml-3.5 shrink-0 text-(--text-muted)"
+              className="shrink-0 text-neutral-600"
             />
             <input
               type="search"
@@ -78,14 +78,14 @@ export default function BoardToolbar({
               onChange={(event) => onSearch(event.target.value)}
               placeholder="Search cards…"
               aria-label="Search cards"
-              className="min-w-0 flex-1 bg-transparent px-2 font-mono text-[12px] text-(--text-primary) outline-none placeholder:text-(--text-muted)"
+              className="min-w-0 flex-1 bg-transparent text-[12px] tracking-tight text-neutral-100 outline-none placeholder:text-neutral-600"
             />
             {search && (
               <button
                 type="button"
                 onClick={() => onSearch("")}
                 aria-label="Clear search"
-                className="mr-1.5 flex size-7 items-center justify-center rounded-full text-(--text-muted) transition-colors hover:text-(--text-primary)"
+                className="flex size-6 shrink-0 items-center justify-center rounded text-neutral-600 transition-colors hover:text-neutral-300"
               >
                 <HugeiconsIcon
                   icon={Cancel01Icon}
@@ -101,7 +101,7 @@ export default function BoardToolbar({
               icon={FilterIcon}
               size={13}
               strokeWidth={1.6}
-              className="shrink-0 text-(--text-muted)"
+              className="shrink-0 text-neutral-500"
             />
             <div className="flex max-w-[42vw] items-center gap-1.5 overflow-x-auto">
               {labels.map((label) => {
@@ -111,7 +111,7 @@ export default function BoardToolbar({
                     key={label}
                     type="button"
                     onClick={() => onToggleLabel(label)}
-                    className="shrink-0 rounded-full px-2.5 py-1 font-mono text-[9px] uppercase tracking-widest transition-colors duration-200"
+                    className="shrink-0 rounded-md px-2 py-1 text-[10px] uppercase tracking-wider transition-colors duration-200"
                     style={{
                       color: labelColor(label),
                       background: active
@@ -142,7 +142,7 @@ export default function BoardToolbar({
                 icon={SlidersHorizontalIcon}
                 size={14}
                 strokeWidth={1.6}
-                className="shrink-0 text-(--text-muted)"
+                className="shrink-0 text-neutral-500"
               />
               <span>{SORT_LABELS[sortBy]}</span>
             </button>
@@ -150,7 +150,7 @@ export default function BoardToolbar({
             {sortOpen && (
               <div
                 role="menu"
-                className="absolute right-0 top-full z-30 mt-2 w-40 overflow-hidden rounded-xl border border-white/10 bg-(--bg-elevated) shadow-[0_16px_40px_-12px_rgba(0,0,0,0.7)]"
+                className="absolute right-0 top-full z-30 mt-2 w-40 overflow-hidden rounded-xl border border-orange-50/15 bg-(--bg-elevated) shadow-[0_16px_40px_-12px_rgba(0,0,0,0.7)]"
               >
                 {(Object.keys(SORT_LABELS) as SortKey[]).map((key) => (
                   <button
@@ -162,10 +162,8 @@ export default function BoardToolbar({
                       setSortOpen(false);
                     }}
                     className={[
-                      "flex h-9 w-full items-center px-3 font-mono text-[12px] transition-colors hover:bg-white/6",
-                      sortBy === key
-                        ? "text-(--brand)"
-                        : "text-(--text-secondary)",
+                      "flex h-8 w-full items-center rounded-md px-2 text-[11.5px] transition-colors hover:bg-white/6",
+                      sortBy === key ? "text-(--brand)" : "text-neutral-400",
                     ].join(" ")}
                   >
                     {SORT_LABELS[key]}
@@ -176,7 +174,7 @@ export default function BoardToolbar({
           </div>
 
           {/* View toggle */}
-          <div className="flex h-9 items-center rounded-full border border-white/8 bg-white/6 p-0.5">
+          <div className="flex h-9 items-center gap-0.5 rounded-lg border border-orange-50/15 bg-white/3 p-0.5">
             {(
               [
                 ["board", KanbanIcon, "Board view"],
@@ -190,10 +188,10 @@ export default function BoardToolbar({
                 aria-pressed={view === mode}
                 aria-label={label}
                 className={[
-                  "flex size-8 items-center justify-center rounded-full transition-colors duration-200",
+                  "flex size-8 cursor-pointer items-center justify-center rounded-md transition-colors duration-200",
                   view === mode
-                    ? "bg-white/10 text-(--text-primary)"
-                    : "text-(--text-muted) hover:text-(--text-primary)",
+                    ? "bg-white/10 text-orange-100"
+                    : "text-neutral-500 hover:bg-white/5 hover:text-neutral-100",
                 ].join(" ")}
               >
                 <HugeiconsIcon icon={icon} size={15} strokeWidth={1.6} />
@@ -204,7 +202,7 @@ export default function BoardToolbar({
           <button
             type="button"
             onClick={onAddCard}
-            className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-full border border-(--brand-border) bg-(--brand-muted) px-4 font-mono text-[12px] text-(--brand-hover) transition-colors duration-200 hover:bg-[rgba(255,107,53,0.18)] hover:text-(--text-primary)"
+            className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-none rounded-tr-lg rounded-bl-lg bg-white px-4 text-[12px] font-semibold text-black transition-colors duration-200 hover:bg-neutral-200"
           >
             <HugeiconsIcon icon={Add01Icon} size={14} strokeWidth={1.6} />
             Add card
@@ -213,7 +211,7 @@ export default function BoardToolbar({
       </div>
 
       {dragPaused && view === "board" && (
-        <p className="mt-2.5 font-mono text-[10px] uppercase tracking-wider text-(--text-muted)">
+        <p className="mt-2.5 text-[11px] text-neutral-600">
           Drag is paused while a filter or non-manual sort is active.
         </p>
       )}

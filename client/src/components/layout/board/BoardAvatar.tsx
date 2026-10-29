@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import { avatarColor, initials } from "@/features/boards/board.helpers";
 
 import type { BoardMember } from "@/features/boards/board.helpers";
@@ -9,19 +11,42 @@ interface AvatarProps {
 }
 
 export function Avatar({ member, size = 24, ring = true }: AvatarProps) {
+  const [imageFailed, setImageFailed] = useState(false);
+
+  /* An id is not a name: initials of "6a5e29c4…" render as garbage, so fall
+     back to a neutral glyph instead. */
+  const label = member.name?.trim() || "Member";
+  const image = member.avatarUrl;
+
+  const shared =
+    "inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full font-semibold";
+  const style = {
+    width: size,
+    height: size,
+    fontSize: Math.round(size * 0.4),
+    boxShadow: ring ? "0 0 0 2px var(--bg-root)" : undefined,
+  };
+
+  if (image && !imageFailed) {
+    return (
+      <span title={label} className={shared} style={style}>
+        <img
+          src={image}
+          alt=""
+          className="size-full object-cover"
+          onError={() => setImageFailed(true)}
+        />
+      </span>
+    );
+  }
+
   return (
     <span
-      title={member.name ?? member.id}
-      className="inline-flex shrink-0 items-center justify-center rounded-full font-mono font-semibold text-black"
-      style={{
-        width: size,
-        height: size,
-        background: member.color,
-        fontSize: Math.round(size * 0.4),
-        boxShadow: ring ? "0 0 0 2px var(--bg-root)" : undefined,
-      }}
+      title={label}
+      className={`${shared} text-black`}
+      style={{ ...style, background: member.color }}
     >
-      {initials(member.name ?? member.id)}
+      {initials(label)}
     </span>
   );
 }
@@ -51,7 +76,7 @@ export function AvatarStack({ ids, size = 24, max = 3 }: AvatarStackProps) {
 
       {extra > 0 && (
         <span
-          className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/6 font-mono text-(--text-secondary)"
+          className="inline-flex items-center justify-center rounded-full border border-orange-50/15 bg-white/6 font-mono text-neutral-400"
           style={{
             width: size,
             height: size,

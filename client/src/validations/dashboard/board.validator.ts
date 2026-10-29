@@ -131,6 +131,13 @@ export const updateColumnSchema = z
       )
       .optional(),
 
+    description: z
+      .string()
+      .trim()
+      .max(300, "Description cannot exceed 300 characters.")
+      .nullable()
+      .optional(),
+
     orderIndex: z
       .number()
       .int()

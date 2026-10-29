@@ -240,7 +240,11 @@ export const boardApi = {
 
   async updateColumn(
     columnId: string,
-    payload: { name?: string; orderIndex?: number },
+    payload: {
+      name?: string;
+      description?: string | null;
+      orderIndex?: number;
+    },
   ): Promise<BoardColumn> {
     const body = assertValid(updateColumnSchema, payload, "column");
 

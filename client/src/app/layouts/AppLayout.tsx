@@ -43,6 +43,11 @@ export default function AppLayout() {
 
       if (!mod || event.shiftKey || event.key.toLowerCase() !== "k") return;
 
+      /* On a board, ⌘K belongs to the card palette in BoardView. Both listen
+         on window, and this handler is registered first, so it has to stand
+         down here or the search palette would open on top of the card one. */
+      if (window.location.pathname.startsWith("/boards/")) return;
+
       event.preventDefault();
       openSearch();
     };

@@ -1,48 +1,53 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Add01Icon } from "@hugeicons/core-free-icons";
+
 import BoardError from "@components/ui/board/BoardError";
 
 import { BoardMessage, BoardShell } from "../components/BoardStates";
-import WorkspaceBoardCard from "../components/WorkspaceBoardCard";
 import WorkspaceOverview from "../components/WorkspaceOverview";
 import { useActiveWorkspaceMembers } from "../hooks/useActiveWorkspaceMembers";
 import { useWorkspaceBoards } from "../hooks/useWorkspaceBoards";
 
+import { BoardCard } from "@/features/workspaces/components/BoardCard";
+import { BoardSearch } from "@/features/workspaces/components/BoardSearch";
+import { CreateBoardDialog } from "@/features/workspaces/components/workspace-dialogs";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 
-function OverviewSkeleton() {
+function BoardsSkeleton() {
   return (
-    <div className="mt-6 space-y-4">
-      {[0, 1].map((row) => (
+    <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      {[0, 1, 2, 3, 4, 5].map((cell) => (
         <div
-          key={row}
-          className="rounded-xl border border-white/8 bg-white/4 p-5"
-        >
-          <div className="h-4 w-48 animate-pulse rounded bg-white/10" />
-          <div className="mt-3 h-3 w-72 max-w-full animate-pulse rounded bg-white/6" />
-          <div className="mt-4 grid grid-cols-3 gap-2">
-            {[0, 1, 2].map((cell) => (
-              <div
-                key={cell}
-                className="h-14 animate-pulse rounded-lg bg-white/6"
-              />
-            ))}
-          </div>
-        </div>
+          key={cell}
+          className="h-23 animate-pulse rounded-xl border border-orange-50/15 bg-white/3"
+        />
       ))}
     </div>
   );
 }
 
 /**
- * Board page — an overview of every board in the active workspace,
- * with each board's columns, cards and member count.
+ * Boards page: every board in the active workspace.
  *
- * Individual boards open on the kanban view at `/boards/:boardId`.
+ * Same shape as the workspace page, since they show the same thing: a stat
+ * strip, a filter, and a grid of compact cards. Each card opens the kanban
+ * view at `/boards/:boardId`.
  */
 export function BoardPage() {
-  const { activeWorkspaceId } = useActiveWorkspace();
+  const navigate = useNavigate();
+
+  const { activeWorkspaceId, activeWorkspaceName } = useActiveWorkspace();
   const members = useActiveWorkspaceMembers();
+
+  const [query, setQuery] = useState("");
+  const [creating, setCreating] = useState(false);
+
   const {
     items,
+    totalBoards,
     isLoading,
     isError,
     refetch,
@@ -50,6 +55,11 @@ export function BoardPage() {
     isFetchingNextPage,
     fetchNextPage,
   } = useWorkspaceBoards();
+
+  const needle = query.trim().toLowerCase();
+  const visibleItems = needle
+    ? items.filter((item) => item.board.name.toLowerCase().includes(needle))
+    : items;
 
   const columnCount = items.reduce(
     (total, item) => total + (item.details?.columns.length ?? 0),
@@ -77,8 +87,8 @@ export function BoardPage() {
   if (isLoading) {
     return (
       <BoardShell>
-        <div className="h-8 w-40 animate-pulse rounded bg-white/10" />
-        <OverviewSkeleton />
+        <div className="h-8 w-40 animate-pulse rounded bg-white/6" />
+        <BoardsSkeleton />
       </BoardShell>
     );
   }
@@ -96,55 +106,100 @@ export function BoardPage() {
 
   return (
     <BoardShell>
-      {/* Header */}
-      <header className="flex flex-col gap-2 border-b border-white/8 pb-6">
-        <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.15em] text-(--text-muted)"></div>
+      <header className="flex flex-col gap-4 border-b border-orange-50/10 pb-6 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex flex-col gap-1.5">
+          <p className="font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-neutral-500">
+            {activeWorkspaceName || "Workspace"}
+          </p>
 
-        <h1 className="mt-1 font-mono text-[22px] font-semibold tracking-tight text-(--text-primary) sm:text-[26px]">
-          Boards
-        </h1>
+          <h1 className="text-[22px] font-semibold tracking-tight text-neutral-100 sm:text-[26px]">
+            Boards
+          </h1>
 
-        <p className="max-w-xl font-mono text-[12px] leading-5 text-(--text-secondary)">
-          Every board in this workspace, with its columns, cards and members.
-        </p>
+          <p className="max-w-xl text-[12.5px] leading-5 text-neutral-400">
+            Every board in this workspace, with its columns, cards and{" "}
+            <span className="font-medium capitalize text-orange-100">
+              members
+            </span>
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setCreating(true)}
+          className="flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-none rounded-tr-lg rounded-bl-lg bg-white px-4 text-[12px] font-semibold text-black transition-colors duration-200 hover:bg-neutral-200"
+        >
+          <HugeiconsIcon icon={Add01Icon} size={13} strokeWidth={2} />
+          Add board
+        </button>
       </header>
 
       <WorkspaceOverview
-        boardCount={items.length}
+        boardCount={totalBoards || items.length}
         columnCount={columnCount}
         cardCount={cardCount}
         memberCount={members.length}
+        isPartial={hasNextPage}
       />
 
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-[13px] font-medium tracking-tight text-neutral-100">
+          All boards
+          {items.length > 0 && (
+            <span className="ml-1.5 font-mono text-[10px] tabular-nums text-neutral-500">
+              {visibleItems.length}/{totalBoards || items.length}
+            </span>
+          )}
+        </h2>
+
+        {items.length > 0 && <BoardSearch value={query} onChange={setQuery} />}
+      </div>
+
       {items.length === 0 ? (
-        <div className="mt-6 rounded-xl border border-dashed border-white/10 bg-white/2 px-5 py-12 text-center">
-          <p className="font-mono text-[12px] text-(--text-muted)">
-            No boards in this workspace yet.
+        <div className="mt-4 rounded-xl border border-dashed border-orange-50/20 px-5 py-12 text-center">
+          <p className="text-[12.5px] text-neutral-400">
+            No boards in this workspace yet, create one to get{" "}
+            <span className="font-medium capitalize text-orange-100">
+              started
+            </span>
+          </p>
+        </div>
+      ) : visibleItems.length === 0 ? (
+        <div className="mt-4 rounded-xl border border-dashed border-orange-50/20 px-5 py-10 text-center">
+          <p className="text-[12.5px] text-neutral-400">
+            No boards match “{query.trim()}”
           </p>
         </div>
       ) : (
-        <div className="mt-6 space-y-4">
-          {items.map((item) => (
-            <WorkspaceBoardCard
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {visibleItems.map((item) => (
+            <BoardCard
               key={item.board.id}
               board={item.board}
               details={item.details}
               isLoadingDetails={item.isLoadingDetails}
-              memberCount={members.length}
+              onClick={() => navigate(`/boards/${item.board.id}`)}
             />
           ))}
-
-          {hasNextPage && (
-            <button
-              type="button"
-              onClick={fetchNextPage}
-              disabled={isFetchingNextPage}
-              className="mx-auto flex h-9 items-center gap-2 rounded-full border border-white/8 bg-white/6 px-4 font-mono text-[12px] text-(--text-primary) transition-colors duration-200 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {isFetchingNextPage ? "Loading…" : "Load more boards"}
-            </button>
-          )}
         </div>
+      )}
+
+      {hasNextPage && (
+        <button
+          type="button"
+          onClick={fetchNextPage}
+          disabled={isFetchingNextPage}
+          className="mx-auto mt-6 flex h-9 items-center gap-2 rounded-none rounded-tl-lg rounded-br-lg border border-orange-50/20 px-4 text-[12px] text-neutral-200 transition-colors duration-200 hover:border-orange-50/35 hover:bg-white/4 hover:text-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {isFetchingNextPage ? "Loading…" : "Load more boards"}
+        </button>
+      )}
+
+      {creating && (
+        <CreateBoardDialog
+          workspaceId={activeWorkspaceId}
+          onClose={() => setCreating(false)}
+        />
       )}
     </BoardShell>
   );

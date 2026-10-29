@@ -50,8 +50,8 @@ export default function BoardCardItem({
       }}
       onClick={() => onOpen(card)}
       className={[
-        "group/card cursor-pointer rounded-lg border border-white/8 bg-white/3 p-3 text-left",
-        "transition-colors duration-200 hover:border-white/14 hover:bg-white/6",
+        "group/card cursor-pointer rounded-lg border border-orange-50/15 bg-white/[0.03] p-3 text-left",
+        "transition-colors duration-200 hover:border-orange-50/25 hover:bg-white/[0.06]",
         isDragging ? "opacity-40" : "opacity-100",
       ].join(" ")}
     >
@@ -73,19 +73,19 @@ export default function BoardCardItem({
         </div>
       )}
 
-      <p className="font-mono text-[12px] font-medium leading-5 text-(--text-primary)">
+      <p className="font-mono text-[12px] font-medium leading-5 text-neutral-100">
         {card.title}
       </p>
 
       {card.description && (
-        <p className="mt-1.5 line-clamp-2 font-mono text-[11px] leading-5 text-(--text-secondary)">
+        <p className="mt-1.5 line-clamp-2 font-mono text-[11px] leading-5 text-neutral-400">
           {card.description}
         </p>
       )}
 
       {totalChecks > 0 && (
         <div className="mt-3">
-          <div className="mb-1 flex items-center justify-between font-mono text-[9px] text-(--text-muted)">
+          <div className="mb-1 flex items-center justify-between font-mono text-[9px] text-neutral-500">
             <span className="inline-flex items-center gap-1 tabular-nums">
               <HugeiconsIcon
                 icon={ListChecksIcon}
@@ -96,7 +96,7 @@ export default function BoardCardItem({
             </span>
             <span className="tabular-nums">{progress}%</span>
           </div>
-          <div className="h-1 w-full overflow-hidden rounded-full bg-white/10">
+          <div className="h-1 w-full overflow-hidden rounded-full bg-white/[0.10]">
             <div
               className="h-full rounded-full transition-all"
               style={{ width: `${progress}%`, background: "var(--brand)" }}

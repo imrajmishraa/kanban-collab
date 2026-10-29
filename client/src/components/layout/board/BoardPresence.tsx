@@ -33,7 +33,7 @@ export default function BoardPresence({ peers, status }: BoardPresenceProps) {
           className="size-1.5 rounded-full"
           style={{ background: statusColor(status) }}
         />
-        <span className="font-mono text-[9px] uppercase tracking-wider text-(--text-muted)">
+        <span className="font-mono text-[9px] uppercase tracking-wider text-neutral-500">
           {label}
         </span>
       </span>

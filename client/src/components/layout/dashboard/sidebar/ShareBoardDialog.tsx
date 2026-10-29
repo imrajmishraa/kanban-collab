@@ -1,6 +1,11 @@
 import { useState } from "react";
-import { createPortal } from "react-dom";
+
 import { useMutation } from "@tanstack/react-query";
+
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Loading03Icon, Share08Icon } from "@hugeicons/core-free-icons";
+
+import { DialogShell } from "@/features/workspaces/components/workspace-dialogs";
 
 import { boardApi } from "@/api/dashboard/boardApi";
 
@@ -10,9 +15,17 @@ interface ShareBoardDialogProps {
   onClose: () => void;
 }
 
+const inputClass =
+  "w-full rounded-lg border border-orange-50/15 bg-white/[0.03] px-3 py-2 text-[13px] text-neutral-100 placeholder:text-neutral-600 outline-none transition-colors duration-200 hover:border-orange-50/25 focus:border-white/25 focus:bg-white/[0.05] focus-visible:outline-none";
+
+const labelClass = "text-[11px] font-medium text-neutral-300";
+
 /**
  * Share a board by inviting a teammate (T14). Board access is workspace-scoped,
  * so the invite grants workspace membership and notifies the invitee.
+ *
+ * Uses the shared dialog shell so it matches every other dialog: the old copy
+ * carried its own portal with `z-100`, which is not a valid Tailwind class.
  */
 export function ShareBoardDialog({
   boardId,
@@ -36,92 +49,94 @@ export function ShareBoardDialog({
     share.mutate();
   };
 
-  return createPortal(
-    <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
-      <div
-        aria-hidden="true"
-        onClick={onClose}
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-      />
+  return (
+    <DialogShell
+      title="Share board"
+      description={`Invite someone to ${boardName ?? "this board"}`}
+      onClose={onClose}
+    >
+      <form onSubmit={handleSubmit} className="p-5">
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="share-email" className={labelClass}>
+              Email
+            </label>
+            <input
+              id="share-email"
+              type="email"
+              autoFocus
+              value={email}
+              onChange={(event) => {
+                setEmail(event.target.value);
+                setResult(null);
+              }}
+              placeholder="teammate@example.com"
+              className={`mt-1.5 ${inputClass}`}
+            />
+          </div>
 
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label="Share board"
-        className="relative w-[min(440px,100%)] rounded-xl border border-white/10 bg-(--bg-elevated) p-5 shadow-2xl shadow-black/60"
-      >
-        <h2 className="font-mono text-[13px] font-semibold text-(--text-primary)">
-          Share &ldquo;{boardName ?? "board"}&rdquo;
-        </h2>
-        <p className="mt-1 font-mono text-[11px] leading-5 text-(--text-muted)">
-          Invite a teammate by email. They join this board&apos;s workspace.
+          <div>
+            <label htmlFor="share-role" className={labelClass}>
+              Access
+            </label>
+            <select
+              id="share-role"
+              value={role}
+              onChange={(event) =>
+                setRole(event.target.value as "member" | "guest")
+              }
+              className={`mt-1.5 ${inputClass}`}
+            >
+              <option value="member">Can edit</option>
+              <option value="guest">Can view</option>
+            </select>
+          </div>
+        </div>
+
+        <p className="mt-3 text-[11px] leading-4 text-neutral-600">
+          They join this board&apos;s workspace, so they can see the other
+          boards there too.
         </p>
 
-        <form onSubmit={handleSubmit} className="mt-4">
-          <label
-            htmlFor="share-email"
-            className="block font-mono text-[10px] uppercase tracking-[0.14em] text-(--text-muted)"
+        {share.isError && (
+          <p className="mt-3 text-[11.5px] text-rose-300">
+            Could not share. Check the email and your permissions.
+          </p>
+        )}
+
+        {result && (
+          <p className="mt-3 flex items-center gap-1.5 text-[11.5px] text-orange-100">
+            <HugeiconsIcon icon={Share08Icon} size={12} strokeWidth={1.8} />
+            {result}
+          </p>
+        )}
+
+        <div className="mt-6 flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-9 cursor-pointer items-center rounded-none rounded-tl-lg rounded-br-lg border border-orange-50/20 px-4 text-[12px] text-neutral-300 transition-colors duration-200 hover:border-orange-50/35 hover:bg-white/4 hover:text-neutral-100"
           >
-            Email
-          </label>
-          <input
-            id="share-email"
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            placeholder="teammate@example.com"
-            className="mt-1 h-10 w-full rounded-lg border border-white/8 bg-white/4 px-3 font-mono text-[12px] text-(--text-primary) outline-none transition-colors placeholder:text-(--text-muted) hover:border-white/14 focus:border-(--brand-border)"
-          />
+            {result ? "Done" : "Cancel"}
+          </button>
 
-          <label
-            htmlFor="share-role"
-            className="mt-3 block font-mono text-[10px] uppercase tracking-[0.14em] text-(--text-muted)"
+          <button
+            type="submit"
+            disabled={!email.trim() || share.isPending}
+            className="flex h-9 cursor-pointer items-center gap-1.5 rounded-none rounded-tr-lg rounded-bl-lg bg-white px-4 text-[12px] font-semibold text-black transition-colors duration-200 hover:bg-neutral-200 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Role
-          </label>
-          <select
-            id="share-role"
-            value={role}
-            onChange={(event) =>
-              setRole(event.target.value as "member" | "guest")
-            }
-            className="mt-1 h-10 w-full rounded-lg border border-white/8 bg-white/4 px-3 font-mono text-[12px] text-(--text-primary) outline-none hover:border-white/14"
-          >
-            <option value="member">Member</option>
-            <option value="guest">Guest (read-only)</option>
-          </select>
-
-          {share.isError && (
-            <p className="mt-3 font-mono text-[11px] text-(--danger)">
-              Couldn&apos;t share — check the email and your permissions.
-            </p>
-          )}
-
-          {result && (
-            <p className="mt-3 font-mono text-[11px] text-(--success)">
-              {result}
-            </p>
-          )}
-
-          <div className="mt-5 flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-lg border border-white/8 bg-white/6 px-3 py-2 font-mono text-[11px] text-(--text-secondary) transition-colors hover:text-(--text-primary)"
-            >
-              Close
-            </button>
-            <button
-              type="submit"
-              disabled={!email.trim() || share.isPending}
-              className="rounded-lg border border-(--brand-border) bg-(--brand)/10 px-4 py-2 font-mono text-[11px] font-semibold text-(--text-primary) transition-colors hover:bg-(--brand)/20 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              {share.isPending ? "Sharing…" : "Share"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>,
-    document.body,
+            {share.isPending && (
+              <HugeiconsIcon
+                icon={Loading03Icon}
+                size={13}
+                strokeWidth={2}
+                className="animate-spin"
+              />
+            )}
+            Share
+          </button>
+        </div>
+      </form>
+    </DialogShell>
   );
 }

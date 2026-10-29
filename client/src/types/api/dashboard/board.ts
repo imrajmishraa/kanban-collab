@@ -52,6 +52,8 @@ export interface BoardCard {
 
 export interface BoardColumn {
   id: string;
+  /** Optional note about what belongs in this column. */
+  description?: string | null;
   boardId: string;
   workspaceId: string;
   name: string;

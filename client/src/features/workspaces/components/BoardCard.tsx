@@ -14,7 +14,7 @@ import {
 
 import {
   DeleteBoardDialog,
-  RenameBoardDialog,
+  EditBoardDialog,
 } from "@/features/workspaces/components/board-dialogs";
 import { ShareBoardDialog } from "@/components/layout/dashboard/sidebar/ShareBoardDialog";
 
@@ -44,7 +44,7 @@ function relativeTime(iso: string): string {
   });
 }
 
-type BoardDialog = "rename" | "share" | "delete" | null;
+type BoardDialog = "edit" | "share" | "delete" | null;
 
 interface BoardCardProps {
   board: Board;
@@ -232,7 +232,7 @@ export function BoardCard({
             className="absolute left-0 top-full z-30 mt-1 w-44 rounded-lg border border-orange-50/15 bg-[#141416] p-1"
           >
             {item("Open board", ArrowUpRight01Icon, onClick)}
-            {item("Rename", Edit02Icon, () => setDialog("rename"))}
+            {item("Edit board", Edit02Icon, () => setDialog("edit"))}
             {item(isPinned ? "Remove star" : "Star board", StarIcon, () =>
               togglePin(board.id),
             )}
@@ -248,10 +248,11 @@ export function BoardCard({
         )}
       </div>
 
-      {dialog === "rename" && (
-        <RenameBoardDialog
+      {dialog === "edit" && (
+        <EditBoardDialog
           boardId={board.id}
           currentName={board.name}
+          currentDescription={board.description}
           onClose={() => setDialog(null)}
         />
       )}

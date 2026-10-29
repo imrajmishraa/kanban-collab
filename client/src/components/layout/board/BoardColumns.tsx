@@ -25,7 +25,7 @@ interface BoardColumnsProps {
   onDragOverCard: (columnId: string, index: number) => void;
   onDragOverColumn: (columnId: string, count: number) => void;
   onDropColumn: (columnId: string, index: number) => void;
-  onRenameColumn: (columnId: string) => void;
+  onEditColumn: (columnId: string) => void;
   onDeleteColumn: (columnId: string) => void;
   onClearColumn: (columnId: string) => void;
 }
@@ -46,17 +46,18 @@ export default function BoardColumns({
   onDragOverCard,
   onDragOverColumn,
   onDropColumn,
-  onRenameColumn,
+  onEditColumn,
   onDeleteColumn,
   onClearColumn,
 }: BoardColumnsProps) {
   return (
     <div className="h-full overflow-x-auto overflow-y-hidden">
       <div className="flex h-full min-w-max gap-4 pb-2">
-        {columns.map((column) => (
+        {columns.map((column, index) => (
           <BoardColumn
             key={column.id}
             column={column}
+            index={index + 1}
             cards={column.cards}
             dragEnabled={dragEnabled}
             draggingCardId={draggingCardId}
@@ -71,21 +72,26 @@ export default function BoardColumns({
             onDragOverCard={onDragOverCard}
             onDragOverColumn={onDragOverColumn}
             onDropColumn={onDropColumn}
-            onRenameColumn={onRenameColumn}
+            onEditColumn={onEditColumn}
             onDeleteColumn={onDeleteColumn}
             onClearColumn={onClearColumn}
           />
         ))}
 
+        {/* Compact tile rather than a full-height panel: the old one was as
+            tall as the board, which read as empty space instead of a button. */}
         <button
           type="button"
           onClick={onAddColumn}
-          className="flex h-full w-72 shrink-0 items-start justify-center rounded-xl border border-dashed border-white/10 bg-white/2 p-4 font-mono text-[12px] text-(--text-muted) transition-colors duration-200 hover:border-white/20 hover:bg-white/4 hover:text-(--text-primary)"
+          className="group/add flex h-24 w-64 shrink-0 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-orange-50/20 bg-white/[0.02] text-[12px] text-neutral-400 transition-colors duration-200 hover:border-orange-50/35 hover:bg-white/[0.04] hover:text-neutral-100"
         >
-          <span className="flex items-center gap-2">
-            <HugeiconsIcon icon={Add01Icon} size={14} strokeWidth={1.6} />
-            Add column
-          </span>
+          <HugeiconsIcon
+            icon={Add01Icon}
+            size={16}
+            strokeWidth={1.6}
+            className="transition-colors duration-200 group-hover/add:text-orange-100"
+          />
+          Add column
         </button>
       </div>
     </div>

@@ -1,11 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Add01Icon, MoreHorizontalIcon } from "@hugeicons/core-free-icons";
+import {
+  Add01Icon,
+  Delete02Icon,
+  Edit02Icon,
+  MoreHorizontalIcon,
+} from "@hugeicons/core-free-icons";
 import type { DragEvent } from "react";
 
-import BoardCardItem from "./BoardCardItem";
-import CardComposer from "./CardComposer";
+import BoardCardItem from "@components/layout/board/BoardCardItem";
+import CardComposer from "@components/layout/board/cards/CardComposer";
 
 import { ui } from "@/features/boards/board.helpers";
 
@@ -16,6 +21,8 @@ import type {
 
 interface BoardColumnProps {
   column: BoardColumnType;
+  /** 1-based position, shown as the column's number. */
+  index: number;
   cards: BoardCard[];
   dragEnabled: boolean;
   draggingCardId: string | null;
@@ -30,13 +37,14 @@ interface BoardColumnProps {
   onDragOverCard: (columnId: string, index: number) => void;
   onDragOverColumn: (columnId: string, count: number) => void;
   onDropColumn: (columnId: string, index: number) => void;
-  onRenameColumn: (columnId: string) => void;
+  onEditColumn: (columnId: string) => void;
   onDeleteColumn: (columnId: string) => void;
   onClearColumn: (columnId: string) => void;
 }
 
 export default function BoardColumn({
   column,
+  index,
   cards,
   dragEnabled,
   draggingCardId,
@@ -51,7 +59,7 @@ export default function BoardColumn({
   onDragOverCard,
   onDragOverColumn,
   onDropColumn,
-  onRenameColumn,
+  onEditColumn,
   onDeleteColumn,
   onClearColumn,
 }: BoardColumnProps) {
@@ -74,7 +82,12 @@ export default function BoardColumn({
     };
   }, [menuOpen]);
 
-  const menuItem = (label: string, onClick: () => void, danger = false) => (
+  const menuItem = (
+    label: string,
+    icon: typeof MoreHorizontalIcon,
+    onClick: () => void,
+    danger = false,
+  ) => (
     <button
       type="button"
       role="menuitem"
@@ -84,12 +97,13 @@ export default function BoardColumn({
         onClick();
       }}
       className={[
-        "flex h-9 w-full items-center px-3 text-left font-mono text-[11px] transition-colors hover:bg-white/6",
+        "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[11.5px] transition-colors duration-150",
         danger
-          ? "text-(--danger)"
-          : "text-(--text-secondary) hover:text-(--text-primary)",
+          ? "text-rose-300 hover:bg-rose-500/10 hover:text-rose-200"
+          : "text-neutral-300 hover:bg-white/6 hover:text-neutral-100",
       ].join(" ")}
     >
+      <HugeiconsIcon icon={icon} size={13} strokeWidth={1.6} />
       {label}
     </button>
   );
@@ -110,18 +124,26 @@ export default function BoardColumn({
       className={[
         ui.panel,
         "flex h-full w-72 shrink-0 flex-col transition-colors",
-        isDropTarget ? "border-(--brand-border)" : "border-white/8",
+        isDropTarget ? "border-orange-100/40" : "border-orange-50/15",
       ].join(" ")}
     >
       <span aria-hidden="true" className={ui.hairline} />
 
       {/* Header */}
-      <header className="flex items-center justify-between border-b border-white/6 px-3 py-2.5">
+      <header className="flex items-center justify-between gap-2 border-b border-orange-50/10 px-2.5 py-2">
         <div className="flex min-w-0 items-center gap-2">
-          <h2 className="truncate font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-(--text-primary)">
+          <span
+            aria-hidden="true"
+            className="flex size-5 shrink-0 items-center justify-center rounded-md border border-orange-50/15 font-mono text-[9px] tabular-nums text-neutral-500"
+          >
+            {String(index).padStart(2, "0")}
+          </span>
+
+          <h2 className="truncate text-[12px] font-medium tracking-tight text-neutral-100">
             {column.name}
           </h2>
-          <span className="rounded-full border border-white/10 bg-white/4 px-1.5 font-mono text-[10px] tabular-nums text-(--text-muted)">
+
+          <span className="shrink-0 rounded-md border border-orange-50/15 bg-white/4 px-1.5 font-mono text-[9px] tabular-nums text-neutral-500">
             {cards.length}
           </span>
         </div>
@@ -133,23 +155,37 @@ export default function BoardColumn({
             aria-haspopup="menu"
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((value) => !value)}
-            className="flex size-7 items-center justify-center rounded-full text-(--text-muted) transition-colors hover:bg-white/6 hover:text-(--text-primary)"
+            className={[
+              "flex size-6 cursor-pointer items-center justify-center rounded-md border transition-colors duration-200",
+              menuOpen
+                ? "border-orange-50/25 bg-white/8 text-neutral-100"
+                : "border-transparent text-neutral-500 hover:border-orange-50/20 hover:bg-white/6 hover:text-neutral-100",
+            ].join(" ")}
           >
             <HugeiconsIcon
               icon={MoreHorizontalIcon}
-              size={16}
-              strokeWidth={1.6}
+              size={14}
+              strokeWidth={1.8}
             />
           </button>
 
           {menuOpen && (
             <div
               role="menu"
-              className="absolute right-0 top-full z-30 mt-2 w-40 overflow-hidden rounded-xl border border-white/10 bg-(--bg-elevated) shadow-[0_16px_40px_-12px_rgba(0,0,0,0.7)]"
+              className="absolute right-0 top-full z-30 mt-1 w-44 rounded-lg border border-orange-50/15 bg-[#141416] p-1"
             >
-              {menuItem("Rename column", () => onRenameColumn(column.id))}
-              {menuItem("Clear cards", () => onClearColumn(column.id))}
-              {menuItem("Delete column", () => onDeleteColumn(column.id), true)}
+              {menuItem("Edit column", Edit02Icon, () =>
+                onEditColumn(column.id),
+              )}
+              {menuItem("Clear cards", Delete02Icon, () =>
+                onClearColumn(column.id),
+              )}
+              {menuItem(
+                "Delete column",
+                Delete02Icon,
+                () => onDeleteColumn(column.id),
+                true,
+              )}
             </div>
           )}
         </div>
@@ -172,10 +208,8 @@ export default function BoardColumn({
               />
             ))
           ) : (
-            <div className="flex min-h-20 flex-1 items-center justify-center rounded-lg border border-dashed border-white/10 bg-white/2">
-              <p className="font-mono text-[10px] uppercase tracking-wide text-(--text-muted)">
-                Drop cards here
-              </p>
+            <div className="flex min-h-20 flex-1 items-center justify-center rounded-lg border border-dashed border-orange-50/15 bg-white/2">
+              <p className="text-[11px] text-neutral-600">No cards yet</p>
             </div>
           )}
 
@@ -189,11 +223,11 @@ export default function BoardColumn({
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-white/6 p-2">
+      <footer className="border-t border-orange-50/10 p-2">
         <button
           type="button"
           onClick={() => onOpenComposer(column.id)}
-          className="flex w-full items-center gap-2 rounded-lg px-2 py-2 font-mono text-[12px] text-(--text-muted) transition-colors hover:bg-white/6 hover:text-(--text-primary)"
+          className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-2 text-[11.5px] text-neutral-500 transition-colors duration-200 hover:bg-white/6 hover:text-neutral-100"
         >
           <HugeiconsIcon icon={Add01Icon} size={14} strokeWidth={1.6} />
           Add card

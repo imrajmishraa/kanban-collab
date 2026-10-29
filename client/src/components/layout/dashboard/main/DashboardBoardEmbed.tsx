@@ -6,6 +6,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowRight01Icon, KanbanIcon } from "@hugeicons/core-free-icons";
 
 import BoardColumns from "@components/layout/board/BoardColumns";
+import { EditColumnDialog } from "@/features/workspaces/components/board-dialogs";
 
 import { ui } from "@/features/boards/board.helpers";
 import { useBoardMutations } from "@/features/boards/hooks/useBoardMutations";
@@ -97,12 +98,17 @@ export default function DashboardBoardEmbed({
     });
   };
 
-  const renameColumn = (columnId: string) => {
-    const column = state.columns.find((c) => c.id === columnId);
-    if (!column) return;
-    const next = window.prompt("Rename column", column.name);
-    if (!next || !next.trim()) return;
-    updateColumn.mutate({ columnId, name: next.trim() });
+  const [editColumnId, setEditColumnId] = useState<string | null>(null);
+
+  const saveColumn = (
+    columnId: string,
+    values: { name: string; description: string },
+  ) => {
+    updateColumn.mutate({
+      columnId,
+      name: values.name,
+      description: values.description,
+    });
   };
 
   const clearColumn = async (columnId: string) => {
@@ -207,11 +213,26 @@ export default function DashboardBoardEmbed({
             setDropIndex(count);
           }}
           onDropColumn={handleDropColumn}
-          onRenameColumn={renameColumn}
+          onEditColumn={setEditColumnId}
           onDeleteColumn={deleteColumn}
           onClearColumn={clearColumn}
         />
       </div>
+
+      {editColumnId &&
+        (() => {
+          const column = state.columns.find((c) => c.id === editColumnId);
+          if (!column) return null;
+
+          return (
+            <EditColumnDialog
+              currentName={column.name}
+              currentDescription={column.description}
+              onSave={(values) => saveColumn(editColumnId, values)}
+              onClose={() => setEditColumnId(null)}
+            />
+          );
+        })()}
     </section>
   );
 }

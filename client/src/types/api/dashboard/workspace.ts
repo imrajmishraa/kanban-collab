@@ -25,6 +25,8 @@ export interface WorkspaceMemberDetail {
   role: "owner" | "admin" | "member" | "guest";
   name: string | null;
   email: string | null;
+  /** Profile image, when the user has uploaded one. */
+  avatarUrl?: string | null;
 }
 
 export interface WorkspacePagination {

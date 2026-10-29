@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { DragEvent } from "react";
 
 import BoardColumns from "@components/layout/board/BoardColumns";
@@ -7,9 +7,14 @@ import BoardListView from "@components/layout/board/BoardListView";
 import BoardOverview from "@components/layout/board/BoardOverview";
 import BoardPresence from "@components/layout/board/BoardPresence";
 import BoardToolbar from "@components/layout/board/BoardToolbar";
-import CardDetailModal from "@components/layout/board/CardDetailModal";
+import CardDetailModal from "@components/layout/board/cards/CardDetailModal";
+import CardPalette from "@components/layout/board/cards/CardPalette";
 import BoardActivityPanel from "@components/layout/board/BoardActivityPanel";
 import ConfirmDialog from "@components/ui/dialog/ConfirmDialog";
+import {
+  AddColumnDialog,
+  EditColumnDialog,
+} from "@/features/workspaces/components/board-dialogs";
 
 import {
   buildCollaborationWsUrl,
@@ -246,33 +251,60 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
     });
   };
 
-  const addColumn = () => {
+  /* Ask for a name instead of inventing "Column 4": a column called
+     "Column 4" is one nobody can find later. */
+  const [addColumnOpen, setAddColumnOpen] = useState(false);
+
+  const createColumnNamed = (name: string) => {
     const orderIndex = state.columns.length;
 
     if (live) {
-      docApi.addColumn(`Column ${orderIndex + 1}`);
+      docApi.addColumn(name);
       return;
     }
 
     rest.createColumn.mutate({
       boardId: state.id,
-      name: `Column ${orderIndex + 1}`,
+      name,
       orderIndex,
     });
   };
 
-  const renameColumn = (columnId: string) => {
-    const column = state.columns.find((c) => c.id === columnId);
-    if (!column) return;
-    const next = window.prompt("Rename column", column.name);
-    if (!next || !next.trim()) return;
+  /* Columns had no description and rename used window.prompt, which cannot
+     carry one. This opens a dialog for both fields. */
+  const [editColumnId, setEditColumnId] = useState<string | null>(null);
 
+  /* ⌘K on a board opens the card palette rather than the global search.
+     AppLayout skips the shortcut on board routes so the two do not fight. */
+  const [paletteOpen, setPaletteOpen] = useState(false);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const mod = event.metaKey || event.ctrlKey;
+      if (!mod || event.shiftKey || event.key.toLowerCase() !== "k") return;
+
+      event.preventDefault();
+      setPaletteOpen((previous) => !previous);
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
+  const saveColumn = (
+    columnId: string,
+    values: { name: string; description: string },
+  ) => {
     if (live) {
-      docApi.renameColumn(columnId, next.trim());
+      docApi.renameColumn(columnId, values.name);
       return;
     }
 
-    rest.updateColumn.mutate({ columnId, name: next.trim() });
+    rest.updateColumn.mutate({
+      columnId,
+      name: values.name,
+      description: values.description,
+    });
   };
 
   const performClearColumn = async (columnId: string) => {
@@ -359,9 +391,10 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
   };
 
   return (
-    <div className="min-h-screen bg-(--bg-root) text-(--text-primary)">
+    <div className="min-h-screen bg-(--bg-root) text-neutral-100">
       <div className="mx-auto w-full max-w-7xl px-5 py-6 sm:px-6 lg:px-8">
         <BoardHeader
+          boardId={boardId ?? board.id}
           name={state.name}
           description={state.description}
           workspaceName={activeWorkspaceName ?? undefined}
@@ -379,7 +412,7 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
           <button
             type="button"
             onClick={() => setShowActivity((prev) => !prev)}
-            className="rounded-lg border border-white/8 bg-white/4 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-(--text-secondary) transition-colors hover:text-(--text-primary)"
+            className="rounded-lg border border-orange-50/15 bg-white/4 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-neutral-400 transition-colors hover:text-neutral-100"
           >
             {showActivity ? "Hide activity" : "Activity"}
           </button>
@@ -419,7 +452,7 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
               onOpenComposer={setComposerColumnId}
               onCloseComposer={() => setComposerColumnId(null)}
               onAddCard={addCard}
-              onAddColumn={addColumn}
+              onAddColumn={() => setAddColumnOpen(true)}
               onOpenCard={openCard}
               onDragStartCard={handleDragStart}
               onDragEndCard={handleDragEnd}
@@ -432,7 +465,7 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
                 setDropIndex(count);
               }}
               onDropColumn={handleDropColumn}
-              onRenameColumn={renameColumn}
+              onEditColumn={setEditColumnId}
               onDeleteColumn={handleDeleteColumn}
               onClearColumn={clearColumn}
             />
@@ -441,6 +474,38 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
           )}
         </div>
       </div>
+
+      {paletteOpen && (
+        <CardPalette
+          columns={state.columns}
+          members={members}
+          onSave={(card) => handleUpdateCard(card)}
+          onClose={() => setPaletteOpen(false)}
+        />
+      )}
+
+      {editColumnId &&
+        (() => {
+          const column = state.columns.find((c) => c.id === editColumnId);
+          if (!column) return null;
+
+          return (
+            <EditColumnDialog
+              currentName={column.name}
+              currentDescription={column.description}
+              onSave={(values) => saveColumn(editColumnId, values)}
+              onClose={() => setEditColumnId(null)}
+            />
+          );
+        })()}
+
+      {addColumnOpen && (
+        <AddColumnDialog
+          suggestedName={`Column ${state.columns.length + 1}`}
+          onCreate={createColumnNamed}
+          onClose={() => setAddColumnOpen(false)}
+        />
+      )}
 
       {activeCard && (
         <CardDetailModal
