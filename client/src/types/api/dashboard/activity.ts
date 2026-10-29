@@ -28,3 +28,25 @@ export interface ActivityEntry {
   details: Record<string, unknown>;
   createdAt: string;
 }
+
+/** One row of the caller's feed, across every workspace they belong to. */
+export interface ActivityFeedItem {
+  id: string;
+  boardId: string;
+  workspaceId: string;
+  workspaceName: string | null;
+  boardName: string | null;
+  userId: string;
+  actorName: string;
+  actorAvatarUrl: string | null;
+  actionType: ActivityActionType;
+  /** Already human-readable, built on the server. */
+  message: string;
+  details: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface ActivityFeedPage {
+  activity: ActivityFeedItem[];
+  nextCursor: string | null;
+}

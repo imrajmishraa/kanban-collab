@@ -145,22 +145,22 @@ export default function SidebarFooter({
         isOpen ? "block" : "hidden",
       ].join(" ")}
     >
-      <div className="relative overflow-hidden rounded-lg border border-white/12 bg-(--bg-elevated) shadow-[0_12px_32px_-8px_rgba(0,0,0,0.7),0_2px_8px_-2px_rgba(0,0,0,0.4)]">
+      <div className="relative overflow-hidden rounded-lg border border-orange-50/20 bg-[#141416] ">
         <span
           aria-hidden="true"
           className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-white/15 to-transparent"
         />
 
-        <div className="relative border-b border-white/6 px-3 py-2.5">
+        <div className="relative border-b border-orange-50/10 px-3 py-2.5">
           <div className="flex items-center gap-2.5">
-            <div className="flex size-7 shrink-0 items-center justify-center rounded-md border border-white/10 bg-white/4 text-(--text-secondary)">
+            <div className="flex size-7 shrink-0 items-center justify-center rounded-md border border-orange-50/15 bg-white/[0.04] text-neutral-400">
               <HugeiconsIcon icon={UserIcon} size={13} strokeWidth={1.5} />
             </div>
             <div className="min-w-0">
-              <p className="truncate font-mono text-[11px] text-(--text-primary)">
+              <p className="truncate text-[11.5px] font-medium tracking-tight text-neutral-100">
                 {user?.fullName ?? "User"}
               </p>
-              <p className="truncate font-mono text-[9px] text-(--text-muted)">
+              <p className="truncate text-[10px] text-neutral-500">
                 {user?.email ?? ""}
               </p>
             </div>
@@ -176,7 +176,7 @@ export default function SidebarFooter({
           />
         </div>
 
-        <div className="relative border-t border-white/6 p-1">
+        <div className="relative border-t border-orange-50/10 p-1">
           <FlyoutItem
             icon={Logout01Icon}
             label="Logout"
@@ -194,7 +194,7 @@ export default function SidebarFooter({
         ref={containerRef}
         onPointerEnter={handlePointerEnter}
         onPointerLeave={handlePointerLeave}
-        className="relative shrink-0 border-t border-white/8 py-3"
+        className="relative shrink-0 border-t border-orange-50/15 py-3"
       >
         {menu}
 
@@ -209,8 +209,8 @@ export default function SidebarFooter({
           className={[
             "mx-auto flex size-9 cursor-pointer items-center justify-center rounded-lg transition-colors duration-200",
             isOpen
-              ? "bg-white/6 text-(--text-primary)"
-              : "text-(--text-secondary) hover:bg-white/4 hover:text-(--text-primary)",
+              ? "bg-white/[0.06] text-neutral-100"
+              : "text-neutral-400 hover:bg-white/[0.04] hover:text-neutral-100",
           ].join(" ")}
         >
           <HugeiconsIcon icon={Menu01Icon} size={16} strokeWidth={1.5} />
@@ -224,7 +224,7 @@ export default function SidebarFooter({
       ref={containerRef}
       onPointerEnter={handlePointerEnter}
       onPointerLeave={handlePointerLeave}
-      className="relative shrink-0 border-t border-white/8 px-3 py-3"
+      className="relative shrink-0 border-t border-orange-50/15 px-3 py-3"
     >
       {menu}
 
@@ -236,7 +236,7 @@ export default function SidebarFooter({
         onClick={toggleMenu}
         className={[
           "flex w-full cursor-pointer items-center justify-between rounded-lg px-2.5 py-2 text-left transition-colors duration-200",
-          isOpen ? "bg-white/6" : "hover:bg-white/4",
+          isOpen ? "bg-white/[0.06]" : "hover:bg-white/[0.04]",
         ].join(" ")}
       >
         <div className="flex items-center gap-3">
@@ -244,9 +244,9 @@ export default function SidebarFooter({
             icon={Menu01Icon}
             size={16}
             strokeWidth={1.5}
-            className="shrink-0 text-(--text-secondary)"
+            className="shrink-0 text-neutral-400"
           />
-          <span className="font-mono text-[10px] font-semibold tracking-[0.18em] text-(--text-secondary)">
+          <span className="text-[10px] font-medium uppercase tracking-[0.16em] text-neutral-500">
             MORE
           </span>
         </div>
@@ -273,11 +273,11 @@ function FlyoutItem({
       onClick={onClick}
       className={[
         "flex w-full cursor-pointer items-center gap-2.5 rounded-md",
-        "px-2 py-1.5 text-left font-mono text-[11px]",
+        "px-2 py-1.5 text-left text-[11.5px]",
         "transition-colors duration-150",
         danger
-          ? "text-(--text-secondary) hover:bg-rose-500/8 hover:text-rose-300"
-          : "text-(--text-secondary) hover:bg-white/5 hover:text-(--text-primary)",
+          ? "text-neutral-400 hover:bg-rose-500/8 hover:text-rose-300"
+          : "text-neutral-400 hover:bg-white/[0.05] hover:text-neutral-100",
       ].join(" ")}
     >
       <HugeiconsIcon

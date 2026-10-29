@@ -5,9 +5,12 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ArrowRight01Icon,
   Cancel01Icon,
+  Delete02Icon,
   Search01Icon,
 } from "@hugeicons/core-free-icons";
 
+import CardAttachments from "./attachments/CardAttachments";
+import CardComments from "./comments/CardComments";
 import CardEditorContent from "./CardEditorContent";
 import CardEditorMeta from "./CardEditorMeta";
 
@@ -22,7 +25,10 @@ import type {
 interface CardPaletteProps {
   columns: BoardColumnType[];
   members: BoardMember[];
+  /** Opened from a card click, so start in the editor rather than the list. */
+  initialCard?: BoardCard;
   onSave: (card: BoardCard) => void;
+  onDelete?: (cardId: string) => void;
   onClose: () => void;
 }
 
@@ -42,16 +48,21 @@ interface Row {
 export default function CardPalette({
   columns,
   members,
+  initialCard,
   onSave,
+  onDelete,
   onClose,
 }: CardPaletteProps) {
   const [query, setQuery] = useState("");
   const [cursor, setCursor] = useState(0);
-  const [editing, setEditing] = useState<BoardCard | null>(null);
+  const [editing, setEditing] = useState<BoardCard | null>(initialCard ?? null);
 
-  const [draft, setDraft] = useState<BoardCard | null>(null);
+  const [draft, setDraft] = useState<BoardCard | null>(initialCard ?? null);
   const [labelInput, setLabelInput] = useState("");
   const [checklistInput, setChecklistInput] = useState("");
+  /* Edit, comments and attachments are three tabs of one box, so a card can be
+     finished without leaving the palette. */
+  const [tab, setTab] = useState<"edit" | "comments" | "attachments">("edit");
 
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -111,6 +122,7 @@ export default function CardPalette({
     setDraft(card);
     setLabelInput("");
     setChecklistInput("");
+    setTab("edit");
   };
 
   const toggleMember = (memberId: string) =>
@@ -274,7 +286,7 @@ export default function CardPalette({
               }}
               placeholder="Find a card to edit"
               aria-label="Find a card"
-              className="min-w-0 flex-1 bg-transparent text-[13px] tracking-tight text-neutral-100 placeholder:text-neutral-600 outline-none ring-0 focus:outline-none focus:ring-0 focus-visible:outline-none"
+              className="min-w-0 flex-1 bg-transparent text-[13px] tracking-tight text-neutral-100 placeholder:text-neutral-600 outline-hidden ring-0 focus:outline-hidden focus:ring-0 focus-visible:outline-hidden"
             />
           )}
 
@@ -293,65 +305,124 @@ export default function CardPalette({
         </div>
 
         {editing && draft ? (
-          <form onSubmit={submit}>
-            <div className="max-h-[58vh] overflow-y-auto p-4">
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                <CardEditorContent
-                  draft={draft}
-                  setDraft={(value) =>
-                    setDraft((prev) =>
-                      prev
-                        ? typeof value === "function"
-                          ? value(prev)
-                          : value
-                        : prev,
-                    )
-                  }
-                  checklistInput={checklistInput}
-                  setChecklistInput={setChecklistInput}
-                  addChecklistItem={addChecklistItem}
-                  toggleCheck={toggleCheck}
-                  removeCheck={removeCheck}
-                />
-
-                <CardEditorMeta
-                  draft={draft}
-                  setDraft={(value) =>
-                    setDraft((prev) =>
-                      prev
-                        ? typeof value === "function"
-                          ? value(prev)
-                          : value
-                        : prev,
-                    )
-                  }
-                  members={candidates}
-                  labelInput={labelInput}
-                  setLabelInput={setLabelInput}
-                  addLabel={addLabel}
-                  toggleMember={toggleMember}
-                />
-              </div>
+          <>
+            <div className="flex items-center gap-1 border-b border-orange-50/10 px-2 py-1.5">
+              {(
+                [
+                  ["edit", "Edit"],
+                  ["comments", "Comments"],
+                  ["attachments", "Attachments"],
+                ] as const
+              ).map(([key, label]) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setTab(key)}
+                  aria-pressed={tab === key}
+                  className={[
+                    "h-7 cursor-pointer rounded-md px-2.5 text-[11.5px] transition-colors duration-200",
+                    tab === key
+                      ? "bg-white/8 text-orange-100"
+                      : "text-neutral-500 hover:bg-white/5 hover:text-neutral-200",
+                  ].join(" ")}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
 
-            <footer className="flex items-center justify-end gap-2 border-t border-orange-50/10 px-4 py-2.5">
-              <button
-                type="button"
-                onClick={onClose}
-                className="h-8 cursor-pointer rounded-none rounded-tl-lg rounded-br-lg border border-orange-50/20 px-3 text-[11.5px] text-neutral-300 transition-colors duration-200 hover:border-orange-50/35 hover:bg-white/4 hover:text-neutral-100"
-              >
-                Cancel
-              </button>
+            {tab === "comments" ? (
+              <div className="max-h-[58vh] overflow-y-auto p-4">
+                <CardComments cardId={editing.id} />
+              </div>
+            ) : tab === "attachments" ? (
+              <div className="max-h-[58vh] overflow-y-auto p-4">
+                <CardAttachments cardId={editing.id} />
+              </div>
+            ) : (
+              <form onSubmit={submit}>
+                <div className="max-h-[58vh] overflow-y-auto p-4">
+                  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                    <CardEditorContent
+                      draft={draft}
+                      setDraft={(value) =>
+                        setDraft((prev) =>
+                          prev
+                            ? typeof value === "function"
+                              ? value(prev)
+                              : value
+                            : prev,
+                        )
+                      }
+                      checklistInput={checklistInput}
+                      setChecklistInput={setChecklistInput}
+                      addChecklistItem={addChecklistItem}
+                      toggleCheck={toggleCheck}
+                      removeCheck={removeCheck}
+                    />
 
-              <button
-                type="submit"
-                disabled={!draft.title.trim()}
-                className="h-8 cursor-pointer rounded-none rounded-tr-lg rounded-bl-lg bg-white px-3 text-[11.5px] font-semibold text-black transition-colors duration-200 hover:bg-neutral-200 disabled:cursor-not-allowed disabled:bg-white/20 disabled:text-neutral-500"
-              >
-                Save card
-              </button>
-            </footer>
-          </form>
+                    <CardEditorMeta
+                      draft={draft}
+                      setDraft={(value) =>
+                        setDraft((prev) =>
+                          prev
+                            ? typeof value === "function"
+                              ? value(prev)
+                              : value
+                            : prev,
+                        )
+                      }
+                      members={candidates}
+                      labelInput={labelInput}
+                      setLabelInput={setLabelInput}
+                      addLabel={addLabel}
+                      toggleMember={toggleMember}
+                    />
+                  </div>
+                </div>
+
+                <footer className="flex items-center justify-between gap-2 border-t border-orange-50/10 px-4 py-2.5">
+                  {onDelete ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onDelete(draft.id);
+                        onClose();
+                      }}
+                      className="flex cursor-pointer items-center gap-1.5 text-[10px] uppercase tracking-wider text-rose-300 transition-opacity duration-200 hover:opacity-80"
+                    >
+                      <HugeiconsIcon
+                        icon={Delete02Icon}
+                        size={13}
+                        strokeWidth={1.6}
+                      />
+                      Delete
+                    </button>
+                  ) : (
+                    <span />
+                  )}
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      className="h-8 cursor-pointer rounded-none rounded-tl-lg rounded-br-lg border border-orange-50/20 px-3 text-[11.5px] text-neutral-300 transition-colors duration-200 hover:border-orange-50/35 hover:bg-white/4 hover:text-neutral-100"
+                    >
+                      Cancel
+                    </button>
+
+                    <button
+                      type="submit"
+                      disabled={!draft.title.trim()}
+                      className="h-8 cursor-pointer rounded-none rounded-tr-lg rounded-bl-lg bg-white px-3 text-[11.5px] font-semibold text-black transition-colors duration-200 hover:bg-neutral-200 disabled:cursor-not-allowed disabled:bg-white/20 disabled:text-neutral-500"
+                    >
+                      Save card
+                    </button>
+                  </div>
+                </footer>
+              </form>
+            )}
+          </>
         ) : (
           <>
             <div ref={listRef} className="max-h-[52vh] overflow-y-auto p-1">

@@ -7,7 +7,6 @@ import BoardListView from "@components/layout/board/BoardListView";
 import BoardOverview from "@components/layout/board/BoardOverview";
 import BoardPresence from "@components/layout/board/BoardPresence";
 import BoardToolbar from "@components/layout/board/BoardToolbar";
-import CardDetailModal from "@components/layout/board/cards/CardDetailModal";
 import CardPalette from "@components/layout/board/cards/CardPalette";
 import BoardActivityPanel from "@components/layout/board/BoardActivityPanel";
 import ConfirmDialog from "@components/ui/dialog/ConfirmDialog";
@@ -80,14 +79,13 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
   const state = docApi.board;
 
   /* ── Presence cursors (T7) ── */
-  const { setCursor, clearCursor, peersOnCard } = useCursors(awareness);
+  const { setCursor, clearCursor } = useCursors(awareness);
 
   /* ── View state ── */
-  const [search, setSearch] = useState("");
   const [labelFilter, setLabelFilter] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortKey>("manual");
   const [view, setView] = useState<ViewMode>("board");
-  const [activeCard, setActiveCard] = useState<BoardCard | null>(null);
+  const [paletteCard, setPaletteCard] = useState<BoardCard | null>(null);
   const [showActivity, setShowActivity] = useState(false);
   const [confirm, setConfirm] = useState<{
     title: string;
@@ -100,16 +98,25 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
   const [dragOverColumnId, setDragOverColumnId] = useState<string | null>(null);
   const [dropIndex, setDropIndex] = useState<number | null>(null);
 
+  /* Declared before the callbacks below: the React Compiler rejects a setter
+     that is read before its declaration, even inside a closure that runs
+     later. */
+  const [paletteOpen, setPaletteOpen] = useState(false);
+
+  /* Opening a card now goes through the palette, so there is one editor in
+     the app rather than two that can drift apart. */
   const openCard = useCallback(
     (card: BoardCard) => {
-      setActiveCard(card);
+      setPaletteCard(card);
+      setPaletteOpen(true);
       setCursor({ cardId: card.id, columnId: card.columnId });
     },
     [setCursor],
   );
 
   const closeCard = useCallback(() => {
-    setActiveCard(null);
+    setPaletteCard(null);
+    setPaletteOpen(false);
     clearCursor();
   }, [clearCursor]);
 
@@ -123,26 +130,18 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
     return Array.from(set).sort();
   }, [state]);
 
-  const hasActiveFilter = search.trim().length > 0 || labelFilter !== null;
+  const hasActiveFilter = labelFilter !== null;
   const dragEnabled =
     !hasActiveFilter && sortBy === "manual" && view === "board";
 
   /* ── Filtered + sorted projection used for rendering ── */
   const visibleColumns = useMemo(() => {
-    const query = search.trim().toLowerCase();
-
     return [...state.columns]
       .sort((a, b) => a.orderIndex - b.orderIndex)
       .map((column) => {
-        let cards = column.cards.filter((card) => {
-          const matchesQuery =
-            !query ||
-            card.title.toLowerCase().includes(query) ||
-            card.description.toLowerCase().includes(query);
-          const matchesLabel =
-            !labelFilter || card.labels.includes(labelFilter);
-          return matchesQuery && matchesLabel;
-        });
+        let cards = column.cards.filter(
+          (card) => !labelFilter || card.labels.includes(labelFilter),
+        );
 
         if (sortBy === "dueDate") {
           cards = [...cards].sort((a, b) => {
@@ -158,7 +157,7 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
 
         return { ...column, cards };
       });
-  }, [state, search, labelFilter, sortBy]);
+  }, [state, labelFilter, sortBy]);
 
   const stats = useMemo(() => {
     const columnCount = state.columns.length;
@@ -274,14 +273,17 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
      carry one. This opens a dialog for both fields. */
   const [editColumnId, setEditColumnId] = useState<string | null>(null);
 
-  /* ⌘K on a board opens the card palette rather than the global search.
-     AppLayout skips the shortcut on board routes so the two do not fight. */
-  const [paletteOpen, setPaletteOpen] = useState(false);
+  /* ⌘I on a board opens the card palette. ⌘K still works because it was the
+     original binding and AppLayout already stands down on board routes, so
+     there is nothing for it to collide with. */
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       const mod = event.metaKey || event.ctrlKey;
-      if (!mod || event.shiftKey || event.key.toLowerCase() !== "k") return;
+      if (!mod || event.shiftKey) return;
+
+      const key = event.key.toLowerCase();
+      if (key !== "i" && key !== "k") return;
 
       event.preventDefault();
       setPaletteOpen((previous) => !previous);
@@ -426,8 +428,7 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
         )}
 
         <BoardToolbar
-          search={search}
-          onSearch={setSearch}
+          onOpenPalette={() => setPaletteOpen(true)}
           labels={allLabels}
           labelFilter={labelFilter}
           onToggleLabel={(label) =>
@@ -477,10 +478,13 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
 
       {paletteOpen && (
         <CardPalette
+          key={paletteCard?.id ?? "palette"}
           columns={state.columns}
           members={members}
+          initialCard={paletteCard ?? undefined}
           onSave={(card) => handleUpdateCard(card)}
-          onClose={() => setPaletteOpen(false)}
+          onDelete={handleDeleteCard}
+          onClose={closeCard}
         />
       )}
 
@@ -504,18 +508,6 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
           suggestedName={`Column ${state.columns.length + 1}`}
           onCreate={createColumnNamed}
           onClose={() => setAddColumnOpen(false)}
-        />
-      )}
-
-      {activeCard && (
-        <CardDetailModal
-          key={activeCard.id}
-          card={activeCard}
-          members={members}
-          onClose={closeCard}
-          onSave={handleUpdateCard}
-          onDelete={handleDeleteCard}
-          watchers={peersOnCard(activeCard.id)}
         />
       )}
 

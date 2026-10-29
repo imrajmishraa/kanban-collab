@@ -76,47 +76,64 @@ const DashboardSkeleton = () => {
 
       {/* Decorative only — hidden from assistive tech */}
       <div aria-hidden="true" className="space-y-8">
-        {/* Overview */}
-        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {times(3).map((index) => (
-            <SkeletonPanel key={index} className="h-28 p-5">
-              <SkeletonBar className="h-3 w-20" />
-              <SkeletonBar className="mt-4 h-7 w-24" />
-              <SkeletonBar className="mt-2 h-2.5 w-32" tone="dim" />
+        {/* Stat strip: four tiles, matching the real grid */}
+        <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {times(4).map((index) => (
+            <SkeletonPanel key={index} className="h-21.5 p-3.5 sm:h-24 sm:p-4">
+              <div className="flex items-center justify-between gap-2">
+                <SkeletonBar className="h-2.5 w-16 sm:w-20" />
+                <SkeletonBar className="size-3.5 rounded" tone="dim" />
+              </div>
+              <SkeletonBar className="mt-3 h-6 w-10 sm:h-7 sm:w-12" />
             </SkeletonPanel>
           ))}
         </section>
 
-        {/* Workspaces */}
-        <SkeletonSection label="w-28">
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {times(3).map((index) => (
-              <SkeletonPanel key={index} className="h-20 p-4">
-                <SkeletonBar className="h-3 w-32" />
-                <SkeletonBar className="mt-3 h-2.5 w-20" tone="dim" />
-              </SkeletonPanel>
-            ))}
-          </div>
-        </SkeletonSection>
+        {/* Body: workspaces and the activity panel, same split as the page */}
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+          <SkeletonSection label="w-28">
+            <div className="grid gap-3 sm:grid-cols-2">
+              {times(4).map((index) => (
+                <SkeletonPanel key={index} className="h-19 p-3.5">
+                  <div className="flex items-start gap-3">
+                    <SkeletonBar
+                      className="size-8 shrink-0 rounded-lg"
+                      tone="dim"
+                    />
 
-        {/* Activity */}
-        <SkeletonSection label="w-24">
-          <div className="space-y-2">
-            {times(4).map((index) => (
-              <SkeletonPanel
-                key={index}
-                className="flex h-12 items-center gap-3 px-4"
-              >
-                <div className="h-6 w-6 shrink-0 rounded-full bg-white/[0.07]" />
+                    <div className="min-w-0 flex-1">
+                      <SkeletonBar className="h-3 w-32" />
+                      <SkeletonBar className="mt-2 h-2.5 w-20" tone="dim" />
+                    </div>
+                  </div>
+                  <SkeletonBar className="mt-3 h-2 w-24" tone="dim" />
+                </SkeletonPanel>
+              ))}
+            </div>
+          </SkeletonSection>
 
-                <div className="min-w-0 flex-1">
-                  <SkeletonBar className="h-2.5 w-2/3" />
-                  <SkeletonBar className="mt-2 h-2 w-1/3" tone="dim" />
+          {/* Activity: fixed height, six rows, matching the real panel */}
+          <SkeletonPanel className="h-105 overflow-hidden p-0">
+            <div className="flex items-center justify-between border-b border-orange-50/10 px-4 py-3">
+              <SkeletonBar className="h-2.5 w-24" />
+              <SkeletonBar className="size-4 rounded" tone="dim" />
+            </div>
+
+            <div className="divide-y divide-orange-50/6">
+              {times(6).map((index) => (
+                <div key={index} className="flex gap-3 px-4 py-3.5">
+                  <div className="size-7 shrink-0 rounded-full bg-white/6" />
+
+                  <div className="min-w-0 flex-1">
+                    <SkeletonBar className="h-2.5 w-24" />
+                    <SkeletonBar className="mt-2 h-2.5 w-full" tone="dim" />
+                    <SkeletonBar className="mt-1.5 h-2 w-16" tone="dim" />
+                  </div>
                 </div>
-              </SkeletonPanel>
-            ))}
-          </div>
-        </SkeletonSection>
+              ))}
+            </div>
+          </SkeletonPanel>
+        </div>
       </div>
     </div>
   );

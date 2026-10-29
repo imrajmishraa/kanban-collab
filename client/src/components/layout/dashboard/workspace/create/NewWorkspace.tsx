@@ -134,11 +134,11 @@ export default function NewWorkspace({ onClose }: NewWorkspaceProps = {}) {
               className={[
                 "w-full rounded-lg border px-3 py-2",
                 "text-[13px] text-neutral-100 placeholder:text-neutral-600",
-                "outline-none transition-colors duration-200",
-                // focus-visible:outline-none wins over the global
+                "outline-hidden transition-colors duration-200",
+                // focus-visible:outline-hidden wins over the global
                 // `:focus-visible { outline: 2px solid var(--brand) }` in
                 // index.css, which is what painted the orange ring.
-                "focus-visible:outline-none",
+                "focus-visible:outline-hidden",
                 errors.name
                   ? "border-rose-400/40 bg-white/3 focus:border-rose-400/60"
                   : "border-orange-50/15 bg-white/3 hover:border-orange-50/25 focus:border-white/25 focus:bg-white/5",
@@ -168,8 +168,8 @@ export default function NewWorkspace({ onClose }: NewWorkspaceProps = {}) {
               className={[
                 "w-full resize-none rounded-lg border px-3 py-2",
                 "text-[13px] text-neutral-100 placeholder:text-neutral-600",
-                "outline-none transition-colors duration-200",
-                "focus-visible:outline-none",
+                "outline-hidden transition-colors duration-200",
+                "focus-visible:outline-hidden",
                 errors.description
                   ? "border-rose-400/40 bg-white/3 focus:border-rose-400/60"
                   : "border-orange-50/15 bg-white/3 hover:border-orange-50/25 focus:border-white/25 focus:bg-white/5",

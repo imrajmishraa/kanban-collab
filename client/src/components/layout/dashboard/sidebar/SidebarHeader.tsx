@@ -31,12 +31,12 @@ const SidebarHeader = ({ collapsed, onToggle }: SidebarHeaderProps) => {
             group relative flex size-9 cursor-pointer
             items-center justify-center
             rounded-full
-            bg-white/2
+            bg-white/[0.02]
             transition-colors
-            hover:bg-white/6
+            hover:bg-white/[0.06]
           "
           >
-            {/* Logo — visible normally, hidden on hover */}
+            {/* Logo, visible normally, hidden on hover */}
             <img
               src={logo}
               alt=""
@@ -45,27 +45,26 @@ const SidebarHeader = ({ collapsed, onToggle }: SidebarHeaderProps) => {
               draggable={false}
               className="
               h-8 w-8 rounded-lg
-              shadow-[0_2px_8px_rgba(0,0,0,0.35)]
               transition-all duration-150
               group-hover:scale-75
               group-hover:opacity-0
             "
             />
 
-            {/* Arrow — hidden normally, visible on hover */}
+            {/* Arrow, hidden normally, visible on hover */}
             <HugeiconsIcon
               icon={ArrowRightDoubleIcon}
               size={18}
               strokeWidth={1.8}
               className="
               absolute
-              text-(--text-muted)
+              text-neutral-500
               opacity-0
               scale-75
               transition-all duration-150
               group-hover:scale-100
               group-hover:opacity-100
-              group-hover:text-(--text-primary)
+              group-hover:text-neutral-100
             "
             />
           </button>
@@ -87,15 +86,15 @@ const SidebarHeader = ({ collapsed, onToggle }: SidebarHeaderProps) => {
           width={28}
           height={28}
           draggable={false}
-          className="h-8 w-8 rounded-lg shadow-[0_2px_8px_rgba(0,0,0,0.35)] transition-all duration-300"
+          className="h-8 w-8 rounded-lg transition-all duration-300"
         />
-        <span className="font-mono text-[14px] font-bold tracking-tight text-(--text-primary)">
+        <span className="text-[14px] font-semibold tracking-tight text-neutral-100">
           Kanban
         </span>
       </button>
 
       <div className="flex items-center gap-0.5">
-        <Tooltip label="Collaspe" side="bottom" shape="solid" size="md">
+        <Tooltip label="Collapse" side="bottom" shape="solid" size="md">
           <HeaderIconButton
             icon={
               <HugeiconsIcon
@@ -127,7 +126,7 @@ function HeaderIconButton({
           e.stopPropagation();
           onClick();
         }}
-        className="flex size-8 cursor-pointer items-center justify-center rounded-full text-(--text-muted) transition-colors hover:bg-white/6 hover:text-(--text-primary)"
+        className="flex size-8 cursor-pointer items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-white/[0.06] hover:text-neutral-100"
       >
         {icon}
       </button>

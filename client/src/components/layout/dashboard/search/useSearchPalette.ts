@@ -35,13 +35,14 @@ function useDebouncedValue<T>(value: T, delay: number): T {
  */
 export function useSearchPalette() {
   const closeSearch = useSearchStore((s) => s.closeSearch);
+  const initialScope = useSearchStore((s) => s.initialScope);
   const navigate = useNavigate();
 
   const lastBoardId = useBoardsStore((s) => s.lastBoardId);
   const boards = useBoardsStore((s) => s.boards);
 
   const [query, setQuery] = useState("");
-  const [scope, setScope] = useState<Scope>("cards");
+  const [scope, setScope] = useState<Scope>(initialScope);
   const [activeIndex, setActiveIndex] = useState(0);
 
   const inputRef = useRef<HTMLInputElement>(null);

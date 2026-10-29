@@ -42,7 +42,6 @@ export function BoardPage() {
   const { activeWorkspaceId, activeWorkspaceName } = useActiveWorkspace();
   const members = useActiveWorkspaceMembers();
 
-  const [query, setQuery] = useState("");
   const [creating, setCreating] = useState(false);
 
   const {
@@ -55,11 +54,6 @@ export function BoardPage() {
     isFetchingNextPage,
     fetchNextPage,
   } = useWorkspaceBoards();
-
-  const needle = query.trim().toLowerCase();
-  const visibleItems = needle
-    ? items.filter((item) => item.board.name.toLowerCase().includes(needle))
-    : items;
 
   const columnCount = items.reduce(
     (total, item) => total + (item.details?.columns.length ?? 0),
@@ -147,12 +141,12 @@ export function BoardPage() {
           All boards
           {items.length > 0 && (
             <span className="ml-1.5 font-mono text-[10px] tabular-nums text-neutral-500">
-              {visibleItems.length}/{totalBoards || items.length}
+              {totalBoards || items.length}
             </span>
           )}
         </h2>
 
-        {items.length > 0 && <BoardSearch value={query} onChange={setQuery} />}
+        {items.length > 0 && <BoardSearch />}
       </div>
 
       {items.length === 0 ? (
@@ -164,15 +158,9 @@ export function BoardPage() {
             </span>
           </p>
         </div>
-      ) : visibleItems.length === 0 ? (
-        <div className="mt-4 rounded-xl border border-dashed border-orange-50/20 px-5 py-10 text-center">
-          <p className="text-[12.5px] text-neutral-400">
-            No boards match “{query.trim()}”
-          </p>
-        </div>
       ) : (
         <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {visibleItems.map((item) => (
+          {items.map((item) => (
             <BoardCard
               key={item.board.id}
               board={item.board}

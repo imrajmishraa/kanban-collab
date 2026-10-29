@@ -136,7 +136,7 @@ function PreferencesForm({
               digestFrequency: event.target.value as DigestFrequency,
             }))
           }
-          className="h-9 rounded-lg border border-white/8 bg-white/4 px-3 font-mono text-[11px] text-(--text-primary) outline-none hover:border-white/14 focus:border-(--brand-border)"
+          className="h-9 rounded-lg border border-white/8 bg-white/4 px-3 font-mono text-[11px] text-(--text-primary) outline-hidden hover:border-white/14 focus:border-(--brand-border)"
         >
           <option value="off">Off</option>
           <option value="daily">Daily</option>
@@ -182,7 +182,7 @@ function PreferencesForm({
                     },
                   }))
                 }
-                className="h-8 rounded-lg border border-white/8 bg-white/4 px-2 text-(--text-primary) outline-none"
+                className="h-8 rounded-lg border border-white/8 bg-white/4 px-2 text-(--text-primary) outline-hidden"
               />
             </label>
 
@@ -197,7 +197,7 @@ function PreferencesForm({
                     quietHours: { ...prev.quietHours, end: event.target.value },
                   }))
                 }
-                className="h-8 rounded-lg border border-white/8 bg-white/4 px-2 text-(--text-primary) outline-none"
+                className="h-8 rounded-lg border border-white/8 bg-white/4 px-2 text-(--text-primary) outline-hidden"
               />
             </label>
 
@@ -214,7 +214,7 @@ function PreferencesForm({
                 }))
               }
               aria-label="Timezone"
-              className="h-8 w-44 rounded-lg border border-white/8 bg-white/4 px-2 font-mono text-[11px] text-(--text-primary) outline-none"
+              className="h-8 w-44 rounded-lg border border-white/8 bg-white/4 px-2 font-mono text-[11px] text-(--text-primary) outline-hidden"
             />
           </div>
         )}

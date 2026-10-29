@@ -109,14 +109,14 @@ export default function NotesPage() {
             onChange={(event) => setTitle(event.target.value)}
             placeholder="Note title…"
             maxLength={200}
-            className="h-10 w-full rounded-lg border border-white/8 bg-white/4 px-3 font-mono text-[13px] text-(--text-primary) outline-none placeholder:text-(--text-muted) focus:border-(--brand-border)"
+            className="h-10 w-full rounded-lg border border-white/8 bg-white/4 px-3 font-mono text-[13px] text-(--text-primary) outline-hidden placeholder:text-(--text-muted) focus:border-(--brand-border)"
           />
           <textarea
             value={body}
             onChange={(event) => setBody(event.target.value)}
             placeholder="Write something…"
             rows={3}
-            className="mt-2 w-full resize-none rounded-lg border border-white/8 bg-white/4 p-3 font-mono text-[12px] leading-5 text-(--text-primary) outline-none placeholder:text-(--text-muted) focus:border-(--brand-border)"
+            className="mt-2 w-full resize-none rounded-lg border border-white/8 bg-white/4 p-3 font-mono text-[12px] leading-5 text-(--text-primary) outline-hidden placeholder:text-(--text-muted) focus:border-(--brand-border)"
           />
           <div className="mt-2 flex justify-end">
             <button

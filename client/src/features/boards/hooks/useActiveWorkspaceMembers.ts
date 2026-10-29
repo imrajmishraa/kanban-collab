@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { workspaceApi } from "@/api/dashboard/workspaceApi";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 import { avatarColor } from "@/features/boards/board.helpers";
 
@@ -20,6 +21,10 @@ import type { BoardMember } from "@/features/boards/board.helpers";
 export function useActiveWorkspaceMembers(): BoardMember[] {
   const { activeWorkspaceId } = useActiveWorkspace();
 
+  /* `/me` carries the signed-in user's avatar even when the members endpoint
+     does not, so their own face always renders. */
+  const me = useAuthStore((state) => state.user);
+
   const { data } = useQuery({
     queryKey: ["workspace-members", activeWorkspaceId],
     queryFn: () => workspaceApi.listMembers(activeWorkspaceId!),
@@ -30,12 +35,20 @@ export function useActiveWorkspaceMembers(): BoardMember[] {
   return useMemo(() => {
     if (!data) return [];
 
-    return data.map((member) => ({
-      id: member.userId,
-      // Name first, then email: an email still gives a sensible initial.
-      name: member.name ?? member.email ?? undefined,
-      avatarUrl: member.avatarUrl ?? null,
-      color: avatarColor(member.userId),
-    }));
-  }, [data]);
+    return data.map((member) => {
+      const isMe = me?.id === member.userId;
+
+      return {
+        id: member.userId,
+        // Name first, then email: an email still gives a sensible initial.
+        name:
+          member.name ??
+          (isMe ? me?.fullName : undefined) ??
+          member.email ??
+          undefined,
+        avatarUrl: member.avatarUrl ?? (isMe ? (me?.avatarUrl ?? null) : null),
+        color: avatarColor(member.userId),
+      };
+    });
+  }, [data, me]);
 }

@@ -1,70 +1,105 @@
+import { useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ArrowRight01Icon,
-  KanbanIcon,
-  RefreshIcon,
+  Loading03Icon,
   Message01Icon,
-  Note01Icon,
-  Tick02Icon,
-  UserGroupIcon,
+  RefreshIcon,
 } from "@hugeicons/core-free-icons";
 
-import type {
-  DashboardActivity,
-  DashboardActivityType,
-} from "@/types/dashboard/dashboard";
+import { Avatar } from "@components/layout/board/BoardAvatar";
 
-interface ActivitySectionProps {
-  activities?: DashboardActivity[];
-  /** Renders a "View all" affordance in the header when supplied. */
-  onViewAll?: () => void;
-  /** Refetches the feed. The button only renders when this is supplied. */
-  onRefresh?: () => void;
-  isRefreshing?: boolean;
-  /** Clicking a row opens the board the activity happened on. */
-  onOpenBoard?: (boardId: string) => void;
-}
+import { avatarColor } from "@/features/boards/board.helpers";
+import { useActivityFeed } from "@/hooks/dashboard/useActivityFeed";
 
-/** Each activity type gets its own glyph, so the feed scans by shape. */
-const ACTIVITY_ICON: Record<DashboardActivityType, typeof Note01Icon> = {
-  board_created: KanbanIcon,
-  board_updated: KanbanIcon,
-  card_created: Note01Icon,
-  card_updated: Note01Icon,
-  card_completed: Tick02Icon,
-  member_added: UserGroupIcon,
-};
-
-function initials(name: string): string {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "??";
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[1][0]).toUpperCase();
-}
+/** How many rows fit before the list starts scrolling. */
+const VISIBLE_ROWS = 6;
 
 function relativeTime(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
+
   if (Number.isNaN(diff)) return "--";
-  const mins = Math.floor(diff / 60_000);
-  if (mins < 1) return "now";
-  if (mins < 60) return `${mins}m`;
-  const hours = Math.floor(mins / 60);
+
+  const minutes = Math.floor(diff / 60_000);
+  if (minutes < 1) return "now";
+  if (minutes < 60) return `${minutes}m`;
+
+  const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours}h`;
+
   const days = Math.floor(hours / 24);
   if (days < 7) return `${days}d`;
+
   return new Date(iso).toLocaleDateString(undefined, {
     month: "short",
     day: "numeric",
   });
 }
 
-export default function ActivitySection({
-  activities = [],
-  onViewAll,
-  onRefresh,
-  isRefreshing = false,
-  onOpenBoard,
-}: ActivitySectionProps) {
+function ActivitySkeleton() {
+  return (
+    <ul className="divide-y divide-orange-50/6">
+      {Array.from({ length: VISIBLE_ROWS }).map((_, index) => (
+        <li key={index} className="flex gap-3 px-4 py-3.5">
+          <div className="size-7 shrink-0 animate-pulse rounded-full bg-white/6" />
+
+          <div className="min-w-0 flex-1 space-y-2">
+            <div className="h-2.5 w-24 animate-pulse rounded bg-white/6" />
+            <div className="h-2.5 w-full animate-pulse rounded bg-white/4" />
+            <div className="h-2 w-16 animate-pulse rounded bg-white/3" />
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/**
+ * Activity feed.
+ *
+ * Fixed height with the scroll inside it, so the dashboard layout never jumps
+ * as rows arrive. Six rows a page, and the next page loads when the sentinel at
+ * the bottom scrolls into view. A refresh button refetches from the top, which
+ * is how a just-posted comment shows up without reloading the page.
+ */
+export default function ActivitySection() {
+  const navigate = useNavigate();
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  const {
+    data,
+    isLoading,
+    isError,
+    isFetching,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+    refetch,
+  } = useActivityFeed();
+
+  const items = data?.pages.flatMap((page) => page.activity) ?? [];
+
+  /* Infinite scroll: one observer on the sentinel, re-armed whenever the list
+     grows, rather than a scroll handler that fires on every pixel. */
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel || !hasNextPage) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && !isFetchingNextPage) {
+          void fetchNextPage();
+        }
+      },
+      { rootMargin: "80px" },
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage, items.length]);
+
   return (
     <section className="overflow-hidden rounded-xl border border-orange-50/15 bg-white/3">
       <header className="flex items-center justify-between border-b border-orange-50/10 px-4 py-3">
@@ -72,125 +107,124 @@ export default function ActivitySection({
           <span className="flex size-6 items-center justify-center rounded-md border border-orange-50/15 text-neutral-500">
             <HugeiconsIcon icon={Message01Icon} size={12} strokeWidth={1.7} />
           </span>
+
           <p className="text-[12.5px] font-medium tracking-tight text-neutral-100">
             Recent activity
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          {activities.length > 0 && (
-            <span className="font-mono text-[10px] tabular-nums text-neutral-500">
-              {activities.length}
-            </span>
-          )}
-
-          {onRefresh && (
-            <button
-              type="button"
-              onClick={onRefresh}
-              disabled={isRefreshing}
-              aria-label="Refresh activity"
-              className="flex size-6 cursor-pointer items-center justify-center rounded-md text-neutral-500 transition-colors duration-200 hover:bg-white/6 hover:text-neutral-200 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <HugeiconsIcon
-                icon={RefreshIcon}
-                size={12}
-                strokeWidth={1.8}
-                className={isRefreshing ? "animate-spin" : undefined}
-              />
-            </button>
-          )}
-
-          {onViewAll && (
-            <button
-              type="button"
-              onClick={onViewAll}
-              className="group/all flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] text-neutral-500 transition-colors duration-200 hover:bg-white/6 hover:text-neutral-200"
-            >
-              View all
-              <HugeiconsIcon
-                icon={ArrowRight01Icon}
-                size={11}
-                strokeWidth={2}
-                className="shrink-0 transition-transform duration-200 group-hover/all:translate-x-0.5"
-              />
-            </button>
-          )}
-        </div>
+        <button
+          type="button"
+          onClick={() => void refetch()}
+          disabled={isFetching}
+          aria-label="Refresh activity"
+          className="flex size-6 cursor-pointer items-center justify-center rounded-md text-neutral-500 transition-colors duration-200 hover:bg-white/6 hover:text-neutral-200 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <HugeiconsIcon
+            icon={RefreshIcon}
+            size={12}
+            strokeWidth={1.8}
+            className={
+              isFetching && !isFetchingNextPage ? "animate-spin" : undefined
+            }
+          />
+        </button>
       </header>
 
-      {activities.length === 0 ? (
-        <p className="px-4 py-16 text-center text-[12px] text-neutral-500">
-          Nothing here yet
-        </p>
-      ) : (
-        <ul className="h-130 max-h-[72vh] divide-y divide-orange-50/6 overflow-y-auto">
-          {activities.map((activity) => {
-            const actor = activity.actor?.name?.trim() || "Unknown member";
-            const icon = ACTIVITY_ICON[activity.type] ?? Message01Icon;
-            const place = [activity.workspaceName, activity.boardName]
-              .filter(Boolean)
-              .join(" / ");
-
-            const boardId = activity.boardId;
-            const clickable = Boolean(boardId && onOpenBoard);
-
-            return (
-              <li key={activity.id}>
+      {/* Fixed height: the list scrolls, the panel does not grow. */}
+      <div className="h-105 overflow-y-auto overscroll-contain scroll-smooth">
+        {isLoading ? (
+          <ActivitySkeleton />
+        ) : isError ? (
+          <p className="px-4 py-16 text-center text-[12px] text-rose-300">
+            Could not load activity
+          </p>
+        ) : items.length === 0 ? (
+          <p className="px-4 py-16 text-center text-[12px] text-neutral-500">
+            Nothing here yet
+          </p>
+        ) : (
+          <ul className="divide-y divide-orange-50/6">
+            {items.map((item) => (
+              <li key={item.id}>
                 <button
                   type="button"
-                  disabled={!clickable}
-                  onClick={() => {
-                    if (boardId && onOpenBoard) onOpenBoard(boardId);
-                  }}
-                  className={[
-                    "flex w-full gap-3 px-4 py-3.5 text-left transition-colors duration-200",
-                    clickable
-                      ? "cursor-pointer hover:bg-white/4"
-                      : "cursor-default",
-                  ].join(" ")}
+                  onClick={() => navigate(`/boards/${item.boardId}`)}
+                  className="flex w-full cursor-pointer gap-3 px-4 py-3.5 text-left transition-colors duration-200 hover:bg-white/4"
                 >
-                  <span className="relative mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full border border-orange-50/15 bg-white/4 text-[10px] font-semibold tracking-wider text-neutral-300">
-                    {initials(actor)}
+                  <span className="mt-0.5 shrink-0">
+                    <Avatar
+                      member={{
+                        id: item.userId,
+                        name: item.actorName,
+                        avatarUrl: item.actorAvatarUrl,
+                        color: avatarColor(item.userId),
+                      }}
+                      size={28}
+                      ring={false}
+                    />
                   </span>
 
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline justify-between gap-2">
                       <p className="min-w-0 truncate text-[12px] font-medium tracking-tight text-neutral-100">
-                        {actor}
+                        {item.actorName}
                       </p>
+
                       <time
-                        dateTime={activity.createdAt}
+                        dateTime={item.createdAt}
                         className="shrink-0 font-mono text-[9px] tabular-nums text-neutral-600"
                       >
-                        {relativeTime(activity.createdAt)}
+                        {relativeTime(item.createdAt)}
                       </time>
                     </div>
 
-                    <div className="mt-1 flex items-start gap-1.5">
-                      <HugeiconsIcon
-                        icon={icon}
-                        size={12}
-                        strokeWidth={1.6}
-                        className="mt-1 shrink-0 text-neutral-600"
-                      />
-                      <p className="min-w-0 text-[11.5px] leading-5 text-neutral-400">
-                        {activity.message}
-                      </p>
-                    </div>
+                    <p className="mt-1 line-clamp-2 text-[11.5px] leading-5 text-neutral-400">
+                      {item.message}
+                    </p>
 
-                    {place && (
-                      <p className="mt-1.5 truncate pl-4.5 font-mono text-[9px] uppercase tracking-wider text-neutral-600">
-                        {place}
+                    {(item.workspaceName || item.boardName) && (
+                      <p className="mt-1.5 truncate font-mono text-[9px] uppercase tracking-wider text-neutral-600">
+                        {[item.workspaceName, item.boardName]
+                          .filter(Boolean)
+                          .join(" / ")}
                       </p>
                     )}
                   </div>
+
+                  <HugeiconsIcon
+                    icon={ArrowRight01Icon}
+                    size={12}
+                    strokeWidth={2}
+                    className="mt-1 shrink-0 text-neutral-700"
+                  />
                 </button>
               </li>
-            );
-          })}
-        </ul>
-      )}
+            ))}
+          </ul>
+        )}
+
+        {/* Sentinel for the next page. */}
+        <div ref={sentinelRef} className="h-px" />
+
+        {isFetchingNextPage && (
+          <div className="flex items-center justify-center gap-2 py-3 text-[11px] text-neutral-500">
+            <HugeiconsIcon
+              icon={Loading03Icon}
+              size={12}
+              strokeWidth={2}
+              className="animate-spin"
+            />
+            Loading more
+          </div>
+        )}
+
+        {!hasNextPage && items.length > 0 && (
+          <p className="py-3 text-center text-[10px] uppercase tracking-wider text-neutral-700">
+            End of activity
+          </p>
+        )}
+      </div>
     </section>
   );
 }

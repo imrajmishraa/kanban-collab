@@ -62,7 +62,7 @@ export default function SidebarNewWorkspace({
               text-(--text-primary)
               transition-colors duration-200
               hover:border-orange-50/25 hover:bg-white/8
-              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20
+              focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white/20
             "
           >
             <HugeiconsIcon icon={AddCircleIcon} size={18} strokeWidth={1.6} />
@@ -86,7 +86,7 @@ export default function SidebarNewWorkspace({
           px-3 text-(--text-primary)
           transition-colors duration-200
           hover:border-orange-50/25 hover:bg-white/8
-          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20
+          focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white/20
         "
       >
         <HugeiconsIcon

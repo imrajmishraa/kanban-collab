@@ -7,7 +7,7 @@ import {
 } from "@hugeicons/core-free-icons";
 
 import { useSearchStore } from "@/stores/searchStore";
-import { Tooltip } from "#components/Tooltips/ToolTip";
+import { Tooltip } from "@components/Tooltips/ToolTip";
 
 const isMac =
   typeof navigator !== "undefined" &&
@@ -27,9 +27,9 @@ export function NavbarSearchIcon() {
       >
         <button
           type="button"
-          onClick={openSearch}
+          onClick={() => openSearch()}
           aria-label="Search"
-          className="relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-white/8 bg-white/4 text-(--text-secondary) transition-colors duration-200 hover:border-white/14 hover:bg-white/8 hover:text-(--text-primary)"
+          className="relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-orange-50/15 bg-white/4 text-neutral-400 transition-colors duration-200 hover:border-orange-50/25 hover:bg-white/8 hover:text-neutral-100"
         >
           <HugeiconsIcon icon={Search01Icon} size={16} strokeWidth={1.6} />
         </button>
@@ -45,7 +45,7 @@ export function Chevron() {
         icon={ArrowRight01Icon}
         size={14}
         strokeWidth={1.8}
-        className="text-(--text-muted)"
+        className="text-neutral-500"
       />
     </span>
   );
@@ -58,7 +58,7 @@ export function DashIcon() {
         icon={DashboardSquare02Icon}
         size={16}
         strokeWidth={1.8}
-        className="text-(--text-muted)"
+        className="text-neutral-500"
       />
     </span>
   );
@@ -87,11 +87,11 @@ export function NotificationsButton({
             ? `Notifications (${unreadCount} unread)`
             : "Notifications"
         }
-        className="relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-white/8 bg-white/4 text-(--text-secondary) transition-colors duration-200 hover:border-white/14 hover:bg-white/8 hover:text-(--text-primary)"
+        className="relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-orange-50/15 bg-white/4 text-neutral-400 transition-colors duration-200 hover:border-orange-50/25 hover:bg-white/8 hover:text-neutral-100"
       >
         <HugeiconsIcon icon={BellIcon} size={16} strokeWidth={1.6} />
         {unreadCount > 0 && (
-          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-(--brand) px-1 font-mono text-[9px] font-semibold leading-none text-black">
+          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-orange-100 px-1 font-mono text-[9px] font-semibold leading-none text-black">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}

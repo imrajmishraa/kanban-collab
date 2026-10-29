@@ -416,7 +416,7 @@ export default function ForgotPasswordPage() {
                             "w-full rounded-xl border bg-white/2.5",
                             "py-3 pl-11 pr-4",
                             "font-mono text-[13.5px] text-white/90 placeholder:text-white/22",
-                            "outline-none transition-all duration-200",
+                            "outline-hidden transition-all duration-200",
                             errors.email
                               ? "border-rose-500/45 hover:border-rose-500/60 focus:border-rose-500/70"
                               : "border-white/9 hover:border-white/14 hover:bg-white/3.5 focus:border-(--brand)/55 focus:bg-white/4",
@@ -443,7 +443,7 @@ export default function ForgotPasswordPage() {
                         shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]
                         transition-all duration-200
                         hover:border-(--brand)/75 hover:bg-(--brand)/22
-                        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--brand)/45
+                        focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-(--brand)/45
                         disabled:cursor-not-allowed disabled:opacity-50
                         active:scale-[0.985]
                       "
@@ -539,7 +539,7 @@ export default function ForgotPasswordPage() {
                             h-12 w-11 sm:h-13 sm:w-12
                             rounded-xl border bg-white/2.5 text-center
                             font-mono text-[17px] font-medium text-white
-                            outline-none transition-all duration-200
+                            outline-hidden transition-all duration-200
                             ${
                               digit
                                 ? "border-(--brand)/55 bg-(--brand)/9 shadow-[0_0_0_1px_rgba(255,140,66,0.15)]"
@@ -588,7 +588,7 @@ export default function ForgotPasswordPage() {
                         shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]
                         transition-all duration-200
                         hover:border-(--brand)/75 hover:bg-(--brand)/22
-                        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--brand)/45
+                        focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-(--brand)/45
                         disabled:cursor-not-allowed disabled:opacity-50
                         active:scale-[0.985]
                       "
@@ -673,7 +673,7 @@ export default function ForgotPasswordPage() {
                       shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]
                       transition-all duration-200
                       hover:border-(--brand)/75 hover:bg-(--brand)/22
-                      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--brand)/45
+                      focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-(--brand)/45
                       active:scale-[0.985]
                     "
                   >

@@ -356,7 +356,7 @@ const listWorkspaceMembers = asyncHandler(
     const memberIds = workspace.members.map((m) => m.userId);
 
     const users = await UserModel.find({ _id: { $in: memberIds } })
-      .select("_id fullName email")
+      .select("_id fullName email avatarUrl")
       .lean();
 
     const usersById = new Map(users.map((u) => [u._id.toString(), u]));
@@ -368,6 +368,8 @@ const listWorkspaceMembers = asyncHandler(
         role: m.role,
         name: user?.fullName ?? null,
         email: user?.email ?? null,
+        // The client falls back to initials when this is null.
+        avatarUrl: user?.avatarUrl ?? null,
       };
     });
 

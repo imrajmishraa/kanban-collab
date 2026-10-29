@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+
+import { useActiveWorkspaceMembers } from "@/features/boards/hooks/useActiveWorkspaceMembers";
 
 import { avatarColor, initials } from "@/features/boards/board.helpers";
 
@@ -13,10 +15,25 @@ interface AvatarProps {
 export function Avatar({ member, size = 24, ring = true }: AvatarProps) {
   const [imageFailed, setImageFailed] = useState(false);
 
-  /* An id is not a name: initials of "6a5e29c4…" render as garbage, so fall
-     back to a neutral glyph instead. */
-  const label = member.name?.trim() || "Member";
-  const image = member.avatarUrl;
+  /* Some callers only have a user id (card tiles, presence, card watchers).
+     Resolving here means every avatar in the app shows the same name, image
+     and initials as the comment thread, instead of only the places that
+     happen to receive a full member object. */
+  const directory = useActiveWorkspaceMembers();
+
+  const resolved = useMemo(() => {
+    if (member.name && member.avatarUrl) return member;
+
+    const found = directory.find((item) => item.id === member.id);
+
+    return found ? { ...found, color: member.color } : member;
+  }, [directory, member]);
+
+  /* An id is not a name: initials of "6a5e29c4…" render as garbage, and the
+     word "Member" rendered as "ME", which read like a real person. An unknown
+     member gets a question mark instead. */
+  const label = resolved.name?.trim() || "?";
+  const image = resolved.avatarUrl;
 
   const shared =
     "inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full font-semibold";
@@ -29,7 +46,11 @@ export function Avatar({ member, size = 24, ring = true }: AvatarProps) {
 
   if (image && !imageFailed) {
     return (
-      <span title={label} className={shared} style={style}>
+      <span
+        title={label}
+        className={`${shared} border border-orange-50/20 transition-transform duration-200 hover:scale-[1.04]`}
+        style={style}
+      >
         <img
           src={image}
           alt=""
@@ -44,7 +65,7 @@ export function Avatar({ member, size = 24, ring = true }: AvatarProps) {
     <span
       title={label}
       className={`${shared} text-black`}
-      style={{ ...style, background: member.color }}
+      style={{ ...style, background: resolved.color }}
     >
       {initials(label)}
     </span>

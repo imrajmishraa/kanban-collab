@@ -16,7 +16,7 @@ const SidebarNavigation = ({ collapsed }: SidebarNavigationProps) => {
   return (
     <nav
       aria-label="Main navigation"
-      className="border-b border-white/6 px-3 py-3"
+      className="border-b border-orange-50/10 px-3 py-3"
     >
       <div className="flex flex-col gap-0.5">
         <SidebarItem

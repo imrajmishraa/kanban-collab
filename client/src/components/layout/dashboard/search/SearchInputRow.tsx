@@ -49,8 +49,8 @@ export function SearchInputRow({
           min-w-0 flex-1 bg-transparent
           text-[14px] tracking-tight text-neutral-100
           placeholder:text-neutral-600
-          outline-none ring-0 focus:outline-none focus:ring-0
-          focus-visible:outline-none
+          outline-hidden ring-0 focus:outline-hidden focus:ring-0
+          focus-visible:outline-hidden
         "
       />
 

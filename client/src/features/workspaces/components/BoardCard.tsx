@@ -5,7 +5,6 @@ import {
   ArrowUpRight01Icon,
   Delete02Icon,
   Edit02Icon,
-  KanbanIcon,
   Link01Icon,
   MoreHorizontalIcon,
   Share08Icon,
@@ -42,6 +41,19 @@ function relativeTime(iso: string): string {
     day: "numeric",
     month: "short",
   });
+}
+
+/** First two letters of a board name, for the avatar fallback. */
+function boardMonogram(name: string): string {
+  const words = name.trim().split(/\s+/).filter(Boolean);
+
+  if (words.length === 0) return "?";
+
+  if (words.length === 1) {
+    return words[0].slice(0, 2).toUpperCase();
+  }
+
+  return (words[0][0] + words[1][0]).toUpperCase();
 }
 
 type BoardDialog = "edit" | "share" | "delete" | null;
@@ -143,12 +155,30 @@ export function BoardCard({
           border border-orange-50/6 bg-[#0a0a0a]/50
           px-4 py-3.5 text-left
           transition-colors duration-300 ease-out
-          hover:border-orange-50/20 hover:bg-white/3
+          hover:border-orange-50/20 hover:bg-white/[0.03]
         "
       >
         <div className="flex items-start gap-3">
-          <span className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-orange-50/15 text-neutral-500 transition-opacity duration-200 group-hover/board:opacity-0">
-            <HugeiconsIcon icon={KanbanIcon} size={14} strokeWidth={1.7} />
+          {/* Board identity: the cover image when there is one, otherwise the
+              first two letters, tinted with the board's own colour. The tile
+              fades out on hover so the menu button can take its place. */}
+          <span
+            className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-orange-50/15 text-[10px] font-semibold tracking-wide text-neutral-200 transition-opacity duration-200 group-hover/board:opacity-0"
+            style={
+              board.coverImageUrl
+                ? undefined
+                : { background: `${board.backgroundColor}26` }
+            }
+          >
+            {board.coverImageUrl ? (
+              <img
+                src={board.coverImageUrl}
+                alt=""
+                className="size-full object-cover"
+              />
+            ) : (
+              boardMonogram(board.name)
+            )}
           </span>
 
           <div className="min-w-0 flex-1">

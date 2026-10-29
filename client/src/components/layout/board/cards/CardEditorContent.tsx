@@ -7,10 +7,10 @@ import type { BoardCard } from "@/types/api/dashboard/board";
 export const editorLabel = "block text-[11px] font-medium text-neutral-300";
 
 export const editorField =
-  "h-10 w-full rounded-lg border border-orange-50/15 bg-white/[0.04] px-3 text-[13px] text-neutral-100 outline-none transition-colors duration-200 placeholder:text-neutral-600 hover:border-orange-50/25 focus:border-white/25 focus:bg-white/[0.05]";
+  "h-10 w-full rounded-lg border border-orange-50/15 bg-white/[0.04] px-3 text-[13px] text-neutral-100 outline-hidden transition-colors duration-200 placeholder:text-neutral-600 hover:border-orange-50/25 focus:border-white/25 focus:bg-white/[0.05]";
 
 export const editorSmallField =
-  "h-8 min-w-0 flex-1 rounded-lg border border-orange-50/15 bg-white/[0.04] px-2 text-[11.5px] text-neutral-100 outline-none transition-colors placeholder:text-neutral-600 hover:border-orange-50/25 focus:border-white/25";
+  "h-8 min-w-0 flex-1 rounded-lg border border-orange-50/15 bg-white/[0.04] px-2 text-[11.5px] text-neutral-100 outline-hidden transition-colors placeholder:text-neutral-600 hover:border-orange-50/25 focus:border-white/25";
 
 export const editorAddButton =
   "cursor-pointer rounded-lg border border-orange-50/15 px-2.5 py-1 text-[10px] uppercase tracking-wider text-neutral-400 transition-colors duration-200 hover:border-orange-50/30 hover:bg-white/[0.06] hover:text-neutral-100";
@@ -70,7 +70,7 @@ export default function CardEditorContent({
           }
           rows={4}
           placeholder="Add a more detailed description…"
-          className="w-full resize-none rounded-lg border border-orange-50/15 bg-white/4 p-3 text-[12.5px] leading-5 text-neutral-100 outline-none transition-colors duration-200 placeholder:text-neutral-600 hover:border-orange-50/25 focus:border-white/25"
+          className="w-full resize-none rounded-lg border border-orange-50/15 bg-white/4 p-3 text-[12.5px] leading-5 text-neutral-100 outline-hidden transition-colors duration-200 placeholder:text-neutral-600 hover:border-orange-50/25 focus:border-white/25"
         />
       </div>
 

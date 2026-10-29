@@ -1,5 +1,3 @@
-import { useNavigate } from "react-router-dom";
-
 import ActivitySection from "@components/layout/dashboard/main/ActivitySection";
 import DashboardError from "@components/layout/dashboard/main/DashboardError";
 import DashboardHeader from "@components/layout/dashboard/main/DashboardHeader";
@@ -26,8 +24,6 @@ export default function DashboardPage() {
     refetch,
   } = useDashboard();
 
-  const navigate = useNavigate();
-
   return (
     <div className="min-h-screen bg-(--bg-root) text-(--text-primary)">
       <div className="mx-auto w-full max-w-7xl px-5 py-6 sm:px-6 lg:px-8">
@@ -48,6 +44,7 @@ export default function DashboardPage() {
               workspaceCount={dashboard.stats.workspaceCount}
               boardCount={dashboard.stats.boardCount}
               taskCount={dashboard.stats.activeTaskCount}
+              memberCount={dashboard.stats.memberCount}
             />
 
             <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
@@ -59,12 +56,8 @@ export default function DashboardPage() {
                 aria-label="Recent activity"
                 className="xl:sticky xl:top-20 xl:self-start"
               >
-                <ActivitySection
-                  activities={dashboard.recentActivity}
-                  isRefreshing={isFetching}
-                  onRefresh={() => void refetch()}
-                  onOpenBoard={(boardId) => navigate(`/boards/${boardId}`)}
-                />
+                {/* The feed owns its own paging and refresh now. */}
+                <ActivitySection />
               </aside>
             </div>
           </>

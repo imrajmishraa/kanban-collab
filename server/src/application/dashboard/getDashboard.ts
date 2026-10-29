@@ -1,5 +1,7 @@
 import { Types } from "mongoose";
 
+import { createActivityMessage } from "../../shared/utils/activityMessage";
+
 import {
   ActivityLogModel,
   BoardModel,
@@ -41,6 +43,7 @@ export interface DashboardActivity {
   actor: {
     id: string;
     name: string;
+    avatarUrl?: string | null;
   };
   createdAt: string;
 }
@@ -50,6 +53,8 @@ export interface DashboardResponse {
     workspaceCount: number;
     boardCount: number;
     activeTaskCount: number;
+    /** Distinct people across every workspace, counted once each. */
+    memberCount: number;
   };
 
   workspaces: DashboardWorkspace[];
@@ -94,7 +99,7 @@ export const getDashboard = async (
   const workspaces = await WorkspaceModel.find({
     "members.userId": userObjectId,
   })
-    .select("name avatarUrl")
+    .select("name avatarUrl members")
     .lean();
 
   if (workspaces.length === 0) {
@@ -103,6 +108,7 @@ export const getDashboard = async (
         workspaceCount: 0,
         boardCount: 0,
         activeTaskCount: 0,
+        memberCount: 0,
       },
 
       workspaces: [],
@@ -214,6 +220,23 @@ export const getDashboard = async (
 
   /*
    * ---------------------------------------------------------
+   * 4b. Distinct members
+   *
+   * A Set of user ids, not a sum of member arrays: the same person can sit in
+   * several workspaces, and counting per workspace would report them twice.
+   * ---------------------------------------------------------
+   */
+
+  const memberIds = new Set<string>();
+
+  for (const workspace of workspaces) {
+    for (const member of workspace.members ?? []) {
+      memberIds.add(member.userId.toString());
+    }
+  }
+
+  /*
+   * ---------------------------------------------------------
    * 5. Workspaces read model
    * ---------------------------------------------------------
    */
@@ -275,12 +298,16 @@ export const getDashboard = async (
   const activityUsers =
     activityUserIds.length > 0
       ? await UserModel.find({ _id: { $in: activityUserIds } })
-          .select("fullName")
+          .select("fullName avatarUrl")
           .lean()
       : [];
 
   const actorNameById = new Map(
     activityUsers.map((user) => [user._id.toString(), user.fullName]),
+  );
+
+  const actorAvatarById = new Map(
+    activityUsers.map((user) => [user._id.toString(), user.avatarUrl ?? null]),
   );
 
   const recentActivity: DashboardActivity[] = activityLogs.map((activity) => ({
@@ -302,6 +329,7 @@ export const getDashboard = async (
     actor: {
       id: activity.userId.toString(),
       name: actorNameById.get(activity.userId.toString()) ?? "Unknown member",
+      avatarUrl: actorAvatarById.get(activity.userId.toString()) ?? null,
     },
     createdAt: activity.createdAt.toISOString(),
   }));
@@ -317,6 +345,7 @@ export const getDashboard = async (
       workspaceCount: workspaces.length,
       boardCount: boardWorkspacePairs.length,
       activeTaskCount,
+      memberCount: memberIds.size,
     },
 
     workspaces: dashboardWorkspaces,
@@ -333,48 +362,3 @@ export const getDashboard = async (
  * `details` intentionally remains flexible because
  * ActivityLog currently uses Mixed for this field.
  */
-function createActivityMessage(
-  actionType: string,
-  details: unknown,
-  boardName?: string,
-): string {
-  const detailsRecord =
-    typeof details === "object" && details !== null
-      ? (details as Record<string, unknown>)
-      : {};
-
-  const title =
-    typeof detailsRecord["title"] === "string"
-      ? detailsRecord["title"]
-      : typeof detailsRecord["name"] === "string"
-        ? detailsRecord["name"]
-        : undefined;
-
-  switch (actionType) {
-    case "BOARD_CREATE":
-    case "BOARD_CREATED":
-      return `Created board "${boardName ?? title ?? "Untitled"}"`;
-
-    case "BOARD_UPDATE":
-    case "BOARD_UPDATED":
-      return `Updated board "${boardName ?? title ?? "Untitled"}"`;
-
-    case "CARD_CREATE":
-    case "CARD_CREATED":
-      return `Created card "${title ?? "Untitled"}"`;
-
-    case "CARD_UPDATE":
-    case "CARD_UPDATED":
-      return `Updated card "${title ?? "Untitled"}"`;
-
-    case "CARD_MOVE":
-      return `Moved card "${title ?? "Untitled"}"`;
-
-    case "CARD_DELETE":
-    case "CARD_DELETED":
-      return `Deleted card "${title ?? "Untitled"}"`;
-
-    default:
-      return actionType.toLowerCase().replace(/_/g, " ");
-  }
-}

@@ -172,7 +172,7 @@ export default function Navbar({
       : "border-[#E4E6E9] bg-white text-[#4E545B]",
     "transition-colors duration-150",
     surface,
-    "focus-visible:outline-none focus-visible:ring-2",
+    "focus-visible:outline-hidden focus-visible:ring-2",
     focusRing,
   );
 
@@ -182,7 +182,7 @@ export default function Navbar({
       "group relative rounded-md px-3 py-1.5",
       "text-[13px] font-medium",
       "transition-colors duration-150",
-      "focus-visible:outline-none focus-visible:ring-2",
+      "focus-visible:outline-hidden focus-visible:ring-2",
       focusRing,
       active
         ? accent
@@ -230,7 +230,7 @@ export default function Navbar({
         <Link
           to="/"
           aria-label="Home"
-          className="focus-visible:outline-none focus-visible:ring-2"
+          className="focus-visible:outline-hidden focus-visible:ring-2"
         >
           <button
             type="button"
@@ -349,7 +349,7 @@ export default function Navbar({
                 "transition-[background-color,transform] duration-150 ease-out",
                 "hover:scale-105",
                 "active:scale-[0.97]",
-                "focus-visible:outline-none focus-visible:ring-2",
+                "focus-visible:outline-hidden focus-visible:ring-2",
                 focusRing,
                 "md:inline-flex cursor-pointer",
               )}
@@ -377,7 +377,7 @@ export default function Navbar({
                 "transition-[background-color,transform] duration-150 ease-out",
                 "hover:scale-105",
                 "active:scale-[0.97]",
-                "focus-visible:outline-none focus-visible:ring-2",
+                "focus-visible:outline-hidden focus-visible:ring-2",
                 focusRing,
                 "md:inline-flex cursor-pointer",
               )}
@@ -521,7 +521,7 @@ export default function Navbar({
                     ctaFill,
                     "transition-[background-color,transform] duration-150 ease-out",
                     "active:scale-[0.98]",
-                    "focus-visible:outline-none focus-visible:ring-2",
+                    "focus-visible:outline-hidden focus-visible:ring-2",
                     focusRing,
                     "w-full cursor-pointer",
                   )}

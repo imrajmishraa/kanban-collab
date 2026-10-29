@@ -1,10 +1,8 @@
 import { useBoardActivity } from "@/hooks/dashboard/useBoardActivity";
 
-import {
-  avatarColor,
-  formatRelative,
-  initials,
-} from "@/features/boards/board.helpers";
+import { Avatar } from "./BoardAvatar";
+
+import { avatarColor, formatRelative } from "@/features/boards/board.helpers";
 
 import type { ActivityEntry } from "@/types/api/dashboard/activity";
 
@@ -53,7 +51,7 @@ export default function BoardActivityPanel({
   const activity = useBoardActivity(boardId);
 
   return (
-    <aside className="mt-4 rounded-xl border border-orange-50/15 bg-white/[0.03] p-4">
+    <aside className="mt-4 rounded-xl border border-orange-50/15 bg-white/3 p-4">
       <header className="flex items-center justify-between">
         <h2 className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-neutral-500">
           Activity
@@ -88,13 +86,18 @@ export default function BoardActivityPanel({
 
         {activity.data?.map((entry) => (
           <div key={entry.id} className="flex items-center gap-2.5">
-            <span
-              aria-hidden="true"
-              className="inline-flex size-6 shrink-0 items-center justify-center rounded-full font-mono text-[9px] font-semibold text-black"
-              style={{ background: avatarColor(entry.userId) }}
-            >
-              {initials(entry.actorName)}
-            </span>
+            {/* The payload has carried actorAvatarUrl all along; the panel
+                was drawing initials and ignoring it. */}
+            <Avatar
+              member={{
+                id: entry.userId,
+                name: entry.actorName,
+                avatarUrl: entry.actorAvatarUrl ?? null,
+                color: avatarColor(entry.userId),
+              }}
+              size={24}
+              ring={false}
+            />
 
             <p className="min-w-0 flex-1 truncate font-mono text-[11px] text-neutral-400">
               <span className="font-semibold text-neutral-100">

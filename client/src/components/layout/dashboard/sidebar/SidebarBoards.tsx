@@ -173,16 +173,16 @@ const SidebarBoards = ({
               "text-[12px] leading-tight",
               "transition-colors duration-200",
 
-              "focus-visible:outline-none",
+              "focus-visible:outline-hidden",
               "focus-visible:ring-2",
               "focus-visible:ring-(--brand)/40",
 
               isActive
-                ? "bg-white/5 text-(--text-soft)"
+                ? "bg-white/[0.05] text-neutral-400"
                 : [
-                    "text-(--text-secondary)",
-                    "hover:bg-white/3",
-                    "hover:text-(--text-soft)",
+                    "text-neutral-400",
+                    "hover:bg-white/[0.03]",
+                    "hover:text-neutral-400",
                   ].join(" "),
             ].join(" ")
           }
@@ -251,7 +251,7 @@ const SidebarBoards = ({
           justify-between
           rounded-lg
           px-2
-          hover:bg-white/4
+          hover:bg-white/[0.04]
         "
       >
         <button
@@ -272,7 +272,7 @@ const SidebarBoards = ({
             strokeWidth={1.8}
             className={[
               "shrink-0",
-              "text-(--text-muted)",
+              "text-neutral-500",
               "transition-transform",
               "duration-200",
               open && "rotate-90",
@@ -283,12 +283,11 @@ const SidebarBoards = ({
 
           <span
             className="
-              font-mono
               text-[10px]
-              font-semibold
+              font-medium
               uppercase
-              tracking-[0.2em]
-              text-(--text-muted)
+              tracking-[0.16em]
+              text-neutral-500
             "
           >
             Boards
@@ -307,13 +306,13 @@ const SidebarBoards = ({
               items-center
               justify-center
               rounded-full
-              text-(--text-muted)
+              text-neutral-500
               transition-colors
 
-              hover:bg-white/8
-              hover:text-(--text-primary)
+              hover:bg-white/[0.08]
+              hover:text-neutral-100
 
-              focus-visible:outline-none
+              focus-visible:outline-hidden
               focus-visible:ring-2
               focus-visible:ring-(--brand)/40
             "
@@ -352,9 +351,8 @@ const SidebarBoards = ({
                 className="
                     px-2.5
                     py-2
-                    font-mono
-                    text-[12px]
-                    text-(--danger)
+                    text-[11.5px]
+                    text-rose-300
                   "
               >
                 Unable to load boards.
@@ -379,15 +377,14 @@ const SidebarBoards = ({
                   strokeWidth={1.5}
                   className="
                       shrink-0
-                      text-(--text-muted)
+                      text-neutral-500
                     "
                 />
 
                 <span
                   className="
-                      font-mono
-                      text-[12px]
-                      text-(--text-muted)
+                      text-[11.5px]
+                      text-neutral-500
                     "
                 >
                   No boards
@@ -424,7 +421,7 @@ const SidebarBoards = ({
                             font-medium
                             uppercase
                             tracking-[0.14em]
-                            text-(--text-muted)
+                            text-neutral-500
                           "
                       >
                         Pinned
@@ -456,7 +453,7 @@ const SidebarBoards = ({
                             font-medium
                             uppercase
                             tracking-[0.14em]
-                            text-(--text-muted)
+                            text-neutral-500
                           "
                     >
                       {group.label}
@@ -514,7 +511,7 @@ function LoadingDots() {
               h-1
               w-1
               rounded-full
-              bg-white/25
+              bg-white/[0.02]5
             "
           style={{
             animation: `sidebarLoadingDot 1.4s ease-in-out ${

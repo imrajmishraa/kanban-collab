@@ -245,7 +245,7 @@ export default function LoginPage() {
                         "w-full rounded-lg border bg-white/2",
                         "py-2.5 pl-10 pr-3.5",
                         "font-mono text-[13px] text-white/90 placeholder:text-white/25",
-                        "outline-none transition-all duration-200",
+                        "outline-hidden transition-all duration-200",
                         errors.email
                           ? "border-rose-500/50 focus:border-rose-500/70"
                           : "border-white/10 hover:border-white/14 focus:border-(--brand)/60 focus:bg-white/3",
@@ -290,7 +290,7 @@ export default function LoginPage() {
                         "w-full rounded-lg border bg-white/2",
                         "py-2.5 pl-10 pr-11",
                         "font-mono text-[13px] text-white/90 placeholder:text-white/25",
-                        "outline-none transition-all duration-200",
+                        "outline-hidden transition-all duration-200",
                         errors.password
                           ? "border-rose-500/50 focus:border-rose-500/70"
                           : "border-white/10 hover:border-white/14 focus:border-(--brand)/60 focus:bg-white/3",
@@ -370,7 +370,7 @@ export default function LoginPage() {
                     shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]
                     transition-all duration-200
                     hover:border-(--brand)/80 hover:bg-(--brand)/25
-                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--brand)/50
+                    focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-(--brand)/50
                     disabled:cursor-not-allowed disabled:opacity-60
                     active:scale-[0.99]
                   "

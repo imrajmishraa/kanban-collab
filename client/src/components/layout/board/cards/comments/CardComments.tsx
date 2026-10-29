@@ -1,37 +1,53 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Loading03Icon } from "@hugeicons/core-free-icons";
+
+import CommentItem from "./CommentItem";
+
 import { useAuth } from "@/hooks/auth/useAuth";
 import {
   useComments,
   useCreateComment,
   useDeleteComment,
+  useUpdateComment,
+  useVoteComment,
 } from "@/hooks/dashboard/useComments";
-
-import {
-  avatarColor,
-  formatRelative,
-  initials,
-} from "@/features/boards/board.helpers";
 
 interface CardCommentsProps {
   cardId: string;
 }
 
 /**
- * Comments for a single card (T10). Reads and writes `CommentModel` through
- * the card-scoped endpoints; the composer stays mounted while the list
- * refetches so typing is never interrupted.
+ * Comment thread for a card.
+ *
+ * Top-level comments render flat; replies are collapsed behind their own
+ * count and fetched per comment. Voting is a single request per press, and the
+ * server owns the toggle so two rapid clicks cannot desync the counts.
  */
 export default function CardComments({ cardId }: CardCommentsProps) {
   const { user } = useAuth();
   const [text, setText] = useState("");
 
-  const comments = useComments(cardId);
+  const {
+    data,
+    isLoading,
+    isError,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useComments(cardId);
+
   const createComment = useCreateComment(cardId);
   const deleteComment = useDeleteComment(cardId);
+  const updateComment = useUpdateComment(cardId);
+  const voteComment = useVoteComment(cardId);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const comments = data?.pages.flatMap((page) => page.comments) ?? [];
+  const total = comments.length;
+
+  const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const value = text.trim();
@@ -41,94 +57,110 @@ export default function CardComments({ cardId }: CardCommentsProps) {
   };
 
   return (
-    <section className="mt-5 border-t border-orange-50/15 pt-4">
-      <h3 className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-neutral-500">
-        Comments{comments.data ? ` (${comments.data.length})` : ""}
-      </h3>
-
-      <div className="mt-3 space-y-3">
-        {comments.isLoading && (
-          <p className="font-mono text-[11px] text-neutral-500">
-            Loading comments…
-          </p>
-        )}
-
-        {comments.isError && (
-          <p className="font-mono text-[11px] text-(--danger)">
-            Couldn&apos;t load comments.
-          </p>
-        )}
-
-        {comments.data?.length === 0 && (
-          <p className="font-mono text-[11px] text-neutral-500">
-            No comments yet.
-          </p>
-        )}
-
-        {comments.data?.map((comment) => (
-          <article key={comment.id} className="flex gap-2.5">
-            <span
-              aria-hidden="true"
-              className="mt-0.5 inline-flex size-6 shrink-0 items-center justify-center rounded-full font-mono text-[9px] font-semibold text-black"
-              style={{ background: avatarColor(comment.userId) }}
-            >
-              {initials(comment.authorName)}
+    <section>
+      <div className="flex items-center justify-between">
+        <h3 className="text-[12.5px] font-medium tracking-tight text-neutral-100">
+          Comments
+          {total > 0 && (
+            <span className="ml-1.5 font-mono text-[10px] tabular-nums text-neutral-500">
+              {total}
+              {hasNextPage ? "+" : ""}
             </span>
-
-            <div className="min-w-0 flex-1">
-              <div className="flex items-baseline gap-2">
-                <span className="truncate font-mono text-[11px] font-semibold text-neutral-100">
-                  {comment.authorName}
-                </span>
-                <span className="font-mono text-[10px] text-neutral-500">
-                  {formatRelative(comment.createdAt)}
-                </span>
-
-                {user?.id === comment.userId && (
-                  <button
-                    type="button"
-                    onClick={() => deleteComment.mutate(comment.id)}
-                    disabled={deleteComment.isPending}
-                    className="ml-auto font-mono text-[10px] text-neutral-500 transition-colors hover:text-(--danger) disabled:opacity-50"
-                  >
-                    Delete
-                  </button>
-                )}
-              </div>
-
-              <p className="mt-0.5 whitespace-pre-wrap wrap-break-word text-[12.5px] leading-5 text-neutral-400">
-                {comment.text}
-              </p>
-            </div>
-          </article>
-        ))}
+          )}
+        </h3>
       </div>
 
-      <form onSubmit={handleSubmit} className="mt-3">
+      <form onSubmit={submit} className="mt-3">
         <textarea
           value={text}
           onChange={(event) => setText(event.target.value)}
           rows={2}
           placeholder="Write a comment…"
-          className="w-full resize-y rounded-lg border border-orange-50/15 bg-white/4 px-3 py-2 font-mono text-[12px] text-neutral-100 outline-none transition-colors placeholder:text-neutral-500 hover:border-orange-50/25 focus:border-(--brand-border)"
+          aria-label="Write a comment"
+          className="w-full resize-y rounded-lg border border-orange-50/15 bg-white/[0.04] px-3 py-2 text-[12.5px] text-neutral-100 outline-hidden transition-colors duration-200 placeholder:text-neutral-600 hover:border-orange-50/25 focus:border-white/25"
         />
 
-        {createComment.isError && (
-          <p className="mt-1 font-mono text-[10px] text-(--danger)">
-            Couldn&apos;t post that comment.
-          </p>
-        )}
+        <div className="mt-2 flex items-center justify-between">
+          {createComment.isError ? (
+            <p className="text-[11px] text-rose-300">
+              Could not post that comment.
+            </p>
+          ) : (
+            <span />
+          )}
 
-        <div className="mt-2 flex justify-end">
           <button
             type="submit"
             disabled={!text.trim() || createComment.isPending}
-            className="rounded-lg border border-orange-100/30 bg-orange-100/10 px-3 py-1.5 text-[11px] font-semibold text-orange-100 transition-colors hover:bg-orange-100/15 disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex h-8 cursor-pointer items-center gap-1.5 rounded-none rounded-tr-lg rounded-bl-lg bg-white px-3 text-[11.5px] font-semibold text-black transition-colors duration-200 hover:bg-neutral-200 disabled:cursor-not-allowed disabled:bg-white/20 disabled:text-neutral-500"
           >
-            {createComment.isPending ? "Posting…" : "Comment"}
+            {createComment.isPending && (
+              <HugeiconsIcon
+                icon={Loading03Icon}
+                size={12}
+                strokeWidth={2}
+                className="animate-spin"
+              />
+            )}
+            Comment
           </button>
         </div>
       </form>
+
+      <div className="mt-4 space-y-4">
+        {isLoading && (
+          <p className="text-[11.5px] text-neutral-500">Loading comments…</p>
+        )}
+
+        {isError && (
+          <p className="text-[11.5px] text-rose-300">
+            Could not load comments.
+          </p>
+        )}
+
+        {!isLoading && !isError && comments.length === 0 && (
+          <p className="text-[11.5px] text-neutral-500">
+            No comments yet, start the conversation
+          </p>
+        )}
+
+        {comments.map((comment) => (
+          <CommentItem
+            key={comment.id}
+            comment={comment}
+            cardId={cardId}
+            currentUserId={user?.id}
+            isVoting={voteComment.isPending}
+            onVote={(commentId, action) =>
+              voteComment.mutate({ commentId, action })
+            }
+            onDelete={(commentId) => deleteComment.mutate(commentId)}
+            onEdit={(commentId, nextText) =>
+              updateComment.mutate({ commentId, text: nextText })
+            }
+            isSaving={updateComment.isPending}
+          />
+        ))}
+
+        {hasNextPage && (
+          <button
+            type="button"
+            onClick={() => void fetchNextPage()}
+            disabled={isFetchingNextPage}
+            className="flex cursor-pointer items-center gap-1.5 text-[11.5px] text-neutral-400 transition-colors duration-200 hover:text-orange-100 disabled:opacity-50"
+          >
+            {isFetchingNextPage && (
+              <HugeiconsIcon
+                icon={Loading03Icon}
+                size={12}
+                strokeWidth={2}
+                className="animate-spin"
+              />
+            )}
+            View more comments
+          </button>
+        )}
+      </div>
     </section>
   );
 }

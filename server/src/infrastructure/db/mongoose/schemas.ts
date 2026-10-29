@@ -387,6 +387,11 @@ export interface IComment extends Document {
   cardId: Types.ObjectId;
   userId: Types.ObjectId;
   text: string;
+  /** Null for a top-level comment; a comment id for any depth of reply. */
+  parentId: Types.ObjectId | null;
+  /** Denormalised so listing never runs COUNT(*). */
+  likeCount: number;
+  dislikeCount: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -412,16 +417,67 @@ const CommentSchema = new Schema<IComment>(
       index: true,
     },
     text: { type: String, required: true },
+    parentId: {
+      type: Schema.Types.ObjectId,
+      ref: "Comment",
+      default: null,
+      index: true,
+    },
+    likeCount: { type: Number, default: 0, min: 0 },
+    dislikeCount: { type: Number, default: 0, min: 0 },
   },
   { timestamps: true },
 );
 
-CommentSchema.index({ cardId: 1, createdAt: -1 });
+/* One index serves both the top-level listing and the replies listing:
+   match on (cardId, parentId), then walk createdAt. */
+CommentSchema.index({ cardId: 1, parentId: 1, createdAt: -1 });
+CommentSchema.index({ parentId: 1, createdAt: -1 });
 CommentSchema.index({ userId: 1, createdAt: -1 });
 
 export const CommentModel: Model<IComment> = model<IComment>(
   "Comment",
   CommentSchema,
+);
+
+/* 6b. COMMENT LIKE
+   One row per (comment, user). `action` is 1 for a like and -1 for a dislike,
+   so a vote is an upsert rather than a second collection. */
+
+export interface ICommentLike extends Document {
+  _id: Types.ObjectId;
+  commentId: Types.ObjectId;
+  userId: Types.ObjectId;
+  action: 1 | -1;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const CommentLikeSchema = new Schema<ICommentLike>(
+  {
+    commentId: {
+      type: Schema.Types.ObjectId,
+      ref: "Comment",
+      required: true,
+      index: true,
+    },
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
+    action: { type: Number, enum: [1, -1], required: true },
+  },
+  { timestamps: true },
+);
+
+/* The constraint the spec asks for: one vote per user per comment. */
+CommentLikeSchema.index({ commentId: 1, userId: 1 }, { unique: true });
+
+export const CommentLikeModel: Model<ICommentLike> = model<ICommentLike>(
+  "CommentLike",
+  CommentLikeSchema,
 );
 
 // 7. ACTIVITY LOG

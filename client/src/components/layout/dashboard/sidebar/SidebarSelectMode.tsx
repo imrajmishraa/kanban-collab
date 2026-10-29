@@ -72,8 +72,8 @@ export function SidebarSelectMode({
         }}
         className={[
           "group/board relative flex h-9 cursor-pointer items-center gap-2.5 rounded-md px-2 text-left transition-colors",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--brand)/40",
-          isSelected ? "bg-white/5" : "hover:bg-white/3",
+          "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-(--brand)/40",
+          isSelected ? "bg-white/[0.05]" : "hover:bg-white/[0.03]",
         ].join(" ")}
       >
         <span
@@ -81,7 +81,7 @@ export function SidebarSelectMode({
             "flex size-4 shrink-0 items-center justify-center rounded-full border transition-all",
             isSelected
               ? "border-(--brand) bg-(--brand) text-white"
-              : "border-white/25 bg-transparent group-hover/board:border-white/40",
+              : "border-orange-50/25 bg-transparent group-hover/board:border-orange-50/40",
           ].join(" ")}
         >
           {isSelected && (
@@ -90,7 +90,7 @@ export function SidebarSelectMode({
         </span>
 
         <div className="relative min-w-0 flex-1 pr-7">
-          <span className="block truncate text-[12px] leading-tight text-(--text-secondary)">
+          <span className="block truncate text-[12px] leading-tight text-neutral-400">
             {board.name}
           </span>
         </div>
@@ -118,7 +118,7 @@ export function SidebarSelectMode({
     <div className="flex min-h-0 flex-1 flex-col">
       {/* Header */}
       <div className="flex h-10 shrink-0 items-center justify-between px-3">
-        <h2 className=" text-[10px] tracking-[0.16em] text-(--text-secondary)">
+        <h2 className=" text-[10px] tracking-[0.16em] text-neutral-400">
           Multi-Select mode
         </h2>
 
@@ -133,7 +133,7 @@ export function SidebarSelectMode({
               type="button"
               onClick={onClose}
               aria-label="Exit multi-select"
-              className="flex size-6 cursor-pointer items-center justify-center rounded-full text-(--text-muted) transition-colors hover:bg-white/6 hover:text-(--text-primary)"
+              className="flex size-6 cursor-pointer items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-white/[0.06] hover:text-neutral-100"
             >
               <HugeiconsIcon icon={Cancel01Icon} size={13} strokeWidth={1.8} />
             </button>
@@ -144,7 +144,7 @@ export function SidebarSelectMode({
       {/* Body */}
       <div className="min-h-0 flex-1 overflow-y-auto px-2 py-2">
         {isEmpty ? (
-          <p className="py-10 text-center font-mono text-[11px] text-(--text-muted)">
+          <p className="py-10 text-center font-mono text-[11px] text-neutral-500">
             No boards available
           </p>
         ) : (
@@ -152,7 +152,7 @@ export function SidebarSelectMode({
             {pinnedBoards.length > 0 && (
               <section>
                 <div className="mb-1 flex items-center justify-between px-1.5">
-                  <span className="font-mono text-[9px] font-medium uppercase tracking-[0.14em] text-(--text-muted)">
+                  <span className="font-mono text-[9px] font-medium uppercase tracking-[0.14em] text-neutral-500">
                     Pinned
                   </span>
                 </div>
@@ -164,7 +164,7 @@ export function SidebarSelectMode({
 
             {timeGroups.map((group) => (
               <section key={group.label}>
-                <h3 className="mb-1 px-1.5 font-mono text-[9px] font-medium uppercase tracking-[0.14em] text-(--text-muted)">
+                <h3 className="mb-1 px-1.5 font-mono text-[9px] font-medium uppercase tracking-[0.14em] text-neutral-500">
                   {group.label}
                 </h3>
                 <div className="flex flex-col gap-px">
@@ -183,7 +183,7 @@ export function SidebarSelectMode({
             type="button"
             onClick={() => onPin(selectedIds)}
             disabled={!hasSelection}
-            className="flex h-9 items-center justify-center gap-1.5 font-mono text-[11px] text-(--text-secondary) transition-colors hover:bg-white/4 hover:text-(--text-primary) disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
+            className="flex h-9 items-center justify-center gap-1.5 font-mono text-[11px] text-neutral-400 transition-colors hover:bg-white/[0.04] hover:text-neutral-100 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
           >
             <HugeiconsIcon icon={PinIcon} size={12} strokeWidth={1.8} />
             <span>Pin</span>
@@ -193,7 +193,7 @@ export function SidebarSelectMode({
             type="button"
             onClick={() => onDelete(selectedIds)}
             disabled={!hasSelection}
-            className="flex h-9 items-center justify-center gap-1.5 font-mono text-[11px] text-(--text-secondary) transition-colors hover:bg-(--danger)/8 hover:text-(--danger) disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
+            className="flex h-9 items-center justify-center gap-1.5 font-mono text-[11px] text-neutral-400 transition-colors hover:bg-(--danger)/8 hover:text-(--danger) disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
           >
             <HugeiconsIcon icon={Delete02Icon} size={12} strokeWidth={1.8} />
             <span>Delete</span>

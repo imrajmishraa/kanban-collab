@@ -175,7 +175,7 @@ function MemberPage() {
                         role: event.target.value as Role,
                       })
                     }
-                    className="h-8 shrink-0 rounded-lg border border-white/10 bg-white/4 px-2 font-mono text-[10px] uppercase tracking-widest text-(--text-secondary) outline-none hover:border-white/20 disabled:opacity-50"
+                    className="h-8 shrink-0 rounded-lg border border-white/10 bg-white/4 px-2 font-mono text-[10px] uppercase tracking-widest text-(--text-secondary) outline-hidden hover:border-white/20 disabled:opacity-50"
                   >
                     {ROLE_OPTIONS.map((role) => (
                       <option key={role} value={role}>

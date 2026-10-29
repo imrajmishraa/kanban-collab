@@ -180,8 +180,8 @@ export function BoardActionsMenu({
           justify-center
           rounded-full
 
-          bg-(--bg-elevated)
-          text-(--text-muted)
+          bg-[#141416]
+          text-neutral-500
 
           opacity-0
           pointer-events-none
@@ -189,12 +189,12 @@ export function BoardActionsMenu({
           transition-all
           duration-150
 
-          hover:bg-white/8
-          hover:text-(--text-primary)
+          hover:bg-white/[0.08]
+          hover:text-neutral-100
 
           focus-visible:pointer-events-auto
           focus-visible:opacity-100
-          focus-visible:outline-none
+          focus-visible:outline-hidden
           focus-visible:ring-2
           focus-visible:ring-(--brand)/40
 
@@ -223,10 +223,10 @@ export function BoardActionsMenu({
               overflow-hidden
               rounded-lg
               border
-              border-white/12
-              bg-(--bg-elevated)
+              border-orange-50/20
+              bg-[#141416]
 
-              shadow-[0_12px_32px_-8px_rgba(0,0,0,0.7),0_2px_8px_-2px_rgba(0,0,0,0.4)]
+              
 
               animate-in
               fade-in
@@ -272,7 +272,7 @@ export function BoardActionsMenu({
               onClick={handleAction(onShare)}
             />
 
-            <div aria-hidden="true" className="my-1 h-px bg-white/6" />
+            <div aria-hidden="true" className="my-1 h-px bg-white/[0.06]" />
 
             <MenuItem
               icon={Delete02Icon}
@@ -308,14 +308,14 @@ function MenuItem({
         "px-2.5",
         "text-left font-mono text-[12px]",
         "transition-colors duration-100",
-        "focus-visible:outline-none",
-        "focus-visible:bg-white/8",
+        "focus-visible:outline-hidden",
+        "focus-visible:bg-white/[0.08]",
 
         danger
           ? ["text-(--danger)", "hover:bg-(--danger)/8"].join(" ")
           : [
-              "text-(--text-secondary)",
-              "hover:bg-white/6",
+              "text-neutral-400",
+              "hover:bg-white/[0.06]",
               "hover:text-orange-400",
             ].join(" "),
       ].join(" ")}

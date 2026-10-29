@@ -2,6 +2,8 @@ export interface DashboardStats {
   workspaceCount: number;
   boardCount: number;
   activeTaskCount: number;
+  /** Distinct people across every workspace, counted once each. */
+  memberCount: number;
 }
 
 export interface DashboardWorkspace {
@@ -48,5 +50,6 @@ export interface DashboardActivity {
   actor: {
     id: string;
     name: string;
+    avatarUrl?: string | null;
   };
 }

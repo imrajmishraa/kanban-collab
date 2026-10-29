@@ -89,7 +89,7 @@ export function DialogShell({
 }
 
 const inputClass =
-  "w-full rounded-lg border border-orange-50/15 bg-white/[0.03] px-3 py-2 text-[13px] text-neutral-100 placeholder:text-neutral-600 outline-none transition-colors duration-200 hover:border-orange-50/25 focus:border-white/25 focus:bg-white/[0.05] focus-visible:outline-none";
+  "w-full rounded-lg border border-orange-50/15 bg-white/[0.03] px-3 py-2 text-[13px] text-neutral-100 placeholder:text-neutral-600 outline-hidden transition-colors duration-200 hover:border-orange-50/25 focus:border-white/25 focus:bg-white/[0.05] focus-visible:outline-hidden";
 
 const labelClass = "text-[11px] font-medium text-neutral-300";
 

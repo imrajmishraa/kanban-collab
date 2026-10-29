@@ -55,6 +55,16 @@ export default tseslint.config(
     },
   },
 
+  // ── CLI scripts ─────────────────────────────────────────
+  // Scripts print to stdout on purpose; the app-wide console ban is about
+  // request handling, not command output.
+  {
+    files: ["scripts/**/*.ts"],
+    rules: {
+      "no-console": "off",
+    },
+  },
+
   // ── Test files (slightly more relaxed) ──────────────────
   {
     files: ["**/*.test.ts", "**/*.spec.ts", "tests/**/*.ts"],

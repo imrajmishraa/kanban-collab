@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Add01Icon,
-  Cancel01Icon,
   FilterIcon,
   KanbanIcon,
   Layout01Icon,
@@ -16,8 +15,8 @@ import { labelColor, ui } from "@/features/boards/board.helpers";
 import type { SortKey, ViewMode } from "@/features/boards/board.helpers";
 
 interface BoardToolbarProps {
-  search: string;
-  onSearch: (value: string) => void;
+  /** Opens the card palette, which owns searching now. */
+  onOpenPalette: () => void;
   labels: string[];
   labelFilter: string | null;
   onToggleLabel: (label: string) => void;
@@ -36,8 +35,7 @@ const SORT_LABELS: Record<SortKey, string> = {
 };
 
 export default function BoardToolbar({
-  search,
-  onSearch,
+  onOpenPalette,
   labels,
   labelFilter,
   onToggleLabel,
@@ -65,36 +63,28 @@ export default function BoardToolbar({
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         {/* Search + label filter */}
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
-          <div className="flex h-9 w-full max-w-xs items-center gap-1.5 rounded-lg border border-orange-50/15 bg-white/3 px-3 transition-colors duration-200 focus-within:border-orange-50/30">
+          {/* Not an input any more: pressing it opens the card palette, which
+              searches every card and can edit the one you pick. */}
+          <button
+            type="button"
+            onClick={onOpenPalette}
+            className="group/search flex h-9 w-full max-w-xs cursor-pointer items-center gap-2 rounded-lg border border-orange-50/15 bg-white/3 px-3 text-left transition-colors duration-200 hover:border-orange-50/30 hover:bg-white/5"
+          >
             <HugeiconsIcon
               icon={Search01Icon}
               size={14}
               strokeWidth={1.6}
-              className="shrink-0 text-neutral-600"
+              className="shrink-0 text-neutral-600 transition-colors duration-200 group-hover/search:text-neutral-400"
             />
-            <input
-              type="search"
-              value={search}
-              onChange={(event) => onSearch(event.target.value)}
-              placeholder="Search cards…"
-              aria-label="Search cards"
-              className="min-w-0 flex-1 bg-transparent text-[12px] tracking-tight text-neutral-100 outline-none placeholder:text-neutral-600"
-            />
-            {search && (
-              <button
-                type="button"
-                onClick={() => onSearch("")}
-                aria-label="Clear search"
-                className="flex size-6 shrink-0 items-center justify-center rounded text-neutral-600 transition-colors hover:text-neutral-300"
-              >
-                <HugeiconsIcon
-                  icon={Cancel01Icon}
-                  size={13}
-                  strokeWidth={1.6}
-                />
-              </button>
-            )}
-          </div>
+
+            <span className="min-w-0 flex-1 truncate text-[12px] text-neutral-500">
+              Find cards to edit
+            </span>
+
+            <kbd className="shrink-0 rounded border border-orange-50/15 bg-white/6 px-1 py-0.5 font-mono text-[9px] text-neutral-500">
+              ⌘K
+            </kbd>
+          </button>
 
           <div className="flex min-w-0 items-center gap-1.5">
             <HugeiconsIcon

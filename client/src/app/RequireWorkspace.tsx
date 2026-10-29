@@ -99,7 +99,7 @@ export function RequireWorkspace({ children }: { children: ReactNode }) {
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Find workspace"
               aria-label="Find workspace"
-              className="min-w-0 flex-1 bg-transparent text-[12.5px] tracking-tight text-neutral-100 placeholder:text-neutral-600 outline-none ring-0 focus:outline-none focus:ring-0 focus-visible:outline-none"
+              className="min-w-0 flex-1 bg-transparent text-[12.5px] tracking-tight text-neutral-100 placeholder:text-neutral-600 outline-hidden ring-0 focus:outline-hidden focus:ring-0 focus-visible:outline-hidden"
             />
           </div>
 

@@ -30,8 +30,16 @@ import {
   listComments,
   createComment,
   deleteComment,
+  updateComment,
+  listReplies,
+  getComment,
+  voteComment,
+  clearVote,
 } from "../../controllers/comments/comments";
-import { listBoardActivity } from "../../controllers/activity/activity";
+import {
+  listBoardActivity,
+  listMyActivity,
+} from "../../controllers/activity/activity";
 
 import { authenticateJWT } from "../../middleware/auth.middleware";
 import { validateSchema } from "../../middleware/validate.middleware";
@@ -49,9 +57,12 @@ import {
   cardParamsSchema,
 } from "../../validators/kanban/card.validator";
 import {
-  cardCommentParamsSchema,
   commentParamsSchema,
   createCommentSchema,
+  listCommentsSchema,
+  listRepliesSchema,
+  voteCommentSchema,
+  updateCommentSchema,
 } from "../../validators/kanban/comment.validator";
 import { shareBoardSchema } from "../../validators/kanban/share.validator";
 import {
@@ -156,7 +167,7 @@ router.delete(
 
 router.get(
   "/cards/:cardId/comments",
-  validateSchema({ params: cardCommentParamsSchema }),
+  validateSchema(listCommentsSchema),
   listComments,
 );
 
@@ -166,6 +177,40 @@ router.post(
   createComment,
 );
 
+/* Replies are fetched per comment, which is how the collapsed "N replies"
+   button loads them. */
+router.get(
+  "/comments/:commentId/replies",
+  validateSchema(listRepliesSchema),
+  listReplies,
+);
+
+router.get(
+  "/comments/:commentId",
+  validateSchema({ params: commentParamsSchema }),
+  getComment,
+);
+
+/* One vote per user per comment; posting the same action again removes it. */
+router.post(
+  "/comments/:commentId/like",
+  validateSchema(voteCommentSchema),
+  voteComment,
+);
+
+router.delete(
+  "/comments/:commentId/like",
+  validateSchema({ params: commentParamsSchema }),
+  clearVote,
+);
+
+/* Authors may edit their own comment text. */
+router.patch(
+  "/comments/:commentId",
+  validateSchema(updateCommentSchema),
+  updateComment,
+);
+
 router.delete(
   "/comments/:commentId",
   validateSchema({ params: commentParamsSchema }),
@@ -173,6 +218,9 @@ router.delete(
 );
 
 // ACTIVITY
+
+/* The caller's own feed, across every workspace they belong to. */
+router.get("/activity", listMyActivity);
 
 router.get(
   "/boards/:boardId/activity",

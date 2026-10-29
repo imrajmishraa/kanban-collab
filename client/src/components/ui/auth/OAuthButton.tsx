@@ -29,7 +29,7 @@ export function OAuthButton({
         px-4 py-2.5 font-mono text-[12px] text-white/80
         transition-all duration-200
         hover:border-white/20 hover:bg-white/5 hover:text-white
-        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--brand)/40
+        focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-(--brand)/40
         disabled:cursor-not-allowed disabled:opacity-50
         active:scale-[0.99]
       "

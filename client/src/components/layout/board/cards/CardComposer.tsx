@@ -42,7 +42,7 @@ export default function CardComposer({
         }}
         rows={2}
         placeholder="Card title…"
-        className="w-full resize-none bg-transparent font-mono text-[12px] text-neutral-100 outline-none placeholder:text-neutral-500"
+        className="w-full resize-none bg-transparent text-[12px] text-neutral-100 outline-hidden placeholder:text-neutral-500"
       />
 
       <div className="mt-2 flex items-center justify-between">

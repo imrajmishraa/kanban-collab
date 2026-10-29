@@ -11,6 +11,7 @@ import {
 
 import { useWorkspaces } from "@/hooks/dashboard/useWorkspaces";
 import { useNewWorkspaceDialog } from "@/components/layout/dashboard/workspace/create/newWorkspaceDialog.context";
+import { useWorkspaceSwitcher } from "@/stores/workspaceSwitcher";
 
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -111,6 +112,17 @@ export function WorkspaceSelector({
   const listRef = useRef<HTMLDivElement>(null);
 
   const { open: openNewWorkspace } = useNewWorkspaceDialog();
+
+  /* Any surface can ask for this dropdown; the counter makes repeated asks
+     work. Adjusted during render, which the React Compiler allows, rather than
+     in an effect. */
+  const openRequests = useWorkspaceSwitcher((state) => state.openRequests);
+  const [seenRequests, setSeenRequests] = useState(openRequests);
+
+  if (openRequests !== seenRequests) {
+    setSeenRequests(openRequests);
+    if (!isOpen) setIsOpen(true);
+  }
 
   useEffect(() => {
     const timer = setTimeout(
@@ -357,8 +369,8 @@ export function WorkspaceSelector({
                 min-w-0 flex-1 bg-transparent
                 text-[12.5px] tracking-tight text-neutral-100
                 placeholder:text-neutral-600
-                outline-none ring-0 focus:outline-none focus:ring-0
-                focus-visible:outline-none
+                outline-hidden ring-0 focus:outline-hidden focus:ring-0
+                focus-visible:outline-hidden
               "
             />
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -14,8 +14,8 @@ import {
   AddMemberDialog,
   EditWorkspaceDialog,
 } from "@/features/workspaces/components/workspace-dialogs";
-import { useWorkspaces } from "@/hooks/dashboard/useWorkspaces";
 import { useStarredWorkspaces } from "@/stores/starredWorkspaces";
+import { useWorkspaceSwitcher } from "@/stores/workspaceSwitcher";
 import { toastSuccess } from "@/lib/toast";
 
 import type { DashboardWorkspace } from "@/types/dashboard/dashboard";
@@ -26,7 +26,6 @@ interface WorkspaceSectionProps {
 
 /** How many cards fit before "View all" has anything to do. */
 const COLLAPSED_COUNT = 4;
-const SEARCH_DEBOUNCE_MS = 300;
 
 /**
  * Reads whichever image key the API may add, without requiring the caller's
@@ -50,19 +49,16 @@ function imageUrlOf(workspace: object): string | null {
 /**
  * Workspace grid for the overview.
  *
- * The find field queries the API rather than filtering the handful of
- * workspaces the dashboard happens to send: `useWorkspaces` takes the search
- * term, so a workspace that is not in the dashboard payload can still be
- * found. Counts come from the dashboard for the default view, and from the
- * API list (member counts) while searching.
+ * The find field is a trigger, not an input: it opens the navbar's workspace
+ * switcher, which is the one place that searches workspaces through the API.
+ * This grid stays a summary of the dashboard payload, with "View all" to
+ * expand it.
  */
 export default function WorkspaceSection({
   workspaces,
 }: WorkspaceSectionProps) {
   const navigate = useNavigate();
 
-  const [search, setSearch] = useState("");
-  const [debounced, setDebounced] = useState("");
   const [expanded, setExpanded] = useState(false);
   const [addMemberFor, setAddMemberFor] = useState<string | null>(null);
   const [renameFor, setRenameFor] = useState<{
@@ -73,18 +69,9 @@ export default function WorkspaceSection({
   const starredIds = useStarredWorkspaces((state) => state.ids);
   const toggleStar = useStarredWorkspaces((state) => state.toggle);
 
-  useEffect(() => {
-    const timer = setTimeout(
-      () => setDebounced(search.trim()),
-      SEARCH_DEBOUNCE_MS,
-    );
-    return () => clearTimeout(timer);
-  }, [search]);
-
-  const searching = debounced.length > 0;
-
-  const { workspaces: apiWorkspaces, isLoading: isSearching } =
-    useWorkspaces(debounced);
+  /* The Find workspace button hands off to the navbar switcher, which owns
+     searching and shows the avatars. */
+  const requestSwitcher = useWorkspaceSwitcher((state) => state.requestOpen);
 
   const dashboardCards = workspaces.map((workspace) => ({
     id: workspace.id,
@@ -111,24 +98,9 @@ export default function WorkspaceSection({
     ),
   }));
 
-  const searchCards = apiWorkspaces.map((workspace) => ({
-    id: workspace.id,
-    name: workspace.name,
-    imageUrl: imageUrlOf(workspace),
-    secondary: `${workspace.members.length} ${
-      workspace.members.length === 1 ? "member" : "members"
-    }`,
-    meta: workspace.description?.trim() ? (
-      <p className="truncate text-[12px] text-neutral-400">
-        {workspace.description}
-      </p>
-    ) : undefined,
-  }));
-
-  const cards = searching ? searchCards : dashboardCards;
-  const visible =
-    searching || expanded ? cards : cards.slice(0, COLLAPSED_COUNT);
-  const hasMore = !searching && cards.length > COLLAPSED_COUNT;
+  const cards = dashboardCards;
+  const visible = expanded ? cards : cards.slice(0, COLLAPSED_COUNT);
+  const hasMore = cards.length > COLLAPSED_COUNT;
 
   const copyLink = (id: string) => {
     const url = `${window.location.origin}/workspaces/${id}`;
@@ -146,22 +118,22 @@ export default function WorkspaceSection({
         </h2>
 
         <div className="flex items-center gap-2">
-          <div className="flex h-7 items-center gap-1.5 rounded-md border border-orange-50/15 bg-white/3 px-2 transition-colors duration-200 focus-within:border-orange-50/30">
+          {/* Not an input: pressing it opens the navbar's workspace switcher,
+              which searches the API and shows avatars. */}
+          <button
+            type="button"
+            onClick={requestSwitcher}
+            className="flex h-7 cursor-pointer items-center gap-1.5 rounded-md border border-orange-50/15 bg-white/3 px-2 text-neutral-500 transition-colors duration-200 hover:border-orange-50/30 hover:bg-white/5 hover:text-neutral-300"
+          >
             <HugeiconsIcon
               icon={Search01Icon}
               size={12}
               strokeWidth={1.6}
-              className="shrink-0 text-neutral-600"
+              className="shrink-0"
             />
 
-            <input
-              type="text"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Find workspace"
-              className="w-28 bg-transparent text-[11.5px] tracking-tight text-neutral-100 placeholder:text-neutral-600 outline-none ring-0 focus:outline-none focus:ring-0 focus-visible:outline-none sm:w-36"
-            />
-          </div>
+            <span className="text-[11.5px] tracking-tight">Find workspace</span>
+          </button>
 
           {hasMore && (
             <button
@@ -184,28 +156,13 @@ export default function WorkspaceSection({
         </div>
       </div>
 
-      {searching && isSearching ? (
-        <div className="grid gap-3 sm:grid-cols-2">
-          {[0, 1].map((row) => (
-            <div
-              key={row}
-              className="h-19 animate-pulse rounded-xl border border-orange-50/15 bg-white/3"
-            />
-          ))}
-        </div>
-      ) : visible.length === 0 ? (
+      {visible.length === 0 ? (
         <div className="rounded-xl border border-dashed border-orange-50/20 px-5 py-10 text-center">
           <p className="text-[12.5px] text-neutral-400">
-            {searching ? (
-              <>No workspaces match “{debounced}”</>
-            ) : (
-              <>
-                No workspaces yet, create one to get{" "}
-                <span className="font-medium capitalize text-orange-100">
-                  started
-                </span>
-              </>
-            )}
+            No workspaces yet, create one to get{" "}
+            <span className="font-medium capitalize text-orange-100">
+              started
+            </span>
           </p>
         </div>
       ) : (

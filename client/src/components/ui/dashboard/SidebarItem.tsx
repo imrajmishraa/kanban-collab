@@ -1,4 +1,4 @@
-import { Tooltip } from "#components/Tooltips/ToolTip";
+import { Tooltip } from "@components/Tooltips/ToolTip";
 import { NavLink } from "react-router-dom";
 import type { ReactNode } from "react";
 
@@ -25,7 +25,7 @@ export default function SidebarItem({
         [
           // Base
           "group/item relative flex h-9 cursor-pointer items-center rounded-lg",
-          "font-mono text-[13px]",
+          "text-[12.5px] tracking-tight",
           "transition-colors duration-200",
 
           // Layout
@@ -35,8 +35,8 @@ export default function SidebarItem({
 
           // Active / inactive
           isActive
-            ? "bg-white/4 text-(--text-primary)"
-            : "text-(--text-soft) hover:bg-white/3 hover:text-(--text-primary)",
+            ? "bg-white/6 text-neutral-100"
+            : "text-neutral-400 hover:bg-white/4 hover:text-neutral-100",
         ].join(" ")
       }
     >
@@ -48,8 +48,8 @@ export default function SidebarItem({
               "flex size-5 shrink-0 items-center justify-center",
               "transition-colors duration-200",
               isActive
-                ? "text-(--brand)"
-                : "text-(--text-soft) group-hover/item:text-(--text-primary)",
+                ? "text-orange-100"
+                : "text-neutral-500 group-hover/item:text-neutral-200",
             ].join(" ")}
           >
             {icon}
@@ -61,7 +61,7 @@ export default function SidebarItem({
               className={[
                 "min-w-0 flex-1 truncate",
                 "transition-colors duration-200",
-                isActive ? "text-(--text-primary)" : "text-(--text-soft)",
+                isActive ? "text-neutral-100" : "text-neutral-400",
               ].join(" ")}
             >
               {label}

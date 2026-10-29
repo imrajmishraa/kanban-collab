@@ -58,7 +58,7 @@ export default function DashboardSidebar({
   // (and one request) across the sidebar, navbar and dashboard.
   const boardsLimit = BOARDS_LIST_LIMIT;
 
-  // useWorkspaces returns { ...query, workspaces } — take the flat array.
+  // useWorkspaces returns { ...query, workspaces } , so take the flat array.
   // `data` here is InfiniteData (pages), NOT a Workspace[].
   const { workspaces } = useWorkspaces();
 
@@ -98,7 +98,7 @@ export default function DashboardSidebar({
     try {
       await logout();
     } catch {
-      // Logout failures are non-fatal — the session is cleared locally by
+      // Logout failures are non-fatal: the session is cleared locally by
       // the auth store regardless. Swallow rather than log to the console.
     }
   };
