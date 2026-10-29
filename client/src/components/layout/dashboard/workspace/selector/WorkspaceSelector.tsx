@@ -9,6 +9,8 @@ import {
   Tick02Icon,
 } from "@hugeicons/core-free-icons";
 
+import { Tooltip } from "#components/Tooltips/ToolTip";
+
 import { useWorkspaces } from "@/hooks/dashboard/useWorkspaces";
 import { useNewWorkspaceDialog } from "@/components/layout/dashboard/workspace/create/newWorkspaceDialog.context";
 import { useWorkspaceSwitcher } from "@/stores/workspaceSwitcher";
@@ -320,20 +322,34 @@ export function WorkspaceSelector({
           </button>
 
           {onClose && (
+            /* Revealed on hover (or keyboard focus) rather than always on: the
+               cluster reads as one control until you go looking for the way
+               out. It is still rendered on every route inside a workspace. */
             <div className="flex items-center opacity-0 transition-opacity duration-200 group-hover/ws:opacity-100 focus-within:opacity-100">
               <span
                 aria-hidden="true"
                 className="mx-0.5 h-4 w-px bg-orange-50/15"
               />
 
-              <button
-                type="button"
-                onClick={onClose}
-                aria-label="Close workspace"
-                className="flex size-6 cursor-pointer items-center justify-center rounded-md text-neutral-500 transition-colors duration-200 hover:bg-white/6 hover:text-neutral-200"
+              <Tooltip
+                label="Back to project view"
+                side="bottom"
+                shape="solid"
+                size="sm"
               >
-                <HugeiconsIcon icon={Cancel01Icon} size={12} strokeWidth={2} />
-              </button>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  aria-label="Back to project view"
+                  className="flex size-6 cursor-pointer items-center justify-center rounded-md text-neutral-500 transition-colors duration-200 hover:bg-white/6 hover:text-neutral-200"
+                >
+                  <HugeiconsIcon
+                    icon={Cancel01Icon}
+                    size={12}
+                    strokeWidth={2}
+                  />
+                </button>
+              </Tooltip>
             </div>
           )}
         </div>

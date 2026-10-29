@@ -4,10 +4,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
 import { WorkspaceSelector } from "../workspace/selector/WorkspaceSelector";
-import { BoardSelector } from "../board/selector/BoardSelector";
 import { notificationKeys } from "../notifications/index";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
-import { useBoardsStore } from "@/stores/boards";
 import { useSidebarState } from "@/stores/sidebarState";
 import { notificationsApi } from "@/api/dashboard/notificationsApi";
 import {
@@ -24,27 +22,65 @@ export default function DashboardNavbar() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  /* The boards menu is a "where am I" control: it belongs to a board route.
-     On the dashboard it listed an arbitrary subset of the active workspace's
-     boards, which read as stale, so it is only rendered inside a board. */
-  const onBoardRoute = location.pathname.startsWith("/boards/");
-
   /* The overview is not scoped to one workspace, so the switcher reads
      "All Workspaces" there and reverts to the active name elsewhere. */
   const onOverview = location.pathname === "/dashboard";
 
-  /* The close button only makes sense while a workspace page is open: there it
-     means "leave this workspace". Anywhere else it would have nothing to
-     close, so it is not rendered at all. */
+  /* The workspace page itself. Used for the page title, and for deciding
+     whether closing the workspace has to leave the page. */
   const onWorkspaceRoute = location.pathname.startsWith("/workspaces/");
 
-  const currentBoardId = onBoardRoute
-    ? (location.pathname.split("/")[2] ?? null)
-    : null;
-
-  const setLastBoard = useBoardsStore((s) => s.setLastBoard);
   const [scrolled, setScrolled] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+
+  /* Store reads come before the effects that close over them, so nothing is
+     referenced above its declaration. */
+  const {
+    activeWorkspaceId,
+    activeWorkspaceName,
+    setActiveWorkspace,
+    clearActiveWorkspace,
+  } = useActiveWorkspace();
+
+  const sidebarCollapsed = useSidebarState((s) => s.collapsed);
+
+  /*
+   * With nothing selected there is no workspace to scope the breadcrumb to, so
+   * the switcher collapses to the same "All Workspaces" pill the overview uses
+   * — on every route, not just /dashboard. Without this, a gated page such as
+   * /boards rendered an empty breadcrumb while it asked you to pick one.
+   */
+  const showAllWorkspaces = onOverview || !activeWorkspaceId;
+
+  /* `N` opens notifications from anywhere on the page, the way `F` opens Find
+     in the sidebar. Skipped while the caret is in a field, and when a modifier
+     is held, so typing a name never pops the panel. */
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key.toLowerCase() !== "n") return;
+      if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) {
+        return;
+      }
+
+      const target = event.target as HTMLElement | null;
+      const tag = target?.tagName.toLowerCase();
+
+      if (
+        tag === "input" ||
+        tag === "textarea" ||
+        tag === "select" ||
+        target?.isContentEditable
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      setNotificationsOpen(true);
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -58,16 +94,8 @@ export default function DashboardNavbar() {
     return () => observer.disconnect();
   }, []);
 
-  const {
-    activeWorkspaceId,
-    activeWorkspaceName,
-    setActiveWorkspace,
-    clearActiveWorkspace,
-  } = useActiveWorkspace();
-
   /* What the centred title says. The workspace route shows the workspace
-     itself, so the header reads as "you are in this workspace".
-     Declared after the store hook, which is where the name comes from. */
+     itself, so the header reads as "you are in this workspace". */
   const pageTitle = onOverview
     ? "Projects Overview"
     : onWorkspaceRoute
@@ -79,8 +107,6 @@ export default function DashboardNavbar() {
           : location.pathname.startsWith("/notes")
             ? "Notes"
             : null;
-
-  const sidebarCollapsed = useSidebarState((s) => s.collapsed);
 
   // Lightweight poll for the unread badge. The panel reuses the same key.
   const { data: notificationsData } = useQuery({
@@ -99,7 +125,7 @@ export default function DashboardNavbar() {
           "fixed top-0 right-0 z-50 hidden h-14 md:flex",
           "items-center gap-2 px-5 ",
           "transition-[left,background-color] duration-200",
-          sidebarCollapsed ? "left-16" : "left-54",
+          sidebarCollapsed ? "left-16" : "left-64",
           scrolled ? "bg-(--bg-root)/85 backdrop-blur-md" : "bg-transparent",
         ].join(" ")}
       >
@@ -112,53 +138,40 @@ export default function DashboardNavbar() {
           <Chevron />
 
           <WorkspaceSelector
-            activeWorkspaceId={onOverview ? null : (activeWorkspaceId ?? null)}
+            activeWorkspaceId={
+              showAllWorkspaces ? null : (activeWorkspaceId ?? null)
+            }
             activeWorkspaceName={
-              onOverview ? "All Workspaces" : (activeWorkspaceName ?? null)
+              showAllWorkspaces
+                ? "All Workspaces"
+                : (activeWorkspaceName ?? null)
             }
             onWorkspaceChange={(id, name) => {
               setActiveWorkspace(id, name);
               // Picking a workspace takes you to its page.
               navigate(`/workspaces/${id}`);
             }}
-            // Overview: one pill that opens the list, no close button.
-            unified={onOverview}
-            // Workspace: the name opens it, the close button (hover only)
-            // leaves it for the overview.
+            // One pill that opens the list, no close button.
+            unified={showAllWorkspaces}
+            // Workspace: the name opens it, the close button leaves it.
             onOpenActive={
-              onOverview
+              showAllWorkspaces
                 ? undefined
                 : () => navigate(`/workspaces/${activeWorkspaceId}`)
             }
+
             onClose={
-              onWorkspaceRoute
+              !showAllWorkspaces && activeWorkspaceId
                 ? () => {
-                    // Leaving the workspace clears it, so the next gated page
-                    // asks which workspace to use instead of silently reusing
-                    // the one that was just closed.
                     clearActiveWorkspace();
-                    navigate("/dashboard");
+
+                    if (onWorkspaceRoute) {
+                      navigate("/dashboard", { replace: true });
+                    }
                   }
                 : undefined
             }
           />
-
-          {onBoardRoute && (
-            <>
-              <Chevron />
-
-              {/* Mirrors the workspace switcher. Remounts on workspace change,
-                  which also closes its menu. */}
-              <BoardSelector
-                key={activeWorkspaceId ?? "none"}
-                activeBoardId={currentBoardId}
-                onSelect={(boardId) => {
-                  setLastBoard(boardId);
-                  navigate(`/boards/${boardId}`);
-                }}
-              />
-            </>
-          )}
         </nav>
 
         {/* Centred page title: the workspace name inside a workspace, and a

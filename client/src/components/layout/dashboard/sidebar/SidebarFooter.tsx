@@ -1,220 +1,132 @@
-import {
-  useEffect,
-  useRef,
-  useState,
-  type MouseEvent,
-  type PointerEvent as ReactPointerEvent,
-} from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 import { HugeiconsIcon } from "@hugeicons/react";
-import {
-  Logout01Icon,
-  Menu01Icon,
-  Settings01Icon,
-  UserIcon,
-} from "@hugeicons/core-free-icons";
+import { BellIcon, MoreHorizontalIcon } from "@hugeicons/core-free-icons";
+
+import { Avatar } from "@components/layout/board/BoardAvatar";
+import { Tooltip } from "@components/Tooltips/ToolTip";
+import { notificationKeys } from "@components/layout/dashboard/notifications";
+
+import SidebarAccountMenu from "./SidebarAccountMenu";
+import SidebarNotifications from "./SidebarNotifications";
+
+import { avatarColor } from "@/features/boards/board.helpers";
+import { notificationsApi } from "@/api/dashboard/notificationsApi";
 
 import type { AuthUser } from "@/types/api/auth/auth";
 
-interface SidebarMoreProps {
+interface SidebarFooterProps {
   collapsed: boolean;
   user: AuthUser | null;
   onLogout: () => Promise<void>;
-  /** Kept for call-site compatibility; positioning follows `collapsed`. */
-  mobile?: boolean;
 }
 
+type Panel = "account" | "notifications" | null;
+
+/**
+ * Who you are, with the two controls the reference puts beside the name:
+ * a three-dots account menu and a bell that opens notifications in place.
+ *
+ * Both open upward as popovers so they never push the nav around, and either
+ * one closes on Escape, an outside click, or a route change.
+ */
 export default function SidebarFooter({
   collapsed,
   user,
   onLogout,
-}: SidebarMoreProps) {
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const [pinned, setPinned] = useState(false);
-  const [hovered, setHovered] = useState(false);
-  const [suppressHover, setSuppressHover] = useState(false);
-  const [lastPathname, setLastPathname] = useState(location.pathname);
-
+}: SidebarFooterProps) {
+  const [panel, setPanel] = useState<Panel>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
 
-  if (location.pathname !== lastPathname) {
-    setLastPathname(location.pathname);
-    setPinned(false);
-    setHovered(false);
-    setSuppressHover(false);
-  }
+  const { data } = useQuery({
+    queryKey: notificationKeys.all,
+    queryFn: () => notificationsApi.listNotifications(),
+    // The bell only needs a number; a stale count for a minute is fine and
+    // saves a request on every sidebar mount.
+    staleTime: 60_000,
+  });
 
-  /** Pinned by click, or hovered and not suppressed by a close-click. */
-  const isOpen = pinned || (hovered && !suppressHover);
+  const unread = data?.unreadCount ?? 0;
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!panel) return;
 
-    const close = () => {
-      setPinned(false);
-      setHovered(false);
-      setSuppressHover(false);
+    const onPointerDown = (event: PointerEvent) => {
+      if (!containerRef.current?.contains(event.target as Node)) {
+        setPanel(null);
+      }
     };
 
-    const handlePointerDown = (event: PointerEvent) => {
-      const target = event.target as Node;
-
-      if (containerRef.current?.contains(target)) return;
-      if (buttonRef.current?.contains(target)) return;
-
-      close();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setPanel(null);
     };
 
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
-
-      close();
-      buttonRef.current?.focus();
-    };
-
-    document.addEventListener("pointerdown", handlePointerDown);
-    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
 
     return () => {
-      document.removeEventListener("pointerdown", handlePointerDown);
-      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
     };
-  }, [isOpen]);
+  }, [panel]);
 
-  const toggleMenu = (event: MouseEvent<HTMLButtonElement>) => {
-    // The collapsed `<aside>` expands on any click; this one belongs to us.
-    event.stopPropagation();
-
-    if (isOpen) {
-      setPinned(false);
-      // Keep it shut while the pointer is still resting on the trigger.
-      setSuppressHover(true);
-      return;
-    }
-
-    setPinned(true);
-    setSuppressHover(false);
-  };
-
-  const handlePointerEnter = (event: ReactPointerEvent<HTMLDivElement>) => {
-    // Touch fires `pointerenter` right before the tap's click; ignoring
-    // non-mouse pointers keeps the tap from opening and then re-closing it.
-    if (event.pointerType !== "mouse") return;
-
-    setHovered(true);
-  };
-
-  const handlePointerLeave = () => {
-    setHovered(false);
-    setSuppressHover(false);
-  };
-
-  const closeMenu = () => {
-    setPinned(false);
-    setHovered(false);
-    setSuppressHover(false);
-  };
-
-  const handleProfile = () => {
-    closeMenu();
-    navigate("/user/profile");
-  };
-
-  const handleSettings = () => {
-    closeMenu();
-    navigate("/settings");
-  };
-
-  const handleLogout = async () => {
-    closeMenu();
-    await onLogout();
-  };
-
-  const menu = (
-    <div
-      role="menu"
-      className={[
-        "absolute z-50 overflow-hidden",
-        collapsed
-          ? "bottom-0 left-full w-48 pl-2"
-          : "bottom-full left-3 right-3 pb-2",
-        isOpen ? "block" : "hidden",
-      ].join(" ")}
-    >
-      <div className="relative overflow-hidden rounded-lg border border-orange-50/20 bg-[#141416] ">
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-white/15 to-transparent"
-        />
-
-        <div className="relative border-b border-orange-50/10 px-3 py-2.5">
-          <div className="flex items-center gap-2.5">
-            <div className="flex size-7 shrink-0 items-center justify-center rounded-md border border-orange-50/15 bg-white/4 text-neutral-400">
-              <HugeiconsIcon icon={UserIcon} size={13} strokeWidth={1.5} />
-            </div>
-            <div className="min-w-0">
-              <p className="truncate text-[11.5px] font-medium tracking-tight text-neutral-100">
-                {user?.fullName ?? "User"}
-              </p>
-              <p className="truncate text-[10px] text-neutral-500">
-                {user?.email ?? ""}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="relative p-1">
-          <FlyoutItem icon={UserIcon} label="Profile" onClick={handleProfile} />
-          <FlyoutItem
-            icon={Settings01Icon}
-            label="Settings"
-            onClick={handleSettings}
-          />
-        </div>
-
-        <div className="relative border-t border-orange-50/10 p-1">
-          <FlyoutItem
-            icon={Logout01Icon}
-            label="Logout"
-            onClick={handleLogout}
-            danger
-          />
-        </div>
-      </div>
-    </div>
-  );
+  const toggle = (next: Exclude<Panel, null>) =>
+    setPanel((current) => (current === next ? null : next));
 
   if (collapsed) {
     return (
       <div
         ref={containerRef}
-        onPointerEnter={handlePointerEnter}
-        onPointerLeave={handlePointerLeave}
-        className="relative shrink-0 border-t border-orange-50/15 py-3"
+        className="relative flex shrink-0 flex-col items-center gap-1 border-t border-orange-50/15 py-3"
       >
-        {menu}
+        {panel === "account" && (
+          <SidebarAccountMenu
+            user={user}
+            onLogout={onLogout}
+            onClose={() => setPanel(null)}
+          />
+        )}
 
-        <button
-          ref={buttonRef}
-          type="button"
-          title="More"
-          aria-label="More"
-          aria-haspopup="menu"
-          aria-expanded={isOpen}
-          onClick={toggleMenu}
-          className={[
-            "mx-auto flex size-9 cursor-pointer items-center justify-center rounded-lg transition-colors duration-200",
-            isOpen
-              ? "bg-white/6 text-neutral-100"
-              : "text-neutral-400 hover:bg-white/4 hover:text-neutral-100",
-          ].join(" ")}
-        >
-          <HugeiconsIcon icon={Menu01Icon} size={16} strokeWidth={1.5} />
-        </button>
+        {panel === "notifications" && (
+          <SidebarNotifications onClose={() => setPanel(null)} />
+        )}
+
+        <Tooltip label="Account" side="right" shape="solid" size="sm">
+          <button
+            type="button"
+            onClick={() => toggle("account")}
+            aria-label="Account"
+            aria-expanded={panel === "account"}
+            className="flex size-9 cursor-pointer items-center justify-center rounded-lg transition-colors duration-200 hover:bg-white/6"
+          >
+            <Avatar
+              member={{
+                id: user?.id ?? "me",
+                name: user?.fullName,
+                avatarUrl: user?.avatarUrl ?? null,
+                color: avatarColor(user?.id ?? "me"),
+              }}
+              size={26}
+              ring={false}
+            />
+          </button>
+        </Tooltip>
+
+        <Tooltip label="Notifications" side="right" shape="solid" size="sm">
+          <button
+            type="button"
+            onClick={() => toggle("notifications")}
+            aria-label="Notifications"
+            aria-expanded={panel === "notifications"}
+            className="relative flex size-8 cursor-pointer items-center justify-center rounded-lg text-neutral-500 transition-colors duration-200 hover:bg-white/6 hover:text-neutral-200"
+          >
+            <HugeiconsIcon icon={BellIcon} size={15} strokeWidth={1.6} />
+            {unread > 0 && (
+              <span className="absolute right-1 top-1 size-1.5 rounded-full bg-orange-100" />
+            )}
+          </button>
+        </Tooltip>
       </div>
     );
   }
@@ -222,71 +134,75 @@ export default function SidebarFooter({
   return (
     <div
       ref={containerRef}
-      onPointerEnter={handlePointerEnter}
-      onPointerLeave={handlePointerLeave}
       className="relative shrink-0 border-t border-orange-50/15 px-3 py-3"
     >
-      {menu}
+      {panel === "account" && (
+        <SidebarAccountMenu
+          user={user}
+          onLogout={onLogout}
+          onClose={() => setPanel(null)}
+        />
+      )}
 
-      <button
-        ref={buttonRef}
-        type="button"
-        aria-haspopup="menu"
-        aria-expanded={isOpen}
-        onClick={toggleMenu}
-        className={[
-          "flex w-full cursor-pointer items-center justify-between rounded-lg px-2.5 py-2 text-left transition-colors duration-200",
-          isOpen ? "bg-white/6" : "hover:bg-white/4",
-        ].join(" ")}
-      >
-        <div className="flex items-center gap-3">
-          <HugeiconsIcon
-            icon={Menu01Icon}
-            size={16}
-            strokeWidth={1.5}
-            className="shrink-0 text-neutral-400"
-          />
-          <span className="text-[10px] font-medium uppercase tracking-[0.16em] text-neutral-500">
-            MORE
-          </span>
-        </div>
-      </button>
+      {panel === "notifications" && (
+        <SidebarNotifications onClose={() => setPanel(null)} />
+      )}
+
+      <div className="flex items-center gap-2">
+        <Avatar
+          member={{
+            id: user?.id ?? "me",
+            name: user?.fullName,
+            avatarUrl: user?.avatarUrl ?? null,
+            color: avatarColor(user?.id ?? "me"),
+          }}
+          size={26}
+          ring={false}
+        />
+
+        <p className="min-w-0 flex-1 truncate text-[12.5px] font-medium tracking-tight text-neutral-100">
+          {user?.fullName ?? "Account"}
+        </p>
+
+        <button
+          type="button"
+          onClick={() => toggle("account")}
+          aria-label="Account menu"
+          aria-expanded={panel === "account"}
+          className={[
+            "flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full border transition-colors duration-200",
+            panel === "account"
+              ? "border-orange-50/30 bg-white/8 text-neutral-100"
+              : "border-orange-50/15 text-neutral-400 hover:border-orange-50/30 hover:bg-white/5 hover:text-neutral-100",
+          ].join(" ")}
+        >
+          <HugeiconsIcon icon={MoreHorizontalIcon} size={14} strokeWidth={2} />
+        </button>
+
+        <button
+          type="button"
+          onClick={() => toggle("notifications")}
+          aria-label={
+            unread > 0 ? `Notifications (${unread} unread)` : "Notifications"
+          }
+          aria-expanded={panel === "notifications"}
+          className={[
+            "relative flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full border transition-colors duration-200",
+            panel === "notifications"
+              ? "border-orange-50/30 bg-white/8 text-neutral-100"
+              : "border-orange-50/15 text-neutral-400 hover:border-orange-50/30 hover:bg-white/5 hover:text-neutral-100",
+          ].join(" ")}
+        >
+          <HugeiconsIcon icon={BellIcon} size={13} strokeWidth={1.7} />
+
+          {unread > 0 && (
+            <span
+              aria-hidden="true"
+              className="absolute -right-0.5 -top-0.5 size-1.5 rounded-full bg-orange-100"
+            />
+          )}
+        </button>
+      </div>
     </div>
-  );
-}
-
-function FlyoutItem({
-  icon,
-  label,
-  onClick,
-  danger = false,
-}: {
-  icon: typeof UserIcon;
-  label: string;
-  onClick: () => void;
-  danger?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      role="menuitem"
-      onClick={onClick}
-      className={[
-        "flex w-full cursor-pointer items-center gap-2.5 rounded-md",
-        "px-2 py-1.5 text-left text-[11.5px]",
-        "transition-colors duration-150",
-        danger
-          ? "text-neutral-400 hover:bg-rose-500/8 hover:text-rose-300"
-          : "text-neutral-400 hover:bg-white/5 hover:text-neutral-100",
-      ].join(" ")}
-    >
-      <HugeiconsIcon
-        icon={icon}
-        size={13}
-        strokeWidth={1.5}
-        className="shrink-0"
-      />
-      <span>{label}</span>
-    </button>
   );
 }

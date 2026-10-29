@@ -1,8 +1,5 @@
 import { HugeiconsIcon } from "@hugeicons/react";
-import {
-  ArrowLeftDoubleIcon,
-  ArrowRightDoubleIcon,
-} from "@hugeicons/core-free-icons";
+import { SidebarLeftIcon } from "@hugeicons/core-free-icons";
 import { useNavigate } from "react-router-dom";
 
 import logo from "@/assets/logo.svg?inline";
@@ -44,7 +41,7 @@ const SidebarHeader = ({ collapsed, onToggle }: SidebarHeaderProps) => {
               height={28}
               draggable={false}
               className="
-              h-8 w-8 rounded-lg
+              h-8 w-8 rounded-full
               transition-all duration-150
               group-hover:scale-75
               group-hover:opacity-0
@@ -53,7 +50,7 @@ const SidebarHeader = ({ collapsed, onToggle }: SidebarHeaderProps) => {
 
             {/* Arrow, hidden normally, visible on hover */}
             <HugeiconsIcon
-              icon={ArrowRightDoubleIcon}
+              icon={SidebarLeftIcon}
               size={18}
               strokeWidth={1.8}
               className="
@@ -86,7 +83,7 @@ const SidebarHeader = ({ collapsed, onToggle }: SidebarHeaderProps) => {
           width={28}
           height={28}
           draggable={false}
-          className="h-8 w-8 rounded-lg transition-all duration-300"
+          className="h-8 w-8 rounded-full transition-all duration-300"
         />
         <span className="text-[14px] font-semibold tracking-tight text-neutral-100">
           Kanban
@@ -98,7 +95,7 @@ const SidebarHeader = ({ collapsed, onToggle }: SidebarHeaderProps) => {
           <HeaderIconButton
             icon={
               <HugeiconsIcon
-                icon={ArrowLeftDoubleIcon}
+                icon={SidebarLeftIcon}
                 size={15}
                 strokeWidth={1.6}
               />

@@ -3,7 +3,6 @@ import { useCallback, useMemo, useState } from "react";
 import SidebarHeader from "./SidebarHeader";
 import SidebarNavigation from "./SidebarNavigation";
 import SidebarSearch from "./SidebarSearch";
-// import SidebarNewProject from "../workspace/create/SidebarNewProject";
 import SidebarBoards from "./SidebarBoards";
 import SidebarFooter from "./SidebarFooter";
 import { SidebarSelectMode } from "./SidebarSelectMode";
@@ -195,10 +194,12 @@ export default function DashboardSidebar({
         onClick={collapsed && !selectMode ? onToggle : undefined}
         className={[
           "fixed left-0 top-0 z-40 hidden h-screen flex-col",
-          "bg-(--bg-surface)",
+          /* Same colour as the page it sits beside. The hairline is what
+             separates them now that the fill no longer does. */
+          "bg-(--bg-root) border-r border-orange-50/10",
           "transition-[width] duration-200 ease-out",
           "md:flex",
-          collapsed ? "w-16" : "w-54",
+          collapsed ? "w-16" : "w-64",
         ].join(" ")}
       >
         <div className="shrink-0">
@@ -255,7 +256,7 @@ export default function DashboardSidebar({
 
               <div
                 aria-hidden="true"
-                className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-(--bg-surface)"
+                className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-(--bg-root)"
                 style={{
                   maskImage:
                     "linear-gradient(to top, black 40%, transparent 100%)",

@@ -188,7 +188,12 @@ export default function SidebarSearch({ collapsed }: SidebarSearchProps) {
         <div className="flex justify-center">
           <button
             type="button"
-            onClick={() => setOpen((previous) => !previous)}
+            onClick={(event) => {
+              /* The collapsed rail expands on any click. Opening Find is not
+                 a request to expand it, so stop the click here. */
+              event.stopPropagation();
+              setOpen((previous) => !previous);
+            }}
             aria-label="Find"
             aria-expanded={open}
             className="flex size-8 cursor-pointer items-center justify-center rounded-lg text-neutral-500 transition-colors duration-200 hover:bg-white/6 hover:text-neutral-200"
@@ -203,7 +208,10 @@ export default function SidebarSearch({ collapsed }: SidebarSearchProps) {
           aria-expanded={open}
           className={[
             "group/find flex h-9 w-full cursor-pointer items-center gap-2 rounded-lg border px-2.5 text-left",
-            "transition-colors duration-200",
+            "transition-[opacity,border-color,background-color] duration-200",
+            /* Hidden while the panel is open: the panel sits exactly on top of
+               it, so the box appears to be the thing that grew. */
+            open ? "pointer-events-none opacity-0" : "opacity-100",
             open
               ? "border-orange-50/30 bg-white/5"
               : "border-orange-50/15 bg-white/3 hover:border-orange-50/30 hover:bg-white/5",
@@ -226,96 +234,120 @@ export default function SidebarSearch({ collapsed }: SidebarSearchProps) {
         </button>
       )}
 
-      {open && (
+      {/* Always mounted so the width and height can transition. `inert` keeps
+          the rows out of the tab order while it is closed. */}
+      <div
+        role="dialog"
+        aria-label="Find"
+        aria-hidden={!open}
+        inert={!open}
+        /* Clicks inside the panel are panel clicks, not rail clicks. */
+        onClick={(event) => event.stopPropagation()}
+        onPointerDown={(event) => event.stopPropagation()}
+        className={[
+          "absolute z-50 overflow-hidden border bg-[#0c0c0d]",
+          "transition-[width,border-radius,opacity] duration-300 ease-out",
+          "motion-reduce:transition-none",
+          "left-3 top-0",
+          open
+            ? "w-80 rounded-xl border-orange-50/20 opacity-100"
+            : "pointer-events-none w-[calc(100%-1.5rem)] rounded-lg border-orange-50/20 opacity-0",
+        ].join(" ")}
+      >
         <div
-          role="dialog"
-          aria-label="Find"
-          /* Wider than the sidebar on purpose: the list is the point, and a
-             232px rail would clip every context line. It hangs over the page
-             content instead, anchored to the field. */
           className={[
-            "absolute z-50 mt-0.5 overflow-hidden rounded-xl border border-orange-50/20 bg-[#0c0c0d]",
-            "left-1 w-80",
+            "flex items-center gap-2.5 border-b border-orange-50/10",
+            "transition-[height,padding] duration-300 ease-out motion-reduce:transition-none",
+            open ? "h-12 px-4" : "h-9 px-2.5",
           ].join(" ")}
         >
-          <div className="flex items-center gap-2.5 border-b border-orange-50/10 px-4 py-3">
-            <HugeiconsIcon
-              icon={Search01Icon}
-              size={15}
-              strokeWidth={1.7}
-              className="shrink-0 text-neutral-500"
-            />
+          <HugeiconsIcon
+            icon={Search01Icon}
+            size={15}
+            strokeWidth={1.7}
+            className="shrink-0 text-neutral-500"
+          />
 
-            <input
-              ref={inputRef}
-              value={query}
-              onChange={(event) => {
-                setQuery(event.target.value);
-                setCursor(0);
-              }}
-              onKeyDown={onInputKeyDown}
-              placeholder="Find"
-              aria-label="Find"
-              className="min-w-0 flex-1 bg-transparent text-[14px] tracking-tight text-neutral-100 placeholder:text-neutral-600 outline-hidden"
-            />
+          <input
+            ref={inputRef}
+            value={query}
+            onChange={(event) => {
+              setQuery(event.target.value);
+              setCursor(0);
+            }}
+            onKeyDown={onInputKeyDown}
+            placeholder="Find"
+            aria-label="Find"
+            className={[
+              "min-w-0 flex-1 bg-transparent tracking-tight text-neutral-100 placeholder:text-neutral-600 outline-hidden",
+              "transition-[font-size] duration-300 ease-out motion-reduce:transition-none",
+              open ? "text-[14px]" : "text-[12.5px]",
+            ].join(" ")}
+          />
 
-            <kbd className="shrink-0 rounded border border-orange-50/15 bg-white/1 px-1.5 py-0.5 font-mono text-[9px] text-neutral-400">
-              Esc
-            </kbd>
-          </div>
+          <kbd className="shrink-0 rounded border border-orange-50/15 bg-white/1 px-1.5 py-0.5 font-mono text-[9px] text-neutral-400">
+            Esc
+          </kbd>
+        </div>
 
-          <div className="max-h-60 overflow-y-auto p-1.5">
-            {results.length === 0 ? (
-              <p className="px-2 py-6 text-center text-[12px] text-neutral-500">
-                Nothing matches “{query.trim()}”
-              </p>
-            ) : (
-              results.map((entry, index) => (
-                <button
-                  key={entry.href}
-                  type="button"
-                  onClick={() => go(entry)}
-                  onMouseEnter={() => setCursor(index)}
+        <div
+          className={[
+            "p-1.5 transition-[max-height,opacity] duration-300 ease-out motion-reduce:transition-none",
+            open
+              ? "max-h-60 overflow-y-auto opacity-100"
+              : "max-h-0 overflow-hidden opacity-0",
+          ].join(" ")}
+        >
+          {results.length === 0 ? (
+            <p className="px-2 py-6 text-center text-[12px] text-neutral-500">
+              Nothing matches “{query.trim()}”
+            </p>
+          ) : (
+            results.map((entry, index) => (
+              <button
+                key={entry.href}
+                type="button"
+                onClick={() => go(entry)}
+                onMouseEnter={() => setCursor(index)}
+                className={[
+                  "flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left",
+                  "transition-colors duration-150",
+                  index === cursor ? "bg-white/8" : "hover:bg-white/6",
+                ].join(" ")}
+              >
+                <span
                   className={[
-                    "flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left",
-                    "transition-colors duration-150",
-                    index === cursor ? "bg-white/8" : "hover:bg-white/6",
+                    "flex size-8 shrink-0 items-center justify-center rounded-md border border-orange-50/15",
+                    index === cursor ? "text-orange-100" : "text-neutral-500",
                   ].join(" ")}
                 >
-                  <span
-                    className={[
-                      "flex size-8 shrink-0 items-center justify-center rounded-md border border-orange-50/15",
-                      index === cursor ? "text-orange-100" : "text-neutral-500",
-                    ].join(" ")}
-                  >
-                    <HugeiconsIcon
-                      icon={entry.icon}
-                      size={15}
-                      strokeWidth={1.6}
-                    />
-                  </span>
-
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[13px] font-medium tracking-tight text-neutral-100">
-                      {entry.label}
-                    </span>
-                    <span className="block truncate text-[11.5px] text-neutral-500">
-                      {entry.context}
-                    </span>
-                  </span>
-
                   <HugeiconsIcon
-                    icon={ArrowRight01Icon}
-                    size={12}
-                    strokeWidth={2}
-                    className="shrink-0 text-neutral-700"
+                    icon={entry.icon}
+                    size={15}
+                    strokeWidth={1.6}
                   />
-                </button>
-              ))
-            )}
-          </div>
+                </span>
+
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[13px] font-medium tracking-tight text-neutral-100">
+                    {entry.label}
+                  </span>
+                  <span className="block truncate text-[11.5px] text-neutral-500">
+                    {entry.context}
+                  </span>
+                </span>
+
+                <HugeiconsIcon
+                  icon={ArrowRight01Icon}
+                  size={12}
+                  strokeWidth={2}
+                  className="shrink-0 text-neutral-700"
+                />
+              </button>
+            ))
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
@@ -21,6 +21,15 @@ import type { ActivityActionType } from "@/types/api/dashboard/activity";
 
 const FILTERS = ["All", "Cards", "Comments", "Boards"] as const;
 type Filter = (typeof FILTERS)[number];
+
+/** `?type=comments` and friends, from the sidebar's Activity panel. */
+function filterFromParam(value: string | null): Filter {
+  const match = FILTERS.find(
+    (option) => option.toLowerCase() === (value ?? "").toLowerCase(),
+  );
+
+  return match ?? "All";
+}
 
 const FILTER_TYPES: Record<Exclude<Filter, "All">, ActivityActionType[]> = {
   Cards: [
@@ -103,7 +112,8 @@ export default function ActivityLogsPage() {
   const navigate = useNavigate();
   const { activeWorkspaceName } = useActiveWorkspace();
 
-  const [filter, setFilter] = useState<Filter>("All");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const filter = filterFromParam(searchParams.get("type"));
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -181,7 +191,12 @@ export default function ActivityLogsPage() {
               <button
                 key={option}
                 type="button"
-                onClick={() => setFilter(option)}
+                onClick={() =>
+                  setSearchParams(
+                    option === "All" ? {} : { type: option.toLowerCase() },
+                    { replace: true },
+                  )
+                }
                 aria-pressed={filter === option}
                 className={[
                   "h-7 cursor-pointer rounded-md px-2.5 text-[11.5px] transition-colors duration-200",

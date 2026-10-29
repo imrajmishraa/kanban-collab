@@ -12,7 +12,10 @@ import {
   UserGroupIcon,
 } from "@hugeicons/core-free-icons";
 
+import { Avatar } from "@components/layout/board/BoardAvatar";
+
 import { useNewWorkspaceDialog } from "@/components/layout/dashboard/workspace/create/newWorkspaceDialog.context";
+import { avatarColor } from "@/features/boards/board.helpers";
 import { useWorkspaces } from "@/hooks/dashboard/useWorkspaces";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 
@@ -129,13 +132,28 @@ export function RequireWorkspace({ children }: { children: ReactNode }) {
                     }
                     className="group/row flex h-10 w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 text-left transition-colors duration-200 hover:bg-white/5"
                   >
-                    <span className="flex size-6 shrink-0 items-center justify-center rounded-md border border-orange-50/15 text-neutral-500 transition-colors duration-200 group-hover/row:text-neutral-300">
-                      <HugeiconsIcon
-                        icon={Folder01Icon}
-                        size={12}
-                        strokeWidth={1.7}
+                    {/* The workspace's own image when it has one; the folder
+                        glyph only stands in for workspaces without one. */}
+                    {workspace.avatarUrl ? (
+                      <Avatar
+                        member={{
+                          id: workspace.id,
+                          name: workspace.name,
+                          avatarUrl: workspace.avatarUrl,
+                          color: avatarColor(workspace.id),
+                        }}
+                        size={24}
+                        ring={false}
                       />
-                    </span>
+                    ) : (
+                      <span className="flex size-6 shrink-0 items-center justify-center rounded-md border border-orange-50/15 text-neutral-500 transition-colors duration-200 group-hover/row:text-neutral-300">
+                        <HugeiconsIcon
+                          icon={Folder01Icon}
+                          size={12}
+                          strokeWidth={1.7}
+                        />
+                      </span>
+                    )}
 
                     <span className="min-w-0 flex-1 truncate text-[12.5px] text-neutral-200">
                       {workspace.name}

@@ -56,11 +56,36 @@ export function WorkspacePage() {
   const starredIds = useStarredWorkspaces((state) => state.ids);
   const toggleStar = useStarredWorkspaces((state) => state.toggle);
 
-  // Keep the active workspace in sync with the URL.
+  /*
+   * Keep the active workspace in sync with the URL, but never refill a
+   * selection the user just cleared.
+   *
+   * Without the `syncedFor` guard this fought the "Back to project view"
+   * button: clearing the store re-ran this effect (its `activeWorkspaceId`
+   * dependency had changed) while this page was still mounted, and it
+   * immediately wrote the workspace from the URL back into the store. The
+   * navbar looked cleared because it renders `null` on the overview, but the
+   * sidebar still read a workspace and showed Overview.
+   *
+   * The guard records which route this page has already synced. A first visit
+   * to a workspace URL still selects it; a clear during that same visit does
+   * not get undone.
+   */
+  const syncedFor = useRef<string | null>(null);
+
   useEffect(() => {
-    if (!workspaceId || workspaceId === activeWorkspaceId) return;
+    if (!workspaceId) return;
+
+    if (workspaceId === activeWorkspaceId) {
+      syncedFor.current = workspaceId;
+      return;
+    }
+
+    if (syncedFor.current === workspaceId) return;
+
     const match = workspaces.find((workspace) => workspace.id === workspaceId);
     setActiveWorkspace(workspaceId, match?.name ?? "");
+    syncedFor.current = workspaceId;
   }, [workspaceId, activeWorkspaceId, workspaces, setActiveWorkspace]);
 
   useEffect(() => {
