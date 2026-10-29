@@ -115,7 +115,7 @@ export function ShareBoardDialog({
           <button
             type="button"
             onClick={onClose}
-            className="flex h-9 cursor-pointer items-center rounded-none rounded-tl-lg rounded-br-lg border border-orange-50/20 px-4 text-[12px] text-neutral-300 transition-colors duration-200 hover:border-orange-50/35 hover:bg-white/[0.04] hover:text-neutral-100"
+            className="flex h-9 cursor-pointer items-center rounded-none rounded-tl-lg rounded-br-lg border border-orange-50/20 px-4 text-[12px] text-neutral-300 transition-colors duration-200 hover:border-orange-50/35 hover:bg-white/4 hover:text-neutral-100"
           >
             {result ? "Done" : "Cancel"}
           </button>

@@ -6,7 +6,7 @@ import {
 import { useNavigate } from "react-router-dom";
 
 import logo from "@/assets/logo.svg?inline";
-import { Tooltip } from "#components/Tooltips/ToolTip";
+import { Tooltip } from "@components/Tooltips/ToolTip";
 interface SidebarHeaderProps {
   collapsed: boolean;
   onToggle: () => void;
@@ -31,9 +31,9 @@ const SidebarHeader = ({ collapsed, onToggle }: SidebarHeaderProps) => {
             group relative flex size-9 cursor-pointer
             items-center justify-center
             rounded-full
-            bg-white/[0.02]
+            bg-white/2
             transition-colors
-            hover:bg-white/[0.06]
+            hover:bg-white/6
           "
           >
             {/* Logo, visible normally, hidden on hover */}
@@ -126,7 +126,7 @@ function HeaderIconButton({
           e.stopPropagation();
           onClick();
         }}
-        className="flex size-8 cursor-pointer items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-white/[0.06] hover:text-neutral-100"
+        className="flex size-8 cursor-pointer items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-white/6 hover:text-neutral-100"
       >
         {icon}
       </button>

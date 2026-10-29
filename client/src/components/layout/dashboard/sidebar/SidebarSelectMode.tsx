@@ -73,7 +73,7 @@ export function SidebarSelectMode({
         className={[
           "group/board relative flex h-9 cursor-pointer items-center gap-2.5 rounded-md px-2 text-left transition-colors",
           "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-(--brand)/40",
-          isSelected ? "bg-white/[0.05]" : "hover:bg-white/[0.03]",
+          isSelected ? "bg-white/5" : "hover:bg-white/3",
         ].join(" ")}
       >
         <span
@@ -133,7 +133,7 @@ export function SidebarSelectMode({
               type="button"
               onClick={onClose}
               aria-label="Exit multi-select"
-              className="flex size-6 cursor-pointer items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-white/[0.06] hover:text-neutral-100"
+              className="flex size-6 cursor-pointer items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-white/6 hover:text-neutral-100"
             >
               <HugeiconsIcon icon={Cancel01Icon} size={13} strokeWidth={1.8} />
             </button>
@@ -183,7 +183,7 @@ export function SidebarSelectMode({
             type="button"
             onClick={() => onPin(selectedIds)}
             disabled={!hasSelection}
-            className="flex h-9 items-center justify-center gap-1.5 font-mono text-[11px] text-neutral-400 transition-colors hover:bg-white/[0.04] hover:text-neutral-100 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
+            className="flex h-9 items-center justify-center gap-1.5 font-mono text-[11px] text-neutral-400 transition-colors hover:bg-white/4 hover:text-neutral-100 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
           >
             <HugeiconsIcon icon={PinIcon} size={12} strokeWidth={1.8} />
             <span>Pin</span>

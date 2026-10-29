@@ -3,8 +3,9 @@ import { useEffect } from "react";
 import MobileSidebarHeader from "./MobileSidebarHeader";
 
 import { WorkspaceSelector } from "../workspace/selector/WorkspaceSelector";
-import SidebarNewWorkspace from "../workspace/create/SidebarNewWorkspace";
 import SidebarNavigation from "../sidebar/SidebarNavigation";
+import SidebarNewProject from "../workspace/create/SidebarNewProject";
+import SidebarSearch from "../sidebar/SidebarSearch";
 import SidebarBoards from "../sidebar/SidebarBoards";
 import SidebarFooter from "../sidebar/SidebarFooter";
 
@@ -90,8 +91,11 @@ export default function MobileSidebar({
             dropdownClassName="w-[calc(100vw-3rem)] max-w-[280px]"
           />
         </div>
-        {/* New workspace */}
-        <SidebarNewWorkspace collapsed={false} />
+        {/* Find and the Project button, mirroring the desktop sidebar */}
+        <div className="shrink-0 pt-2">
+          <SidebarSearch collapsed={false} />
+          <SidebarNewProject collapsed={false} />
+        </div>
 
         {/* Scrollable nav + boards */}
         <div className="relative min-h-0 flex-1">

@@ -7,19 +7,6 @@ import {
   updateColumnSchema,
 } from "@/validations/dashboard/column.validator";
 
-export interface CreateColumnRequest {
-  boardId: string;
-  name: string;
-  orderIndex?: number;
-}
-
-export interface CreateColumnResponse {
-  id: string;
-  boardId: string;
-  name: string;
-  orderIndex: number;
-}
-
 export const columnApi = {
   async createColumn(payload: {
     boardId: string;

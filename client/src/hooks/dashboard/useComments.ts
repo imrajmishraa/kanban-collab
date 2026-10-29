@@ -1,16 +1,12 @@
 import {
   useInfiniteQuery,
   useMutation,
-  useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
 
 import { commentsApi } from "@/api/dashboard/commentsApi";
 
-import type {
-  CommentVoteResult,
-  CreateCommentPayload,
-} from "@/types/api/dashboard/comment";
+import type { CreateCommentPayload } from "@/types/api/dashboard/comment";
 
 export const commentKeys = {
   all: ["comments"] as const,
@@ -53,16 +49,6 @@ export function useReplies(commentId: string, enabled: boolean) {
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
     enabled,
-  });
-}
-
-export function useComment(cardId: string, commentId: string | undefined) {
-  return useQuery({
-    queryKey: commentId
-      ? commentKeys.single(commentId)
-      : commentKeys.forCard(cardId),
-    queryFn: () => commentsApi.getComment(commentId!),
-    enabled: Boolean(commentId),
   });
 }
 
@@ -157,5 +143,3 @@ export function useDeleteComment(cardId: string) {
     },
   });
 }
-
-export type { CommentVoteResult };

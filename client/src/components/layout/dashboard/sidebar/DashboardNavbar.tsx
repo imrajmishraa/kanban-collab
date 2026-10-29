@@ -69,7 +69,7 @@ export default function DashboardNavbar() {
      itself, so the header reads as "you are in this workspace".
      Declared after the store hook, which is where the name comes from. */
   const pageTitle = onOverview
-    ? "Overview"
+    ? "Projects Overview"
     : onWorkspaceRoute
       ? "Workspaces"
       : location.pathname.startsWith("/boards")

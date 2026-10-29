@@ -178,10 +178,10 @@ const SidebarBoards = ({
               "focus-visible:ring-(--brand)/40",
 
               isActive
-                ? "bg-white/[0.05] text-neutral-400"
+                ? "bg-white/5 text-neutral-400"
                 : [
                     "text-neutral-400",
-                    "hover:bg-white/[0.03]",
+                    "hover:bg-white/3",
                     "hover:text-neutral-400",
                   ].join(" "),
             ].join(" ")
@@ -251,7 +251,7 @@ const SidebarBoards = ({
           justify-between
           rounded-lg
           px-2
-          hover:bg-white/[0.04]
+          hover:bg-white/4
         "
       >
         <button
@@ -309,7 +309,7 @@ const SidebarBoards = ({
               text-neutral-500
               transition-colors
 
-              hover:bg-white/[0.08]
+              hover:bg-white/8
               hover:text-neutral-100
 
               focus-visible:outline-hidden

@@ -8,6 +8,7 @@ import CommentItem from "./CommentItem";
 
 import { useAuth } from "@/hooks/auth/useAuth";
 import {
+  useClearVote,
   useComments,
   useCreateComment,
   useDeleteComment,
@@ -43,6 +44,7 @@ export default function CardComments({ cardId }: CardCommentsProps) {
   const deleteComment = useDeleteComment(cardId);
   const updateComment = useUpdateComment(cardId);
   const voteComment = useVoteComment(cardId);
+  const clearVote = useClearVote(cardId);
 
   const comments = data?.pages.flatMap((page) => page.comments) ?? [];
   const total = comments.length;
@@ -77,7 +79,7 @@ export default function CardComments({ cardId }: CardCommentsProps) {
           rows={2}
           placeholder="Write a comment…"
           aria-label="Write a comment"
-          className="w-full resize-y rounded-lg border border-orange-50/15 bg-white/[0.04] px-3 py-2 text-[12.5px] text-neutral-100 outline-hidden transition-colors duration-200 placeholder:text-neutral-600 hover:border-orange-50/25 focus:border-white/25"
+          className="w-full resize-y rounded-lg border border-orange-50/15 bg-white/4 px-3 py-2 text-[12.5px] text-neutral-100 outline-hidden transition-colors duration-200 placeholder:text-neutral-600 hover:border-orange-50/25 focus:border-white/25"
         />
 
         <div className="mt-2 flex items-center justify-between">
@@ -130,10 +132,21 @@ export default function CardComments({ cardId }: CardCommentsProps) {
             comment={comment}
             cardId={cardId}
             currentUserId={user?.id}
-            isVoting={voteComment.isPending}
-            onVote={(commentId, action) =>
-              voteComment.mutate({ commentId, action })
-            }
+            isVoting={voteComment.isPending || clearVote.isPending}
+            /* Clicking the vote you already have removes it, which is what
+               DELETE /comments/:id/like is for. */
+            onVote={(commentId, action) => {
+              const existing = comments.find(
+                (comment) => comment.id === commentId,
+              );
+
+              if (existing?.userAction === action) {
+                clearVote.mutate(commentId);
+                return;
+              }
+
+              voteComment.mutate({ commentId, action });
+            }}
             onDelete={(commentId) => deleteComment.mutate(commentId)}
             onEdit={(commentId, nextText) =>
               updateComment.mutate({ commentId, text: nextText })

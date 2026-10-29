@@ -20,7 +20,7 @@ const SidebarNavigation = ({ collapsed }: SidebarNavigationProps) => {
     >
       <div className="flex flex-col gap-0.5">
         <SidebarItem
-          label="Overview"
+          label="Projects"
           href="/dashboard"
           icon={
             <HugeiconsIcon

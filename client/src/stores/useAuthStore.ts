@@ -32,6 +32,15 @@ interface AuthState {
   restoreSession: () => Promise<void>;
 }
 
+/**
+ * Drops the selected workspace. Imported lazily because `activeWorkspace`
+ * imports this store, and a static import would be a cycle.
+ */
+async function clearActiveWorkspace(): Promise<void> {
+  const { useActiveWorkspace } = await import("@/stores/activeWorkspace");
+  useActiveWorkspace.getState().clearActiveWorkspace();
+}
+
 export const useAuthStore = create<AuthState>()((set, get) => ({
   status: "loading",
   user: null,
@@ -52,6 +61,10 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
 
     const { accessToken, user } = response.data;
     set({ status: "authenticated", user, accessToken });
+
+    /* A fresh login starts with nothing selected: the sidebar opens on the
+       account view and the navbar shows no workspace. */
+    await clearActiveWorkspace();
   },
 
   register: async (fullName, email, password) => {
@@ -60,16 +73,15 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
     if (!response.success || !response.data) {
       throw new Error(response.message || "Registration failed.");
     }
+
+    await clearActiveWorkspace();
   },
 
   logout: async () => {
     try {
       await logoutRequest();
     } finally {
-      // Clear the active workspace pointer (the per-user memory is kept so
-      // the next login can restore it). Imported lazily to avoid a cycle.
-      const { useActiveWorkspace } = await import("@/stores/activeWorkspace");
-      useActiveWorkspace.getState().clearActiveWorkspace();
+      await clearActiveWorkspace();
       set({ status: "unauthenticated", user: null, accessToken: null });
     }
   },

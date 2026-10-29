@@ -5,7 +5,6 @@ import type {
   Comment,
   CommentPage,
   CommentVoteResult,
-  CommentWithReplies,
   CreateCommentPayload,
   ReplyPage,
 } from "@/types/api/dashboard/comment";
@@ -59,15 +58,6 @@ export const commentsApi = {
     return response.data.data;
   },
 
-  async getComment(commentId: string): Promise<CommentWithReplies> {
-    const response = await apiClient.get<ApiResponse<CommentWithReplies>>(
-      `/comments/${commentId}`,
-    );
-
-    return response.data.data;
-  },
-
-  /** Send the same action twice and the server toggles the vote off. */
   async vote(commentId: string, action: 1 | -1): Promise<CommentVoteResult> {
     const response = await apiClient.post<ApiResponse<CommentVoteResult>>(
       `/comments/${commentId}/like`,

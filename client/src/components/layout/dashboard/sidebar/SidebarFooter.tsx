@@ -153,7 +153,7 @@ export default function SidebarFooter({
 
         <div className="relative border-b border-orange-50/10 px-3 py-2.5">
           <div className="flex items-center gap-2.5">
-            <div className="flex size-7 shrink-0 items-center justify-center rounded-md border border-orange-50/15 bg-white/[0.04] text-neutral-400">
+            <div className="flex size-7 shrink-0 items-center justify-center rounded-md border border-orange-50/15 bg-white/4 text-neutral-400">
               <HugeiconsIcon icon={UserIcon} size={13} strokeWidth={1.5} />
             </div>
             <div className="min-w-0">
@@ -209,8 +209,8 @@ export default function SidebarFooter({
           className={[
             "mx-auto flex size-9 cursor-pointer items-center justify-center rounded-lg transition-colors duration-200",
             isOpen
-              ? "bg-white/[0.06] text-neutral-100"
-              : "text-neutral-400 hover:bg-white/[0.04] hover:text-neutral-100",
+              ? "bg-white/6 text-neutral-100"
+              : "text-neutral-400 hover:bg-white/4 hover:text-neutral-100",
           ].join(" ")}
         >
           <HugeiconsIcon icon={Menu01Icon} size={16} strokeWidth={1.5} />
@@ -236,7 +236,7 @@ export default function SidebarFooter({
         onClick={toggleMenu}
         className={[
           "flex w-full cursor-pointer items-center justify-between rounded-lg px-2.5 py-2 text-left transition-colors duration-200",
-          isOpen ? "bg-white/[0.06]" : "hover:bg-white/[0.04]",
+          isOpen ? "bg-white/6" : "hover:bg-white/4",
         ].join(" ")}
       >
         <div className="flex items-center gap-3">
@@ -277,7 +277,7 @@ function FlyoutItem({
         "transition-colors duration-150",
         danger
           ? "text-neutral-400 hover:bg-rose-500/8 hover:text-rose-300"
-          : "text-neutral-400 hover:bg-white/[0.05] hover:text-neutral-100",
+          : "text-neutral-400 hover:bg-white/5 hover:text-neutral-100",
       ].join(" ")}
     >
       <HugeiconsIcon

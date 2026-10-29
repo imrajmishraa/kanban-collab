@@ -37,6 +37,9 @@ const WorkspacePage = lazy(() =>
     default: m.WorkspacePage,
   })),
 );
+const ActivityLogsPage = lazy(
+  () => import("@/features/activity/pages/ActivityLogsPage"),
+);
 const BoardPage = lazy(() =>
   import("@/features/boards/pages/BoardPage").then((m) => ({
     default: m.BoardPage,
@@ -114,6 +117,14 @@ export function AppRouter() {
               element={
                 <RequireWorkspace>
                   <MemberPage />
+                </RequireWorkspace>
+              }
+            />
+            <Route
+              path="/activity"
+              element={
+                <RequireWorkspace>
+                  <ActivityLogsPage />
                 </RequireWorkspace>
               }
             />

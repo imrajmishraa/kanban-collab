@@ -100,5 +100,8 @@
     "vite-plugin-compression2": "^2.5.3",
     "vite-plugin-svgr": "^5.2.0",
     "vitest": "^5.0.5"
+  },
+  "allowScripts": {
+    "fsevents": false
   }
 }

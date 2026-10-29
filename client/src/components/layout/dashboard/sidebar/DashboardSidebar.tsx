@@ -1,8 +1,9 @@
 import { useCallback, useMemo, useState } from "react";
 
 import SidebarHeader from "./SidebarHeader";
-import SidebarNewWorkspace from "../workspace/create/SidebarNewWorkspace";
 import SidebarNavigation from "./SidebarNavigation";
+import SidebarSearch from "./SidebarSearch";
+// import SidebarNewProject from "../workspace/create/SidebarNewProject";
 import SidebarBoards from "./SidebarBoards";
 import SidebarFooter from "./SidebarFooter";
 import { SidebarSelectMode } from "./SidebarSelectMode";
@@ -227,7 +228,7 @@ export default function DashboardSidebar({
           />
         ) : (
           <>
-            <SidebarNewWorkspace collapsed={collapsed} />
+            <SidebarSearch collapsed={collapsed} />
 
             <div className="relative min-h-0 flex-1">
               <div className="h-full overflow-y-auto">
