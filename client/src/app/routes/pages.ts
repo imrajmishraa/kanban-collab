@@ -27,7 +27,9 @@ export const RegisterPage = lazy(
 export const ForgotPasswordPage = lazy(
   () => import("@/features/auth/pages/ForgotPasswordPage"),
 );
-export const OAuthCallback = lazy(() => import("@/features/auth/OAuthCallback"));
+export const OAuthCallback = lazy(
+  () => import("@/features/auth/OAuthCallback"),
+);
 
 /* Workspaces */
 export const DashboardPage = lazy(
@@ -43,7 +45,9 @@ export const BoardPage = lazy(() =>
     default: m.BoardPage,
   })),
 );
-export const MainBoard = lazy(() => import("@/features/boards/pages/MainBoard"));
+export const MainBoard = lazy(
+  () => import("@/features/boards/pages/MainBoard"),
+);
 export const NotesPage = lazy(() => import("@/features/notes/pages/NotesPage"));
 export const MemberPage = lazy(
   () => import("@components/layout/dashboard/members/MemberPage"),

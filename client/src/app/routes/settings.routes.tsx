@@ -17,8 +17,14 @@ import {
  * Account settings belong to the person, so they are not scoped at all.
  */
 export const settingsRoutes: RouteObject[] = [
-  { path: "/workspaces/~", element: <Navigate to="settings/general" replace /> },
-  { path: "/workspaces/~/settings", element: <Navigate to="general" replace /> },
+  {
+    path: "/workspaces/~",
+    element: <Navigate to="settings/general" replace />,
+  },
+  {
+    path: "/workspaces/~/settings",
+    element: <Navigate to="general" replace />,
+  },
   { path: "/workspaces/~/settings/general", element: <SettingsPage /> },
   {
     path: "/workspaces/~/settings/notifications",

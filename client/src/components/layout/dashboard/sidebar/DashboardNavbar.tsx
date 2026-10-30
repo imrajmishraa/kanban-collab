@@ -9,8 +9,6 @@ import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { useSidebarState } from "@/stores/sidebarState";
 import { notificationsApi } from "@/api/dashboard/notificationsApi";
 import {
-  Chevron,
-  DashIcon,
   NavbarSearchIcon,
   NotificationsButton,
 } from "../workspace/create/NavbarIcons";
@@ -133,10 +131,6 @@ export default function DashboardNavbar() {
           aria-label="Breadcrumb"
           className="flex min-w-0 items-center gap-0.5"
         >
-          <DashIcon />
-
-          <Chevron />
-
           <WorkspaceSelector
             activeWorkspaceId={
               showAllWorkspaces ? null : (activeWorkspaceId ?? null)

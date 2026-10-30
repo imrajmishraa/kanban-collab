@@ -4,13 +4,20 @@ import { useNavigate } from "react-router-dom";
 
 import logo from "@/assets/logo.svg?inline";
 import { Tooltip } from "@components/Tooltips/ToolTip";
+
 interface SidebarHeaderProps {
   collapsed: boolean;
   onToggle: () => void;
   toggleLabel?: string;
+  /** True while the rail is open only because the pointer is over it. */
+  hovering?: boolean;
 }
 
-const SidebarHeader = ({ collapsed, onToggle }: SidebarHeaderProps) => {
+const SidebarHeader = ({
+  collapsed,
+  onToggle,
+  hovering = false,
+}: SidebarHeaderProps) => {
   const navigate = useNavigate();
 
   if (collapsed) {
@@ -69,6 +76,7 @@ const SidebarHeader = ({ collapsed, onToggle }: SidebarHeaderProps) => {
       </div>
     );
   }
+
   return (
     <header className="flex h-14 shrink-0 items-center justify-between px-3">
       <button
@@ -90,20 +98,24 @@ const SidebarHeader = ({ collapsed, onToggle }: SidebarHeaderProps) => {
         </span>
       </button>
 
-      <div className="flex items-center gap-0.5">
-        <Tooltip label="Collapse" side="bottom" shape="solid" size="md">
-          <HeaderIconButton
-            icon={
-              <HugeiconsIcon
-                icon={SidebarLeftIcon}
-                size={15}
-                strokeWidth={1.6}
-              />
-            }
-            onClick={onToggle}
-          />
-        </Tooltip>
-      </div>
+      {/* Hovered open, the rail is open because of the pointer, so a control
+          that collapses it has nothing to act on. */}
+      {!hovering && (
+        <div className="flex items-center gap-0.5">
+          <Tooltip label="Collapse" side="bottom" shape="solid" size="md">
+            <HeaderIconButton
+              icon={
+                <HugeiconsIcon
+                  icon={SidebarLeftIcon}
+                  size={15}
+                  strokeWidth={1.6}
+                />
+              }
+              onClick={onToggle}
+            />
+          </Tooltip>
+        </div>
+      )}
     </header>
   );
 };

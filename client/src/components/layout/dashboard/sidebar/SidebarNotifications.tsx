@@ -113,7 +113,7 @@ export function SidebarNotifications({ onClose }: SidebarNotificationsProps) {
     <div
       role="dialog"
       aria-label="Notifications"
-      className="absolute bottom-full left-3 z-80 mb-2 w-84 overflow-hidden rounded-xl border border-orange-50/20 bg-[#141416]"
+      className="absolute bottom-full left-full z-80 mb-2 ml-2 w-84 overflow-hidden rounded-xl border border-orange-50/20 bg-[#141416]"
     >
       <div className="flex items-center gap-1 border-b border-orange-50/10 px-2 py-1.5">
         {TABS.map((option) => {

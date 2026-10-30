@@ -58,9 +58,7 @@ export function RequireWorkspace({ to }: { to: string }) {
   const { workspaces, isLoading } = useWorkspaces(debounced);
 
   if (activeWorkspaceId) {
-    return (
-      <Navigate to={`/workspaces/${activeWorkspaceId}${to}`} replace />
-    );
+    return <Navigate to={`/workspaces/${activeWorkspaceId}${to}`} replace />;
   }
 
   const head = to.split("?")[0]?.split("/")[1] ?? "";

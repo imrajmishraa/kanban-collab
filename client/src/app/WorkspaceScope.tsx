@@ -4,7 +4,6 @@ import { Navigate, Outlet, useParams } from "react-router-dom";
 import { useWorkspaces } from "@/hooks/dashboard/useWorkspaces";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 
-
 export function WorkspaceScope() {
   const { workspaceId } = useParams<{ workspaceId: string }>();
   const { activeWorkspaceId, setActiveWorkspace } = useActiveWorkspace();

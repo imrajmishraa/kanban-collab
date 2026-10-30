@@ -187,7 +187,11 @@ const SidebarNavigation = ({ collapsed }: SidebarNavigationProps) => {
               .map((entry) => ({
                 ...entry,
                 iconNode: (
-                  <HugeiconsIcon icon={entry.icon} size={16} strokeWidth={1.5} />
+                  <HugeiconsIcon
+                    icon={entry.icon}
+                    size={16}
+                    strokeWidth={1.5}
+                  />
                 ),
               })),
             ...secondary.map((entry) => ({
@@ -296,7 +300,9 @@ const SidebarNavigation = ({ collapsed }: SidebarNavigationProps) => {
 
       <div aria-hidden="true" className="my-2 h-px bg-orange-50/10" />
 
-      <div className="flex flex-col gap-0.5">{secondary.map(renderSection)}</div>
+      <div className="flex flex-col gap-0.5">
+        {secondary.map(renderSection)}
+      </div>
     </nav>
   );
 };

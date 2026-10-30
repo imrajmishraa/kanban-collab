@@ -61,12 +61,15 @@ export function buildNavigation({
   workspaceId,
   memberCount,
 }: NavigationContext): NavSection[] {
-  const workspaceHref = workspaceId ? `/workspaces/${workspaceId}` : "/workspaces";
+  const workspaceHref = workspaceId
+    ? `/workspaces/${workspaceId}`
+    : "/workspaces";
 
   /* Everything that only makes sense inside a workspace is scoped to it. With
      nothing selected the unscoped path is kept, which is the route that asks
      for a workspace first. */
-  const at = (path: string) => (workspaceId ? `/workspaces/${workspaceId}${path}` : path);
+  const at = (path: string) =>
+    workspaceId ? `/workspaces/${workspaceId}${path}` : path;
 
   /* Only a few rows carry a child nav. The rest are plain links: no panel to
      open, so no chevron either. */
