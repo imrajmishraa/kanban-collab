@@ -1,141 +1,32 @@
-import { lazy, Suspense } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
-
-import ProtectedRoute from "./ProtectedRoute";
-import { RequireWorkspace } from "./RequireWorkspace.tsx";
-import GuestRoute from "./GuestRoute";
-
-import PublicLayout from "./layouts/PublicLayout";
-import AppLayout from "./layouts/AppLayout";
-import AuthLayout from "./layouts/AuthLayout";
+import { Suspense } from "react";
+import { useRoutes, type RouteObject } from "react-router-dom";
 
 import LoadingScreen from "@components/feedback/LoadingScreen";
 
-// Public / marketing
-const LandingPage = lazy(() => import("@/features/landing/LandingPage"));
-const FeaturesPage = lazy(
-  () => import("@/features/marketing/pages/FeaturesPage"),
-);
-const HowItWorksPage = lazy(
-  () => import("@/features/marketing/pages/HowItWorksPage"),
-);
+import { NotFoundPage } from "./routes/pages";
+import { publicRoutes } from "./routes/public.routes";
+import { authRoutes } from "./routes/auth.routes";
+import { appRoutes } from "./routes/app.routes";
 
-// Auth
-const LoginPage = lazy(() => import("@/features/auth/pages/LoginPage"));
-const RegisterPage = lazy(() => import("@/features/auth/pages/RegisterPage"));
-const ForgotPasswordPage = lazy(
-  () => import("@/features/auth/pages/ForgotPasswordPage"),
-);
-const OAuthCallback = lazy(() => import("@/features/auth/OAuthCallback"));
-
-// App shell
-const DashboardPage = lazy(
-  () => import("@/features/dashboard/pages/DashboardPage"),
-);
-const WorkspacePage = lazy(() =>
-  import("@/features/workspaces/pages/WorkspacePage").then((m) => ({
-    default: m.WorkspacePage,
-  })),
-);
-const ActivityLogsPage = lazy(
-  () => import("@/features/activity/pages/ActivityLogsPage"),
-);
-const BoardPage = lazy(() =>
-  import("@/features/boards/pages/BoardPage").then((m) => ({
-    default: m.BoardPage,
-  })),
-);
-const MainBoard = lazy(() => import("@/features/boards/pages/MainBoard"));
-const MemberPage = lazy(
-  () => import("@components/layout/dashboard/members/MemberPage"),
-);
-const NotesPage = lazy(() => import("@/features/notes/pages/NotesPage"));
-const ProfilePage = lazy(() => import("@/features/user/ProfilePage"));
-const SettingsPage = lazy(() => import("@/features/settings/SettingsPage"));
-
-// 404
-const NotFoundPage = lazy(() => import("@/components/feedback/NotFoundPage"));
+/**
+ * The route table is assembled here and nowhere else. Each group lives in its
+ * own module under `app/routes`, so a change to one area is a change to one
+ * file. React Router ranks the paths itself, so the order below is for reading,
+ * not for matching.
+ */
+const routes: RouteObject[] = [
+  ...publicRoutes,
+  ...authRoutes,
+  ...appRoutes,
+  { path: "*", element: <NotFoundPage /> },
+];
 
 export function AppRouter() {
+  const element = useRoutes(routes);
+
   return (
     <Suspense fallback={<LoadingScreen message="Loading…" />}>
-      <Routes>
-        {/* Public — landing, marketing, no auth required */}
-        <Route element={<PublicLayout />}>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/features" element={<FeaturesPage />} />
-          <Route path="/how-it-works" element={<HowItWorksPage />} />
-        </Route>
-
-        {/* OAuth callback — must run in BOTH states */}
-        <Route path="/auth/callback" element={<OAuthCallback />} />
-
-        {/* Guest-only — login, register, password reset */}
-        <Route element={<GuestRoute />}>
-          <Route element={<AuthLayout />}>
-            <Route
-              path="/auth"
-              element={<Navigate to="/auth/login" replace />}
-            />
-            <Route path="/auth/login" element={<LoginPage />} />
-            <Route path="/auth/register" element={<RegisterPage />} />
-            <Route
-              path="/auth/forgot-password"
-              element={<ForgotPasswordPage />}
-            />
-          </Route>
-        </Route>
-
-        {/* Authenticated — everything inside the app shell */}
-        <Route element={<ProtectedRoute />}>
-          <Route element={<AppLayout />}>
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route
-              path="/workspaces/:workspaceId"
-              element={<WorkspacePage />}
-            />
-            {/* These read the active workspace, so ask for one first. */}
-            <Route
-              path="/boards"
-              element={
-                <RequireWorkspace>
-                  <BoardPage />
-                </RequireWorkspace>
-              }
-            />
-            <Route path="/boards/:boardId" element={<MainBoard />} />
-            <Route
-              path="/notes"
-              element={
-                <RequireWorkspace>
-                  <NotesPage />
-                </RequireWorkspace>
-              }
-            />
-            <Route
-              path="/members"
-              element={
-                <RequireWorkspace>
-                  <MemberPage />
-                </RequireWorkspace>
-              }
-            />
-            <Route
-              path="/activity"
-              element={
-                <RequireWorkspace>
-                  <ActivityLogsPage />
-                </RequireWorkspace>
-              }
-            />
-            <Route path="/user/profile" element={<ProfilePage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-          </Route>
-        </Route>
-
-        {/* 404 */}
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
+      {element}
     </Suspense>
   );
 }

@@ -161,9 +161,18 @@ const SidebarNavigation = ({ collapsed }: SidebarNavigationProps) => {
     return pathname === path || pathname.startsWith(`${path}/`);
   };
 
-  const isSectionActive = (section: NavSection) =>
-    isUnder(section.href) ||
-    (section.children ?? []).some((child) => isUnder(child.href));
+  const isSectionActive = (section: NavSection) => {
+    /* The overview sits at /workspaces/:id, which every scoped page is nested
+       under, so it matches exactly rather than by prefix. */
+    if (section.key === home.key) {
+      return pathname === (section.href.split("?")[0] ?? section.href);
+    }
+
+    return (
+      isUnder(section.href) ||
+      (section.children ?? []).some((child) => isUnder(child.href))
+    );
+  };
 
   /* Collapsed, a drilldown has no room to expand into, so the row becomes a
      plain link to its first page. */
@@ -178,11 +187,7 @@ const SidebarNavigation = ({ collapsed }: SidebarNavigationProps) => {
               .map((entry) => ({
                 ...entry,
                 iconNode: (
-                  <HugeiconsIcon
-                    icon={entry.icon}
-                    size={16}
-                    strokeWidth={1.5}
-                  />
+                  <HugeiconsIcon icon={entry.icon} size={16} strokeWidth={1.5} />
                 ),
               })),
             ...secondary.map((entry) => ({
@@ -291,9 +296,7 @@ const SidebarNavigation = ({ collapsed }: SidebarNavigationProps) => {
 
       <div aria-hidden="true" className="my-2 h-px bg-orange-50/10" />
 
-      <div className="flex flex-col gap-0.5">
-        {secondary.map(renderSection)}
-      </div>
+      <div className="flex flex-col gap-0.5">{secondary.map(renderSection)}</div>
     </nav>
   );
 };

@@ -31,7 +31,7 @@ interface MiniCard {
 
 const SHORTCUTS: ShortcutItem[] = [
   { to: "/boards", icon: GridViewIcon, label: "All boards" },
-  { to: "/dashboard", icon: Add01Icon, label: "New board" },
+  { to: "/workspaces", icon: Add01Icon, label: "New board" },
   { to: "/user/profile", icon: UserGroupIcon, label: "Profile" },
   { to: "/settings", icon: Settings01Icon, label: "Settings" },
 ];
@@ -100,7 +100,7 @@ export default function NotFound() {
   // is no previous page — fall back to the dashboard.
   const handleGoBack = () => {
     if (location.key === "default") {
-      navigate("/dashboard", { replace: true });
+      navigate("/workspaces", { replace: true });
     } else {
       navigate(-1);
     }
@@ -211,7 +211,7 @@ export default function NotFound() {
               </button>
 
               <Link
-                to="/dashboard"
+                to="/workspaces"
                 className="
                   group inline-flex min-w-42 cursor-pointer items-center justify-center gap-2
                   rounded-full

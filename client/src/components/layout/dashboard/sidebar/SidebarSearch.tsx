@@ -53,7 +53,7 @@ export default function SidebarSearch({ collapsed }: SidebarSearchProps) {
         }
       : {
           label: "Projects",
-          href: "/dashboard",
+          href: "/workspaces",
           icon: DashboardSquare02Icon,
           context: "Account",
         };

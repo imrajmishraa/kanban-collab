@@ -73,7 +73,7 @@ const SidebarHeader = ({ collapsed, onToggle }: SidebarHeaderProps) => {
     <header className="flex h-14 shrink-0 items-center justify-between px-3">
       <button
         type="button"
-        onClick={() => navigate("/dashboard")}
+        onClick={() => navigate("/workspaces")}
         aria-label="Go to homepage"
         className="group ml-1 flex cursor-pointer items-center gap-2.5 rounded-md px-1.5 py-1 transition-colors"
       >

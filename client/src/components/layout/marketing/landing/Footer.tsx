@@ -6,7 +6,7 @@ import logo from "@/assets/logo.svg?inline";
 const productLinks = [
   { label: "Features", href: "/features" },
   { label: "How it Works", href: "/how-it-works" },
-  { label: "Dashboard", href: "/dashboard" },
+  { label: "Workspaces", href: "/workspaces" },
 ];
 
 const resourceLinks = [

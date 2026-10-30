@@ -24,7 +24,7 @@ export default function DashboardNavbar() {
 
   /* The overview is not scoped to one workspace, so the switcher reads
      "All Workspaces" there and reverts to the active name elsewhere. */
-  const onOverview = location.pathname === "/dashboard";
+  const onOverview = location.pathname === "/workspaces";
 
   /* The workspace page itself. Used for the page title, and for deciding
      whether closing the workspace has to leave the page. */
@@ -123,10 +123,10 @@ export default function DashboardNavbar() {
       <header
         className={[
           "fixed top-0 right-0 z-50 hidden h-14 md:flex",
-          "items-center gap-2 px-5 border-b border-white/10",
+          "items-center gap-2 px-5 ",
           "transition-[left,background-color] duration-200",
           sidebarCollapsed ? "left-16" : "left-64",
-          scrolled ? "bg-(--bg-root)/90 backdrop-blur-md" : "bg-transparent",
+          scrolled ? "bg-(--bg-root)/85 backdrop-blur-md" : "bg-transparent",
         ].join(" ")}
       >
         <nav
@@ -166,7 +166,7 @@ export default function DashboardNavbar() {
                     clearActiveWorkspace();
 
                     if (onWorkspaceRoute) {
-                      navigate("/dashboard", { replace: true });
+                      navigate("/workspaces", { replace: true });
                     }
                   }
                 : undefined

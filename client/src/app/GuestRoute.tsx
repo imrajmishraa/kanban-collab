@@ -13,7 +13,7 @@ export default function GuestRoute() {
 
   // Authenticated users shouldn't see login/register.
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/workspaces" replace />;
   }
 
   return <Outlet />;

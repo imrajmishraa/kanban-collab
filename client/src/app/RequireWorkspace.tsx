@@ -1,11 +1,10 @@
-import { useEffect, useState, type ReactNode } from "react";
-import { useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Add01Icon,
   ArrowRight01Icon,
-  DashboardSquare01Icon,
   Folder01Icon,
   KanbanIcon,
   LogsIcon,
@@ -24,23 +23,24 @@ import { useActiveWorkspace } from "@/stores/activeWorkspace";
 /** What the blocked page is called, and the glyph that represents it. */
 const DESTINATIONS: Record<string, { label: string; icon: typeof KanbanIcon }> =
   {
-    "/boards": { label: "Boards", icon: KanbanIcon },
-    "/members": { label: "Members", icon: UserGroupIcon },
-    "/notes": { label: "Notes", icon: Note01Icon },
-    "/activity": { label: "Activity Logs", icon: LogsIcon },
+    boards: { label: "Boards", icon: KanbanIcon },
+    members: { label: "Members", icon: UserGroupIcon },
+    notes: { label: "Notes", icon: Note01Icon },
+    activity: { label: "Activity", icon: LogsIcon },
   };
 
 const SEARCH_DEBOUNCE_MS = 300;
 
 /**
- * Gate for pages that only make sense inside a workspace.
+ * Gate for the old, unscoped paths.
  *
- * Boards, members and notes all read the active workspace, so landing on one
- * with nothing selected used to render an empty shell with no way forward.
- * This asks for a workspace first, then renders the page the user asked for.
+ * `/boards` and its siblings predate workspace-scoped routes. They still work:
+ * with a workspace selected they forward straight to the scoped path, and with
+ * nothing selected they ask for a workspace first, then forward. The suffix in
+ * `to` is the part that follows the workspace id.
  */
-export function RequireWorkspace({ children }: { children: ReactNode }) {
-  const { pathname } = useLocation();
+export function RequireWorkspace({ to }: { to: string }) {
+  const navigate = useNavigate();
   const { activeWorkspaceId, setActiveWorkspace } = useActiveWorkspace();
   const { open: openNewWorkspace } = useNewWorkspaceDialog();
 
@@ -57,11 +57,21 @@ export function RequireWorkspace({ children }: { children: ReactNode }) {
 
   const { workspaces, isLoading } = useWorkspaces(debounced);
 
-  if (activeWorkspaceId) return <>{children}</>;
+  if (activeWorkspaceId) {
+    return (
+      <Navigate to={`/workspaces/${activeWorkspaceId}${to}`} replace />
+    );
+  }
 
-  const destination = DESTINATIONS[pathname] ?? {
+  const head = to.split("?")[0]?.split("/")[1] ?? "";
+  const destination = DESTINATIONS[head] ?? {
     label: "Continue",
     icon: Folder01Icon,
+  };
+
+  const choose = (workspaceId: string, name: string) => {
+    setActiveWorkspace(workspaceId, name);
+    navigate(`/workspaces/${workspaceId}${to}`, { replace: true });
   };
 
   return (
@@ -130,9 +140,7 @@ export function RequireWorkspace({ children }: { children: ReactNode }) {
                 <li key={workspace.id}>
                   <button
                     type="button"
-                    onClick={() =>
-                      setActiveWorkspace(workspace.id, workspace.name)
-                    }
+                    onClick={() => choose(workspace.id, workspace.name)}
                     className="group/row flex h-10 w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 text-left transition-colors duration-200 hover:bg-white/5"
                   >
                     {/* The workspace's own image when it has one; the folder
@@ -151,7 +159,7 @@ export function RequireWorkspace({ children }: { children: ReactNode }) {
                     ) : (
                       <span className="flex size-6 shrink-0 items-center justify-center rounded-md border border-orange-50/15 text-neutral-500 transition-colors duration-200 group-hover/row:text-neutral-300">
                         <HugeiconsIcon
-                          icon={DashboardSquare01Icon}
+                          icon={Folder01Icon}
                           size={12}
                           strokeWidth={1.7}
                         />

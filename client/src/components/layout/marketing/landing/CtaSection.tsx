@@ -125,7 +125,7 @@ export default function CtaSection() {
                 {/* ── Actions — same glass pills as the hero ─────── */}
                 <div className="relative z-2 mt-11 flex flex-col items-center justify-center gap-3 sm:flex-row">
                   <Link
-                    to="/dashboard"
+                    to="/workspaces"
                     className="
                       group/btn relative inline-flex min-w-44 items-center justify-center gap-2
                       overflow-hidden rounded-full

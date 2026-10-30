@@ -125,7 +125,7 @@ export default function HeroSection() {
               className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row lg:justify-start"
             >
               <Link
-                to="/dashboard"
+                to="/workspaces"
                 className="
                   group/cta relative inline-flex min-w-44 items-center justify-center gap-2
                   overflow-hidden rounded-full

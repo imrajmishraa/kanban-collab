@@ -50,7 +50,7 @@ export default function OAuthCallback() {
         useActiveWorkspace.getState().clearActiveWorkspace();
       }
 
-      navigate(ok ? "/dashboard" : "/auth/login?error=oauth_refresh", {
+      navigate(ok ? "/workspaces" : "/auth/login?error=oauth_refresh", {
         replace: true,
       });
     });

@@ -9,7 +9,7 @@ import {
   Tick02Icon,
 } from "@hugeicons/core-free-icons";
 
-import { Tooltip } from "#components/Tooltips/ToolTip";
+import { Tooltip } from "@components/Tooltips/ToolTip";
 
 import { useWorkspaces } from "@/hooks/dashboard/useWorkspaces";
 import { useNewWorkspaceDialog } from "@/components/layout/dashboard/workspace/create/newWorkspaceDialog.context";
@@ -238,7 +238,7 @@ export function WorkspaceSelector({
             "transition-colors duration-200",
             isOpen
               ? "bg-white/10 text-neutral-100"
-              : "bg-white/6 text-neutral-300 hover:bg-white/9 hover:text-neutral-100",
+              : "text-neutral-300 hover:bg-white/9 hover:text-neutral-100",
             triggerClassName,
           ]
             .filter(Boolean)

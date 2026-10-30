@@ -29,10 +29,10 @@ interface RegisterLocationState {
 }
 
 function getPostRegisterDestination(state: unknown): string {
-  if (!state || typeof state !== "object") return "/dashboard";
+  if (!state || typeof state !== "object") return "/workspaces";
   const s = state as RegisterLocationState;
   if (!s.from?.pathname || !s.from.pathname.startsWith("/"))
-    return "/dashboard";
+    return "/workspaces";
   return `${s.from.pathname}${s.from.search ?? ""}${s.from.hash ?? ""}`;
 }
 

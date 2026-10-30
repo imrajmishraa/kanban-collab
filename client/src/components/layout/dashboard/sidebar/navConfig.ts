@@ -52,7 +52,7 @@ export interface NavigationContext {
  * The whole sidebar, as data. The component renders whatever this returns, so
  * adding a section or a child never touches the component again.
  *
- * Hrefs stay inside the routes that exist: /dashboard, /workspaces/:id,
+ * Hrefs stay inside the routes that exist: /workspaces, /workspaces/:id,
  * /boards, /notes, /members, /activity, /user/profile and /settings. Filter
  * variants ride on the query string, which is what the activity page already
  * does.
@@ -61,9 +61,12 @@ export function buildNavigation({
   workspaceId,
   memberCount,
 }: NavigationContext): NavSection[] {
-  const workspaceHref = workspaceId
-    ? `/workspaces/${workspaceId}`
-    : "/dashboard";
+  const workspaceHref = workspaceId ? `/workspaces/${workspaceId}` : "/workspaces";
+
+  /* Everything that only makes sense inside a workspace is scoped to it. With
+     nothing selected the unscoped path is kept, which is the route that asks
+     for a workspace first. */
+  const at = (path: string) => (workspaceId ? `/workspaces/${workspaceId}${path}` : path);
 
   /* Only a few rows carry a child nav. The rest are plain links: no panel to
      open, so no chevron either. */
@@ -80,33 +83,33 @@ export function buildNavigation({
     {
       key: "boards",
       label: "Boards",
-      href: "/boards",
+      href: at("/boards"),
       icon: KanbanIcon,
       placement: "primary",
       children: [
         {
           key: "boards.all",
           label: "All boards",
-          href: "/boards",
+          href: at("/boards"),
           icon: KanbanIcon,
           section: "Library",
           children: [
             {
               key: "boards.all.recent",
               label: "Recently viewed",
-              href: "/boards?filter=recent",
+              href: at("/boards?filter=recent"),
               icon: LogsIcon,
             },
             {
               key: "boards.all.shared",
               label: "Shared with me",
-              href: "/boards?filter=shared",
+              href: at("/boards?filter=shared"),
               icon: UserGroupIcon,
             },
             {
               key: "boards.all.mine",
               label: "Created by me",
-              href: "/boards?filter=mine",
+              href: at("/boards?filter=mine"),
               icon: UserIcon,
             },
           ],
@@ -114,13 +117,13 @@ export function buildNavigation({
         {
           key: "boards.pinned",
           label: "Pinned",
-          href: "/boards?filter=pinned",
+          href: at("/boards?filter=pinned"),
           icon: KanbanIcon,
         },
         {
           key: "boards.archived",
           label: "Archived",
-          href: "/boards?filter=archived",
+          href: at("/boards?filter=archived"),
           icon: DashboardSquare02Icon,
           section: "Archive",
         },
@@ -129,14 +132,14 @@ export function buildNavigation({
     {
       key: "notes",
       label: "Notes",
-      href: "/notes",
+      href: at("/notes"),
       icon: Note01Icon,
       placement: "primary",
     },
     {
       key: "members",
       label: "Members",
-      href: "/members",
+      href: at("/members"),
       icon: UserGroupIcon,
       placement: "primary",
       badge: memberCount && memberCount > 0 ? memberCount : undefined,
@@ -144,7 +147,7 @@ export function buildNavigation({
     {
       key: "activity",
       label: "Activity",
-      href: "/activity",
+      href: at("/activity"),
       icon: LogsIcon,
       placement: "primary",
       children: [
@@ -157,20 +160,20 @@ export function buildNavigation({
         {
           key: "activity.comments",
           label: "Comments",
-          href: "/activity?type=comments",
+          href: at("/activity?type=comments"),
           icon: Message01Icon,
           section: "Filter by",
           children: [
             {
               key: "activity.comments.cards",
               label: "On cards",
-              href: "/activity?type=comments&on=cards",
+              href: at("/activity?type=comments&on=cards"),
               icon: KanbanIcon,
             },
             {
               key: "activity.comments.boards",
               label: "On boards",
-              href: "/activity?type=comments&on=boards",
+              href: at("/activity?type=comments&on=boards"),
               icon: DashboardSquare02Icon,
             },
           ],
@@ -178,25 +181,25 @@ export function buildNavigation({
         {
           key: "activity.cards",
           label: "Cards",
-          href: "/activity?type=cards",
+          href: at("/activity?type=cards"),
           icon: KanbanIcon,
           children: [
             {
               key: "activity.cards.created",
               label: "Created",
-              href: "/activity?type=cards&action=created",
+              href: at("/activity?type=cards&action=created"),
               icon: KanbanIcon,
             },
             {
               key: "activity.cards.moved",
               label: "Moved",
-              href: "/activity?type=cards&action=moved",
+              href: at("/activity?type=cards&action=moved"),
               icon: KanbanIcon,
             },
             {
               key: "activity.cards.deleted",
               label: "Deleted",
-              href: "/activity?type=cards&action=deleted",
+              href: at("/activity?type=cards&action=deleted"),
               icon: KanbanIcon,
             },
           ],
@@ -204,50 +207,30 @@ export function buildNavigation({
         {
           key: "activity.boards",
           label: "Boards",
-          href: "/activity?type=boards",
+          href: at("/activity?type=boards"),
           icon: DashboardSquare02Icon,
         },
       ],
     },
     {
-      key: "settings",
+      key: "project-settings",
       label: "Settings",
-      href: "/settings",
+      href: "/workspaces/~/settings/general",
       icon: Settings01Icon,
       placement: "secondary",
       children: [
         {
-          key: "settings.profile",
-          label: "Profile",
-          href: "/user/profile",
-          icon: UserIcon,
-          section: "Account",
-        },
-        {
-          key: "settings.preferences",
-          label: "Preferences",
-          href: "/settings",
+          key: "project-settings.general",
+          label: "General",
+          href: "/workspaces/~/settings/general",
           icon: Settings01Icon,
+          section: "Workspace",
         },
         {
-          key: "settings.notifications",
+          key: "project-settings.notifications",
           label: "Notifications",
-          href: "/settings?tab=notifications",
+          href: "/workspaces/~/settings/notifications",
           icon: Message01Icon,
-          children: [
-            {
-              key: "settings.notifications.email",
-              label: "Email",
-              href: "/settings?tab=notifications&channel=email",
-              icon: Message01Icon,
-            },
-            {
-              key: "settings.notifications.inapp",
-              label: "In app",
-              href: "/settings?tab=notifications&channel=inapp",
-              icon: Message01Icon,
-            },
-          ],
         },
       ],
     },
