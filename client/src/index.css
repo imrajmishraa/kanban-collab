@@ -144,6 +144,25 @@
   --danger: #be123c;
 }
 
+/* THEME REVEAL
+   The View Transition snapshots stack, so the incoming one has to win and the
+   default cross-fade has to be switched off, or it fights the clip-path that
+   lib/themeReveal.ts animates. */
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-new(root) {
+  z-index: 2;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
 /* BASE */
 
 html {

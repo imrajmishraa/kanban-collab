@@ -287,7 +287,9 @@ export function SidebarAccountMenu({
                   role="menuitemradio"
                   aria-checked={active}
                   aria-label={theme.label}
-                  onClick={() => setThemeMode(theme.mode)}
+                  onClick={(event) =>
+                    setThemeMode(theme.mode, event.currentTarget)
+                  }
                   className={[
                     "flex size-6 cursor-pointer items-center justify-center rounded-full",
                     "transition-colors duration-150 motion-reduce:transition-none",

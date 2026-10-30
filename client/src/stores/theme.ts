@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
+import { applyThemeWithReveal } from "@/lib/themeReveal";
+
 /** What the user picked. "system" follows the OS and keeps following it. */
 export type ThemeMode = "system" | "light" | "dark";
 
@@ -52,7 +54,11 @@ interface ThemeState {
   mode: ThemeMode;
   /** The resolved theme, which is what the document shows. */
   theme: Theme;
-  setMode: (mode: ThemeMode) => void;
+  /**
+   * @param mode    what the user picked
+   * @param origin  the control they pressed, so the reveal can start under it
+   */
+  setMode: (mode: ThemeMode, origin?: HTMLElement | null) => void;
 }
 
 export const useThemeStore = create<ThemeState>()(
@@ -61,9 +67,11 @@ export const useThemeStore = create<ThemeState>()(
       mode: "system",
       theme: resolveTheme("system"),
 
-      setMode: (mode) => {
+      setMode: (mode, origin) => {
         const theme = resolveTheme(mode);
-        applyTheme(theme);
+        /* A deliberate choice is revealed; the OS changing under us is not,
+           because there is no control to start the circle from. */
+        applyThemeWithReveal(() => applyTheme(theme), origin);
 
         if (mode === "system") {
           watchSystemTheme((next) => {
