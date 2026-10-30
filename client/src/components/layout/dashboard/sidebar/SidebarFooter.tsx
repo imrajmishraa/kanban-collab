@@ -94,6 +94,7 @@ export default function SidebarFooter({
     return (
       <div
         ref={containerRef}
+        onClick={(event) => event.stopPropagation()}
         className="relative flex shrink-0 flex-col items-center gap-1 border-orange-50/15 py-2"
       >
         {panel === "account" && (

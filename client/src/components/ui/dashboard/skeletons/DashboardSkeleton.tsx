@@ -75,7 +75,7 @@ const DashboardSkeleton = () => {
       <span className="sr-only">Loading dashboard…</span>
 
       {/* Decorative only — hidden from assistive tech */}
-      <div aria-hidden="true" className="space-y-8">
+      <div aria-hidden="true" className="space-y-8 mt-5">
         {/* Stat strip: four tiles, matching the real grid */}
         <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {times(4).map((index) => (

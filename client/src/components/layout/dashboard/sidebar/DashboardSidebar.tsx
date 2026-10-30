@@ -199,7 +199,9 @@ export default function DashboardSidebar({
             collapsed={!open}
             user={user}
             onLogout={handleLogout}
-            showSidebarMode={mode !== "collapsed"}
+            /* Always offered, including collapsed: that is the state you need
+               it in to get back out of. */
+            showSidebarMode
             hoverMode={mode === "hover"}
           />
         </div>

@@ -14,6 +14,8 @@ import {
   Settings01Icon,
   Sun01Icon,
   UserIcon,
+  SmilePlusIcon,
+  MessageQuestionIcon,
 } from "@hugeicons/core-free-icons";
 
 import { Tooltip } from "@components/Tooltips/ToolTip";
@@ -29,11 +31,6 @@ interface SidebarAccountMenuProps {
   user: AuthUser | null;
   onLogout: () => Promise<void>;
   onClose: () => void;
-  /**
-   * On by default: the rail mode is a preference, so the row should not need
-   * opting into. Pass false where the rail cannot change, such as the mobile
-   * drawer.
-   */
   showSidebarMode?: boolean;
 }
 
@@ -128,19 +125,32 @@ export function SidebarAccountMenu({
 
   const rows: Row[] = [
     {
-      label: "Notification",
+      label: "Feedback",
+      icon: SmilePlusIcon,
+      onClick: () => null, // open a component where user can fill his feedback
+    },
+    {
+      label: "Notifications",
       icon: BellIcon,
       onClick: () => go("/account/settings/profile"),
     },
-    { label: "Home", icon: Home03Icon, onClick: () => go("/workspaces") },
+    { label: "Home", icon: Home03Icon, onClick: () => go("/home") },
     { label: "Docs", icon: BookOpen02Icon, onClick: () => go("/docs") },
+    {
+      label: "Help",
+      icon: MessageQuestionIcon,
+      onClick: () => go("/help"),
+    },
   ];
 
   return (
     <div
       role="menu"
       aria-label="Account"
-      className="absolute bottom-full z-80 w-68 overflow-hidden rounded-xl border border-orange-50/20 mb-0.5 bg-[#010101]"
+      className={[
+        "absolute bottom-full z-80 overflow-hidden rounded-xl border border-orange-50/20 bg-[#010101]",
+        "mb-0.5 left-0.5 w-68",
+      ].join(" ")}
     >
       <div className="flex items-start gap-2 border-b border-orange-50/10 px-3.5 py-3">
         <div className="min-w-0 flex-1">
@@ -187,7 +197,7 @@ export function SidebarAccountMenu({
       {/* Sidebar: a row that serves its own child panel on click. The icon is
           the left-right chevrons turned upright, to read as rail width. */}
       {showSidebarMode && (
-        <div className="border-orange-50/10 mr-2 ml-1.5 mb-1.5">
+        <div className="border-orange-50/10 mr-2 ml-1.5 mb-1">
           <button
             ref={sidebarRowRef}
             type="button"
@@ -242,8 +252,8 @@ export function SidebarAccountMenu({
 
       {/* Theme: a label with the control on the right, the way the reference
           lays it out. Icon-only segments, so each carries its own label. */}
-      <div className="border-t border-orange-50/10 py-1">
-        <div className="flex items-center gap-3 rounded-lg px-1 ml-3 py-1.5">
+      <div className="border-orange-50/10">
+        <div className="flex items-center gap-3 rounded-lg px-1 mb-1.5 ml-3">
           <span className="min-w-0 flex-1 truncate text-[12.5px] tracking-tight text-neutral-300">
             Theme
           </span>
