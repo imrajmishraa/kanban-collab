@@ -11,8 +11,8 @@ export default function ToolbarButton({
   return (
     <span
       className={cn(
-        "flex size-7 items-center justify-center cursor-pointer rounded-md text-zinc-400",
-        "transition-colors duration-150 hover:bg-white/10 hover:text-zinc-100",
+        "flex size-7 items-center justify-center cursor-pointer rounded-md text-(--text-secondary)",
+        "transition-colors duration-150 hover:bg-(--tint-10) hover:text-(--text-secondary)",
       )}
     >
       <ChromeIcon d={d} size={size} />

@@ -136,8 +136,8 @@ export function BoardCard({
       className={[
         "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[11.5px] transition-colors duration-150",
         danger
-          ? "text-rose-300 hover:bg-rose-500/10 hover:text-rose-200"
-          : "text-neutral-300 hover:bg-white/6 hover:text-neutral-100",
+          ? "text-(--danger) hover:bg-(--tint-4) hover:text-(--danger)"
+          : "text-(--text-soft) hover:bg-(--bg-hover) hover:text-(--text-primary)",
       ].join(" ")}
     >
       <HugeiconsIcon icon={icon} size={13} strokeWidth={1.6} />
@@ -152,10 +152,10 @@ export function BoardCard({
         onClick={onClick}
         className="
           flex w-full cursor-pointer flex-col rounded-xl
-          border border-orange-50/6 bg-[#0a0a0a]/50
+          border border-(--hairline) bg-(--bg-root)/50
           px-4 py-3.5 text-left
           transition-colors duration-300 ease-out
-          hover:border-orange-50/20 hover:bg-white/[0.03]
+          hover:border-(--hairline-strong) hover:bg-(--tint-3)
         "
       >
         <div className="flex items-start gap-3">
@@ -163,7 +163,7 @@ export function BoardCard({
               first two letters, tinted with the board's own colour. The tile
               fades out on hover so the menu button can take its place. */}
           <span
-            className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-orange-50/15 text-[10px] font-semibold tracking-wide text-neutral-200 transition-opacity duration-200 group-hover/board:opacity-0"
+            className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-(--hairline) text-[10px] font-semibold tracking-wide text-(--text-primary) transition-opacity duration-200 group-hover/board:opacity-0"
             style={
               board.coverImageUrl
                 ? undefined
@@ -182,20 +182,20 @@ export function BoardCard({
           </span>
 
           <div className="min-w-0 flex-1">
-            <h3 className="flex items-center gap-1.5 text-[13.5px] font-medium tracking-tight text-neutral-100">
+            <h3 className="flex items-center gap-1.5 text-[13.5px] font-medium tracking-tight text-(--text-primary)">
               <span className="truncate">{board.name}</span>
               {isPinned && (
                 <HugeiconsIcon
                   icon={StarIcon}
                   size={11}
                   strokeWidth={1.8}
-                  className="shrink-0 text-orange-100"
+                  className="shrink-0 text-(--accent)"
                   aria-label="Starred"
                 />
               )}
             </h3>
 
-            <p className="mt-0.5 truncate text-[12px] text-neutral-500">
+            <p className="mt-0.5 truncate text-[12px] text-(--text-muted)">
               {board.description?.trim() || "No description"}
             </p>
           </div>
@@ -204,26 +204,26 @@ export function BoardCard({
             icon={ArrowUpRight01Icon}
             size={14}
             strokeWidth={1.8}
-            className="mt-0.5 shrink-0 text-neutral-600 transition-colors duration-200 group-hover/board:text-orange-100"
+            className="mt-0.5 shrink-0 text-(--text-subtle) transition-colors duration-200 group-hover/board:text-(--accent)"
           />
         </div>
 
-        <div className="mt-3 flex items-center gap-2 pl-11 text-[11px] text-neutral-500">
+        <div className="mt-3 flex items-center gap-2 pl-11 text-[11px] text-(--text-muted)">
           {isLoadingDetails ? (
-            <span className="h-2.5 w-24 animate-pulse rounded bg-white/6" />
+            <span className="h-2.5 w-24 animate-pulse rounded bg-(--tint-6)" />
           ) : (
             <>
               <span className="tabular-nums">{columnCount}</span>
               <span>{columnCount === 1 ? "column" : "columns"}</span>
-              <span aria-hidden="true" className="text-neutral-700">
+              <span aria-hidden="true" className="text-(--text-subtle)">
                 /
               </span>
-              <span className="tabular-nums text-orange-100">{cardCount}</span>
+              <span className="tabular-nums text-(--accent)">{cardCount}</span>
               <span>{cardCount === 1 ? "card" : "cards"}</span>
             </>
           )}
 
-          <span className="ml-auto shrink-0 font-mono text-[9px] uppercase tracking-wider text-neutral-600">
+          <span className="ml-auto shrink-0 font-mono text-[9px] uppercase tracking-wider text-(--text-subtle)">
             {relativeTime(board.updatedAt)}
           </span>
         </div>
@@ -244,8 +244,8 @@ export function BoardCard({
             "flex size-8 cursor-pointer items-center justify-center rounded-lg border transition-all duration-200",
             "opacity-0 focus-visible:opacity-100 group-hover/board:opacity-100",
             menuOpen
-              ? "border-orange-50/25 bg-white/8 text-neutral-100 opacity-100"
-              : "border-orange-50/15 text-neutral-400 hover:border-orange-50/25 hover:bg-white/6 hover:text-neutral-100",
+              ? "border-(--hairline-strong) bg-(--tint-8) text-(--text-primary) opacity-100"
+              : "border-(--hairline) text-(--text-secondary) hover:border-(--hairline-strong) hover:bg-(--bg-hover) hover:text-(--text-primary)",
           ].join(" ")}
         >
           <HugeiconsIcon
@@ -259,7 +259,7 @@ export function BoardCard({
           <div
             role="menu"
             aria-label="Board actions"
-            className="absolute left-0 top-full z-30 mt-1 w-44 rounded-lg border border-orange-50/15 bg-[#141416] p-1"
+            className="absolute left-0 top-full z-30 mt-1 w-44 rounded-lg border border-(--hairline) bg-(--bg-root) p-1"
           >
             {item("Open board", ArrowUpRight01Icon, onClick)}
             {item("Edit board", Edit02Icon, () => setDialog("edit"))}

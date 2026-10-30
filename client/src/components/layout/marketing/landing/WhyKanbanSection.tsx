@@ -117,7 +117,7 @@ export default function WhyKanbanSection() {
         {/* ── Kicker ────────────────────────────────────────────── */}
         <Reveal>
           <div className="flex items-center gap-3">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/8 bg-white/3 px-3.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.22em] text-(--text-secondary) backdrop-blur-xl backdrop-saturate-150">
+            <span className="inline-flex items-center gap-2 rounded-full border border-(--border) bg-(--tint-3) px-3.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.22em] text-(--text-secondary) backdrop-blur-xl backdrop-saturate-150">
               <span className="relative flex h-1.5 w-1.5">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-(--brand) opacity-60" />
                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-(--brand)" />
@@ -132,7 +132,7 @@ export default function WhyKanbanSection() {
           <Reveal delay={0.08} className="max-w-2xl">
             <h2 className="font-mono text-3xl font-medium leading-[1.08] tracking-[-0.04em] text-(--text-primary) sm:text-4xl lg:text-5xl">
               Work should move{" "}
-              <span className="bg-linear-to-b from-(--brand-hover) via-(--brand) to-(--brand-hover)/70 bg-clip-text text-transparent">
+              <span className="from-(--brand-hover) via-(--brand) text-(--text-primary)">
                 forward.
               </span>
             </h2>
@@ -140,12 +140,14 @@ export default function WhyKanbanSection() {
 
           {/* Stats — right-aligned horizontal strip, values count up */}
           <Reveal delay={0.16}>
-            <div className="flex items-stretch gap-6 border-l border-white/6 pl-6 lg:gap-8 lg:pl-8">
+            <div className="flex items-stretch gap-6 border-l border-(--border-subtle) pl-6 lg:gap-8 lg:pl-8">
               {stats.map((stat, i) => (
                 <div
                   key={stat.label}
                   className={`flex flex-col ${
-                    i !== 0 ? "border-l border-white/6 pl-6 lg:pl-8" : ""
+                    i !== 0
+                      ? "border-l border-(--border-subtle) pl-6 lg:pl-8"
+                      : ""
                   }`}
                 >
                   <span className="font-mono text-lg font-medium tracking-tight text-(--text-primary) sm:text-xl">

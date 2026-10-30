@@ -86,10 +86,10 @@ export default function WorkspaceSection({
           icon={KanbanIcon}
           size={13}
           strokeWidth={1.6}
-          className="shrink-0 text-neutral-600"
+          className="shrink-0 text-(--text-subtle)"
         />
-        <p className="min-w-0 truncate text-[12px] text-neutral-400">
-          <span className="font-medium tabular-nums text-orange-100">
+        <p className="min-w-0 truncate text-[12px] text-(--text-secondary)">
+          <span className="font-medium tabular-nums text-(--accent)">
             {workspace.activeTaskCount}
           </span>{" "}
           active {workspace.activeTaskCount === 1 ? "task" : "tasks"}
@@ -113,7 +113,7 @@ export default function WorkspaceSection({
   return (
     <section>
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2 px-1">
-        <h2 className="text-[13px] font-medium tracking-tight text-neutral-100">
+        <h2 className="text-[13px] font-medium tracking-tight text-(--text-primary)">
           Your workspaces
         </h2>
 
@@ -123,7 +123,7 @@ export default function WorkspaceSection({
           <button
             type="button"
             onClick={requestSwitcher}
-            className="flex h-7 cursor-pointer items-center gap-1.5 rounded-md border border-orange-50/15 bg-white/3 px-2 text-neutral-500 transition-colors duration-200 hover:border-orange-50/30 hover:bg-white/5 hover:text-neutral-300"
+            className="flex h-7 cursor-pointer items-center gap-1.5 rounded-md border border-(--hairline) bg-(--tint-3) px-2 text-(--text-muted) transition-colors duration-200 hover:border-(--hairline-strong) hover:bg-(--bg-hover) hover:text-(--text-soft)"
           >
             <HugeiconsIcon
               icon={Search01Icon}
@@ -139,7 +139,7 @@ export default function WorkspaceSection({
             <button
               type="button"
               onClick={() => setExpanded((previous) => !previous)}
-              className="group/all flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] text-neutral-500 transition-colors duration-200 hover:bg-white/6 hover:text-neutral-200"
+              className="group/all flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] text-(--text-muted) transition-colors duration-200 hover:bg-(--bg-hover) hover:text-(--text-primary)"
             >
               {expanded ? "Show less" : "View all"}
               <HugeiconsIcon
@@ -157,10 +157,10 @@ export default function WorkspaceSection({
       </div>
 
       {visible.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-orange-50/20 px-5 py-10 text-center">
-          <p className="text-[12.5px] text-neutral-400">
+        <div className="rounded-xl border border-dashed border-(--hairline-strong) px-5 py-10 text-center">
+          <p className="text-[12.5px] text-(--text-secondary)">
             No workspaces yet, create one to get{" "}
-            <span className="font-medium capitalize text-orange-100">
+            <span className="font-medium capitalize text-(--accent)">
               started
             </span>
           </p>

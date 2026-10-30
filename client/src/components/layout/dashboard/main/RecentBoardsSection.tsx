@@ -78,7 +78,7 @@ export default function RecentBoardsSection({
             font-mono text-[10px] uppercase tracking-[0.14em]
             text-(--text-muted)
             transition-colors duration-200
-            hover:bg-white/4 hover:text-(--text-primary)
+            hover:bg-(--tint-4) hover:text-(--text-primary)
           "
         >
           <span>View all</span>
@@ -93,7 +93,7 @@ export default function RecentBoardsSection({
 
       {/* Body */}
       {boards.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-white/10 bg-white/2 px-5 py-10 text-center">
+        <div className="rounded-xl border border-dashed border-(--border) bg-(--tint-2) px-5 py-10 text-center">
           <p className="font-mono text-[12px] text-(--text-muted)">
             No boards found.
           </p>
@@ -134,11 +134,11 @@ function BoardCard({
       style={featured ? { borderColor: alpha(color, 0.55) } : undefined}
       className={[
         "group relative flex w-full cursor-pointer flex-col overflow-hidden",
-        "rounded-xl border bg-white/3 p-3.5 text-left",
+        "rounded-xl border bg-(--tint-3) p-3.5 text-left",
         "transition-colors duration-200",
         featured
-          ? "hover:bg-white/5.5"
-          : "border-white/8 hover:border-white/14 hover:bg-white/5.5",
+          ? "hover:bg-(--bg-hover).5"
+          : "border-(--border) hover:border-(--border-strong) hover:bg-(--bg-hover).5",
       ].join(" ")}
     >
       {/* Category-style workspace badge */}
@@ -184,7 +184,7 @@ function BoardCard({
           <span
             className="
               flex size-6 shrink-0 items-center justify-center
-              rounded-full border border-white/10 bg-white/4
+              rounded-full border border-(--border) bg-(--tint-4)
               font-mono text-[9px] font-semibold tracking-wider
               text-(--text-secondary)
             "

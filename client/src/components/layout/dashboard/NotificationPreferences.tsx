@@ -94,7 +94,7 @@ function PreferencesForm({
               const channels = draft.preferences[type] ?? EMPTY_CHANNELS;
 
               return (
-                <tr key={type} className="border-t border-white/6">
+                <tr key={type} className="border-t border-(--border-subtle)">
                   <td className="py-2 pr-4 text-(--text-primary)">
                     {TYPE_LABELS[type] ?? type}
                   </td>
@@ -118,7 +118,7 @@ function PreferencesForm({
       </div>
 
       {/* Digest */}
-      <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-white/6 pt-4">
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-(--border-subtle) pt-4">
         <div>
           <p className="font-mono text-[12px] text-(--text-primary)">
             Email digest
@@ -136,7 +136,7 @@ function PreferencesForm({
               digestFrequency: event.target.value as DigestFrequency,
             }))
           }
-          className="h-9 rounded-lg border border-white/8 bg-white/4 px-3 font-mono text-[11px] text-(--text-primary) outline-hidden hover:border-white/14 focus:border-(--brand-border)"
+          className="h-9 rounded-lg border border-(--border) bg-(--tint-4) px-3 font-mono text-[11px] text-(--text-primary) outline-hidden hover:border-(--border-strong) focus:border-(--brand-border)"
         >
           <option value="off">Off</option>
           <option value="daily">Daily</option>
@@ -145,7 +145,7 @@ function PreferencesForm({
       </div>
 
       {/* Quiet hours */}
-      <div className="mt-4 border-t border-white/6 pt-4">
+      <div className="mt-4 border-t border-(--border-subtle) pt-4">
         <label className="flex items-center gap-2">
           <input
             type="checkbox"
@@ -182,7 +182,7 @@ function PreferencesForm({
                     },
                   }))
                 }
-                className="h-8 rounded-lg border border-white/8 bg-white/4 px-2 text-(--text-primary) outline-hidden"
+                className="h-8 rounded-lg border border-(--border) bg-(--tint-4) px-2 text-(--text-primary) outline-hidden"
               />
             </label>
 
@@ -197,7 +197,7 @@ function PreferencesForm({
                     quietHours: { ...prev.quietHours, end: event.target.value },
                   }))
                 }
-                className="h-8 rounded-lg border border-white/8 bg-white/4 px-2 text-(--text-primary) outline-hidden"
+                className="h-8 rounded-lg border border-(--border) bg-(--tint-4) px-2 text-(--text-primary) outline-hidden"
               />
             </label>
 
@@ -214,7 +214,7 @@ function PreferencesForm({
                 }))
               }
               aria-label="Timezone"
-              className="h-8 w-44 rounded-lg border border-white/8 bg-white/4 px-2 font-mono text-[11px] text-(--text-primary) outline-hidden"
+              className="h-8 w-44 rounded-lg border border-(--border) bg-(--tint-4) px-2 font-mono text-[11px] text-(--text-primary) outline-hidden"
             />
           </div>
         )}
@@ -252,7 +252,7 @@ export default function NotificationPreferences() {
   const query = useNotificationPreferences();
 
   return (
-    <section className="mt-6 rounded-xl border border-white/8 bg-white/3 p-5">
+    <section className="mt-6 rounded-xl border border-(--border) bg-(--tint-3) p-5">
       <h2 className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-(--text-muted)">
         Notifications
       </h2>

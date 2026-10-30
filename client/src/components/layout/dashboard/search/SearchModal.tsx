@@ -59,7 +59,7 @@ function SearchPalette() {
       <div
         aria-hidden="true"
         onClick={closeSearch}
-        className="absolute inset-0 bg-black/70 backdrop-blur-md motion-safe:animate-in motion-safe:fade-in-0 motion-safe:duration-200"
+        className="absolute inset-0 bg-(--scrim) backdrop-blur-md motion-safe:animate-in motion-safe:fade-in-0 motion-safe:duration-200"
       />
 
       <div
@@ -68,7 +68,7 @@ function SearchPalette() {
         aria-label="Search"
         className="relative mx-auto mt-[12vh] w-[min(880px,calc(100vw-2rem))] motion-safe:animate-in motion-safe:fade-in-0 motion-safe:zoom-in-95 motion-safe:duration-200"
       >
-        <div className="overflow-hidden rounded-2xl border border-orange-50/15 bg-[#0e0e0f]/95 backdrop-blur-sm">
+        <div className="overflow-hidden rounded-2xl border border-(--hairline) bg-(--bg-root)/95 backdrop-blur-sm">
           <SearchInputRow
             query={palette.query}
             onQueryChange={palette.setQuery}

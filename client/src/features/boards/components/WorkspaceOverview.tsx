@@ -69,13 +69,13 @@ export default function WorkspaceOverview({
                 icon={icon}
                 size={14}
                 strokeWidth={1.6}
-                className="shrink-0 text-neutral-600 transition-colors duration-200 group-hover:text-orange-100"
+                className="shrink-0 text-(--text-subtle) transition-colors duration-200 group-hover:text-(--accent)"
               />
             </div>
 
-            <p className="mt-3 text-[26px] font-semibold leading-none tracking-tight tabular-nums text-neutral-100">
+            <p className="mt-3 text-[26px] font-semibold leading-none tracking-tight tabular-nums text-(--text-primary)">
               {pad(value)}
-              {partial && <span className="text-neutral-500">+</span>}
+              {partial && <span className="text-(--text-muted)">+</span>}
             </p>
           </div>
         ))}

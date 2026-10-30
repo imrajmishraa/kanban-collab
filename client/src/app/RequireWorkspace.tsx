@@ -76,7 +76,7 @@ export function RequireWorkspace({ to }: { to: string }) {
     <div className="flex min-h-[70vh] items-center justify-center px-5 py-12 text-(--text-primary)">
       <div className="w-full max-w-85">
         <div className="flex flex-col items-center text-center">
-          <span className="flex size-10 items-center justify-center rounded-xl border border-orange-50/15 bg-white/3 text-orange-100">
+          <span className="flex size-10 items-center justify-center rounded-xl border border-(--hairline) bg-(--tint-3) text-(--accent)">
             <HugeiconsIcon
               icon={destination.icon}
               size={17}
@@ -84,13 +84,13 @@ export function RequireWorkspace({ to }: { to: string }) {
             />
           </span>
 
-          <h1 className="mt-4 text-[15px] font-medium tracking-tight text-neutral-100">
+          <h1 className="mt-4 text-[15px] font-medium tracking-tight text-(--text-primary)">
             Continue to {destination.label}
           </h1>
 
-          <p className="mt-1.5 max-w-65 text-[12.5px] leading-5 text-neutral-500">
+          <p className="mt-1.5 max-w-65 text-[12.5px] leading-5 text-(--text-muted)">
             Pick a{" "}
-            <span className="font-medium capitalize text-orange-100">
+            <span className="font-medium capitalize text-(--accent)">
               workspace
             </span>{" "}
             and you will land straight on {destination.label.toLowerCase()}
@@ -98,12 +98,12 @@ export function RequireWorkspace({ to }: { to: string }) {
         </div>
 
         <div className="mt-6">
-          <div className="flex h-9 items-center gap-2 rounded-lg border border-orange-50/15 bg-white/3 px-3 transition-colors duration-200 focus-within:border-orange-50/30">
+          <div className="flex h-9 items-center gap-2 rounded-lg border border-(--hairline) bg-(--tint-3) px-3 transition-colors duration-200 focus-within:border-(--hairline-strong)">
             <HugeiconsIcon
               icon={Search01Icon}
               size={13}
               strokeWidth={1.6}
-              className="shrink-0 text-neutral-600"
+              className="shrink-0 text-(--text-subtle)"
             />
 
             <input
@@ -113,7 +113,7 @@ export function RequireWorkspace({ to }: { to: string }) {
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Find workspace"
               aria-label="Find workspace"
-              className="min-w-0 flex-1 bg-transparent text-[12.5px] tracking-tight text-neutral-100 placeholder:text-neutral-600 outline-hidden ring-0 focus:outline-hidden focus:ring-0 focus-visible:outline-hidden"
+              className="min-w-0 flex-1 bg-transparent text-[12.5px] tracking-tight text-(--text-primary) placeholder:text-(--text-subtle) outline-hidden ring-0 focus:outline-hidden focus:ring-0 focus-visible:outline-hidden"
             />
           </div>
 
@@ -122,12 +122,12 @@ export function RequireWorkspace({ to }: { to: string }) {
               {[0, 1, 2].map((row) => (
                 <div
                   key={row}
-                  className="h-10 animate-pulse rounded-lg bg-white/4"
+                  className="h-10 animate-pulse rounded-lg bg-(--tint-4)"
                 />
               ))}
             </div>
           ) : workspaces.length === 0 ? (
-            <p className="px-2 py-8 text-center text-[12px] text-neutral-500">
+            <p className="px-2 py-8 text-center text-[12px] text-(--text-muted)">
               {debounced
                 ? `No workspaces match “${debounced}”`
                 : "You are not in a workspace yet"}
@@ -139,7 +139,7 @@ export function RequireWorkspace({ to }: { to: string }) {
                   <button
                     type="button"
                     onClick={() => choose(workspace.id, workspace.name)}
-                    className="group/row flex h-10 w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 text-left transition-colors duration-200 hover:bg-white/5"
+                    className="group/row flex h-10 w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 text-left transition-colors duration-200 hover:bg-(--bg-hover)"
                   >
                     {/* The workspace's own image when it has one; the folder
                         glyph only stands in for workspaces without one. */}
@@ -155,7 +155,7 @@ export function RequireWorkspace({ to }: { to: string }) {
                         ring={false}
                       />
                     ) : (
-                      <span className="flex size-6 shrink-0 items-center justify-center rounded-md border border-orange-50/15 text-neutral-500 transition-colors duration-200 group-hover/row:text-neutral-300">
+                      <span className="flex size-6 shrink-0 items-center justify-center rounded-md border border-(--hairline) text-(--text-muted) transition-colors duration-200 group-hover/row:text-(--text-soft)">
                         <HugeiconsIcon
                           icon={Folder01Icon}
                           size={12}
@@ -164,11 +164,11 @@ export function RequireWorkspace({ to }: { to: string }) {
                       </span>
                     )}
 
-                    <span className="min-w-0 flex-1 truncate text-[12.5px] text-neutral-200">
+                    <span className="min-w-0 flex-1 truncate text-[12.5px] text-(--text-primary)">
                       {workspace.name}
                     </span>
 
-                    <span className="shrink-0 font-mono text-[10px] tabular-nums text-neutral-600">
+                    <span className="shrink-0 font-mono text-[10px] tabular-nums text-(--text-subtle)">
                       {workspace.members.length}
                     </span>
 
@@ -176,7 +176,7 @@ export function RequireWorkspace({ to }: { to: string }) {
                       icon={ArrowRight01Icon}
                       size={12}
                       strokeWidth={2}
-                      className="shrink-0 text-neutral-700 opacity-0 transition-all duration-200 group-hover/row:translate-x-0.5 group-hover/row:text-orange-100 group-hover/row:opacity-100"
+                      className="shrink-0 text-(--text-subtle) opacity-0 transition-all duration-200 group-hover/row:translate-x-0.5 group-hover/row:text-(--accent) group-hover/row:opacity-100"
                     />
                   </button>
                 </li>
@@ -184,11 +184,11 @@ export function RequireWorkspace({ to }: { to: string }) {
             </ul>
           )}
 
-          <div className="mt-3 border-t border-orange-50/10 pt-3">
+          <div className="mt-3 border-t border-(--hairline) pt-3">
             <button
               type="button"
               onClick={openNewWorkspace}
-              className="flex h-9 w-full cursor-pointer items-center justify-center gap-1.5 rounded-none rounded-tr-lg rounded-bl-lg border border-orange-50/20 text-[12px] text-neutral-200 transition-colors duration-200 hover:border-orange-50/35 hover:bg-white/4 hover:text-neutral-100"
+              className="flex h-9 w-full cursor-pointer items-center justify-center gap-1.5 rounded-none rounded-tr-lg rounded-bl-lg border border-(--hairline-strong) text-[12px] text-(--text-primary) transition-colors duration-200 hover:border-(--hairline-strong) hover:bg-(--tint-4) hover:text-(--text-primary)"
             >
               <HugeiconsIcon icon={Add01Icon} size={13} strokeWidth={2} />
               Create workspace

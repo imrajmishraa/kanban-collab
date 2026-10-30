@@ -10,7 +10,7 @@ import { FLOW_STAGES, type FlowStage } from "./flowData";
 
 export default function FlowPipeline() {
   return (
-    <div className="border-b border-white/6 p-4 sm:p-6 lg:p-8">
+    <div className="border-b border-(--border-subtle) p-4 sm:p-6 lg:p-8">
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_auto_1fr_auto_1fr] lg:items-stretch lg:gap-3">
         {FLOW_STAGES.map((stage, i) => (
           <Fragment key={stage.number}>
@@ -41,7 +41,7 @@ function FlowStageCard({
         ${
           active
             ? "border-(--brand)/40 bg-(--brand)/5"
-            : "border-white/8 bg-white/2"
+            : "border-(--border) bg-(--tint-2)"
         }
       `}
     >
@@ -57,7 +57,7 @@ function FlowStageCard({
       <div className="relative flex items-start justify-between">
         <span
           className={`font-mono text-[11px] tracking-[0.28em] transition-colors duration-300 ${
-            active ? "text-(--brand)" : "text-white/35"
+            active ? "text-(--brand)" : "text-(--text-primary)/35"
           }`}
         >
           {number}
@@ -70,7 +70,7 @@ function FlowStageCard({
             ${
               active
                 ? "border-(--brand)/45 bg-(--brand)/12 text-(--brand-hover) shadow-[0_0_20px_-6px_var(--brand)]"
-                : "border-white/8 bg-white/3 text-white/45"
+                : "border-(--border) bg-(--tint-3) text-(--text-primary)/45"
             }
           `}
         >
@@ -81,13 +81,13 @@ function FlowStageCard({
       {/* Title + description */}
       <h3
         className={`relative mt-4 font-mono text-[13px] font-medium tracking-[-0.005em] sm:text-[14px] ${
-          active ? "text-white" : "text-white/85"
+          active ? "text-(--text-primary)" : "text-(--text-primary)/85"
         }`}
       >
         {title}
       </h3>
 
-      <p className="relative mt-1.5 font-mono text-[11px] leading-[1.65] text-white/50 sm:text-[12px]">
+      <p className="relative mt-1.5 font-mono text-[11px] leading-[1.65] text-(--text-primary)/50 sm:text-[12px]">
         {description}
       </p>
 
@@ -105,8 +105,8 @@ function FlowStageCard({
           </>
         ) : (
           <>
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-white/40">
+            <span className="h-1.5 w-1.5 rounded-full bg-(--tint-4)" />
+            <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-(--text-primary)/40">
               Ready
             </span>
           </>
@@ -121,11 +121,11 @@ function FlowStageCard({
 function FlowConnector() {
   return (
     <div className="flex items-center justify-center lg:self-center">
-      <span className="hidden h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-[#0B0B0F] text-(--brand) lg:flex">
+      <span className="hidden h-7 w-7 items-center justify-center rounded-full border border-(--border) bg-(--bg-root) text-(--brand) lg:flex">
         <HugeiconsIcon icon={ArrowRight02Icon} size={12} />
       </span>
 
-      <span className="flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-[#0B0B0F] text-(--brand) lg:hidden">
+      <span className="flex h-7 w-7 items-center justify-center rounded-full border border-(--border) bg-(--bg-root) text-(--brand) lg:hidden">
         <HugeiconsIcon icon={ArrowDown02Icon} size={12} />
       </span>
     </div>

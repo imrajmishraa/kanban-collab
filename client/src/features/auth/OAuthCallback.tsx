@@ -62,7 +62,9 @@ export default function OAuthCallback() {
 
   return (
     <main className="flex h-screen items-center justify-center">
-      <p className="font-mono text-sm text-white/60">Completing sign-in…</p>
+      <p className="font-mono text-sm text-(--text-primary)/60">
+        Completing sign-in…
+      </p>
     </main>
   );
 }

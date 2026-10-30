@@ -52,21 +52,21 @@ export function DialogShell({
       <div
         aria-hidden="true"
         onClick={onClose}
-        className="fixed inset-0 bg-black/70 backdrop-blur-sm motion-safe:animate-in motion-safe:fade-in-0 motion-safe:duration-200"
+        className="fixed inset-0 bg-(--scrim) backdrop-blur-sm motion-safe:animate-in motion-safe:fade-in-0 motion-safe:duration-200"
       />
 
       <div
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="relative z-10 w-full max-w-md overflow-hidden rounded-xl border border-orange-50/15 bg-[#0a0a0a]/95 backdrop-blur-sm motion-safe:animate-in motion-safe:fade-in-0 motion-safe:zoom-in-95 motion-safe:duration-200"
+        className="relative z-10 w-full max-w-md overflow-hidden rounded-xl border border-(--hairline) bg-(--bg-root)/95 backdrop-blur-sm motion-safe:animate-in motion-safe:fade-in-0 motion-safe:zoom-in-95 motion-safe:duration-200"
       >
-        <div className="flex items-start justify-between gap-4 border-b border-orange-50/10 px-5 py-4">
+        <div className="flex items-start justify-between gap-4 border-b border-(--hairline) px-5 py-4">
           <div>
-            <h2 className="text-[14px] font-medium tracking-tight text-neutral-100">
+            <h2 className="text-[14px] font-medium tracking-tight text-(--text-primary)">
               {title}
             </h2>
-            <p className="mt-0.5 text-[11.5px] text-neutral-500">
+            <p className="mt-0.5 text-[11.5px] text-(--text-muted)">
               {description}
             </p>
           </div>
@@ -75,7 +75,7 @@ export function DialogShell({
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-transparent text-neutral-500 transition-colors duration-200 hover:border-orange-50/15 hover:bg-white/5 hover:text-neutral-200"
+            className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-transparent text-(--text-muted) transition-colors duration-200 hover:border-(--hairline) hover:bg-(--bg-hover) hover:text-(--text-primary)"
           >
             <HugeiconsIcon icon={Cancel01Icon} size={14} strokeWidth={1.8} />
           </button>
@@ -89,15 +89,15 @@ export function DialogShell({
 }
 
 const inputClass =
-  "w-full rounded-lg border border-orange-50/15 bg-white/[0.03] px-3 py-2 text-[13px] text-neutral-100 placeholder:text-neutral-600 outline-hidden transition-colors duration-200 hover:border-orange-50/25 focus:border-white/25 focus:bg-white/[0.05] focus-visible:outline-hidden";
+  "w-full rounded-lg border border-(--hairline) bg-(--tint-3) px-3 py-2 text-[13px] text-(--text-primary) placeholder:text-(--text-subtle) outline-hidden transition-colors duration-200 hover:border-(--hairline-strong) focus:border-(--border-strong) focus:bg-(--tint-5) focus-visible:outline-hidden";
 
-const labelClass = "text-[11px] font-medium text-neutral-300";
+const labelClass = "text-[11px] font-medium text-(--text-soft)";
 
 const cancelClass =
-  "flex h-9 cursor-pointer items-center rounded-none rounded-tl-lg rounded-br-lg border border-orange-50/20 px-4 text-[12px] text-neutral-300 transition-colors duration-200 hover:border-orange-50/35 hover:bg-white/[0.04] hover:text-neutral-100";
+  "flex h-9 cursor-pointer items-center rounded-none rounded-tl-lg rounded-br-lg border border-(--hairline-strong) px-4 text-[12px] text-(--text-soft) transition-colors duration-200 hover:border-(--hairline-strong) hover:bg-(--tint-4) hover:text-(--text-primary)";
 
 const submitClass =
-  "flex h-9 cursor-pointer items-center gap-1.5 rounded-none rounded-tr-lg rounded-bl-lg bg-white px-4 text-[12px] font-semibold text-black transition-colors duration-200 hover:bg-neutral-200 disabled:cursor-not-allowed disabled:opacity-50";
+  "flex h-9 cursor-pointer items-center gap-1.5 rounded-none rounded-tr-lg rounded-bl-lg bg-(--solid-bg) px-4 text-[12px] font-semibold text-(--solid-text) transition-colors duration-200 hover:bg-(--solid-bg-hover) disabled:cursor-not-allowed disabled:opacity-50";
 
 /* ── Add member ─────────────────────────────────────────────────────────── */
 
@@ -278,7 +278,7 @@ export function EditWorkspaceDialog({
               placeholder="What is this workspace for?"
               className={`mt-1.5 resize-none ${inputClass}`}
             />
-            <p className="mt-1.5 text-[11px] text-neutral-600">
+            <p className="mt-1.5 text-[11px] text-(--text-subtle)">
               {description.trim().length}/500
             </p>
           </div>
@@ -396,7 +396,7 @@ export function WorkspaceAvatarDialog({
     >
       <div className="p-5">
         <div className="flex items-center gap-4">
-          <span className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-orange-50/20 bg-white/3 text-[20px] font-semibold text-neutral-300">
+          <span className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-(--hairline-strong) bg-(--tint-3) text-[20px] font-semibold text-(--text-soft)">
             {shown ? (
               <img src={shown} alt="" className="size-full object-cover" />
             ) : (
@@ -413,7 +413,7 @@ export function WorkspaceAvatarDialog({
               Choose image
             </button>
 
-            <p className="mt-2 text-[11px] text-neutral-600">
+            <p className="mt-2 text-[11px] text-(--text-subtle)">
               PNG, JPG or WebP, up to 4 MB
             </p>
           </div>
@@ -427,7 +427,7 @@ export function WorkspaceAvatarDialog({
           />
         </div>
 
-        {error && <p className="mt-3 text-[11.5px] text-rose-300">{error}</p>}
+        {error && <p className="mt-3 text-[11.5px] text-(--danger)">{error}</p>}
 
         <div className="mt-6 flex items-center justify-between gap-2">
           {currentAvatarUrl ? (
@@ -435,7 +435,7 @@ export function WorkspaceAvatarDialog({
               type="button"
               onClick={() => clearAvatar.mutate()}
               disabled={clearAvatar.isPending}
-              className="cursor-pointer text-[11.5px] text-neutral-500 transition-colors duration-200 hover:text-rose-300 disabled:opacity-50"
+              className="cursor-pointer text-[11.5px] text-(--text-muted) transition-colors duration-200 hover:text-(--danger) disabled:opacity-50"
             >
               Remove avatar
             </button>

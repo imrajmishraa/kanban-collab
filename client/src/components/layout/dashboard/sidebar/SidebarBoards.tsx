@@ -178,11 +178,11 @@ const SidebarBoards = ({
               "focus-visible:ring-(--brand)/40",
 
               isActive
-                ? "bg-white/5 text-neutral-400"
+                ? "bg-(--tint-5) text-(--text-secondary)"
                 : [
-                    "text-neutral-400",
-                    "hover:bg-white/3",
-                    "hover:text-neutral-400",
+                    "text-(--text-secondary)",
+                    "hover:bg-(--tint-3)",
+                    "hover:text-(--text-secondary)",
                   ].join(" "),
             ].join(" ")
           }
@@ -251,7 +251,7 @@ const SidebarBoards = ({
           justify-between
           rounded-lg
           px-2
-          hover:bg-white/4
+          hover:bg-(--tint-4)
         "
       >
         <button
@@ -272,7 +272,7 @@ const SidebarBoards = ({
             strokeWidth={1.8}
             className={[
               "shrink-0",
-              "text-neutral-500",
+              "text-(--text-muted)",
               "transition-transform",
               "duration-200",
               open && "rotate-90",
@@ -287,7 +287,7 @@ const SidebarBoards = ({
               font-medium
               uppercase
               tracking-[0.16em]
-              text-neutral-500
+              text-(--text-muted)
             "
           >
             Boards
@@ -306,11 +306,11 @@ const SidebarBoards = ({
               items-center
               justify-center
               rounded-full
-              text-neutral-500
+              text-(--text-muted)
               transition-colors
 
-              hover:bg-white/8
-              hover:text-neutral-100
+              hover:bg-(--tint-8)
+              hover:text-(--text-primary)
 
               focus-visible:outline-hidden
               focus-visible:ring-2
@@ -352,7 +352,7 @@ const SidebarBoards = ({
                     px-2.5
                     py-2
                     text-[11.5px]
-                    text-rose-300
+                    text-(--danger)
                   "
               >
                 Unable to load boards.
@@ -377,14 +377,14 @@ const SidebarBoards = ({
                   strokeWidth={1.5}
                   className="
                       shrink-0
-                      text-neutral-500
+                      text-(--text-muted)
                     "
                 />
 
                 <span
                   className="
                       text-[11.5px]
-                      text-neutral-500
+                      text-(--text-muted)
                     "
                 >
                   No boards
@@ -421,7 +421,7 @@ const SidebarBoards = ({
                             font-medium
                             uppercase
                             tracking-[0.14em]
-                            text-neutral-500
+                            text-(--text-muted)
                           "
                       >
                         Pinned
@@ -453,7 +453,7 @@ const SidebarBoards = ({
                             font-medium
                             uppercase
                             tracking-[0.14em]
-                            text-neutral-500
+                            text-(--text-muted)
                           "
                     >
                       {group.label}
@@ -511,7 +511,7 @@ function LoadingDots() {
               h-1
               w-1
               rounded-full
-              bg-white/[0.02]5
+              bg-(--tint-2)
             "
           style={{
             animation: `sidebarLoadingDot 1.4s ease-in-out ${
@@ -569,7 +569,7 @@ function BoardsSkeleton({ rows }: { rows: number }) {
                 shrink-0
                 animate-pulse
                 rounded
-                bg-white/15
+                bg-(--tint-15)
               "
           />
 
@@ -578,7 +578,7 @@ function BoardsSkeleton({ rows }: { rows: number }) {
                 h-2.5
                 animate-pulse
                 rounded-full
-                bg-white/15
+                bg-(--tint-15)
               "
             style={{
               width: `${70 + (index % 4) * 25}px`,

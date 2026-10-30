@@ -50,7 +50,7 @@ export default function BoardOverview({
                   "shrink-0 transition-colors duration-200",
                   danger && value > 0
                     ? "text-(--danger)"
-                    : "text-neutral-500 group-hover:text-(--brand)",
+                    : "text-(--text-muted) group-hover:text-(--brand)",
                 ].join(" ")}
               />
             </div>
@@ -58,7 +58,9 @@ export default function BoardOverview({
             <p
               className={[
                 "mt-3 font-mono text-[26px] font-semibold leading-none tracking-tight tabular-nums",
-                danger && value > 0 ? "text-(--danger)" : "text-neutral-100",
+                danger && value > 0
+                  ? "text-(--danger)"
+                  : "text-(--text-primary)",
               ].join(" ")}
             >
               {pad(value)}

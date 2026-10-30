@@ -5,10 +5,12 @@ export function StepPoint({ children }: { children: React.ReactNode }) {
     <div className="flex items-start gap-3">
       <span
         aria-hidden="true"
-        className="mt-2 h-1.5 w-1.5 shrink-0 bg-rose-500"
+        className="mt-2 h-1.5 w-1.5 shrink-0 bg-(--tint-4)"
       />
 
-      <p className="font-mono text-xs leading-6 text-neutral-500">{children}</p>
+      <p className="font-mono text-xs leading-6 text-(--text-muted)">
+        {children}
+      </p>
     </div>
   );
 }

@@ -90,10 +90,10 @@ export function NotificationRow({
       className={[
         "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[11.5px] transition-colors duration-150",
         disabled
-          ? "cursor-not-allowed text-neutral-600"
+          ? "cursor-not-allowed text-(--text-subtle)"
           : danger
-            ? "text-rose-300 hover:bg-rose-500/10"
-            : "text-neutral-300 hover:bg-white/6 hover:text-neutral-100",
+            ? "text-(--danger) hover:bg-(--tint-4)"
+            : "text-(--text-soft) hover:bg-(--bg-hover) hover:text-(--text-primary)",
       ].join(" ")}
     >
       <HugeiconsIcon icon={icon} size={13} strokeWidth={1.6} />
@@ -107,7 +107,7 @@ export function NotificationRow({
         type="button"
         onClick={() => onOpen(notification)}
         className={[
-          "flex w-full items-start gap-3 px-4 py-3 pr-10 text-left transition-colors duration-200 hover:bg-white/4",
+          "flex w-full items-start gap-3 px-4 py-3 pr-10 text-left transition-colors duration-200 hover:bg-(--tint-4)",
           notification.isRead ? "opacity-60" : "",
         ].join(" ")}
       >
@@ -115,25 +115,25 @@ export function NotificationRow({
           aria-hidden="true"
           className={[
             "mt-2 size-1.5 shrink-0 rounded-full",
-            notification.isRead ? "bg-white/15" : "bg-orange-100",
+            notification.isRead ? "bg-(--tint-15)" : "bg-(--accent)",
           ].join(" ")}
         />
 
         <span
           aria-hidden="true"
-          className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full border border-orange-50/15 bg-white/5 text-[10px] font-semibold tracking-tight text-neutral-300"
+          className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full border border-(--hairline) bg-(--tint-5) text-[10px] font-semibold tracking-tight text-(--text-soft)"
         >
           {initials(notification.title)}
         </span>
 
         <span className="min-w-0 flex-1">
-          <span className="line-clamp-2 block text-[12.5px] font-medium leading-4 tracking-tight text-neutral-100">
+          <span className="line-clamp-2 block text-[12.5px] font-medium leading-4 tracking-tight text-(--text-primary)">
             {notification.title}
           </span>
-          <span className="mt-1 line-clamp-2 block text-[11.5px] leading-4 text-neutral-400">
+          <span className="mt-1 line-clamp-2 block text-[11.5px] leading-4 text-(--text-secondary)">
             {notification.message}
           </span>
-          <span className="mt-1.5 block font-mono text-[9px] uppercase tracking-wider text-neutral-600">
+          <span className="mt-1.5 block font-mono text-[9px] uppercase tracking-wider text-(--text-subtle)">
             {formatRelative(notification.createdAt)}
           </span>
         </span>
@@ -153,8 +153,8 @@ export function NotificationRow({
             className={[
               "rounded-md p-1 transition-colors duration-200",
               menuOpen
-                ? "bg-white/8 text-neutral-200"
-                : "text-neutral-500 hover:bg-white/6 hover:text-neutral-200",
+                ? "bg-(--tint-8) text-(--text-primary)"
+                : "text-(--text-muted) hover:bg-(--bg-hover) hover:text-(--text-primary)",
             ].join(" ")}
           >
             <HugeiconsIcon
@@ -169,7 +169,7 @@ export function NotificationRow({
           <div
             role="menu"
             aria-label="Notification actions"
-            className="absolute right-0 top-full z-10 mt-1 w-40 rounded-lg border border-orange-50/15 bg-[#141416] p-1 shadow-none"
+            className="absolute right-0 top-full z-10 mt-1 w-40 rounded-lg border border-(--hairline) bg-(--bg-root) p-1 shadow-none"
           >
             {item(
               "Mark as read",

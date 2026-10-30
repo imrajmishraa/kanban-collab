@@ -66,7 +66,7 @@ export default function OpenSourceSection() {
           title={
             <>
               Built in the{" "}
-              <span className="bg-linear-to-b from-(--brand-hover) to-(--brand) bg-clip-text text-transparent">
+              <span className="from-(--brand-hover) to-(--brand) text-(--text-primary)">
                 open
               </span>
             </>
@@ -85,12 +85,12 @@ export default function OpenSourceSection() {
                   key={b.label}
                   className="
                     flex items-center gap-3.5 rounded-xl
-                    border border-white/8
-                    bg-white/3
+                    border border-(--border)
+                    bg-(--tint-3)
                     px-5 py-4
                     backdrop-blur-xl backdrop-saturate-150
                     transition-colors duration-300
-                    hover:border-white/16 hover:bg-white/4
+                    hover:border-(--border-strong) hover:bg-(--tint-4)
                   "
                 >
                   <span
@@ -140,12 +140,12 @@ export default function OpenSourceSection() {
                   rel="noopener noreferrer"
                   className="
                     inline-flex items-center justify-center gap-2
-                    rounded-full border border-white/10 bg-white/3 px-6 py-3
+                    rounded-full border border-(--border) bg-(--tint-3) px-6 py-3
                     font-mono text-sm text-(--text-secondary)
                     shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]
                     backdrop-blur-xl backdrop-saturate-150
                     transition-all duration-300
-                    hover:border-white/20 hover:bg-white/6 hover:text-(--text-primary)
+                    hover:border-(--border-strong) hover:bg-(--bg-hover) hover:text-(--text-primary)
                     active:scale-[0.98]
                   "
                 >
@@ -162,8 +162,8 @@ export default function OpenSourceSection() {
                 <div
                   className="
                     relative overflow-hidden rounded-2xl
-                    border border-white/10
-                    bg-[#0B0B10]/80
+                    border border-(--border)
+                    bg-(--bg-root)/80
                     shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_30px_70px_-20px_rgba(0,0,0,0.7)]
                     backdrop-blur-xl backdrop-saturate-150
                   "
@@ -174,11 +174,11 @@ export default function OpenSourceSection() {
                   />
 
                   {/* Terminal header */}
-                  <div className="flex h-11 items-center border-b border-white/6 px-4 sm:px-5">
+                  <div className="flex h-11 items-center border-b border-(--border-subtle) px-4 sm:px-5">
                     <div className="flex items-center gap-1.5">
-                      <span className="h-2.5 w-2.5 rounded-full border border-rose-500/70 bg-rose-500/10" />
-                      <span className="h-2.5 w-2.5 rounded-full border border-yellow-500/70 bg-yellow-500/10" />
-                      <span className="h-2.5 w-2.5 rounded-full border border-emerald-500/70 bg-emerald-500/10" />
+                      <span className="h-2.5 w-2.5 rounded-full border border-(--danger)/30 bg-(--tint-4)" />
+                      <span className="h-2.5 w-2.5 rounded-full border border-(--warning)/30 bg-(--tint-4)" />
+                      <span className="h-2.5 w-2.5 rounded-full border border-(--success)/30 bg-(--tint-4)" />
                     </div>
                     <span className="ml-5 font-mono text-xs text-(--text-secondary)">
                       contributing.md
@@ -211,7 +211,7 @@ export default function OpenSourceSection() {
                         npm run dev
                       </span>
                     </p>
-                    <p className="text-emerald-400/90">
+                    <p className="text-(--success)">
                       {typed}
                       <motion.span
                         aria-hidden

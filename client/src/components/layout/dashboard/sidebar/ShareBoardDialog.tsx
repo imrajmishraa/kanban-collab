@@ -16,9 +16,9 @@ interface ShareBoardDialogProps {
 }
 
 const inputClass =
-  "w-full rounded-lg border border-orange-50/15 bg-white/[0.03] px-3 py-2 text-[13px] text-neutral-100 placeholder:text-neutral-600 outline-hidden transition-colors duration-200 hover:border-orange-50/25 focus:border-orange-50/25 focus:bg-white/[0.05] focus-visible:outline-hidden";
+  "w-full rounded-lg border border-(--hairline) bg-(--tint-3) px-3 py-2 text-[13px] text-(--text-primary) placeholder:text-(--text-subtle) outline-hidden transition-colors duration-200 hover:border-(--hairline-strong) focus:border-(--hairline-strong) focus:bg-(--tint-5) focus-visible:outline-hidden";
 
-const labelClass = "text-[11px] font-medium text-neutral-300";
+const labelClass = "text-[11px] font-medium text-(--text-soft)";
 
 /**
  * Share a board by inviting a teammate (T14). Board access is workspace-scoped,
@@ -93,19 +93,19 @@ export function ShareBoardDialog({
           </div>
         </div>
 
-        <p className="mt-3 text-[11px] leading-4 text-neutral-600">
+        <p className="mt-3 text-[11px] leading-4 text-(--text-subtle)">
           They join this board&apos;s workspace, so they can see the other
           boards there too.
         </p>
 
         {share.isError && (
-          <p className="mt-3 text-[11.5px] text-rose-300">
+          <p className="mt-3 text-[11.5px] text-(--danger)">
             Could not share. Check the email and your permissions.
           </p>
         )}
 
         {result && (
-          <p className="mt-3 flex items-center gap-1.5 text-[11.5px] text-orange-100">
+          <p className="mt-3 flex items-center gap-1.5 text-[11.5px] text-(--accent)">
             <HugeiconsIcon icon={Share08Icon} size={12} strokeWidth={1.8} />
             {result}
           </p>
@@ -115,7 +115,7 @@ export function ShareBoardDialog({
           <button
             type="button"
             onClick={onClose}
-            className="flex h-9 cursor-pointer items-center rounded-none rounded-tl-lg rounded-br-lg border border-orange-50/20 px-4 text-[12px] text-neutral-300 transition-colors duration-200 hover:border-orange-50/35 hover:bg-white/4 hover:text-neutral-100"
+            className="flex h-9 cursor-pointer items-center rounded-none rounded-tl-lg rounded-br-lg border border-(--hairline-strong) px-4 text-[12px] text-(--text-soft) transition-colors duration-200 hover:border-(--hairline-strong) hover:bg-(--tint-4) hover:text-(--text-primary)"
           >
             {result ? "Done" : "Cancel"}
           </button>
@@ -123,7 +123,7 @@ export function ShareBoardDialog({
           <button
             type="submit"
             disabled={!email.trim() || share.isPending}
-            className="flex h-9 cursor-pointer items-center gap-1.5 rounded-none rounded-tr-lg rounded-bl-lg bg-white px-4 text-[12px] font-semibold text-black transition-colors duration-200 hover:bg-neutral-200 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex h-9 cursor-pointer items-center gap-1.5 rounded-none rounded-tr-lg rounded-bl-lg bg-(--solid-bg) px-4 text-[12px] font-semibold text-(--solid-text) transition-colors duration-200 hover:bg-(--solid-bg-hover) disabled:cursor-not-allowed disabled:opacity-50"
           >
             {share.isPending && (
               <HugeiconsIcon

@@ -9,7 +9,7 @@ import { PEERS } from "./flowData";
 
 export default function PeerField() {
   return (
-    <div className="border-b border-white/6 p-4 sm:p-6 lg:border-b-0 lg:border-r">
+    <div className="border-b border-(--border-subtle) p-4 sm:p-6 lg:border-b-0 lg:border-r">
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <HugeiconsIcon
@@ -17,16 +17,16 @@ export default function PeerField() {
             size={13}
             className="text-(--brand)"
           />
-          <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-white/45 sm:text-[11px]">
+          <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-(--text-primary)/45 sm:text-[11px]">
             Live peers
           </span>
         </div>
-        <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-white/30 sm:text-[10px]">
+        <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-(--text-primary)/30 sm:text-[10px]">
           4 connected
         </span>
       </div>
 
-      <div className="relative aspect-video overflow-hidden rounded-lg border border-white/6 bg-[#050507]">
+      <div className="relative aspect-video overflow-hidden rounded-lg border border-(--border-subtle) bg-(--bg-root)">
         {/* Dotted grid inside */}
         <div
           aria-hidden="true"
@@ -88,13 +88,13 @@ export default function PeerField() {
             <div className="-translate-x-1/2 -translate-y-1/2">
               <div className="flex flex-col items-center gap-1">
                 <span
-                  className={`flex h-7 w-7 items-center justify-center rounded-full border-2 border-[#050507] font-mono text-[9px] text-white shadow-[0_4px_12px_rgba(0,0,0,0.4)] ${peer.color}`}
+                  className={`flex h-7 w-7 items-center justify-center rounded-full border-2 border-(--hairline) font-mono text-[9px] text-(--text-primary) shadow-[0_4px_12px_rgba(0,0,0,0.4)] ${peer.color}`}
                 >
                   {peer.initials}
                 </span>
                 {/* Plain chip — a backdrop-blur here would force a
                     per-frame filter pass for no visible gain */}
-                <span className="rounded-full border border-white/10 bg-[#0B0B0F] px-2 py-0.5 font-mono text-[9px] text-white/70">
+                <span className="rounded-full border border-(--border) bg-(--bg-root) px-2 py-0.5 font-mono text-[9px] text-(--text-primary)/70">
                   {peer.label}
                 </span>
               </div>

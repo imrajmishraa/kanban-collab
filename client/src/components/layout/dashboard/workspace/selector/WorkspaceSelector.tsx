@@ -65,7 +65,7 @@ function WorkspaceAvatar({
   const initial = name.trim().charAt(0).toUpperCase() || "W";
 
   const className =
-    "flex size-5 shrink-0 items-center justify-center overflow-hidden rounded-md border border-orange-50/15 bg-white/6 text-[10px] font-semibold text-neutral-300";
+    "flex size-5 shrink-0 items-center justify-center overflow-hidden rounded-md border border-(--hairline) bg-(--tint-6) text-[10px] font-semibold text-(--text-soft)";
 
   if (imageUrl && !failed) {
     return (
@@ -237,8 +237,8 @@ export function WorkspaceSelector({
             "text-[11.5px] tracking-tight",
             "transition-colors duration-200",
             isOpen
-              ? "bg-white/10 text-neutral-100"
-              : "text-neutral-300 hover:bg-white/9 hover:text-neutral-100",
+              ? "bg-(--tint-10) text-(--text-primary)"
+              : "text-(--text-soft) hover:bg-(--bg-hover) hover:text-(--text-primary)",
             triggerClassName,
           ]
             .filter(Boolean)
@@ -260,7 +260,7 @@ export function WorkspaceSelector({
             size={11}
             strokeWidth={2}
             className={[
-              "shrink-0 text-neutral-400 rotate-90 transition-transform duration-200",
+              "shrink-0 text-(--text-secondary) rotate-90 transition-transform duration-200",
               isOpen && "",
             ].join(" ")}
           />
@@ -275,7 +275,7 @@ export function WorkspaceSelector({
               "flex h-7 cursor-pointer items-center gap-2 rounded-md px-2",
               "text-[11.5px] tracking-tight",
               "transition-colors duration-200",
-              "text-neutral-300 ",
+              "text-(--text-soft) ",
               "disabled:cursor-default disabled:hover:bg-transparent",
               triggerClassName,
             ]
@@ -306,8 +306,8 @@ export function WorkspaceSelector({
               "flex size-6 cursor-pointer items-center justify-center rounded-md",
               "transition-colors duration-200",
               isOpen
-                ? "bg-white/10 text-neutral-100"
-                : "bg-white/5 text-neutral-400 hover:bg-white/8 hover:text-neutral-100",
+                ? "bg-(--tint-10) text-(--text-primary)"
+                : "bg-(--tint-5) text-(--text-secondary) hover:bg-(--tint-8) hover:text-(--text-primary)",
             ].join(" ")}
           >
             <HugeiconsIcon
@@ -328,7 +328,7 @@ export function WorkspaceSelector({
             <div className="flex items-center opacity-0 transition-opacity duration-200 group-hover/ws:opacity-100 focus-within:opacity-100">
               <span
                 aria-hidden="true"
-                className="mx-0.5 h-4 w-px bg-orange-50/15"
+                className="mx-0.5 h-4 w-px bg-(--hairline)"
               />
 
               <Tooltip
@@ -341,7 +341,7 @@ export function WorkspaceSelector({
                   type="button"
                   onClick={onClose}
                   aria-label="Back to project view"
-                  className="flex size-6 cursor-pointer items-center justify-center rounded-md text-neutral-500 transition-colors duration-200 hover:bg-white/6 hover:text-neutral-200"
+                  className="flex size-6 cursor-pointer items-center justify-center rounded-md text-(--text-muted) transition-colors duration-200 hover:bg-(--bg-hover) hover:text-(--text-primary)"
                 >
                   <HugeiconsIcon
                     icon={Cancel01Icon}
@@ -361,18 +361,18 @@ export function WorkspaceSelector({
           aria-label="Select workspace"
           className={[
             "absolute left-0 top-full z-50 mt-1.5 flex flex-col overflow-hidden rounded-xl",
-            "border border-orange-50/15 bg-[#141416]",
+            "border border-(--hairline) bg-(--bg-root)",
             "max-h-[min(360px,calc(100vh-8rem))]",
             dropdownClassName ?? "w-72",
           ].join(" ")}
         >
           {/* Filter */}
-          <div className="flex shrink-0 items-center gap-2 border-b border-orange-50/10 px-3 py-2">
+          <div className="flex shrink-0 items-center gap-2 border-b border-(--hairline) px-3 py-2">
             <HugeiconsIcon
               icon={Search01Icon}
               size={14}
               strokeWidth={1.6}
-              className="shrink-0 text-neutral-600"
+              className="shrink-0 text-(--text-subtle)"
             />
 
             <input
@@ -383,14 +383,14 @@ export function WorkspaceSelector({
               autoFocus
               className="
                 min-w-0 flex-1 bg-transparent
-                text-[12.5px] tracking-tight text-neutral-100
-                placeholder:text-neutral-600
+                text-[12.5px] tracking-tight text-(--text-primary)
+                placeholder:text-(--text-subtle)
                 outline-hidden ring-0 focus:outline-hidden focus:ring-0
                 focus-visible:outline-hidden
               "
             />
 
-            <kbd className="shrink-0 rounded border border-orange-50/15 bg-white/6 px-1 py-0.5 font-mono text-[9px] text-neutral-500">
+            <kbd className="shrink-0 rounded border border-(--hairline) bg-(--tint-6) px-1 py-0.5 font-mono text-[9px] text-(--text-muted)">
               Esc
             </kbd>
           </div>
@@ -402,13 +402,13 @@ export function WorkspaceSelector({
             className="min-h-0 flex-1 overflow-y-auto p-1"
           >
             {isError ? (
-              <p className="px-2 py-2 text-[12px] text-rose-300">
+              <p className="px-2 py-2 text-[12px] text-(--danger)">
                 Unable to load workspaces.
               </p>
             ) : isLoading ? (
               <WorkspaceSkeleton />
             ) : workspaces.length === 0 ? (
-              <p className="px-2 py-3 text-center text-[12px] text-neutral-500">
+              <p className="px-2 py-3 text-center text-[12px] text-(--text-muted)">
                 {debouncedSearch
                   ? `No matches for “${debouncedSearch}”`
                   : "No workspaces yet"}
@@ -430,8 +430,8 @@ export function WorkspaceSelector({
                         "text-left text-[12.5px] tracking-tight",
                         "transition-colors duration-200",
                         isActive
-                          ? "bg-white/[0.07] text-neutral-100"
-                          : "text-neutral-300 hover:bg-white/5 hover:text-neutral-100",
+                          ? "bg-(--tint-7) text-(--text-primary)"
+                          : "text-(--text-soft) hover:bg-(--bg-hover) hover:text-(--text-primary)",
                       ].join(" ")}
                     >
                       <WorkspaceAvatar
@@ -448,7 +448,7 @@ export function WorkspaceSelector({
                           icon={Tick02Icon}
                           size={13}
                           strokeWidth={2}
-                          className="shrink-0 text-orange-100"
+                          className="shrink-0 text-(--accent)"
                         />
                       )}
                     </button>
@@ -457,7 +457,7 @@ export function WorkspaceSelector({
 
                 {isFetchingNextPage && (
                   <div className="flex h-8 items-center justify-center">
-                    <span className="font-mono text-[9px] text-neutral-600">
+                    <span className="font-mono text-[9px] text-(--text-subtle)">
                       Loading…
                     </span>
                   </div>
@@ -467,20 +467,20 @@ export function WorkspaceSelector({
           </div>
 
           {/* Create */}
-          <div className="shrink-0 border-t border-orange-50/10 p-1">
+          <div className="shrink-0 border-t border-(--hairline) p-1">
             <button
               type="button"
               onClick={() => {
                 setIsOpen(false);
                 openNewWorkspace();
               }}
-              className="flex h-8 w-full cursor-pointer items-center gap-2.5 rounded-md px-2 text-left text-[12.5px] tracking-tight text-neutral-300 transition-colors duration-200 hover:bg-white/5 hover:text-neutral-100"
+              className="flex h-8 w-full cursor-pointer items-center gap-2.5 rounded-md px-2 text-left text-[12.5px] tracking-tight text-(--text-soft) transition-colors duration-200 hover:bg-(--bg-hover) hover:text-(--text-primary)"
             >
               <HugeiconsIcon
                 icon={Add01Icon}
                 size={14}
                 strokeWidth={2}
-                className="shrink-0 text-neutral-500"
+                className="shrink-0 text-(--text-muted)"
               />
               Create workspace
             </button>
@@ -499,10 +499,10 @@ function WorkspaceSkeleton() {
           key={row}
           className="flex h-8 items-center gap-2.5 rounded-md px-2"
         >
-          <div className="size-5 shrink-0 animate-pulse rounded-md bg-white/6" />
+          <div className="size-5 shrink-0 animate-pulse rounded-md bg-(--tint-6)" />
           <div
             className={[
-              "h-2.5 animate-pulse rounded bg-white/6",
+              "h-2.5 animate-pulse rounded bg-(--tint-6)",
               row === 1
                 ? "w-24"
                 : row === 2

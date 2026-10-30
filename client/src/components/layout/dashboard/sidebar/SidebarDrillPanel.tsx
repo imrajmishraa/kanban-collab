@@ -23,8 +23,9 @@ const ROW = [
   "motion-reduce:transition-none",
 ].join(" ");
 
-const ROW_IDLE = "text-neutral-400 hover:bg-white/4 hover:text-neutral-100";
-const ROW_ACTIVE = "bg-white/6 text-neutral-100";
+const ROW_IDLE =
+  "text-(--text-secondary) hover:bg-(--tint-4) hover:text-(--text-primary)";
+const ROW_ACTIVE = "bg-(--tint-6) text-(--text-primary)";
 
 const SidebarDrillPanel = ({
   node,
@@ -114,32 +115,32 @@ const SidebarDrillPanel = ({
       tabIndex={-1}
       aria-label={`${node.label} navigation`}
       onKeyDown={onKeyDown}
-      className="border-b border-orange-50/10 px-3 py-3 outline-hidden"
+      className="border-b border-(--hairline) px-3 py-3 outline-hidden"
     >
       <div className="mb-1 flex h-9 items-center gap-1">
         <button
           type="button"
           onClick={onBack}
           aria-label={parent ? `Back to ${parent.label}` : "Back to navigation"}
-          className="group relative mb-1 flex h-9 w-full cursor-pointer items-center justify-center rounded-md transition-colors duration-200 hover:bg-white/6 motion-reduce:transition-none"
+          className="group relative mb-1 flex h-9 w-full cursor-pointer items-center justify-center rounded-md transition-colors duration-200 hover:bg-(--bg-hover) motion-reduce:transition-none"
         >
           {/* Left-aligned back icon */}
           <HugeiconsIcon
             icon={ArrowLeft01Icon}
             size={14}
             strokeWidth={1.8}
-            className="absolute left-2 shrink-0 text-neutral-500 transition-colors duration-200 group-hover:text-neutral-200"
+            className="absolute left-2 shrink-0 text-(--text-muted) transition-colors duration-200 group-hover:text-(--text-primary)"
           />
 
           {/* Perfectly centered title */}
-          <span className="w-full truncate px-8 text-center text-[13px] font-medium tracking-tight text-neutral-100">
+          <span className="w-full truncate px-8 text-center text-[13px] font-medium tracking-tight text-(--text-primary)">
             {node.label}
           </span>
         </button>
       </div>
 
       {parents.length > 0 && (
-        <p className="truncate px-3 pb-1 text-[9px] font-medium uppercase tracking-[0.14em] text-neutral-600">
+        <p className="truncate px-3 pb-1 text-[9px] font-medium uppercase tracking-[0.14em] text-(--text-subtle)">
           {parents.map((entry) => entry.label).join(" / ")}
         </p>
       )}
@@ -148,7 +149,7 @@ const SidebarDrillPanel = ({
         {groups.map((group, index) => (
           <div key={group.title ?? `group-${index}`} className="mt-1">
             {group.title && (
-              <p className="px-3 pb-1 pt-2 text-[9.5px] font-medium uppercase tracking-[0.14em] text-neutral-600">
+              <p className="px-3 pb-1 pt-2 text-[9.5px] font-medium uppercase tracking-[0.14em] text-(--text-subtle)">
                 {group.title}
               </p>
             )}
@@ -162,7 +163,7 @@ const SidebarDrillPanel = ({
                   <span
                     className={[
                       "flex size-5 shrink-0 items-center justify-center",
-                      isActive ? "text-orange-100" : "text-neutral-500",
+                      isActive ? "text-(--accent)" : "text-(--text-muted)",
                     ].join(" ")}
                   >
                     <HugeiconsIcon
@@ -181,7 +182,7 @@ const SidebarDrillPanel = ({
 
                 const badge =
                   child.badge !== undefined && child.badge !== "" ? (
-                    <span className="shrink-0 rounded-full bg-orange-100/10 px-1.5 py-0.5 font-mono text-[9px] font-medium tabular-nums text-orange-100">
+                    <span className="shrink-0 rounded-full bg-(--accent)/10 px-1.5 py-0.5 font-mono text-[9px] font-medium tabular-nums text-(--accent)">
                       {child.badge}
                     </span>
                   ) : null;
@@ -192,7 +193,7 @@ const SidebarDrillPanel = ({
                     icon={ArrowRight01Icon}
                     size={12}
                     strokeWidth={1.8}
-                    className="shrink-0 text-neutral-600 transition-transform duration-200 group-hover/row:translate-x-0.5 motion-reduce:transition-none"
+                    className="shrink-0 text-(--text-subtle) transition-transform duration-200 group-hover/row:translate-x-0.5 motion-reduce:transition-none"
                   />
                 ) : null;
 

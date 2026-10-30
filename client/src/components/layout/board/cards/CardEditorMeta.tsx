@@ -78,7 +78,7 @@ export default function CardEditorMeta({
               className="cursor-pointer rounded-md px-2 py-0.5 text-[9px] uppercase tracking-wider transition-opacity duration-200 hover:opacity-80"
               style={{
                 color: labelColor(item),
-                background: `${labelColor(item)}1f`,
+                background: "var(--tint-4)",
                 border: `1px solid ${labelColor(item)}40`,
               }}
             >
@@ -87,7 +87,7 @@ export default function CardEditorMeta({
           ))}
 
           {draft.labels.length === 0 && (
-            <span className="text-[11px] text-neutral-600">None</span>
+            <span className="text-[11px] text-(--text-subtle)">None</span>
           )}
         </div>
 
@@ -115,7 +115,7 @@ export default function CardEditorMeta({
         <span className={editorLabel}>Members</span>
 
         {members.length === 0 ? (
-          <p className="text-[11.5px] text-neutral-600">
+          <p className="text-[11.5px] text-(--text-subtle)">
             No workspace members available
           </p>
         ) : (
@@ -132,8 +132,8 @@ export default function CardEditorMeta({
                   className={[
                     "flex max-w-full cursor-pointer items-center gap-2 rounded-lg border px-2 py-1.5 text-[11.5px] transition-colors duration-200",
                     active
-                      ? "border-orange-100/40 bg-orange-100/10 text-neutral-100"
-                      : "border-orange-50/15 text-neutral-400 hover:border-orange-50/30 hover:bg-white/4 hover:text-neutral-100",
+                      ? "border-(--accent-soft) bg-(--accent-soft) text-(--text-primary)"
+                      : "border-(--hairline) text-(--text-secondary) hover:border-(--hairline-strong) hover:bg-(--tint-4) hover:text-(--text-primary)",
                   ].join(" ")}
                 >
                   <Avatar member={member} size={18} ring={false} />

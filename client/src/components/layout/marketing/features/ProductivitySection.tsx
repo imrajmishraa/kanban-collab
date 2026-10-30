@@ -17,7 +17,7 @@ export default function ProductivitySection() {
       {/* Cool wash, bottom-right */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute bottom-[-200px] right-[-240px] h-[540px] w-[780px] rounded-[50%] bg-white/[0.018] blur-[140px]"
+        className="pointer-events-none absolute bottom-[-200px] right-[-240px] h-[540px] w-[780px] rounded-[50%] bg-(--tint-2) blur-[140px]"
       />
 
       {/* ═══════════════════════════════════════════════════════════
@@ -117,7 +117,7 @@ export default function ProductivitySection() {
             {/* Headline */}
             <h2 className="mt-6 font-mono text-3xl font-medium leading-[1.08] tracking-[-0.04em] text-(--text-primary) sm:text-4xl lg:text-5xl">
               Keep work{" "}
-              <span className="bg-linear-to-b from-(--brand-hover) via-(--brand) to-(--brand-hover)/70 bg-clip-text text-transparent">
+              <span className="from-(--brand-hover) via-(--brand) text-(--text-primary)">
                 moving forward.
               </span>
             </h2>
@@ -188,7 +188,7 @@ export default function ProductivitySection() {
               className="
                 group/frame relative rounded-[24px]
                 border border-white/[0.10]
-                bg-white/[0.03]
+                bg-(--tint-3)
                 p-2
                 shadow-[inset_0_1px_0_rgba(255,255,255,0.10),0_30px_80px_-20px_rgba(0,0,0,0.6)]
                 backdrop-blur-xl backdrop-saturate-150
@@ -208,7 +208,7 @@ export default function ProductivitySection() {
                 className="
                   relative overflow-hidden rounded-[18px]
                   border border-white/[0.05]
-                  bg-[#0B0B0F]
+                  bg-(--bg-root)
                   shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)]
                 "
               >
@@ -216,9 +216,9 @@ export default function ProductivitySection() {
                 <div className="flex h-11 items-center justify-between border-b border-white/[0.04] px-4">
                   <div className="flex items-center gap-3">
                     <div className="flex items-center gap-1.5">
-                      <span className="h-2.5 w-2.5 rounded-full border border-rose-500/70 bg-rose-500/10" />
-                      <span className="h-2.5 w-2.5 rounded-full border border-yellow-500/70 bg-yellow-500/10" />
-                      <span className="h-2.5 w-2.5 rounded-full border border-emerald-500/70 bg-emerald-500/10" />
+                      <span className="h-2.5 w-2.5 rounded-full border border-(--danger)/30 bg-(--tint-4)" />
+                      <span className="h-2.5 w-2.5 rounded-full border border-(--warning)/30 bg-(--tint-4)" />
+                      <span className="h-2.5 w-2.5 rounded-full border border-(--success)/30 bg-(--tint-4)" />
                     </div>
                     <span className="font-mono text-[11px] tracking-[0.05em] text-(--text-secondary)">
                       workspace / overview
@@ -236,11 +236,11 @@ export default function ProductivitySection() {
                     All
                   </span>
 
-                  <span className="rounded-full border border-white/[0.08] bg-white/[0.02] px-3 py-1.5 font-mono text-[10px] text-(--text-secondary)/70 backdrop-blur-sm transition-colors duration-200 hover:border-white/[0.14] hover:text-(--text-secondary)">
+                  <span className="rounded-full border border-white/[0.08] bg-(--tint-2) px-3 py-1.5 font-mono text-[10px] text-(--text-secondary)/70 backdrop-blur-sm transition-colors duration-200 hover:border-white/[0.14] hover:text-(--text-secondary)">
                     Assigned
                   </span>
 
-                  <span className="rounded-full border border-white/[0.08] bg-white/[0.02] px-3 py-1.5 font-mono text-[10px] text-(--text-secondary)/70 backdrop-blur-sm transition-colors duration-200 hover:border-white/[0.14] hover:text-(--text-secondary)">
+                  <span className="rounded-full border border-white/[0.08] bg-(--tint-2) px-3 py-1.5 font-mono text-[10px] text-(--text-secondary)/70 backdrop-blur-sm transition-colors duration-200 hover:border-white/[0.14] hover:text-(--text-secondary)">
                     Due soon
                   </span>
 
@@ -293,7 +293,7 @@ export default function ProductivitySection() {
             {/* Under-frame reflection */}
             <div
               aria-hidden="true"
-              className="pointer-events-none mx-auto mt-3 h-8 w-4/5 rounded-[50%] bg-white/[0.025] blur-3xl"
+              className="pointer-events-none mx-auto mt-3 h-8 w-4/5 rounded-[50%] bg-(--tint-2) blur-3xl"
             />
           </div>
         </div>

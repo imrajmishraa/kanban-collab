@@ -101,18 +101,18 @@ export default function WorkflowOverviewSection() {
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* META ROW — orbiting pill + playing indicator */}
 
-        <div className="flex items-baseline justify-between border-t border-white/12 pt-6">
-          <div className="eyebrow-orbit inline-flex items-center gap-3 rounded-full bg-[#08080C] px-4 py-1.5 font-mono text-[11px] uppercase tracking-[0.24em]">
+        <div className="flex items-baseline justify-between border-t border-(--border) pt-6">
+          <div className="eyebrow-orbit inline-flex items-center gap-3 rounded-full bg-(--bg-root) px-4 py-1.5 font-mono text-[11px] uppercase tracking-[0.24em]">
             <span className="eyebrow-ring" aria-hidden="true" />
 
             <span className="relative z-2 flex items-center gap-3">
-              <span className="text-white/35">02</span>
-              <span aria-hidden="true" className="h-px w-6 bg-white/20" />
-              <span className="text-white/85">The Workflow</span>
+              <span className="text-(--text-primary)/35">02</span>
+              <span aria-hidden="true" className="h-px w-6 bg-(--tint-15)" />
+              <span className="text-(--text-primary)/85">The Workflow</span>
             </span>
           </div>
 
-          <div className="hidden items-center gap-3 font-mono text-[10px] uppercase tracking-[0.24em] text-white/35 sm:flex">
+          <div className="hidden items-center gap-3 font-mono text-[10px] uppercase tracking-[0.24em] text-(--text-primary)/35 sm:flex">
             <span
               aria-hidden="true"
               className="inline-block h-1 w-1 rounded-full animate-pulse transition-colors duration-300"
@@ -132,7 +132,7 @@ export default function WorkflowOverviewSection() {
             {/* Giant numeral */}
             <div
               aria-hidden="true"
-              className="select-none font-mono font-normal leading-none tracking-[-0.06em] text-white/6 transition-colors duration-700"
+              className="select-none font-mono font-normal leading-none tracking-[-0.06em] text-(--text-primary)/6 transition-colors duration-700"
               style={{ fontSize: "clamp(6rem, 14vw, 11rem)" }}
             >
               {current.number}
@@ -146,17 +146,17 @@ export default function WorkflowOverviewSection() {
             />
 
             {/* Title */}
-            <h3 className="font-mono text-[1.75rem] font-normal leading-[1.05] tracking-tight text-white sm:text-[2.25rem]">
+            <h3 className="font-mono text-[1.75rem] font-normal leading-[1.05] tracking-tight text-(--text-primary) sm:text-[2.25rem]">
               {current.title}
             </h3>
 
             {/* Description */}
-            <p className="mt-6 max-w-sm font-mono text-[13px] leading-[1.85] text-white/55">
+            <p className="mt-6 max-w-sm font-mono text-[13px] leading-[1.85] text-(--text-primary)/55">
               {current.description}
             </p>
 
             {/* Divider */}
-            <div className="mt-12 border-t border-white/10" />
+            <div className="mt-12 border-t border-(--border)" />
 
             {/* Vertical index */}
             <div className="mt-2">
@@ -170,7 +170,7 @@ export default function WorkflowOverviewSection() {
                     key={stage.number}
                     type="button"
                     onClick={() => selectStage(i)}
-                    className="group/row relative flex w-full items-center gap-4 border-b border-white/8 py-3.5 text-left transition-colors duration-200"
+                    className="group/row relative flex w-full items-center gap-4 border-b border-(--border) py-3.5 text-left transition-colors duration-200"
                   >
                     {/* Progress fill along bottom edge */}
                     <span
@@ -198,10 +198,10 @@ export default function WorkflowOverviewSection() {
                     <span
                       className={`font-mono text-[13px] tracking-[-0.005em] transition-colors duration-300 ${
                         isActive
-                          ? "text-white"
+                          ? "text-(--text-primary)"
                           : isDone
-                            ? "text-white/45"
-                            : "text-white/30"
+                            ? "text-(--text-primary)/45"
+                            : "text-(--text-primary)/30"
                       }`}
                     >
                       {stage.title}
@@ -210,10 +210,10 @@ export default function WorkflowOverviewSection() {
                     <span
                       className={`ml-auto font-mono text-[9px] uppercase tracking-[0.24em] transition-colors duration-300 ${
                         isActive
-                          ? "text-white/50"
+                          ? "text-(--text-primary)/50"
                           : isDone
-                            ? "text-white/20"
-                            : "text-white/12"
+                            ? "text-(--text-primary)/20"
+                            : "text-(--text-primary)/12"
                       }`}
                     >
                       {isDone ? "Done" : isActive ? "Now" : "Next"}
@@ -238,8 +238,8 @@ export default function WorkflowOverviewSection() {
               <div
                 className="
                   relative overflow-hidden rounded-xl
-                  border border-white/12
-                  bg-[#08080C]
+                  border border-(--border)
+                  bg-(--bg-root)
                   shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_30px_80px_-30px_rgba(0,0,0,0.85)]
                 "
               >
@@ -250,19 +250,19 @@ export default function WorkflowOverviewSection() {
                 />
 
                 {/* ── Window title bar ─────────────────────────── */}
-                <div className="flex h-9 items-center gap-2 border-b border-white/8 bg-white/2 px-3">
+                <div className="flex h-9 items-center gap-2 border-b border-(--border) bg-(--tint-2) px-3">
                   {/* traffic lights */}
-                  <span className="size-2.5 rounded-full bg-[#FF5F57] ring-1 ring-black/30" />
-                  <span className="size-2.5 rounded-full bg-[#FEBC2E] ring-1 ring-black/30" />
-                  <span className="size-2.5 rounded-full bg-[#28C840] ring-1 ring-black/30" />
+                  <span className="size-2.5 rounded-full bg-(--danger) ring-1 ring-(--border)" />
+                  <span className="size-2.5 rounded-full bg-(--warning) ring-1 ring-(--border)" />
+                  <span className="size-2.5 rounded-full bg-(--success) ring-1 ring-(--border)" />
 
                   {/* window title */}
-                  <span className="ml-2 font-mono text-[10px] tracking-[0.06em] text-white/40">
+                  <span className="ml-2 font-mono text-[10px] tracking-[0.06em] text-(--text-primary)/40">
                     kanban.app / launch-board
                   </span>
 
                   {/* live chip in the stage's accent */}
-                  <span className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-white/8 bg-white/3 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.18em] text-white/45">
+                  <span className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-(--border) bg-(--tint-3) px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.18em] text-(--text-primary)/45">
                     <span
                       aria-hidden="true"
                       className="size-1.5 rounded-full"
@@ -312,7 +312,7 @@ export default function WorkflowOverviewSection() {
                 </div>
 
                 {/* ── Status bar ───────────────────────────────── */}
-                <div className="flex h-7 items-center justify-between border-t border-white/8 bg-white/2 px-3 font-mono text-[9px] uppercase tracking-[0.18em] text-white/30">
+                <div className="flex h-7 items-center justify-between border-t border-(--border) bg-(--tint-2) px-3 font-mono text-[9px] uppercase tracking-[0.18em] text-(--text-primary)/30">
                   <span className="truncate">{current.tagline}</span>
                   <span className="tabular-nums">
                     {current.number} / {String(stages.length).padStart(2, "0")}
@@ -320,7 +320,7 @@ export default function WorkflowOverviewSection() {
                 </div>
 
                 {/* Progress hairline along the very bottom edge */}
-                <div className="absolute inset-x-0 bottom-0 z-30 h-px bg-white/6">
+                <div className="absolute inset-x-0 bottom-0 z-30 h-px bg-(--tint-6)">
                   <div
                     className="h-full transition-colors duration-300"
                     style={{
@@ -334,11 +334,11 @@ export default function WorkflowOverviewSection() {
               {/* Floor shadow — the window sits on something */}
               <div
                 aria-hidden="true"
-                className="pointer-events-none mx-auto mt-3 h-6 w-[85%] rounded-full bg-black/60 blur-2xl"
+                className="pointer-events-none mx-auto mt-3 h-6 w-[85%] rounded-full bg-(--scrim) blur-2xl"
               />
 
               {/* Caption below the window */}
-              <div className="mt-4 flex items-baseline justify-between font-mono text-[10px] uppercase tracking-[0.24em] text-white/35">
+              <div className="mt-4 flex items-baseline justify-between font-mono text-[10px] uppercase tracking-[0.24em] text-(--text-primary)/35">
                 <span>
                   Fig. {current.number} — {current.tagline}
                 </span>
@@ -352,7 +352,7 @@ export default function WorkflowOverviewSection() {
 
         {/* FOOTER META */}
 
-        <div className="mt-20 flex items-baseline justify-between border-t border-white/12 pt-6 font-mono text-[10px] uppercase tracking-[0.24em] text-white/25">
+        <div className="mt-20 flex items-baseline justify-between border-t border-(--border) pt-6 font-mono text-[10px] uppercase tracking-[0.24em] text-(--text-primary)/25">
           <span>Four-step workflow</span>
           <span>Plan · Organize · Collaborate · Complete</span>
         </div>

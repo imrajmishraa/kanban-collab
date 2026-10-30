@@ -51,15 +51,15 @@ export default function BoardActivityPanel({
   const activity = useBoardActivity(boardId);
 
   return (
-    <aside className="mt-4 rounded-xl border border-orange-50/15 bg-white/3 p-4">
+    <aside className="mt-4 rounded-xl border border-(--hairline) bg-(--tint-3) p-4">
       <header className="flex items-center justify-between">
-        <h2 className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-neutral-500">
+        <h2 className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-(--text-muted)">
           Activity
         </h2>
         <button
           type="button"
           onClick={onClose}
-          className="font-mono text-[10px] text-neutral-500 transition-colors hover:text-neutral-100"
+          className="font-mono text-[10px] text-(--text-muted) transition-colors hover:text-(--text-primary)"
         >
           Hide
         </button>
@@ -67,7 +67,7 @@ export default function BoardActivityPanel({
 
       <div className="mt-3 space-y-3">
         {activity.isLoading && (
-          <p className="font-mono text-[11px] text-neutral-500">
+          <p className="font-mono text-[11px] text-(--text-muted)">
             Loading activity…
           </p>
         )}
@@ -79,7 +79,7 @@ export default function BoardActivityPanel({
         )}
 
         {activity.data?.length === 0 && (
-          <p className="font-mono text-[11px] text-neutral-500">
+          <p className="font-mono text-[11px] text-(--text-muted)">
             No activity yet.
           </p>
         )}
@@ -99,14 +99,14 @@ export default function BoardActivityPanel({
               ring={false}
             />
 
-            <p className="min-w-0 flex-1 truncate font-mono text-[11px] text-neutral-400">
-              <span className="font-semibold text-neutral-100">
+            <p className="min-w-0 flex-1 truncate font-mono text-[11px] text-(--text-secondary)">
+              <span className="font-semibold text-(--text-primary)">
                 {entry.actorName}
               </span>{" "}
               {describe(entry)}
             </p>
 
-            <span className="shrink-0 font-mono text-[10px] text-neutral-500">
+            <span className="shrink-0 font-mono text-[10px] text-(--text-muted)">
               {formatRelative(entry.createdAt)}
             </span>
           </div>

@@ -40,15 +40,15 @@ function relativeTime(iso: string): string {
 
 function ActivitySkeleton() {
   return (
-    <ul className="divide-y divide-orange-50/6">
+    <ul className="divide-y divide-(--hairline)">
       {Array.from({ length: VISIBLE_ROWS }).map((_, index) => (
         <li key={index} className="flex gap-3 px-4 py-3.5">
-          <div className="size-7 shrink-0 animate-pulse rounded-full bg-white/6" />
+          <div className="size-7 shrink-0 animate-pulse rounded-full bg-(--tint-6)" />
 
           <div className="min-w-0 flex-1 space-y-2">
-            <div className="h-2.5 w-24 animate-pulse rounded bg-white/6" />
-            <div className="h-2.5 w-full animate-pulse rounded bg-white/4" />
-            <div className="h-2 w-16 animate-pulse rounded bg-white/3" />
+            <div className="h-2.5 w-24 animate-pulse rounded bg-(--tint-6)" />
+            <div className="h-2.5 w-full animate-pulse rounded bg-(--tint-4)" />
+            <div className="h-2 w-16 animate-pulse rounded bg-(--tint-3)" />
           </div>
         </li>
       ))}
@@ -101,14 +101,14 @@ export default function ActivitySection() {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage, items.length]);
 
   return (
-    <section className="overflow-hidden rounded-xl border border-orange-50/15 bg-white/3">
-      <header className="flex items-center justify-between border-b border-orange-50/10 px-4 py-3">
+    <section className="overflow-hidden rounded-xl border border-(--hairline) bg-(--tint-3)">
+      <header className="flex items-center justify-between border-b border-(--hairline) px-4 py-3">
         <div className="flex items-center gap-2">
-          <span className="flex size-6 items-center justify-center rounded-md border border-orange-50/15 text-neutral-500">
+          <span className="flex size-6 items-center justify-center rounded-md border border-(--hairline) text-(--text-muted)">
             <HugeiconsIcon icon={Message01Icon} size={12} strokeWidth={1.7} />
           </span>
 
-          <p className="text-[12.5px] font-medium tracking-tight text-neutral-100">
+          <p className="text-[12.5px] font-medium tracking-tight text-(--text-primary)">
             Recent activity
           </p>
         </div>
@@ -118,7 +118,7 @@ export default function ActivitySection() {
           onClick={() => void refetch()}
           disabled={isFetching}
           aria-label="Refresh activity"
-          className="flex size-6 cursor-pointer items-center justify-center rounded-md text-neutral-500 transition-colors duration-200 hover:bg-white/6 hover:text-neutral-200 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex size-6 cursor-pointer items-center justify-center rounded-md text-(--text-muted) transition-colors duration-200 hover:bg-(--bg-hover) hover:text-(--text-primary) disabled:cursor-not-allowed disabled:opacity-50"
         >
           <HugeiconsIcon
             icon={RefreshIcon}
@@ -136,21 +136,21 @@ export default function ActivitySection() {
         {isLoading ? (
           <ActivitySkeleton />
         ) : isError ? (
-          <p className="px-4 py-16 text-center text-[12px] text-rose-300">
+          <p className="px-4 py-16 text-center text-[12px] text-(--danger)">
             Could not load activity
           </p>
         ) : items.length === 0 ? (
-          <p className="px-4 py-16 text-center text-[12px] text-neutral-500">
+          <p className="px-4 py-16 text-center text-[12px] text-(--text-muted)">
             Nothing here yet
           </p>
         ) : (
-          <ul className="divide-y divide-orange-50/6">
+          <ul className="divide-y divide-(--hairline)">
             {items.map((item) => (
               <li key={item.id}>
                 <button
                   type="button"
                   onClick={() => navigate(`/boards/${item.boardId}`)}
-                  className="flex w-full cursor-pointer gap-3 px-4 py-3.5 text-left transition-colors duration-200 hover:bg-white/4"
+                  className="flex w-full cursor-pointer gap-3 px-4 py-3.5 text-left transition-colors duration-200 hover:bg-(--tint-4)"
                 >
                   <span className="mt-0.5 shrink-0">
                     <Avatar
@@ -167,24 +167,24 @@ export default function ActivitySection() {
 
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline justify-between gap-2">
-                      <p className="min-w-0 truncate text-[12px] font-medium tracking-tight text-neutral-100">
+                      <p className="min-w-0 truncate text-[12px] font-medium tracking-tight text-(--text-primary)">
                         {item.actorName}
                       </p>
 
                       <time
                         dateTime={item.createdAt}
-                        className="shrink-0 font-mono text-[9px] tabular-nums text-neutral-600"
+                        className="shrink-0 font-mono text-[9px] tabular-nums text-(--text-subtle)"
                       >
                         {relativeTime(item.createdAt)}
                       </time>
                     </div>
 
-                    <p className="mt-1 line-clamp-2 text-[11.5px] leading-5 text-neutral-400">
+                    <p className="mt-1 line-clamp-2 text-[11.5px] leading-5 text-(--text-secondary)">
                       {item.message}
                     </p>
 
                     {(item.workspaceName || item.boardName) && (
-                      <p className="mt-1.5 truncate font-mono text-[9px] uppercase tracking-wider text-neutral-600">
+                      <p className="mt-1.5 truncate font-mono text-[9px] uppercase tracking-wider text-(--text-subtle)">
                         {[item.workspaceName, item.boardName]
                           .filter(Boolean)
                           .join(" / ")}
@@ -196,7 +196,7 @@ export default function ActivitySection() {
                     icon={ArrowRight01Icon}
                     size={12}
                     strokeWidth={2}
-                    className="mt-1 shrink-0 text-neutral-700"
+                    className="mt-1 shrink-0 text-(--text-subtle)"
                   />
                 </button>
               </li>
@@ -208,7 +208,7 @@ export default function ActivitySection() {
         <div ref={sentinelRef} className="h-px" />
 
         {isFetchingNextPage && (
-          <div className="flex items-center justify-center gap-2 py-3 text-[11px] text-neutral-500">
+          <div className="flex items-center justify-center gap-2 py-3 text-[11px] text-(--text-muted)">
             <HugeiconsIcon
               icon={Loading03Icon}
               size={12}
@@ -220,7 +220,7 @@ export default function ActivitySection() {
         )}
 
         {!hasNextPage && items.length > 0 && (
-          <p className="py-3 text-center text-[10px] uppercase tracking-wider text-neutral-700">
+          <p className="py-3 text-center text-[10px] uppercase tracking-wider text-(--text-subtle)">
             End of activity
           </p>
         )}

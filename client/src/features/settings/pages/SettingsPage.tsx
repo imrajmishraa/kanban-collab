@@ -33,7 +33,7 @@ function SettingsPage() {
   return (
     <div className="min-h-screen bg-(--bg-root) px-6 py-10 text-(--text-primary)">
       <div className="mx-auto w-full max-w-3xl">
-        <header className="border-b border-white/8 pb-6">
+        <header className="border-b border-(--border) pb-6">
           <h1 className="font-mono text-[22px] font-semibold tracking-tight sm:text-[26px]">
             Settings
           </h1>
@@ -43,7 +43,7 @@ function SettingsPage() {
         </header>
 
         {/* Account */}
-        <section className="mt-6 rounded-xl border border-white/8 bg-white/3 p-5">
+        <section className="mt-6 rounded-xl border border-(--border) bg-(--tint-3) p-5">
           <h2 className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-(--text-muted)">
             Account
           </h2>
@@ -97,7 +97,7 @@ function SettingsPage() {
                   <button
                     type="button"
                     onClick={() => setConfirming(false)}
-                    className="h-9 rounded-full border border-white/8 bg-white/6 px-4 font-mono text-[11px] text-(--text-secondary) transition-colors hover:text-(--text-primary)"
+                    className="h-9 rounded-full border border-(--border) bg-(--tint-6) px-4 font-mono text-[11px] text-(--text-secondary) transition-colors hover:text-(--text-primary)"
                   >
                     Cancel
                   </button>

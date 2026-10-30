@@ -67,8 +67,9 @@ const ROW = [
   "motion-reduce:transition-none",
 ].join(" ");
 
-const ROW_IDLE = "text-neutral-400 hover:bg-white/4 hover:text-neutral-100";
-const ROW_ACTIVE = "bg-white/6 text-neutral-100";
+const ROW_IDLE =
+  "text-(--text-secondary) hover:bg-(--tint-4) hover:text-(--text-primary)";
+const ROW_ACTIVE = "bg-(--tint-6) text-(--text-primary)";
 
 const SidebarNavigation = ({ collapsed }: SidebarNavigationProps) => {
   const { pathname, search } = useLocation();
@@ -239,8 +240,8 @@ const SidebarNavigation = ({ collapsed }: SidebarNavigationProps) => {
         className={[
           "flex size-5 shrink-0 items-center justify-center",
           isActive
-            ? "text-orange-100"
-            : "text-neutral-500 group-hover/row:text-neutral-200",
+            ? "text-(--accent)"
+            : "text-(--text-muted) group-hover/row:text-(--text-primary)",
         ].join(" ")}
       >
         {section.key === home.key ? (
@@ -257,7 +258,7 @@ const SidebarNavigation = ({ collapsed }: SidebarNavigationProps) => {
 
     const badgeSlot =
       section.badge !== undefined && section.badge !== "" ? (
-        <span className="shrink-0 rounded-full bg-orange-100/10 px-1.5 py-0.5 font-mono text-[9px] font-medium tabular-nums text-orange-100">
+        <span className="shrink-0 rounded-full bg-(--accent)/10 px-1.5 py-0.5 font-mono text-[9px] font-medium tabular-nums text-(--accent)">
           {section.badge}
         </span>
       ) : null;
@@ -284,7 +285,7 @@ const SidebarNavigation = ({ collapsed }: SidebarNavigationProps) => {
             icon={ArrowRight01Icon}
             size={12}
             strokeWidth={1.8}
-            className="shrink-0 text-neutral-600 transition-transform duration-200 group-hover/row:translate-x-0.5 motion-reduce:transition-none"
+            className="shrink-0 text-(--text-subtle) transition-transform duration-200 group-hover/row:translate-x-0.5 motion-reduce:transition-none"
           />
         )}
       </NavLink>
@@ -294,11 +295,11 @@ const SidebarNavigation = ({ collapsed }: SidebarNavigationProps) => {
   return (
     <nav
       aria-label="Main navigation"
-      className="border-b border-orange-50/10 px-3 py-3"
+      className="border-b border-(--hairline) px-3 py-3"
     >
       <div className="flex flex-col gap-0.5">{primary.map(renderSection)}</div>
 
-      <div aria-hidden="true" className="my-2 h-px bg-orange-50/10" />
+      <div aria-hidden="true" className="my-2 h-px bg-(--hairline)" />
 
       <div className="flex flex-col gap-0.5">
         {secondary.map(renderSection)}

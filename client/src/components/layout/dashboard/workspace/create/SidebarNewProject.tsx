@@ -61,7 +61,7 @@ export default function SidebarNewProject({
               open();
             }}
             aria-label={`New project (${SHORTCUT})`}
-            className="flex size-8 cursor-pointer items-center justify-center rounded-lg border border-orange-50/15 text-neutral-300 transition-colors duration-200 hover:border-orange-50/30 hover:bg-white/6 hover:text-neutral-100"
+            className="flex size-8 cursor-pointer items-center justify-center rounded-lg border border-(--hairline) text-(--text-soft) transition-colors duration-200 hover:border-(--hairline-strong) hover:bg-(--bg-hover) hover:text-(--text-primary)"
           >
             <HugeiconsIcon icon={Add01Icon} size={14} strokeWidth={2} />
           </button>
@@ -75,20 +75,20 @@ export default function SidebarNewProject({
       <button
         type="button"
         onClick={open}
-        className="group/project flex h-9 w-full cursor-pointer items-center gap-2 rounded-lg border border-orange-50/15 bg-white/3 px-2.5 text-left transition-colors duration-200 hover:border-orange-50/30 hover:bg-white/5"
+        className="group/project flex h-9 w-full cursor-pointer items-center gap-2 rounded-lg border border-(--hairline) bg-(--tint-3) px-2.5 text-left transition-colors duration-200 hover:border-(--hairline-strong) hover:bg-(--bg-hover)"
       >
         <HugeiconsIcon
           icon={Add01Icon}
           size={14}
           strokeWidth={2}
-          className="shrink-0 text-neutral-500 transition-colors duration-200 group-hover/project:text-orange-100"
+          className="shrink-0 text-(--text-muted) transition-colors duration-200 group-hover/project:text-(--accent)"
         />
 
-        <span className="min-w-0 flex-1 truncate text-[12.5px] font-medium tracking-tight text-neutral-200">
+        <span className="min-w-0 flex-1 truncate text-[12.5px] font-medium tracking-tight text-(--text-primary)">
           Project
         </span>
 
-        <kbd className="shrink-0 rounded border border-orange-50/15 bg-white/6 px-1.5 py-0.5 font-mono text-[9px] text-neutral-500">
+        <kbd className="shrink-0 rounded border border-(--hairline) bg-(--tint-6) px-1.5 py-0.5 font-mono text-[9px] text-(--text-muted)">
           {isMac ? "⌘⇧K" : "Ctrl⇧K"}
         </kbd>
       </button>

@@ -9,7 +9,7 @@ export function LandingBackground() {
       className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
     >
       {/* Base color behind the SVG (avoids a flash of white on load) */}
-      <div className="absolute inset-0 bg-[#0a0a14]" />
+      <div className="absolute inset-0 bg-(--bg-root)" />
 
       {/* The chaicode.com background SVG — cover the viewport */}
       <div

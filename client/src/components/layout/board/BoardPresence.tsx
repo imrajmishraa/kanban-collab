@@ -33,7 +33,7 @@ export default function BoardPresence({ peers, status }: BoardPresenceProps) {
           className="size-1.5 rounded-full"
           style={{ background: statusColor(status) }}
         />
-        <span className="font-mono text-[9px] uppercase tracking-wider text-neutral-500">
+        <span className="font-mono text-[9px] uppercase tracking-wider text-(--text-muted)">
           {label}
         </span>
       </span>
@@ -47,7 +47,7 @@ export default function BoardPresence({ peers, status }: BoardPresenceProps) {
               style={{ marginLeft: index === 0 ? 0 : -6 }}
             >
               <span
-                className="inline-flex size-6 items-center justify-center rounded-full font-mono text-[9px] font-semibold text-black"
+                className="inline-flex size-6 items-center justify-center rounded-full font-mono text-[9px] font-semibold text-(--on-color)"
                 style={{
                   background: peer.color ?? "#8a94a6",
                   boxShadow: "0 0 0 2px var(--bg-root)",

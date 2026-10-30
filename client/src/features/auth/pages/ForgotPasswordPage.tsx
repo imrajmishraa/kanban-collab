@@ -204,12 +204,12 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <main className="relative h-screen overflow-hidden bg-[#050506] text-(--text-primary)">
+    <main className="relative h-screen overflow-hidden bg-(--bg-root) text-(--text-primary)">
       <div className="grid h-full lg:grid-cols-[1.15fr_1fr]">
         {/* ═══════════════════════════════════════════════════════
             LEFT — Advertisement panel with starfield background
             ═══════════════════════════════════════════════════════ */}
-        <aside className="relative hidden overflow-hidden bg-[#050506] lg:flex lg:flex-col">
+        <aside className="relative hidden overflow-hidden bg-(--bg-root) lg:flex lg:flex-col">
           {/* Top cap */}
           <div
             aria-hidden="true"
@@ -225,7 +225,7 @@ export default function ForgotPasswordPage() {
           {/* Cool counter-glow */}
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute left-1/2 top-90 h-105 w-195 -translate-x-1/2 rounded-[50%] bg-white/2 blur-[130px]"
+            className="pointer-events-none absolute left-1/2 top-90 h-105 w-195 -translate-x-1/2 rounded-[50%] bg-(--tint-2) blur-[130px]"
           />
 
           {/* STARFIELD — four dot layers */}
@@ -292,23 +292,25 @@ export default function ForgotPasswordPage() {
           {/* Content */}
           <div className="relative flex h-full flex-col p-10 xl:p-14">
             <div className="flex flex-1 flex-col justify-center py-8 xl:py-10">
-              <div className="inline-flex items-center gap-2.5 self-start rounded-full border border-white/10 bg-white/4 px-3.5 py-1.5 backdrop-blur-xl">
+              <div className="inline-flex items-center gap-2.5 self-start rounded-full border border-(--border) bg-(--tint-4) px-3.5 py-1.5 backdrop-blur-xl">
                 <span className="relative flex h-1.5 w-1.5">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/80 opacity-70" />
-                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-(--success)/80 opacity-70" />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-(--success)" />
                 </span>
-                <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/55">
+                <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-(--text-primary)/55">
                   Secure account recovery
                 </span>
               </div>
 
-              <h1 className="mt-8 max-w-lg font-mono text-[2.05rem] font-normal leading-[1.06] tracking-[-0.035em] text-white xl:text-[2.55rem]">
+              <h1 className="mt-8 max-w-lg font-mono text-[2.05rem] font-normal leading-[1.06] tracking-[-0.035em] text-(--text-primary) xl:text-[2.55rem]">
                 Locked out?
                 <br />
-                <span className="text-white/30">We'll get you back in.</span>
+                <span className="text-(--text-primary)/30">
+                  We'll get you back in.
+                </span>
               </h1>
 
-              <p className="mt-5 max-w-md font-mono text-[13px] leading-[1.8] text-white/45">
+              <p className="mt-5 max-w-md font-mono text-[13px] leading-[1.8] text-(--text-primary)/45">
                 Enter the email tied to your account and we'll send a 6-digit
                 code to verify it's really you.
               </p>
@@ -329,7 +331,7 @@ export default function ForgotPasswordPage() {
             Has its own 1px left border (only on desktop where the
             aside is visible)
             ═══════════════════════════════════════════════════════ */}
-        <section className="relative flex h-full flex-col overflow-x-hidden overflow-y-auto border-l border-white/8 bg-[#050506] lg:border-white/8 max-lg:border-l-0">
+        <section className="relative flex h-full flex-col overflow-x-hidden overflow-y-auto border-l border-(--border) bg-(--bg-root) lg:border-(--border) max-lg:border-l-0">
           <div
             aria-hidden="true"
             className="pointer-events-none absolute left-1/2 top-0 h-96 w-2xl -translate-x-1/2 rounded-[50%] bg-(--brand)/4.5 blur-[150px]"
@@ -347,9 +349,9 @@ export default function ForgotPasswordPage() {
                 width={26}
                 height={26}
                 draggable={false}
-                className="h-6.5 w-6.5 rounded-lg border border-white/10 object-cover"
+                className="h-6.5 w-6.5 rounded-lg border border-(--border) object-cover"
               />
-              <span className="font-mono text-[15px] font-bold tracking-tight text-white">
+              <span className="font-mono text-[15px] font-bold tracking-tight text-(--text-primary)">
                 Kanban Collab
               </span>
             </Link>
@@ -362,10 +364,10 @@ export default function ForgotPasswordPage() {
               {step === "email" && (
                 <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
                   <div>
-                    <h2 className="font-mono text-[1.55rem] font-normal leading-[1.12] tracking-normal text-white sm:text-[1.7rem]">
+                    <h2 className="font-mono text-[1.55rem] font-normal leading-[1.12] tracking-normal text-(--text-primary) sm:text-[1.7rem]">
                       Reset your password
                     </h2>
-                    <p className="mt-2.5 font-mono text-[12.5px] leading-[1.65] text-white/40">
+                    <p className="mt-2.5 font-mono text-[12.5px] leading-[1.65] text-(--text-primary)/40">
                       We'll send a 6-digit code to your email.
                     </p>
                   </div>
@@ -374,10 +376,10 @@ export default function ForgotPasswordPage() {
                     <div
                       role="alert"
                       aria-live="polite"
-                      className="mt-5 flex items-start gap-3 rounded-xl border border-rose-500/25 bg-rose-500/7 px-3.5 py-3"
+                      className="mt-5 flex items-start gap-3 rounded-xl border border-(--danger)/25 bg-(--danger)/7 px-3.5 py-3"
                     >
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-rose-400" />
-                      <p className="font-mono text-[12.5px] leading-normal text-rose-100/90">
+                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-(--danger)" />
+                      <p className="font-mono text-[12.5px] leading-normal text-(--danger)">
                         {error}
                       </p>
                     </div>
@@ -391,12 +393,12 @@ export default function ForgotPasswordPage() {
                     <div className="space-y-2">
                       <label
                         htmlFor={emailId}
-                        className="block font-mono text-[11px] uppercase tracking-[0.18em] text-white/40"
+                        className="block font-mono text-[11px] uppercase tracking-[0.18em] text-(--text-primary)/40"
                       >
                         Email address
                       </label>
                       <div className="group/input relative">
-                        <span className="pointer-events-none absolute left-3.5 top-1/2 flex h-4 w-4 -translate-y-1/2 items-center justify-center text-white/25 transition-colors duration-200 group-focus-within/input:text-(--brand)">
+                        <span className="pointer-events-none absolute left-3.5 top-1/2 flex h-4 w-4 -translate-y-1/2 items-center justify-center text-(--text-primary)/25 transition-colors duration-200 group-focus-within/input:text-(--brand)">
                           <HugeiconsIcon icon={Mail01Icon} size={15} />
                         </span>
                         <input
@@ -413,19 +415,19 @@ export default function ForgotPasswordPage() {
                             },
                           })}
                           className={[
-                            "w-full rounded-xl border bg-white/2.5",
+                            "w-full rounded-xl border bg-(--tint-2).5",
                             "py-3 pl-11 pr-4",
-                            "font-mono text-[13.5px] text-white/90 placeholder:text-white/22",
+                            "font-mono text-[13.5px] text-(--text-primary)/90 placeholder:text-(--text-primary)/22",
                             "outline-hidden transition-all duration-200",
                             errors.email
-                              ? "border-rose-500/45 hover:border-rose-500/60 focus:border-rose-500/70"
-                              : "border-white/9 hover:border-white/14 hover:bg-white/3.5 focus:border-(--brand)/55 focus:bg-white/4",
+                              ? "border-(--danger)/45 hover:border-(--danger)/60 focus:border-(--danger)/70"
+                              : "border-(--border) hover:border-(--border-strong) hover:bg-(--tint-3).5 focus:border-(--brand)/55 focus:bg-(--tint-4)",
                             "focus:shadow-[0_0_0_3px_rgba(255,140,66,0.13)]",
                           ].join(" ")}
                         />
                       </div>
                       {errors.email && (
-                        <p className="font-mono text-[11.5px] leading-normal text-rose-400">
+                        <p className="font-mono text-[11.5px] leading-normal text-(--danger)">
                           {errors.email.message}
                         </p>
                       )}
@@ -482,20 +484,22 @@ export default function ForgotPasswordPage() {
                       <HugeiconsIcon icon={SecurityCheckIcon} size={19} />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <span className="block font-mono text-[10px] uppercase tracking-[0.2em] text-white/35">
+                      <span className="block font-mono text-[10px] uppercase tracking-[0.2em] text-(--text-primary)/35">
                         Verification
                       </span>
-                      <span className="mt-0.5 block truncate font-mono text-[12.5px] text-white/70">
+                      <span className="mt-0.5 block truncate font-mono text-[12.5px] text-(--text-primary)/70">
                         Code sent to{" "}
-                        <span className="text-white/90">{sentEmail}</span>
+                        <span className="text-(--text-primary)/90">
+                          {sentEmail}
+                        </span>
                       </span>
                     </div>
                   </div>
 
-                  <h2 className="mt-6 font-mono text-[1.55rem] font-normal leading-[1.12] tracking-tight text-white sm:text-[1.7rem]">
+                  <h2 className="mt-6 font-mono text-[1.55rem] font-normal leading-[1.12] tracking-tight text-(--text-primary) sm:text-[1.7rem]">
                     Enter the code
                   </h2>
-                  <p className="mt-2.5 font-mono text-[12.5px] leading-[1.65] text-white/40">
+                  <p className="mt-2.5 font-mono text-[12.5px] leading-[1.65] text-(--text-primary)/40">
                     Type the 6-digit code from your email.
                   </p>
 
@@ -503,10 +507,10 @@ export default function ForgotPasswordPage() {
                     <div
                       role="alert"
                       aria-live="polite"
-                      className="mt-5 flex items-start gap-3 rounded-xl border border-rose-500/25 bg-rose-500/7 px-3.5 py-3"
+                      className="mt-5 flex items-start gap-3 rounded-xl border border-(--danger)/25 bg-(--danger)/7 px-3.5 py-3"
                     >
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-rose-400" />
-                      <p className="font-mono text-[12.5px] leading-normal text-rose-100/90">
+                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-(--danger)" />
+                      <p className="font-mono text-[12.5px] leading-normal text-(--danger)">
                         {error}
                       </p>
                     </div>
@@ -537,16 +541,16 @@ export default function ForgotPasswordPage() {
                           aria-label={`Digit ${i + 1} of ${CODE_LENGTH}`}
                           className={`
                             h-12 w-11 sm:h-13 sm:w-12
-                            rounded-xl border bg-white/2.5 text-center
-                            font-mono text-[17px] font-medium text-white
+                            rounded-xl border bg-(--tint-2).5 text-center
+                            font-mono text-[17px] font-medium text-(--text-primary)
                             outline-hidden transition-all duration-200
                             ${
                               digit
                                 ? "border-(--brand)/55 bg-(--brand)/9 shadow-[0_0_0_1px_rgba(255,140,66,0.15)]"
-                                : "border-white/9"
+                                : "border-(--border)"
                             }
-                            hover:border-white/16
-                            focus:border-(--brand)/60 focus:bg-white/4
+                            hover:border-(--border-strong)
+                            focus:border-(--brand)/60 focus:bg-(--tint-4)
                             focus:shadow-[0_0_0_3px_rgba(255,140,66,0.14)]
                           `}
                         />
@@ -555,7 +559,7 @@ export default function ForgotPasswordPage() {
 
                     <div className="mt-4 flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="h-1 w-16 overflow-hidden rounded-full bg-white/10">
+                        <div className="h-1 w-16 overflow-hidden rounded-full bg-(--tint-10)">
                           <div
                             className="h-full rounded-full bg-(--brand)/70 transition-all duration-300 ease-out"
                             style={{
@@ -563,14 +567,14 @@ export default function ForgotPasswordPage() {
                             }}
                           />
                         </div>
-                        <span className="font-mono text-[11px] text-white/35">
+                        <span className="font-mono text-[11px] text-(--text-primary)/35">
                           {filled}/{CODE_LENGTH}
                         </span>
                       </div>
                       <button
                         type="button"
                         onClick={handleChangeEmail}
-                        className="cursor-pointer font-mono text-[12px] text-white/40 transition-colors duration-200 hover:text-(--brand)"
+                        className="cursor-pointer font-mono text-[12px] text-(--text-primary)/40 transition-colors duration-200 hover:text-(--brand)"
                       >
                         Change email
                       </button>
@@ -620,7 +624,7 @@ export default function ForgotPasswordPage() {
                       type="button"
                       onClick={handleResend}
                       disabled={cooldown > 0 || isSubmitting}
-                      className="group inline-flex cursor-pointer items-center gap-2 font-mono text-[12.5px] text-white/40 transition-colors duration-200 hover:text-(--brand) disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-white/40"
+                      className="group inline-flex cursor-pointer items-center gap-2 font-mono text-[12.5px] text-(--text-primary)/40 transition-colors duration-200 hover:text-(--brand) disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-(--text-primary)/40"
                     >
                       <HugeiconsIcon
                         icon={RefreshIcon}
@@ -643,21 +647,23 @@ export default function ForgotPasswordPage() {
               {step === "sent" && (
                 <div className="animate-in fade-in zoom-in-95 duration-500 text-center">
                   <div className="relative mx-auto flex h-18 w-18 items-center justify-center">
-                    <span className="absolute inset-0 animate-ping rounded-full border border-emerald-400/20" />
-                    <span className="absolute inset-1 rounded-full bg-emerald-400/5" />
-                    <span className="relative flex h-18 w-18 items-center justify-center rounded-full border border-emerald-400/35 bg-emerald-400/9 text-emerald-400 shadow-[0_0_48px_-10px_rgba(52,211,153,0.55)]">
+                    <span className="absolute inset-0 animate-ping rounded-full border border-(--success)/20" />
+                    <span className="absolute inset-1 rounded-full bg-(--success)/5" />
+                    <span className="relative flex h-18 w-18 items-center justify-center rounded-full border border-(--success)/35 bg-(--success)/9 text-(--success) shadow-[0_0_48px_-10px_rgba(52,211,153,0.55)]">
                       <HugeiconsIcon icon={CheckmarkCircle02Icon} size={30} />
                     </span>
                   </div>
 
-                  <h2 className="mt-7 font-mono text-[1.55rem] font-normal leading-[1.12] tracking-tight text-white sm:text-[1.7rem]">
+                  <h2 className="mt-7 font-mono text-[1.55rem] font-normal leading-[1.12] tracking-tight text-(--text-primary) sm:text-[1.7rem]">
                     Reset link sent
                   </h2>
 
-                  <p className="mx-auto mt-3.5 max-w-72 font-mono text-[13px] leading-[1.7] text-white/50">
+                  <p className="mx-auto mt-3.5 max-w-72 font-mono text-[13px] leading-[1.7] text-(--text-primary)/50">
                     We sent a password reset link to{" "}
-                    <span className="text-white/85">{sentEmail}</span>. It
-                    expires in 60 minutes.
+                    <span className="text-(--text-primary)/85">
+                      {sentEmail}
+                    </span>
+                    . It expires in 60 minutes.
                   </p>
 
                   <a
@@ -713,7 +719,7 @@ function AuthNavLinks() {
         <Link
           key={label}
           to={to}
-          className="group inline-flex cursor-pointer items-center gap-1.5 font-mono text-[12.5px] text-white/40 transition-colors duration-200 hover:text-(--brand)"
+          className="group inline-flex cursor-pointer items-center gap-1.5 font-mono text-[12.5px] text-(--text-primary)/40 transition-colors duration-200 hover:text-(--brand)"
         >
           <HugeiconsIcon
             icon={icon}
@@ -738,7 +744,7 @@ function SecurityIllustration() {
         className="pointer-events-none absolute -inset-x-8 -inset-y-6 rounded-[50%] bg-(--brand)/8 blur-[90px]"
       />
 
-      <div className="relative overflow-hidden rounded-2xl border border-white/8 bg-[#08080C]/80 backdrop-blur-xl">
+      <div className="relative overflow-hidden rounded-2xl border border-(--border) bg-(--bg-root)/80 backdrop-blur-xl">
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 opacity-60"
@@ -836,10 +842,10 @@ function SecurityIllustration() {
           </svg>
 
           <div className="mt-3 text-center">
-            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-white/45">
+            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-(--text-primary)/45">
               End-to-end encrypted
             </p>
-            <p className="mt-1.5 font-mono text-[11.5px] leading-relaxed text-white/30">
+            <p className="mt-1.5 font-mono text-[11.5px] leading-relaxed text-(--text-primary)/30">
               Your reset link travels over TLS 1.3
             </p>
           </div>
@@ -854,11 +860,11 @@ function SecurityIllustration() {
    ═══════════════════════════════════════════════════════════════ */
 function StatBlock({ value, label }: { value: string; label: string }) {
   return (
-    <div className="rounded-xl border border-white/7 bg-white/2.5 p-3.5 backdrop-blur-sm transition-colors duration-200 hover:border-white/12">
-      <div className="font-mono text-[15px] font-medium tracking-tight text-white">
+    <div className="rounded-xl border border-(--border) bg-(--tint-2).5 p-3.5 backdrop-blur-sm transition-colors duration-200 hover:border-(--border)">
+      <div className="font-mono text-[15px] font-medium tracking-tight text-(--text-primary)">
         {value}
       </div>
-      <div className="mt-1 font-mono text-[9.5px] uppercase tracking-[0.16em] text-white/35">
+      <div className="mt-1 font-mono text-[9.5px] uppercase tracking-[0.16em] text-(--text-primary)/35">
         {label}
       </div>
     </div>

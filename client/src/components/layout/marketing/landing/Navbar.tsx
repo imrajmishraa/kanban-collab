@@ -152,24 +152,29 @@ export default function Navbar({
   /* ── Palette: hardcoded dark / hardcoded light ─────────────────── */
   const isDarkNav = dark;
 
-  const ink = isDarkNav ? "text-[#EAF2ED]" : "text-[#17181A]";
-  const inkSecondary = isDarkNav ? "text-[#9FB0A6]" : "text-[#4E545B]";
-  const accent = isDarkNav ? "text-[#4DE352]" : "text-[#16A34A]";
-  const accentBar = isDarkNav ? "bg-[#4DE352]" : "bg-[#16A34A]";
-  const dividerBg = isDarkNav ? "bg-[#24312B]" : "bg-[#E4E6E9]";
+  const ink = isDarkNav
+    ? "text-[var(--text-primary)]"
+    : "text-[var(--text-primary)]";
+  const inkSecondary = isDarkNav
+    ? "text-[var(--text-secondary)]"
+    : "text-[var(--text-secondary)]";
+  const accent = isDarkNav ? "text-[var(--success)]" : "text-[var(--success)]";
+  const accentBar = isDarkNav ? "bg-(--success)" : "bg-(--success)";
+  const dividerBg = isDarkNav ? "bg-[var(--hairline)]" : "bg-[var(--hairline)]";
   const surface = isDarkNav
-    ? "bg-[#101713] border-[#24312B] hover:border-[#31413A] hover:bg-[#141C17] hover:text-[#EAF2ED]"
-    : "bg-white border-[#E4E6E9] hover:border-[#D2D6DA] hover:bg-[#F0F1F3] hover:text-[#17181A]";
+    ? "bg-(--bg-root) border-[var(--hairline)] hover:border-[var(--hairline-strong)] hover:bg-(--bg-surface) hover:text-[var(--text-primary)]"
+    : "bg-(--solid-bg) border-[var(--hairline)] hover:border-[var(--hairline-strong)] hover:bg-(--text-primary) hover:text-[var(--text-primary)]";
   const focusRing = isDarkNav
-    ? "focus-visible:ring-[#4DE352]/40"
-    : "focus-visible:ring-[#16A34A]/40";
-  const ctaFill = "bg-[#4DE352] text-[#071009] hover:bg-[#63EA68]";
+    ? "focus-visible:ring-[var(--success)]/40"
+    : "focus-visible:ring-[var(--success)]/40";
+  const ctaFill =
+    "bg-(--success) text-(--text-secondary) hover:bg-[var(--success)]";
 
   const btn = cn(
     "flex size-8 shrink-0 items-center justify-center rounded-md border",
     isDarkNav
-      ? "border-[#24312B] bg-[#101713] text-[#9FB0A6]"
-      : "border-[#E4E6E9] bg-white text-[#4E545B]",
+      ? "border-[var(--hairline)] bg-(--bg-root) text-[var(--text-secondary)]"
+      : "border-[var(--hairline)] bg-(--solid-bg) text-[var(--text-secondary)]",
     "transition-colors duration-150",
     surface,
     "focus-visible:outline-hidden focus-visible:ring-2",
@@ -188,7 +193,9 @@ export default function Navbar({
         ? accent
         : cn(
             inkSecondary,
-            isDarkNav ? "hover:text-[#EAF2ED]" : "hover:text-[#17181A]",
+            isDarkNav
+              ? "hover:text-[var(--text-primary)]"
+              : "hover:text-[var(--text-primary)]",
           ),
     );
 
@@ -207,10 +214,10 @@ export default function Navbar({
         "transition-[background-color,border-color] duration-300",
         isDarkNav
           ? scrolled
-            ? "bg-[#0A0F0D]/30 backdrop-blur-xl backdrop-saturate-150"
+            ? "bg-(--bg-root)/30 backdrop-blur-xl backdrop-saturate-150"
             : "bg-transparent"
           : scrolled
-            ? "bg-white/35 backdrop-blur-xl backdrop-saturate-150"
+            ? "bg-(--tint-15) backdrop-blur-xl backdrop-saturate-150"
             : "bg-transparent",
       )}
     >
@@ -284,8 +291,8 @@ export default function Navbar({
                       "flex items-center gap-1.5",
                       inkSecondary,
                       isDarkNav
-                        ? "hover:text-[#EAF2ED]"
-                        : "hover:text-[#17181A]",
+                        ? "hover:text-[var(--text-primary)]"
+                        : "hover:text-[var(--text-primary)]",
                     )}
                   >
                     <HugeiconsIcon
@@ -424,8 +431,8 @@ export default function Navbar({
           className={cn(
             "border-t backdrop-blur-xl backdrop-saturate-150 md:hidden",
             isDarkNav
-              ? "border-[#24312B]/95 bg-[#0A0F0D]/95"
-              : "border-[#E4E6E9] bg-white/95",
+              ? "border-[var(--hairline)]/95 bg-(--bg-root)/95"
+              : "border-[var(--hairline)] bg-(--bg-root)/95",
           )}
         >
           <nav className="mx-auto flex max-w-7xl flex-col gap-0.5 px-4 py-3">
@@ -436,13 +443,13 @@ export default function Navbar({
                 "transition-colors duration-150",
                 active
                   ? isDarkNav
-                    ? "bg-[#4DE352]/10 text-[#4DE352]"
-                    : "bg-[#16A34A]/10 text-[#16A34A]"
+                    ? "bg-(--success)/10 text-[var(--success)]"
+                    : "bg-(--success)/10 text-[var(--success)]"
                   : cn(
                       inkSecondary,
                       isDarkNav
-                        ? "hover:bg-[#141C17] hover:text-[#EAF2ED]"
-                        : "hover:bg-[#F0F1F3] hover:text-[#17181A]",
+                        ? "hover:bg-(--bg-surface) hover:text-[var(--text-primary)]"
+                        : "hover:bg-(--text-primary) hover:text-[var(--text-primary)]",
                     ),
               );
 
@@ -487,13 +494,13 @@ export default function Navbar({
                   "transition-colors duration-150",
                   currentPath === "/auth/login"
                     ? isDarkNav
-                      ? "bg-[#4DE352]/10 text-[#4DE352]"
-                      : "bg-[#16A34A]/10 text-[#16A34A]"
+                      ? "bg-(--success)/10 text-[var(--success)]"
+                      : "bg-(--success)/10 text-[var(--success)]"
                     : cn(
                         inkSecondary,
                         isDarkNav
-                          ? "hover:bg-[#141C17] hover:text-[#EAF2ED]"
-                          : "hover:bg-[#F0F1F3] hover:text-[#17181A]",
+                          ? "hover:bg-(--bg-surface) hover:text-[var(--text-primary)]"
+                          : "hover:bg-(--text-primary) hover:text-[var(--text-primary)]",
                       ),
                 )}
               >
@@ -506,7 +513,9 @@ export default function Navbar({
               <div
                 className={cn(
                   "mt-1 border-t pt-3",
-                  isDarkNav ? "border-[#24312B]" : "border-[#E4E6E9]",
+                  isDarkNav
+                    ? "border-[var(--hairline)]"
+                    : "border-[var(--hairline)]",
                 )}
               >
                 <button
@@ -560,23 +569,27 @@ export default function Navbar({
             className={cn(
               "w-64 overflow-hidden rounded-xl border shadow-lg",
               isDarkNav
-                ? "border-[#24312B] bg-[#101713] shadow-[0_12px_40px_rgba(0,0,0,0.45)]"
-                : "border-[#E4E6E9] bg-white shadow-[0_12px_40px_rgba(0,0,0,0.12)]",
+                ? "border-[var(--hairline)] bg-(--bg-root) shadow-[0_12px_40px_rgba(0,0,0,0.45)]"
+                : "border-[var(--hairline)] bg-(--solid-bg) shadow-[0_12px_40px_rgba(0,0,0,0.12)]",
             )}
           >
             <div
               className={cn(
                 "flex items-center gap-3 border-b px-4 py-3",
-                isDarkNav ? "border-[#24312B]" : "border-[#E4E6E9]",
+                isDarkNav
+                  ? "border-[var(--hairline)]"
+                  : "border-[var(--hairline)]",
               )}
             >
-              <span className="flex size-8 items-center justify-center rounded-full bg-[#4DE352] text-xs font-bold text-[#071009]">
+              <span className="flex size-8 items-center justify-center rounded-full bg-(--success) text-xs font-bold text-(--text-secondary)">
                 {initials}
               </span>
               <span
                 className={cn(
                   "truncate text-[13px] font-medium",
-                  isDarkNav ? "text-[#EAF2ED]" : "text-[#17181A]",
+                  isDarkNav
+                    ? "text-[var(--text-primary)]"
+                    : "text-[var(--text-primary)]",
                 )}
               >
                 {user.email}
@@ -593,8 +606,8 @@ export default function Navbar({
                   "transition-colors duration-150 cursor-pointer",
                   "disabled:cursor-not-allowed disabled:opacity-50",
                   isDarkNav
-                    ? "text-[#9FB0A6] hover:bg-[#141C17] hover:text-[#EAF2ED]"
-                    : "text-[#4E545B] hover:bg-[#F0F1F3] hover:text-[#17181A]",
+                    ? "text-[var(--text-secondary)] hover:bg-(--bg-surface) hover:text-[var(--text-primary)]"
+                    : "text-[var(--text-secondary)] hover:bg-(--text-primary) hover:text-[var(--text-primary)]",
                 )}
               >
                 <HugeiconsIcon

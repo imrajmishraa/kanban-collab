@@ -67,7 +67,7 @@ export default function Footer() {
             </p>
 
             {/* Status pill — glassy */}
-            <div className="mt-6 inline-flex items-center gap-2.5 rounded-full border border-white/8 bg-white/3 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.15em] text-(--text-secondary) backdrop-blur-xl backdrop-saturate-150">
+            <div className="mt-6 inline-flex items-center gap-2.5 rounded-full border border-(--border) bg-(--tint-3) px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.15em] text-(--text-secondary) backdrop-blur-xl backdrop-saturate-150">
               <span className="relative flex h-1.5 w-1.5">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-(--success) opacity-60" />
                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-(--success)" />
@@ -87,7 +87,7 @@ export default function Footer() {
         </div>
 
         {/* ── Bottom bar ─────────────────────────────────────── */}
-        <div className="relative border-t border-white/6 py-8">
+        <div className="relative border-t border-(--border-subtle) py-8">
           <div className="flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
             {/* Copyright */}
             <p className="font-mono text-[11px] text-(--text-secondary)/60">
@@ -97,10 +97,10 @@ export default function Footer() {
             {/* Center: version + status */}
             <div className="flex items-center gap-4 font-mono text-[11px] text-(--text-secondary)/60">
               <span className="flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                <span className="h-1.5 w-1.5 rounded-full bg-(--tint-4)" />
                 v0.1.0
               </span>
-              <span aria-hidden="true" className="h-3 w-px bg-white/8" />
+              <span aria-hidden="true" className="h-3 w-px bg-(--tint-8)" />
             </div>
           </div>
         </div>

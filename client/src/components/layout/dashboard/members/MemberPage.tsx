@@ -90,7 +90,7 @@ function MemberPage() {
         />
       )}
       <div className="mx-auto w-full max-w-3xl">
-        <header className="border-b border-white/8 pb-6">
+        <header className="border-b border-(--border) pb-6">
           <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-(--text-muted)">
             {activeWorkspaceName ?? "Workspace"}
           </p>
@@ -117,16 +117,16 @@ function MemberPage() {
             {[0, 1, 2].map((row) => (
               <div
                 key={row}
-                className="h-14 animate-pulse rounded-xl border border-white/8 bg-white/4"
+                className="h-14 animate-pulse rounded-xl border border-(--border) bg-(--tint-4)"
               />
             ))}
           </div>
         ) : isError ? (
-          <p className="mt-6 rounded-xl border border-dashed border-white/10 bg-white/2 px-5 py-8 text-center font-mono text-[12px] text-(--text-muted)">
+          <p className="mt-6 rounded-xl border border-dashed border-(--border) bg-(--tint-2) px-5 py-8 text-center font-mono text-[12px] text-(--text-muted)">
             Couldn&apos;t load members. Please try again.
           </p>
         ) : members.length === 0 ? (
-          <p className="mt-6 rounded-xl border border-dashed border-white/10 bg-white/2 px-5 py-10 text-center font-mono text-[12px] text-(--text-muted)">
+          <p className="mt-6 rounded-xl border border-dashed border-(--border) bg-(--tint-2) px-5 py-10 text-center font-mono text-[12px] text-(--text-muted)">
             No members found.
           </p>
         ) : (
@@ -137,7 +137,7 @@ function MemberPage() {
               return (
                 <li
                   key={member.userId}
-                  className="flex items-center gap-3 rounded-xl border border-white/8 bg-white/3 px-4 py-3"
+                  className="flex items-center gap-3 rounded-xl border border-(--border) bg-(--tint-3) px-4 py-3"
                 >
                   <Avatar
                     member={{
@@ -175,7 +175,7 @@ function MemberPage() {
                         role: event.target.value as Role,
                       })
                     }
-                    className="h-8 shrink-0 rounded-lg border border-white/10 bg-white/4 px-2 font-mono text-[10px] uppercase tracking-widest text-(--text-secondary) outline-hidden hover:border-white/20 disabled:opacity-50"
+                    className="h-8 shrink-0 rounded-lg border border-(--border) bg-(--tint-4) px-2 font-mono text-[10px] uppercase tracking-widest text-(--text-secondary) outline-hidden hover:border-(--border-strong) disabled:opacity-50"
                   >
                     {ROLE_OPTIONS.map((role) => (
                       <option key={role} value={role}>
@@ -201,12 +201,12 @@ function MemberPage() {
         )}
 
         {activeWorkspaceId && (
-          <div className="mt-8 border-t border-white/8 pt-5">
+          <div className="mt-8 border-t border-(--border) pt-5">
             <button
               type="button"
               disabled={busy}
               onClick={() => leaveWorkspace.mutate()}
-              className="rounded-full border border-white/10 bg-white/4 px-4 py-2 font-mono text-[11px] text-(--text-secondary) transition-colors hover:text-(--text-primary) disabled:opacity-50"
+              className="rounded-full border border-(--border) bg-(--tint-4) px-4 py-2 font-mono text-[11px] text-(--text-secondary) transition-colors hover:text-(--text-primary) disabled:opacity-50"
             >
               Leave workspace
             </button>

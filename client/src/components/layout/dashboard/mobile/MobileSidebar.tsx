@@ -57,7 +57,7 @@ export default function MobileSidebar({
         aria-hidden="true"
         onClick={onClose}
         className={[
-          "fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden",
+          "fixed inset-0 z-40 bg-(--scrim) backdrop-blur-sm md:hidden",
           "transition-opacity duration-200",
           open ? "opacity-100" : "pointer-events-none opacity-0",
         ].join(" ")}
@@ -70,7 +70,7 @@ export default function MobileSidebar({
         onClick={(event) => event.stopPropagation()}
         className={[
           "fixed inset-y-0 left-0 z-50 flex w-72 flex-col md:hidden",
-          "border-r border-white/8 bg-(--bg-surface)",
+          "border-r border-(--border) bg-(--bg-surface)",
           "shadow-[12px_0_40px_rgba(0,0,0,0.45)]",
           "transition-transform duration-200 ease-out",
           open ? "translate-x-0" : "-translate-x-full",
@@ -126,7 +126,7 @@ export default function MobileSidebar({
           />
         </div>
 
-        <div className="shrink-0 border-t border-white/8">
+        <div className="shrink-0 border-t border-(--border)">
           <SidebarFooter collapsed={false} user={user} onLogout={onLogout} />
         </div>
       </aside>

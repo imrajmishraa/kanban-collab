@@ -26,7 +26,7 @@ const HowItWorksCTA = lazy(
 
 export default function HowItWorksPage() {
   return (
-    <div className="relative min-h-screen text-neutral-100">
+    <div className="relative min-h-screen text-(--text-primary)">
       <main className="relative z-0">
         {/* Eager — above the fold, never waits on a chunk */}
         <HowItWorksHero />

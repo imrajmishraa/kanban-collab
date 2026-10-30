@@ -86,7 +86,7 @@ export default function HowItWorksCTA() {
             className="
               eyebrow-orbit
               inline-flex items-center gap-3
-              rounded-full bg-[#08080C] px-4 py-1.5
+              rounded-full bg-(--bg-root) px-4 py-1.5
               font-mono text-[10px] uppercase tracking-[0.24em]
               shadow-[0_4px_20px_-8px_rgba(0,0,0,0.6)]
             "
@@ -95,11 +95,11 @@ export default function HowItWorksCTA() {
 
             <span className="relative z-2 flex items-center gap-3">
               <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-70" />
-                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-(--tint-4) opacity-70" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-(--tint-4)" />
               </span>
 
-              <span className="text-white/60">Ready to start</span>
+              <span className="text-(--text-primary)/60">Ready to start</span>
 
               <span
                 aria-hidden="true"
@@ -117,17 +117,17 @@ export default function HowItWorksCTA() {
           </div>
 
           {/* ── Headline ────────────────────────────────────── */}
-          <h2 className="mt-10 max-w-3xl font-mono text-[2.25rem] font-normal leading-[1.05] tracking-[-0.035em] text-white sm:text-[3rem] lg:text-[4rem]">
+          <h2 className="mt-10 max-w-3xl font-mono text-[2.25rem] font-normal leading-[1.05] tracking-[-0.035em] text-(--text-primary) sm:text-[3rem] lg:text-[4rem]">
             Turn your next idea
             <br />
             into{" "}
-            <span className="bg-linear-to-b from-(--brand-hover) via-(--brand) to-(--brand-hover)/70 bg-clip-text text-transparent">
+            <span className="from-(--brand-hover) via-(--brand) text-(--text-primary)">
               progress.
             </span>
           </h2>
 
           {/* ── Description ─────────────────────────────────── */}
-          <p className="mt-8 max-w-lg font-mono text-[13px] leading-[1.85] text-white/55 sm:text-[14px]">
+          <p className="mt-8 max-w-lg font-mono text-[13px] leading-[1.85] text-(--text-primary)/55 sm:text-[14px]">
             Create a workspace, organize your work, and bring your team together
             in one place.
           </p>
@@ -164,7 +164,7 @@ export default function HowItWorksCTA() {
           </div>
 
           {/* ── Trust row ───────────────────────────────────── */}
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 font-mono text-[10px] uppercase tracking-[0.22em] text-white/45">
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 font-mono text-[10px] uppercase tracking-[0.22em] text-(--text-primary)/45">
             <span className="flex items-center gap-2">
               <span className="h-1 w-1 rounded-full bg-(--brand)/60" />
               Free forever
@@ -181,16 +181,16 @@ export default function HowItWorksCTA() {
 
           {/* ── Workflow chain — editorial footnote ─────────── */}
           <div className="mt-14 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-2 font-mono text-[10px] uppercase tracking-[0.24em]">
-            <span className="text-white/35">Plan</span>
-            <span aria-hidden="true" className="text-white/15">
+            <span className="text-(--text-primary)/35">Plan</span>
+            <span aria-hidden="true" className="text-(--text-primary)/15">
               →
             </span>
-            <span className="text-white/35">Organize</span>
-            <span aria-hidden="true" className="text-white/15">
+            <span className="text-(--text-primary)/35">Organize</span>
+            <span aria-hidden="true" className="text-(--text-primary)/15">
               →
             </span>
-            <span className="text-white/35">Collaborate</span>
-            <span aria-hidden="true" className="text-white/15">
+            <span className="text-(--text-primary)/35">Collaborate</span>
+            <span aria-hidden="true" className="text-(--text-primary)/15">
               →
             </span>
             <span className="text-(--brand)">Complete</span>

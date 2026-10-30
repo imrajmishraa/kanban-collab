@@ -90,8 +90,8 @@ export function RecentBoardsMenu() {
           "font-mono text-[11px]",
           "transition-colors duration-150",
           isOpen
-            ? "bg-white/8 text-(--text-primary)"
-            : "text-(--text-secondary) hover:bg-white/6 hover:text-(--text-primary)",
+            ? "bg-(--tint-8) text-(--text-primary)"
+            : "text-(--text-secondary) hover:bg-(--bg-hover) hover:text-(--text-primary)",
         ].join(" ")}
       >
         <HugeiconsIcon
@@ -125,11 +125,11 @@ export function RecentBoardsMenu() {
           aria-label="Boards"
           className={[
             "absolute left-0 top-full z-50 mt-1.5 flex w-54 flex-col overflow-hidden rounded-lg",
-            "border border-white/10 bg-(--bg-surface)",
+            "border border-(--border) bg-(--bg-surface)",
             "shadow-[0_8px_24px_-6px_rgba(0,0,0,0.7)]",
           ].join(" ")}
         >
-          <div className="flex shrink-0 items-center justify-between border-b border-white/6 px-3 py-2">
+          <div className="flex shrink-0 items-center justify-between border-b border-(--border-subtle) px-3 py-2">
             <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-(--text-muted)">
               Boards
             </p>
@@ -160,8 +160,8 @@ export function RecentBoardsMenu() {
                       "rounded px-2 py-1.5 text-left font-mono text-[11px]",
                       "transition-colors duration-150",
                       isActive
-                        ? "bg-white/5 text-(--text-primary)"
-                        : "text-(--text-secondary) hover:bg-white/4 hover:text-(--text-primary)",
+                        ? "bg-(--tint-5) text-(--text-primary)"
+                        : "text-(--text-secondary) hover:bg-(--tint-4) hover:text-(--text-primary)",
                     ].join(" ")}
                   >
                     <HugeiconsIcon

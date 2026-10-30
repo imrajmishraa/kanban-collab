@@ -68,20 +68,20 @@ export default function BoardToolbar({
           <button
             type="button"
             onClick={onOpenPalette}
-            className="group/search flex h-9 w-full max-w-xs cursor-pointer items-center gap-2 rounded-lg border border-orange-50/15 bg-white/3 px-3 text-left transition-colors duration-200 hover:border-orange-50/30 hover:bg-white/5"
+            className="group/search flex h-9 w-full max-w-xs cursor-pointer items-center gap-2 rounded-lg border border-(--hairline) bg-(--tint-3) px-3 text-left transition-colors duration-200 hover:border-(--hairline-strong) hover:bg-(--bg-hover)"
           >
             <HugeiconsIcon
               icon={Search01Icon}
               size={14}
               strokeWidth={1.6}
-              className="shrink-0 text-neutral-600 transition-colors duration-200 group-hover/search:text-neutral-400"
+              className="shrink-0 text-(--text-subtle) transition-colors duration-200 group-hover/search:text-(--text-secondary)"
             />
 
-            <span className="min-w-0 flex-1 truncate text-[12px] text-neutral-500">
+            <span className="min-w-0 flex-1 truncate text-[12px] text-(--text-muted)">
               Find cards to edit
             </span>
 
-            <kbd className="shrink-0 rounded border border-orange-50/15 bg-white/6 px-1 py-0.5 font-mono text-[9px] text-neutral-500">
+            <kbd className="shrink-0 rounded border border-(--hairline) bg-(--tint-6) px-1 py-0.5 font-mono text-[9px] text-(--text-muted)">
               ⌘K
             </kbd>
           </button>
@@ -91,7 +91,7 @@ export default function BoardToolbar({
               icon={FilterIcon}
               size={13}
               strokeWidth={1.6}
-              className="shrink-0 text-neutral-500"
+              className="shrink-0 text-(--text-muted)"
             />
             <div className="flex max-w-[42vw] items-center gap-1.5 overflow-x-auto">
               {labels.map((label) => {
@@ -104,10 +104,8 @@ export default function BoardToolbar({
                     className="shrink-0 rounded-md px-2 py-1 text-[10px] uppercase tracking-wider transition-colors duration-200"
                     style={{
                       color: labelColor(label),
-                      background: active
-                        ? `${labelColor(label)}33`
-                        : "transparent",
-                      border: `1px solid ${labelColor(label)}${active ? "80" : "33"}`,
+                      background: active ? "var(--tint-8)" : "transparent",
+                      border: `1px solid var(--hairline${active ? "-strong" : ""})`,
                     }}
                   >
                     {label}
@@ -132,7 +130,7 @@ export default function BoardToolbar({
                 icon={SlidersHorizontalIcon}
                 size={14}
                 strokeWidth={1.6}
-                className="shrink-0 text-neutral-500"
+                className="shrink-0 text-(--text-muted)"
               />
               <span>{SORT_LABELS[sortBy]}</span>
             </button>
@@ -140,7 +138,7 @@ export default function BoardToolbar({
             {sortOpen && (
               <div
                 role="menu"
-                className="absolute right-0 top-full z-30 mt-2 w-40 overflow-hidden rounded-xl border border-orange-50/15 bg-(--bg-elevated) shadow-[0_16px_40px_-12px_rgba(0,0,0,0.7)]"
+                className="absolute right-0 top-full z-30 mt-2 w-40 overflow-hidden rounded-xl border border-(--hairline) bg-(--bg-root) shadow-[0_16px_40px_-12px_rgba(0,0,0,0.7)]"
               >
                 {(Object.keys(SORT_LABELS) as SortKey[]).map((key) => (
                   <button
@@ -152,8 +150,10 @@ export default function BoardToolbar({
                       setSortOpen(false);
                     }}
                     className={[
-                      "flex h-8 w-full items-center rounded-md px-2 text-[11.5px] transition-colors hover:bg-white/6",
-                      sortBy === key ? "text-(--brand)" : "text-neutral-400",
+                      "flex h-8 w-full items-center rounded-md px-2 text-[11.5px] transition-colors hover:bg-(--bg-hover)",
+                      sortBy === key
+                        ? "text-(--brand)"
+                        : "text-(--text-secondary)",
                     ].join(" ")}
                   >
                     {SORT_LABELS[key]}
@@ -164,7 +164,7 @@ export default function BoardToolbar({
           </div>
 
           {/* View toggle */}
-          <div className="flex h-9 items-center gap-0.5 rounded-lg border border-orange-50/15 bg-white/3 p-0.5">
+          <div className="flex h-9 items-center gap-0.5 rounded-lg border border-(--hairline) bg-(--tint-3) p-0.5">
             {(
               [
                 ["board", KanbanIcon, "Board view"],
@@ -180,8 +180,8 @@ export default function BoardToolbar({
                 className={[
                   "flex size-8 cursor-pointer items-center justify-center rounded-md transition-colors duration-200",
                   view === mode
-                    ? "bg-white/10 text-orange-100"
-                    : "text-neutral-500 hover:bg-white/5 hover:text-neutral-100",
+                    ? "bg-(--tint-10) text-(--accent)"
+                    : "text-(--text-muted) hover:bg-(--bg-hover) hover:text-(--text-primary)",
                 ].join(" ")}
               >
                 <HugeiconsIcon icon={icon} size={15} strokeWidth={1.6} />
@@ -192,7 +192,7 @@ export default function BoardToolbar({
           <button
             type="button"
             onClick={onAddCard}
-            className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-none rounded-tr-lg rounded-bl-lg bg-white px-4 text-[12px] font-semibold text-black transition-colors duration-200 hover:bg-neutral-200"
+            className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-none rounded-tr-lg rounded-bl-lg bg-(--solid-bg) px-4 text-[12px] font-semibold text-(--solid-text) transition-colors duration-200 hover:bg-(--solid-bg-hover)"
           >
             <HugeiconsIcon icon={Add01Icon} size={14} strokeWidth={1.6} />
             Add card
@@ -201,7 +201,7 @@ export default function BoardToolbar({
       </div>
 
       {dragPaused && view === "board" && (
-        <p className="mt-2.5 text-[11px] text-neutral-600">
+        <p className="mt-2.5 text-[11px] text-(--text-subtle)">
           Drag is paused while a filter or non-manual sort is active.
         </p>
       )}

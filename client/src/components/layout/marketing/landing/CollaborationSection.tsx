@@ -33,7 +33,7 @@ const activities: ActivityItem[] = [
   {
     name: "Rio",
     initials: "RI",
-    color: "bg-sky-500",
+    color: "bg-(--tint-4)",
     action: "commented on",
     task: "WebSocket sync",
     time: "2m ago",
@@ -42,7 +42,7 @@ const activities: ActivityItem[] = [
   {
     name: "Sam",
     initials: "SA",
-    color: "bg-pink-500",
+    color: "bg-(--tint-4)",
     action: "created",
     task: "API integration",
     time: "5m ago",
@@ -51,7 +51,7 @@ const activities: ActivityItem[] = [
   {
     name: "You",
     initials: "YU",
-    color: "bg-emerald-500",
+    color: "bg-(--tint-4)",
     action: "completed",
     task: "Authentication",
     time: "12m ago",
@@ -69,15 +69,15 @@ const activityIcons: Record<ActivityType, typeof Tick02Icon> = {
 
 const activityColors: Record<ActivityType, string> = {
   moved: "text-(--brand) border-(--brand)/30 bg-(--brand)/10",
-  created: "text-sky-400 border-sky-400/30 bg-sky-400/10",
-  completed: "text-emerald-400 border-emerald-400/30 bg-emerald-400/10",
-  commented: "text-pink-400 border-pink-400/30 bg-pink-400/10",
+  created: "text-(--text-secondary) border-(--hairline) bg-(--tint-4)",
+  completed: "text-(--success) border-(--success)/30 bg-(--tint-4)",
+  commented: "text-(--text-secondary) border-(--hairline) bg-(--tint-4)",
 };
 
 const presence = [
   { initials: "MA", color: "bg-(--brand)" },
-  { initials: "RI", color: "bg-sky-500" },
-  { initials: "SA", color: "bg-pink-500" },
+  { initials: "RI", color: "bg-(--tint-4)" },
+  { initials: "SA", color: "bg-(--tint-4)" },
 ];
 
 export default function CollaborationSection() {
@@ -96,7 +96,7 @@ export default function CollaborationSection() {
       {/* Cool counter-glow, offset right */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -right-40 top-70 h-125 w-175 rounded-[50%] bg-white/2 blur-[130px]"
+        className="pointer-events-none absolute -right-40 top-70 h-125 w-175 rounded-[50%] bg-(--tint-2) blur-[130px]"
       />
 
       {/* ═══════════════════════════════════════════════════════════
@@ -178,7 +178,7 @@ export default function CollaborationSection() {
               eyebrow-orbit
               inline-flex items-center gap-2.5
               rounded-full
-              bg-[#0B0B10]/70
+              bg-(--bg-root)/70
               px-4 py-2
               font-mono text-[10px] uppercase tracking-[0.22em]
               text-(--text-secondary)
@@ -200,7 +200,7 @@ export default function CollaborationSection() {
           {/* Headline */}
           <h2 className="mt-8 max-w-lg font-mono text-3xl font-medium leading-[1.1] tracking-[-0.04em] text-(--text-primary) sm:text-4xl lg:text-5xl">
             Everyone sees the{" "}
-            <span className="bg-linear-to-b from-(--brand-hover) via-(--brand) to-(--brand-hover)/70 bg-clip-text text-transparent">
+            <span className="from-(--brand-hover) via-(--brand) text-(--text-primary)">
               same board.
             </span>
           </h2>
@@ -223,8 +223,8 @@ export default function CollaborationSection() {
                 key={label}
                 className="
                   inline-flex items-center gap-2 rounded-full
-                  border border-white/8
-                  bg-white/3
+                  border border-(--border)
+                  bg-(--tint-3)
                   px-3.5 py-1.5
                   font-mono text-[11px]
                   text-(--text-secondary)
@@ -244,7 +244,7 @@ export default function CollaborationSection() {
           </div>
 
           {/* Latency stat */}
-          <div className="mt-10 flex items-center gap-4 border-t border-white/6 pt-6">
+          <div className="mt-10 flex items-center gap-4 border-t border-(--border-subtle) pt-6">
             <div className="flex items-baseline gap-2">
               <span className="font-mono text-xl font-medium tracking-tight text-(--text-primary)">
                 &lt;50ms
@@ -253,7 +253,7 @@ export default function CollaborationSection() {
                 Sync latency
               </span>
             </div>
-            <span aria-hidden="true" className="h-6 w-px bg-white/8" />
+            <span aria-hidden="true" className="h-6 w-px bg-(--tint-8)" />
             <div className="flex items-baseline gap-2">
               <span className="font-mono text-xl font-medium tracking-tight text-(--text-primary)">
                 ∞
@@ -277,8 +277,8 @@ export default function CollaborationSection() {
           <div
             className="
               group/frame relative overflow-hidden rounded-2xl
-              border border-white/8
-              bg-white/2
+              border border-(--border)
+              bg-(--tint-2)
               p-2
               shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_30px_80px_-30px_rgba(0,0,0,0.7)]
               backdrop-blur-xl backdrop-saturate-150
@@ -294,14 +294,14 @@ export default function CollaborationSection() {
             />
 
             {/* Inner window */}
-            <div className="relative overflow-hidden rounded-xl border border-white/5 bg-[#0B0B0F]">
+            <div className="relative overflow-hidden rounded-xl border border-(--border-subtle) bg-(--bg-root)">
               {/* Window header */}
-              <div className="flex items-center justify-between border-b border-white/6 px-4 py-3">
+              <div className="flex items-center justify-between border-b border-(--border-subtle) px-4 py-3">
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-1.5">
-                    <span className="h-2 w-2 rounded-full border border-rose-500/70 bg-rose-500/10" />
-                    <span className="h-2 w-2 rounded-full border border-yellow-500/70 bg-yellow-500/10" />
-                    <span className="h-2 w-2 rounded-full border border-emerald-500/70 bg-emerald-500/10" />
+                    <span className="h-2 w-2 rounded-full border border-(--danger)/30 bg-(--tint-4)" />
+                    <span className="h-2 w-2 rounded-full border border-(--warning)/30 bg-(--tint-4)" />
+                    <span className="h-2 w-2 rounded-full border border-(--success)/30 bg-(--tint-4)" />
                   </div>
 
                   <span className="font-mono text-[11px] tracking-wider text-(--text-secondary)">
@@ -316,7 +316,7 @@ export default function CollaborationSection() {
                         key={person.initials}
                         className={`
                           flex h-5 w-5 items-center justify-center rounded-full
-                          border border-[#0B0B0F] font-mono text-[8px] font-medium text-white
+                          border border-(--hairline) font-mono text-[8px] font-medium text-(--text-primary)
                           ${person.color}
                         `}
                       >
@@ -325,10 +325,10 @@ export default function CollaborationSection() {
                     ))}
                   </div>
 
-                  <span className="flex items-center gap-1.5 rounded-full border border-emerald-400/20 bg-emerald-400/8 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.15em] text-emerald-400">
+                  <span className="flex items-center gap-1.5 rounded-full border border-(--success)/30 bg-(--tint-4) px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.15em] text-(--success)">
                     <span className="relative flex h-1.5 w-1.5">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-                      <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-(--tint-4) opacity-60" />
+                      <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-(--tint-4)" />
                     </span>
                     Live
                   </span>
@@ -336,7 +336,7 @@ export default function CollaborationSection() {
               </div>
 
               {/* Activity feed */}
-              <div className="divide-y divide-white/4">
+              <div className="divide-y divide-(--border)">
                 {activities.map((activity, index) => {
                   const Icon = activityIcons[activity.type];
                   const colorClass = activityColors[activity.type];
@@ -347,8 +347,8 @@ export default function CollaborationSection() {
                       className={`
                         group/row relative flex items-center gap-3.5 px-4 py-3.5
                         transition-colors duration-300
-                        hover:bg-white/2
-                        ${activity.isYou ? "bg-white/1.5" : ""}
+                        hover:bg-(--tint-2)
+                        ${activity.isYou ? "bg-(--tint-2).5" : ""}
                       `}
                     >
                       <span
@@ -359,15 +359,15 @@ export default function CollaborationSection() {
                       <span
                         className={`
                           relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full
-                          font-mono text-[10px] font-medium text-white
-                          border border-white/8
+                          font-mono text-[10px] font-medium text-(--text-primary)
+                          border border-(--border)
                           ${activity.color}
                         `}
                       >
                         {activity.initials}
 
                         {activity.isYou && (
-                          <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full border-2 border-[#0B0B0F] bg-emerald-400" />
+                          <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full border-2 border-(--hairline) bg-(--tint-4)" />
                         )}
                       </span>
 
@@ -376,7 +376,7 @@ export default function CollaborationSection() {
                           <span
                             className={`font-medium ${
                               activity.isYou
-                                ? "text-emerald-400"
+                                ? "text-(--success)"
                                 : "text-(--text-primary)"
                             }`}
                           >
@@ -409,7 +409,7 @@ export default function CollaborationSection() {
               </div>
 
               {/* Window footer */}
-              <div className="flex items-center justify-between border-t border-white/6 px-4 py-2.5">
+              <div className="flex items-center justify-between border-t border-(--border-subtle) px-4 py-2.5">
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-[10px] tracking-widest text-(--text-secondary)/55">
                     Maya is typing
@@ -431,17 +431,17 @@ export default function CollaborationSection() {
           {/* Under-frame reflection */}
           <div
             aria-hidden="true"
-            className="pointer-events-none mx-auto mt-3 h-6 w-4/5 rounded-[50%] bg-white/2 blur-2xl"
+            className="pointer-events-none mx-auto mt-3 h-6 w-4/5 rounded-[50%] bg-(--tint-2) blur-2xl"
           />
 
           {/* Floating corner accents */}
           <span
             aria-hidden="true"
-            className="pointer-events-none absolute -left-3 top-12 hidden h-3 w-3 rounded-full border border-white/[0.14] bg-white/6 backdrop-blur-md sm:block"
+            className="pointer-events-none absolute -left-3 top-12 hidden h-3 w-3 rounded-full border border-white/[0.14] bg-(--tint-6) backdrop-blur-md sm:block"
           />
           <span
             aria-hidden="true"
-            className="pointer-events-none absolute -right-3 bottom-16 hidden h-3 w-3 rounded-full border border-white/[0.14] bg-white/6 backdrop-blur-md sm:block"
+            className="pointer-events-none absolute -right-3 bottom-16 hidden h-3 w-3 rounded-full border border-white/[0.14] bg-(--tint-6) backdrop-blur-md sm:block"
           />
         </div>
       </div>

@@ -393,7 +393,7 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
   };
 
   return (
-    <div className="min-h-screen bg-(--bg-root) text-neutral-100">
+    <div className="min-h-screen bg-(--bg-root) text-(--text-primary)">
       <div className="mx-auto w-full max-w-7xl px-5 py-6 sm:px-6 lg:px-8">
         <BoardHeader
           boardId={boardId ?? board.id}
@@ -414,7 +414,7 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
           <button
             type="button"
             onClick={() => setShowActivity((prev) => !prev)}
-            className="rounded-lg border border-orange-50/15 bg-white/4 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-neutral-400 transition-colors hover:text-neutral-100"
+            className="rounded-lg border border-(--hairline) bg-(--tint-4) px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-(--text-secondary) transition-colors hover:text-(--text-primary)"
           >
             {showActivity ? "Hide activity" : "Activity"}
           </button>

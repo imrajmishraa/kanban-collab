@@ -31,12 +31,12 @@ export function SearchInputRow({
   inputRef,
 }: SearchInputRowProps) {
   return (
-    <div className="flex items-center gap-3 border-b border-orange-50/10 px-4 py-3">
+    <div className="flex items-center gap-3 border-b border-(--hairline) px-4 py-3">
       <HugeiconsIcon
         icon={Search01Icon}
         size={18}
         strokeWidth={1.6}
-        className="shrink-0 text-neutral-500"
+        className="shrink-0 text-(--text-muted)"
       />
 
       <input
@@ -47,8 +47,8 @@ export function SearchInputRow({
         placeholder="Search cards and boards"
         className="
           min-w-0 flex-1 bg-transparent
-          text-[14px] tracking-tight text-neutral-100
-          placeholder:text-neutral-600
+          text-[14px] tracking-tight text-(--text-primary)
+          placeholder:text-(--text-subtle)
           outline-hidden ring-0 focus:outline-hidden focus:ring-0
           focus-visible:outline-hidden
         "
@@ -60,7 +60,7 @@ export function SearchInputRow({
             type="button"
             onClick={onClear}
             aria-label="Clear"
-            className="shrink-0 rounded-md p-1 text-neutral-500 transition-colors duration-200 hover:bg-white/6 hover:text-neutral-200"
+            className="shrink-0 rounded-md p-1 text-(--text-muted) transition-colors duration-200 hover:bg-(--bg-hover) hover:text-(--text-primary)"
           >
             <HugeiconsIcon icon={Cancel01Icon} size={13} strokeWidth={1.8} />
           </button>
@@ -70,7 +70,7 @@ export function SearchInputRow({
       <div
         role="tablist"
         aria-label="Search scope"
-        className="flex shrink-0 items-center gap-0.5 rounded-full border border-orange-50/15 bg-white/4 p-0.5"
+        className="flex shrink-0 items-center gap-0.5 rounded-full border border-(--hairline) bg-(--tint-4) p-0.5"
       >
         {TABS.map((tab) => {
           const selected = scope === tab.id;
@@ -85,8 +85,8 @@ export function SearchInputRow({
               className={[
                 "cursor-pointer rounded-full px-3 py-1 text-[11.5px] transition-colors duration-200",
                 selected
-                  ? "bg-white/10 font-medium text-neutral-100"
-                  : "text-neutral-500 hover:text-neutral-300",
+                  ? "bg-(--tint-10) font-medium text-(--text-primary)"
+                  : "text-(--text-muted) hover:text-(--text-soft)",
               ].join(" ")}
             >
               {tab.label}
@@ -95,9 +95,9 @@ export function SearchInputRow({
         })}
       </div>
 
-      <span aria-hidden="true" className="h-5 w-px bg-orange-50/15" />
+      <span aria-hidden="true" className="h-5 w-px bg-(--hairline)" />
 
-      <kbd className="hidden shrink-0 rounded-md border border-orange-50/15 bg-white/6 px-1.5 py-0.5 font-mono text-[10px] text-neutral-400 sm:block">
+      <kbd className="hidden shrink-0 rounded-md border border-(--hairline) bg-(--tint-6) px-1.5 py-0.5 font-mono text-[10px] text-(--text-secondary) sm:block">
         Esc
       </kbd>
     </div>

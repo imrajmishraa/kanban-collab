@@ -161,17 +161,17 @@ const COLUMNS: ColumnData[] = [
 ];
 
 const PRIORITY_COLORS: Record<Priority, string> = {
-  low: "bg-sky-400",
-  med: "bg-amber-400",
-  high: "bg-rose-400",
+  low: "bg-(--tint-4)",
+  med: "bg-(--tint-4)",
+  high: "bg-(--tint-4)",
 };
 
 const TAG_COLORS: Record<string, string> = {
-  design: "border-purple-400/25 bg-purple-400/8 text-purple-300",
-  frontend: "border-sky-400/25 bg-sky-400/8 text-sky-300",
-  backend: "border-emerald-400/25 bg-emerald-400/8 text-emerald-300",
-  setup: "border-white/15 bg-white/5 text-white/60",
-  database: "border-cyan-400/25 bg-cyan-400/8 text-cyan-300",
+  design: "border-(--hairline) bg-(--tint-4) text-(--text-secondary)",
+  frontend: "border-(--hairline) bg-(--tint-4) text-(--text-secondary)",
+  backend: "border-(--success)/30 bg-(--tint-4) text-(--success)",
+  setup: "border-(--border-strong) bg-(--tint-5) text-(--text-primary)/60",
+  database: "border-(--hairline) bg-(--tint-4) text-(--text-secondary)",
 };
 
 /* ═══════════════════════════════════════════════════════════════
@@ -239,11 +239,11 @@ export default function StepTwoSection() {
               className="pointer-events-none absolute -inset-x-6 -bottom-10 -top-8 rounded-[50%] bg-(--brand)/6 blur-[120px] sm:-inset-x-14 sm:-bottom-14 sm:-top-10 lg:blur-[130px]"
             />
 
-            <div className="relative overflow-hidden rounded-xl border border-white/10 bg-[#08080C] shadow-[0_40px_100px_-30px_rgba(0,0,0,0.85)] sm:rounded-2xl">
+            <div className="relative overflow-hidden rounded-xl border border-(--border) bg-(--bg-root) shadow-[0_40px_100px_-30px_rgba(0,0,0,0.85)] sm:rounded-2xl">
               <BoardScene />
             </div>
 
-            <div className="mt-3 flex items-baseline justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-white/35 sm:mt-4 sm:tracking-[0.24em]">
+            <div className="mt-3 flex items-baseline justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-(--text-primary)/35 sm:mt-4 sm:tracking-[0.24em]">
               <span>Fig. 02 — Live board</span>
               <span>Step 02 / 04</span>
             </div>
@@ -252,29 +252,31 @@ export default function StepTwoSection() {
           {/* ── RIGHT: Content ────────────────────────────────── */}
           <div className="order-1 lg:order-2">
             {/* Orbiting pill kicker */}
-            <div className="eyebrow-orbit inline-flex items-center gap-3 rounded-full bg-[#08080C] px-4 py-1.5 font-mono text-[11px] uppercase tracking-[0.24em]">
+            <div className="eyebrow-orbit inline-flex items-center gap-3 rounded-full bg-(--bg-root) px-4 py-1.5 font-mono text-[11px] uppercase tracking-[0.24em]">
               <span className="eyebrow-ring" aria-hidden="true" />
 
               <span className="relative z-2 flex items-center gap-3">
                 <span className="text-(--brand)">02</span>
-                <span aria-hidden="true" className="h-px w-6 bg-white/20" />
-                <span className="text-white/85">Organize work</span>
+                <span aria-hidden="true" className="h-px w-6 bg-(--tint-15)" />
+                <span className="text-(--text-primary)/85">Organize work</span>
               </span>
             </div>
 
-            <h2 className="mt-8 font-mono text-[1.75rem] font-normal leading-[1.05] tracking-[-0.03em] text-white sm:text-[2.25rem] lg:text-[2.5rem]">
+            <h2 className="mt-8 font-mono text-[1.75rem] font-normal leading-[1.05] tracking-[-0.03em] text-(--text-primary) sm:text-[2.25rem] lg:text-[2.5rem]">
               Turn ideas into
               <br />
-              <span className="text-white/35">visible progress.</span>
+              <span className="text-(--text-primary)/35">
+                visible progress.
+              </span>
             </h2>
 
-            <p className="mt-6 max-w-sm font-mono text-[13px] leading-[1.85] text-white/55 sm:text-[14px]">
+            <p className="mt-6 max-w-sm font-mono text-[13px] leading-[1.85] text-(--text-primary)/55 sm:text-[14px]">
               Break your project into manageable tasks and move them through a
               clear workflow. Everyone can see what needs attention and what is
               already moving forward.
             </p>
 
-            <div className="mt-10 space-y-0 border-y border-white/10">
+            <div className="mt-10 space-y-0 border-y border-(--border)">
               <StepPoint>
                 Create tasks that capture the work that needs to be done.
               </StepPoint>
@@ -287,13 +289,15 @@ export default function StepTwoSection() {
             </div>
 
             <div className="mt-10 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.24em]">
-              <span className="text-white/30">Next</span>
+              <span className="text-(--text-primary)/30">Next</span>
               <HugeiconsIcon
                 icon={ArrowRight02Icon}
                 size={12}
-                className="text-white/25"
+                className="text-(--text-primary)/25"
               />
-              <span className="text-white/60">Collaborate in real time</span>
+              <span className="text-(--text-primary)/60">
+                Collaborate in real time
+              </span>
             </div>
           </div>
         </div>
@@ -310,26 +314,26 @@ function BoardScene() {
   return (
     <div className="relative">
       {/* ── Board header ────────────────────────────────────── */}
-      <div className="flex h-10 items-center justify-between border-b border-white/6 px-3 sm:h-11 sm:px-4 lg:h-12 lg:px-5">
+      <div className="flex h-10 items-center justify-between border-b border-(--border-subtle) px-3 sm:h-11 sm:px-4 lg:h-12 lg:px-5">
         <div className="flex items-center gap-2 sm:gap-3">
           <span className="flex h-7 w-7 items-center justify-center rounded-md border border-(--brand)/40 bg-(--brand)/12 text-(--brand) lg:h-8 lg:w-8">
             <HugeiconsIcon icon={GridViewIcon} size={13} />
           </span>
           <div className="flex min-w-0 flex-col">
-            <span className="truncate font-mono text-[11px] leading-tight text-white/90 sm:text-[12px]">
+            <span className="truncate font-mono text-[11px] leading-tight text-(--text-primary)/90 sm:text-[12px]">
               Sprint 04 board
             </span>
-            <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-white/35 sm:text-[10px]">
+            <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-(--text-primary)/35 sm:text-[10px]">
               4 columns · 28 tasks
             </span>
           </div>
         </div>
 
         <div className="flex items-center gap-1.5 sm:gap-2">
-          <span className="hidden h-7 w-7 items-center justify-center rounded-md border border-white/8 text-white/40 sm:flex">
+          <span className="hidden h-7 w-7 items-center justify-center rounded-md border border-(--border) text-(--text-primary)/40 sm:flex">
             <HugeiconsIcon icon={Search01Icon} size={12} />
           </span>
-          <span className="hidden h-7 w-7 items-center justify-center rounded-md border border-white/8 text-white/40 sm:flex">
+          <span className="hidden h-7 w-7 items-center justify-center rounded-md border border-(--border) text-(--text-primary)/40 sm:flex">
             <HugeiconsIcon icon={MoreHorizontalIcon} size={12} />
           </span>
           <span className="flex items-center gap-1.5 rounded-full border border-(--brand)/40 bg-(--brand)/10 px-2.5 py-1 font-mono text-[10px] text-(--brand-hover) sm:px-3 sm:py-1.5 sm:text-[11px]">
@@ -341,14 +345,14 @@ function BoardScene() {
       </div>
 
       {/* ── Filter chips strip ──────────────────────────────── */}
-      <div className="flex items-center gap-1.5 overflow-x-auto border-b border-white/6 px-3 py-2.5 scrollbar-none sm:gap-2 sm:px-4 sm:py-3 lg:px-5 [&::-webkit-scrollbar]:hidden">
+      <div className="flex items-center gap-1.5 overflow-x-auto border-b border-(--border-subtle) px-3 py-2.5 scrollbar-none sm:gap-2 sm:px-4 sm:py-3 lg:px-5 [&::-webkit-scrollbar]:hidden">
         {FILTER_CHIPS.map((chip) => (
           <span
             key={chip.label}
             className={`flex shrink-0 items-center gap-1.5 rounded-full border px-2 py-1 font-mono text-[10px] sm:px-3 sm:py-1.5 sm:text-[11px] ${
               chip.active
                 ? "border-(--brand)/40 bg-(--brand)/10 text-(--brand-hover)"
-                : "border-white/8 bg-white/2 text-white/50"
+                : "border-(--border) bg-(--tint-2) text-(--text-primary)/50"
             }`}
           >
             <HugeiconsIcon icon={chip.icon} size={10} />
@@ -356,7 +360,7 @@ function BoardScene() {
           </span>
         ))}
 
-        <span className="ml-auto hidden items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-white/30 sm:flex">
+        <span className="ml-auto hidden items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-(--text-primary)/30 sm:flex">
           <HugeiconsIcon icon={FilterIcon} size={10} />
           <span>3 filters</span>
         </span>
@@ -364,7 +368,7 @@ function BoardScene() {
 
       {/* ── Board columns — horizontal scroll on mobile, grid on desktop ── */}
       <div className="relative">
-        <div className="flex gap-px overflow-x-auto bg-white/4 snap-x snap-mandatory scrollbar-none lg:grid lg:grid-cols-3 lg:overflow-visible [&::-webkit-scrollbar]:hidden">
+        <div className="flex gap-px overflow-x-auto bg-(--tint-4) snap-x snap-mandatory scrollbar-none lg:grid lg:grid-cols-3 lg:overflow-visible [&::-webkit-scrollbar]:hidden">
           {COLUMNS.map((column) => (
             <div
               key={column.title}
@@ -378,24 +382,24 @@ function BoardScene() {
         {/* Mobile edge fade hint */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-linear-to-l from-[#08080C] to-transparent lg:hidden"
+          className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-linear-to-l from-(--tint-3) to-transparent lg:hidden"
         />
       </div>
 
       {/* ── Footer status bar ──────────────────────────────── */}
-      <div className="flex items-center justify-between gap-3 border-t border-white/6 px-3 py-2.5 sm:px-4 sm:py-3 lg:px-5">
+      <div className="flex items-center justify-between gap-3 border-t border-(--border-subtle) px-3 py-2.5 sm:px-4 sm:py-3 lg:px-5">
         <div className="flex min-w-0 items-center gap-2 sm:gap-3.5">
-          <span className="flex items-center gap-1.5 font-mono text-[10px] text-white/30 sm:text-[11px]">
+          <span className="flex items-center gap-1.5 font-mono text-[10px] text-(--text-primary)/30 sm:text-[11px]">
             <HugeiconsIcon icon={DragDropVerticalIcon} size={10} />
             <span className="truncate">Drag to reorder</span>
           </span>
-          <span className="hidden h-3 w-px bg-white/10 sm:block" />
-          <span className="hidden items-center gap-1.5 font-mono text-[11px] text-white/30 sm:flex">
+          <span className="hidden h-3 w-px bg-(--tint-10) sm:block" />
+          <span className="hidden items-center gap-1.5 font-mono text-[11px] text-(--text-primary)/30 sm:flex">
             <HugeiconsIcon icon={Calendar01Icon} size={11} />
             <span>Sprint ends Friday</span>
           </span>
         </div>
-        <span className="shrink-0 font-mono text-[10px] text-white/30 sm:text-[11px]">
+        <span className="shrink-0 font-mono text-[10px] text-(--text-primary)/30 sm:text-[11px]">
           board://active
         </span>
       </div>
@@ -410,7 +414,7 @@ function BoardScene() {
 function BoardColumn({ title, count, cards, active, dropTarget }: ColumnData) {
   return (
     <div
-      className={`relative h-full bg-[#08080C] p-3 sm:p-3.5 ${
+      className={`relative h-full bg-(--bg-root) p-3 sm:p-3.5 ${
         dropTarget ? "shadow-[inset_0_0_0_1px_rgba(255,140,66,0.12)]" : ""
       }`}
     >
@@ -426,12 +430,12 @@ function BoardColumn({ title, count, cards, active, dropTarget }: ColumnData) {
         <div className="flex items-center gap-2">
           <span
             className={`h-1 w-1 rounded-full ${
-              active ? "bg-(--brand)" : "bg-white/20"
+              active ? "bg-(--brand)" : "bg-(--tint-15)"
             }`}
           />
           <span
             className={`font-mono text-[10px] uppercase tracking-[0.2em] sm:text-[11px] sm:tracking-[0.22em] ${
-              active ? "text-(--brand)" : "text-white/45"
+              active ? "text-(--brand)" : "text-(--text-primary)/45"
             }`}
           >
             {title}
@@ -446,7 +450,7 @@ function BoardColumn({ title, count, cards, active, dropTarget }: ColumnData) {
             </span>
           )}
         </div>
-        <span className="font-mono text-[9px] tabular-nums text-white/25 sm:text-[10px]">
+        <span className="font-mono text-[9px] tabular-nums text-(--text-primary)/25 sm:text-[10px]">
           {count}
         </span>
       </div>
@@ -495,14 +499,14 @@ function BoardCard({
   return (
     <div
       className={`
-        group/card relative rounded-md border bg-white/2 p-2.5 sm:p-3
+        group/card relative rounded-md border bg-(--tint-2) p-2.5 sm:p-3
         transition-all duration-200
         ${
           dragging
             ? "rotate-2 border-(--brand)/60 bg-(--brand)/8 shadow-[0_8px_24px_-6px_rgba(255,140,66,0.5)]"
             : done
-              ? "border-white/6 opacity-55"
-              : "border-white/6"
+              ? "border-(--border-subtle) opacity-55"
+              : "border-(--border-subtle)"
         }
       `}
     >
@@ -523,7 +527,7 @@ function BoardCard({
         </span>
 
         {dueDate && (
-          <span className="ml-auto rounded border border-rose-400/25 bg-rose-400/8 px-1 py-px font-mono text-[8px] uppercase tracking-[0.06em] text-rose-300 sm:text-[9px]">
+          <span className="ml-auto rounded border border-(--danger)/30 bg-(--tint-4) px-1 py-px font-mono text-[8px] uppercase tracking-[0.06em] text-(--danger) sm:text-[9px]">
             {dueDate}
           </span>
         )}
@@ -532,7 +536,9 @@ function BoardCard({
       {/* Title */}
       <p
         className={`mt-1.5 font-mono text-[10px] leading-[1.4] sm:mt-2 sm:text-[11px] sm:leading-[1.45] ${
-          done ? "text-white/40 line-through" : "text-white/85"
+          done
+            ? "text-(--text-primary)/40 line-through"
+            : "text-(--text-primary)/85"
         }`}
       >
         {title}
@@ -541,13 +547,13 @@ function BoardCard({
       {/* Progress bar */}
       {typeof progress === "number" && !done && (
         <div className="mt-2 sm:mt-2.5">
-          <div className="h-0.5 w-full overflow-hidden rounded-full bg-white/8 sm:h-0.75">
+          <div className="h-0.5 w-full overflow-hidden rounded-full bg-(--tint-8) sm:h-0.75">
             <div
               className="h-full rounded-full bg-(--brand)"
               style={{ width: `${progress}%` }}
             />
           </div>
-          <div className="mt-1 font-mono text-[8px] tabular-nums text-white/30 sm:text-[9px]">
+          <div className="mt-1 font-mono text-[8px] tabular-nums text-(--text-primary)/30 sm:text-[9px]">
             {progress}%
           </div>
         </div>
@@ -557,13 +563,13 @@ function BoardCard({
       <div className="mt-2 flex items-center justify-between gap-2 sm:mt-2.5">
         <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
           {meta && (
-            <span className="truncate font-mono text-[8px] tracking-[0.08em] text-white/30 sm:text-[9px]">
+            <span className="truncate font-mono text-[8px] tracking-[0.08em] text-(--text-primary)/30 sm:text-[9px]">
               {meta}
             </span>
           )}
 
           {comments !== undefined && (
-            <span className="hidden items-center gap-0.5 font-mono text-[8px] text-white/35 sm:flex sm:text-[9px]">
+            <span className="hidden items-center gap-0.5 font-mono text-[8px] text-(--text-primary)/35 sm:flex sm:text-[9px]">
               <HugeiconsIcon
                 icon={ArrowRight02Icon}
                 size={8}
@@ -574,7 +580,7 @@ function BoardCard({
           )}
 
           {attachments !== undefined && (
-            <span className="hidden items-center gap-0.5 font-mono text-[8px] text-white/35 sm:flex sm:text-[9px]">
+            <span className="hidden items-center gap-0.5 font-mono text-[8px] text-(--text-primary)/35 sm:flex sm:text-[9px]">
               <HugeiconsIcon icon={LabelIcon} size={8} />
               {attachments}
             </span>
@@ -582,7 +588,7 @@ function BoardCard({
         </div>
 
         {assignee && (
-          <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 font-mono text-[7px] text-white/70 sm:h-5 sm:w-5 sm:text-[8px]">
+          <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-(--border) bg-(--tint-5) font-mono text-[7px] text-(--text-primary)/70 sm:h-5 sm:w-5 sm:text-[8px]">
             {assignee}
           </span>
         )}
@@ -590,7 +596,7 @@ function BoardCard({
 
       {/* Done tick */}
       {done && (
-        <span className="absolute right-1.5 top-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full border border-emerald-400/40 bg-emerald-400/15 text-emerald-400 sm:right-2 sm:top-2 sm:h-4 sm:w-4">
+        <span className="absolute right-1.5 top-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full border border-(--success)/30 bg-(--tint-4) text-(--success) sm:right-2 sm:top-2 sm:h-4 sm:w-4">
           <HugeiconsIcon icon={CheckmarkCircle02Icon} size={8} />
         </span>
       )}

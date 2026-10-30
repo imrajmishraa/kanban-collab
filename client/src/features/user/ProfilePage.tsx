@@ -14,7 +14,7 @@ function ProfilePage() {
   return (
     <div className="min-h-screen bg-(--bg-root) px-6 py-10 text-(--text-primary)">
       <div className="mx-auto w-full max-w-3xl">
-        <header className="border-b border-white/8 pb-6">
+        <header className="border-b border-(--border) pb-6">
           <h1 className="font-mono text-[22px] font-semibold tracking-tight sm:text-[26px]">
             Profile
           </h1>
@@ -24,7 +24,7 @@ function ProfilePage() {
         </header>
 
         {/* Identity card */}
-        <section className="mt-6 flex items-center gap-4 rounded-xl border border-white/8 bg-white/3 p-5">
+        <section className="mt-6 flex items-center gap-4 rounded-xl border border-(--border) bg-(--tint-3) p-5">
           {user ? (
             <Avatar
               member={{
@@ -36,7 +36,7 @@ function ProfilePage() {
               ring={false}
             />
           ) : (
-            <span className="flex size-14 items-center justify-center rounded-full bg-white/6 font-mono text-[18px] text-(--text-muted)">
+            <span className="flex size-14 items-center justify-center rounded-full bg-(--tint-6) font-mono text-[18px] text-(--text-muted)">
               ?
             </span>
           )}
@@ -63,7 +63,7 @@ function ProfilePage() {
           </h2>
 
           {workspaces.length === 0 ? (
-            <p className="mt-3 rounded-xl border border-dashed border-white/10 bg-white/2 px-5 py-8 text-center font-mono text-[12px] text-(--text-muted)">
+            <p className="mt-3 rounded-xl border border-dashed border-(--border) bg-(--tint-2) px-5 py-8 text-center font-mono text-[12px] text-(--text-muted)">
               You're not a member of any workspace yet.
             </p>
           ) : (
@@ -74,7 +74,7 @@ function ProfilePage() {
                   <li key={workspace.id}>
                     <Link
                       to={`/workspaces/${workspace.id}`}
-                      className="flex items-center gap-3 rounded-xl border border-white/8 bg-white/3 px-4 py-3 transition-colors hover:border-white/14 hover:bg-white/5"
+                      className="flex items-center gap-3 rounded-xl border border-(--border) bg-(--tint-3) px-4 py-3 transition-colors hover:border-(--border-strong) hover:bg-(--bg-hover)"
                     >
                       <span
                         className="flex size-8 shrink-0 items-center justify-center rounded-md border font-mono text-[11px] font-semibold"

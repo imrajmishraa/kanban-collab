@@ -74,45 +74,45 @@ const SHAPE_CLASS: Record<TooltipShape, string> = {
   // Frosted: warm white wash over the near-black surface
   glass: [
     "rounded-xl px-3 py-1.5",
-    "border-orange-50/20 bg-white/[0.06] backdrop-blur-md",
-    "text-neutral-100",
+    "border-(--hairline-strong) bg-(--tint-6) backdrop-blur-md",
+    "text-(--text-primary)",
   ].join(" "),
 
   // Cream ring: the one bubble that carries the highlight accent
   neon: [
     "rounded-lg px-3 py-1.5",
-    "border-orange-100/40 bg-orange-100/10 text-orange-100",
+    "border-(--accent-soft) bg-(--accent-soft) text-(--accent)",
   ].join(" "),
 
   // Cream wash: solid-looking without being an orange fill
   gradient: [
     "rounded-lg px-3 py-1.5 font-medium",
-    "border-orange-100/30 bg-orange-100/12 text-orange-100",
+    "border-(--accent-soft) bg-(--accent-soft) text-(--accent)",
   ].join(" "),
 
   // Ink: inverted paper, the only light bubble
   ink: [
     "rounded-md px-2.5 py-1",
-    "border-black/10 bg-white/90 text-neutral-900",
+    "border-(--hairline) bg-(--bg-root) text-(--text-primary)",
   ].join(" "),
 
   // Outline: hairline only
   outline: [
     "rounded-md px-2.5 py-1",
-    "border-orange-50/25 bg-transparent text-neutral-300",
+    "border-(--hairline-strong) bg-transparent text-(--text-soft)",
   ].join(" "),
 
   // Terminal: mono data label, quiet surface
   terminal: [
     "rounded-[4px] px-2.5 py-1",
-    "border-orange-50/15 bg-(--bg-card)",
+    "border-(--hairline) bg-(--bg-card)",
     "font-mono text-[10px] tracking-wider text-(--text-muted)",
   ].join(" "),
 
   // Badge: cream tint pill, text carries the accent
   badge: [
     "rounded-full px-3.5 py-1",
-    "border-orange-100/25 bg-orange-100/10 text-orange-100 font-medium",
+    "border-(--accent-soft) bg-(--accent-soft) text-(--accent) font-medium",
   ].join(" "),
 
   /* ── Editorial ── */
@@ -121,7 +121,7 @@ const SHAPE_CLASS: Record<TooltipShape, string> = {
   // flat on purpose (ChaiUI cards carry no shadow).
   solid: [
     "rounded-[10px] px-3 py-1.5",
-    "border border-orange-50/15 bg-black/95 text-white backdrop-blur-sm",
+    "border border-(--hairline) bg-black/95 text-(--text-primary) backdrop-blur-sm",
   ].join(" "),
 };
 
@@ -135,37 +135,37 @@ export type TooltipTone =
 const TONE_CLASS: Record<TooltipTone, string> = {
   neutral: "",
   // Cream, the highlight accent. Never an orange fill.
-  brand: "border-orange-100/35 text-orange-100",
-  success: "border-emerald-400/35 text-emerald-300",
-  warning: "border-amber-400/35 text-amber-300",
-  danger: "border-rose-400/35 text-rose-300",
+  brand: "border-(--accent-soft) text-(--accent)",
+  success: "border-(--success)/30 text-(--success)",
+  warning: "border-(--warning)/30 text-(--warning)",
+  danger: "border-(--danger)/30 text-(--danger)",
 };
 
 /* The little rotated-square tail must match its bubble's fill,
    or every non-default shape would wear a mismatched arrow. */
 
 const ARROW_CLASS: Record<TooltipShape, string> = {
-  default: "border-orange-50/15 bg-black/95",
-  sharp: "border-orange-50/15 bg-black/95",
-  soft: "border-orange-50/15 bg-black/95",
-  pill: "border-orange-50/15 bg-black/95",
-  card: "border-orange-50/15 bg-black/95",
-  glass: "border-orange-50/20 bg-white/[0.06]",
-  neon: "border-orange-100/40 bg-orange-100/10",
-  gradient: "border-orange-100/30 bg-orange-100/12",
-  ink: "border-black/10 bg-white/90",
-  outline: "border-orange-50/25 bg-transparent",
-  terminal: "border-orange-50/15 bg-(--bg-card)",
-  badge: "border-orange-100/25 bg-orange-100/10",
-  solid: "border-orange-50/15 bg-black/95",
+  default: "border-(--hairline) bg-black/95",
+  sharp: "border-(--hairline) bg-black/95",
+  soft: "border-(--hairline) bg-black/95",
+  pill: "border-(--hairline) bg-black/95",
+  card: "border-(--hairline) bg-black/95",
+  glass: "border-(--hairline-strong) bg-(--tint-6)",
+  neon: "border-(--accent-soft) bg-(--accent-soft)",
+  gradient: "border-(--accent-soft) bg-(--accent-soft)",
+  ink: "border-(--hairline) bg-(--bg-root)",
+  outline: "border-(--hairline-strong) bg-transparent",
+  terminal: "border-(--hairline) bg-(--bg-card)",
+  badge: "border-(--accent-soft) bg-(--accent-soft)",
+  solid: "border-(--hairline) bg-black/95",
 };
 
 const ARROW_TONE_CLASS: Record<TooltipTone, string> = {
   neutral: "",
-  brand: "border-orange-100/35",
-  success: "border-emerald-400/35",
-  warning: "border-amber-400/35",
-  danger: "border-rose-400/35",
+  brand: "border-(--accent-soft)",
+  success: "border-(--success)/30",
+  warning: "border-(--warning)/30",
+  danger: "border-(--danger)/30",
 };
 
 /* ── Typography scale, the bubble's voice, independent of shape. ── */
@@ -488,8 +488,8 @@ export function Tooltip({
               maxHeight !== undefined && "overflow-hidden",
               /* ChaiUI base surface: near-black, warm hairline, flat. No shadow,
                  which is why the border has to carry the separation. */
-              "border border-orange-50/15 bg-black/95 backdrop-blur-sm",
-              "text-[11px] font-medium tracking-[0.01em] text-neutral-100",
+              "border border-(--hairline) bg-black/95 backdrop-blur-sm",
+              "text-[11px] font-medium tracking-[0.01em] text-(--text-primary)",
               align === "center" && "text-center",
               align === "right" && "text-right",
               /* Shape classes come AFTER the base fill/text/shadow
@@ -509,7 +509,7 @@ export function Tooltip({
           >
             {label}
             {highlight ? (
-              <span className="ml-1 font-medium text-orange-100 capitalize">
+              <span className="ml-1 font-medium text-(--accent) capitalize">
                 {highlight}
               </span>
             ) : null}

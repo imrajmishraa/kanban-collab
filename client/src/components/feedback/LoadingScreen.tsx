@@ -8,7 +8,7 @@ export default function LoadingScreen({
   message = "Restoring session",
 }: AuthLoadingScreenProps) {
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#050506] text-(--text-primary)">
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-(--bg-root) text-(--text-primary)">
       {/* Single soft top bloom — matches the forget-password panel */}
       <div
         aria-hidden="true"
@@ -25,7 +25,7 @@ export default function LoadingScreen({
         </div>
 
         {/* Message */}
-        <p className="loader-msg mt-9 font-mono text-[10.5px] uppercase tracking-[0.28em] text-white/40">
+        <p className="loader-msg mt-9 font-mono text-[10.5px] uppercase tracking-[0.28em] text-(--text-primary)/40">
           {message}
         </p>
       </div>
@@ -37,7 +37,7 @@ export default function LoadingScreen({
 
 function LoaderColumn({ animClass }: { animClass: string }) {
   return (
-    <div className="relative h-10 w-1.5 overflow-hidden rounded-full bg-white/6">
+    <div className="relative h-10 w-1.5 overflow-hidden rounded-full bg-(--tint-6)">
       <div
         className={`absolute inset-0 origin-bottom rounded-full bg-(--brand) ${animClass}`}
       />

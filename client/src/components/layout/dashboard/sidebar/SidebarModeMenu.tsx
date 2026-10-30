@@ -1,32 +1,34 @@
 import { HugeiconsIcon } from "@hugeicons/react";
-import { CheckmarkCircle02Icon } from "@hugeicons/core-free-icons";
+import {
+  Cursor02Icon,
+  PanelLeftCloseIcon,
+  PanelLeftOpenIcon,
+} from "@hugeicons/core-free-icons";
 
 import type { SidebarMode } from "@/stores/sidebarState";
 
 interface SidebarModeMenuProps {
   mode: SidebarMode;
   onSelect: (mode: SidebarMode) => void;
+  icon?: typeof Cursor02Icon;
 }
 
-const MODES: Array<{ mode: SidebarMode; label: string }> = [
-  { mode: "open", label: "Expanded" },
-  { mode: "collapsed", label: "Collapsed" },
-  { mode: "hover", label: "Hover" },
+const MODES: Array<{
+  mode: SidebarMode;
+  label: string;
+  icon: typeof Cursor02Icon;
+}> = [
+  { mode: "open", label: "Expanded", icon: PanelLeftCloseIcon },
+  { mode: "collapsed", label: "Collapsed", icon: PanelLeftOpenIcon },
+  { mode: "hover", label: "Hover", icon: Cursor02Icon },
 ];
 
-/**
- * The child panel behind the Sidebar row: the three ways the rail can behave.
- *
- * Rendered through a portal by its caller, so it floats beside the account
- * menu instead of being clipped by it. The surface is therefore its own, and
- * the width is fixed rather than inherited.
- */
 export function SidebarModeMenu({ mode, onSelect }: SidebarModeMenuProps) {
   return (
     <div
       role="group"
       aria-label="Sidebar"
-      className="w-30 rounded-xl border border-orange-50/20 bg-[#010101] p-1"
+      className="w-30 rounded-xl border border-(--hairline-strong) bg-(--bg-root) p-1"
     >
       {MODES.map((entry) => {
         const active = entry.mode === mode;
@@ -39,30 +41,35 @@ export function SidebarModeMenu({ mode, onSelect }: SidebarModeMenuProps) {
             aria-checked={active}
             onClick={() => onSelect(entry.mode)}
             className={[
-              "flex w-full cursor-pointer items-start gap-2 rounded-lg px-2 py-1.5 text-left",
+              "group flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-left",
               "transition-colors duration-150 motion-reduce:transition-none",
-              active ? "bg-white/6" : "hover:bg-white/4",
+              active ? "bg-(--tint-6)" : "hover:bg-(--tint-4)",
             ].join(" ")}
           >
-            <span className="min-w-0 flex-1">
-              <span
-                className={[
-                  "block text-[12px] tracking-tight",
-                  active ? "text-neutral-100" : "text-neutral-300",
-                ].join(" ")}
-              >
-                {entry.label}
-              </span>
+            <span
+              className={[
+                "min-w-0 flex-1 truncate text-[12px] tracking-tight",
+                "transition-colors duration-150 motion-reduce:transition-none",
+                active
+                  ? "text-(--text-primary)"
+                  : "text-(--text-soft) group-hover:text-(--text-primary)",
+              ].join(" ")}
+            >
+              {entry.label}
             </span>
 
-            {active && (
-              <HugeiconsIcon
-                icon={CheckmarkCircle02Icon}
-                size={13}
-                strokeWidth={1.7}
-                className="mt-0.5 shrink-0 text-orange-100"
-              />
-            )}
+            <HugeiconsIcon
+              icon={entry.icon}
+              size={14}
+              strokeWidth={1.7}
+              aria-hidden="true"
+              className={[
+                "shrink-0 transition-colors duration-150 motion-reduce:transition-none",
+                active
+                  ? "text-(--accent)"
+                  : "text-(--text-muted) group-hover:text-(--text-primary)",
+              ].join(" ")}
+            />
           </button>
         );
       })}

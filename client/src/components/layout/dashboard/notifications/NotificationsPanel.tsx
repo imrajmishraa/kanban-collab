@@ -29,7 +29,7 @@ interface NotificationsPanelProps {
 
 function SectionLabel({ children }: { children: ReactNode }) {
   return (
-    <p className="px-4 pb-1 pt-4 text-[11px] font-medium text-neutral-500">
+    <p className="px-4 pb-1 pt-4 text-[11px] font-medium text-(--text-muted)">
       {children}
     </p>
   );
@@ -152,15 +152,15 @@ export default function NotificationsPanel({
       ref={panelRef}
       role="dialog"
       aria-label="Notifications"
-      className="fixed right-0 top-14 mr-5 mb-1 rounded-2xl bottom-0 z-90 flex w-90 max-w-[calc(100vw-1rem)] flex-col border border-orange-50/15 bg-[#0a0a0a]/95 backdrop-blur-sm motion-safe:animate-in motion-safe:slide-in-from-right-2 motion-safe:fade-in-0 motion-safe:duration-200"
+      className="fixed right-0 top-14 mr-5 mb-1 rounded-2xl bottom-0 z-90 flex w-90 max-w-[calc(100vw-1rem)] flex-col border border-(--hairline) bg-(--bg-root)/95 backdrop-blur-sm motion-safe:animate-in motion-safe:slide-in-from-right-2 motion-safe:fade-in-0 motion-safe:duration-200"
     >
-      <header className="flex shrink-0 items-center justify-between gap-3 border-b border-orange-50/10 px-4 py-3">
+      <header className="flex shrink-0 items-center justify-between gap-3 border-b border-(--hairline) px-4 py-3">
         <div className="flex min-w-0 items-center gap-2">
-          <span className="text-[13px] font-medium tracking-tight text-neutral-100">
+          <span className="text-[13px] font-medium tracking-tight text-(--text-primary)">
             Notifications
           </span>
           {unread.length > 0 && (
-            <span className="shrink-0 rounded-full border border-orange-100/25 bg-orange-100/10 px-1.5 py-0.5 text-[10px] font-medium text-orange-100">
+            <span className="shrink-0 rounded-full border border-(--accent-soft) bg-(--accent-soft) px-1.5 py-0.5 text-[10px] font-medium text-(--accent)">
               {unread.length > 9 ? "9+" : unread.length}
             </span>
           )}
@@ -171,7 +171,7 @@ export default function NotificationsPanel({
             type="button"
             onClick={() => markAllRead.mutate()}
             disabled={markAllRead.isPending || unread.length === 0}
-            className="rounded-md px-2 py-1 text-[11px] text-neutral-400 transition-colors duration-200 hover:bg-white/6 hover:text-neutral-100 disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-md px-2 py-1 text-[11px] text-(--text-secondary) transition-colors duration-200 hover:bg-(--bg-hover) hover:text-(--text-primary) disabled:cursor-not-allowed disabled:opacity-40"
           >
             Mark all read
           </button>
@@ -180,7 +180,7 @@ export default function NotificationsPanel({
             type="button"
             onClick={() => clearAll.mutate()}
             disabled={clearAll.isPending || read.length === 0}
-            className="rounded-md px-2 py-1 text-[11px] text-neutral-400 transition-colors duration-200 hover:bg-white/6 hover:text-neutral-100 disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-md px-2 py-1 text-[11px] text-(--text-secondary) transition-colors duration-200 hover:bg-(--bg-hover) hover:text-(--text-primary) disabled:cursor-not-allowed disabled:opacity-40"
           >
             Clear read
           </button>
@@ -189,7 +189,7 @@ export default function NotificationsPanel({
             type="button"
             onClick={onClose}
             aria-label="Close notifications"
-            className="rounded-md p-1.5 text-neutral-500 transition-colors duration-200 hover:bg-white/6 hover:text-neutral-200"
+            className="rounded-md p-1.5 text-(--text-muted) transition-colors duration-200 hover:bg-(--bg-hover) hover:text-(--text-primary)"
           >
             <HugeiconsIcon icon={Cancel01Icon} size={14} strokeWidth={1.8} />
           </button>
@@ -202,16 +202,16 @@ export default function NotificationsPanel({
             {[0, 1, 2, 3].map((row) => (
               <div
                 key={row}
-                className="h-16 animate-pulse rounded-lg bg-white/5"
+                className="h-16 animate-pulse rounded-lg bg-(--tint-5)"
               />
             ))}
           </div>
         ) : isError ? (
-          <p className="px-4 py-10 text-center text-[12px] text-rose-300">
+          <p className="px-4 py-10 text-center text-[12px] text-(--danger)">
             Could not load notifications.
           </p>
         ) : notifications.length === 0 ? (
-          <p className="px-4 py-10 text-center text-[12px] text-neutral-500">
+          <p className="px-4 py-10 text-center text-[12px] text-(--text-muted)">
             You are all caught up
           </p>
         ) : (

@@ -4,16 +4,16 @@ import { Cancel01Icon } from "@hugeicons/core-free-icons";
 import type { Dispatch, SetStateAction } from "react";
 import type { BoardCard } from "@/types/api/dashboard/board";
 
-export const editorLabel = "block text-[11px] font-medium text-neutral-300";
+export const editorLabel = "block text-[11px] font-medium text-(--text-soft)";
 
 export const editorField =
-  "h-10 w-full rounded-lg border border-orange-50/15 bg-white/[0.04] px-3 text-[13px] text-neutral-100 outline-hidden transition-colors duration-200 placeholder:text-neutral-600 hover:border-orange-50/25 focus:border-white/25 focus:bg-white/[0.05]";
+  "h-10 w-full rounded-lg border border-(--hairline) bg-(--tint-4) px-3 text-[13px] text-(--text-primary) outline-hidden transition-colors duration-200 placeholder:text-(--text-subtle) hover:border-(--hairline-strong) focus:border-(--border-strong) focus:bg-(--tint-5)";
 
 export const editorSmallField =
-  "h-8 min-w-0 flex-1 rounded-lg border border-orange-50/15 bg-white/[0.04] px-2 text-[11.5px] text-neutral-100 outline-hidden transition-colors placeholder:text-neutral-600 hover:border-orange-50/25 focus:border-white/25";
+  "h-8 min-w-0 flex-1 rounded-lg border border-(--hairline) bg-(--tint-4) px-2 text-[11.5px] text-(--text-primary) outline-hidden transition-colors placeholder:text-(--text-subtle) hover:border-(--hairline-strong) focus:border-(--border-strong)";
 
 export const editorAddButton =
-  "cursor-pointer rounded-lg border border-orange-50/15 px-2.5 py-1 text-[10px] uppercase tracking-wider text-neutral-400 transition-colors duration-200 hover:border-orange-50/30 hover:bg-white/[0.06] hover:text-neutral-100";
+  "cursor-pointer rounded-lg border border-(--hairline) px-2.5 py-1 text-[10px] uppercase tracking-wider text-(--text-secondary) transition-colors duration-200 hover:border-(--hairline-strong) hover:bg-(--tint-6) hover:text-(--text-primary)";
 
 interface CardEditorContentProps {
   draft: BoardCard;
@@ -70,7 +70,7 @@ export default function CardEditorContent({
           }
           rows={4}
           placeholder="Add a more detailed description…"
-          className="w-full resize-none rounded-lg border border-orange-50/15 bg-white/4 p-3 text-[12.5px] leading-5 text-neutral-100 outline-hidden transition-colors duration-200 placeholder:text-neutral-600 hover:border-orange-50/25 focus:border-white/25"
+          className="w-full resize-none rounded-lg border border-(--hairline) bg-(--tint-4) p-3 text-[12.5px] leading-5 text-(--text-primary) outline-hidden transition-colors duration-200 placeholder:text-(--text-subtle) hover:border-(--hairline-strong) focus:border-(--border-strong)"
         />
       </div>
 
@@ -79,7 +79,7 @@ export default function CardEditorContent({
           <span className={editorLabel}>Checklist</span>
 
           {draft.checklists.length > 0 && (
-            <span className="font-mono text-[10px] tabular-nums text-neutral-500">
+            <span className="font-mono text-[10px] tabular-nums text-(--text-muted)">
               {draft.checklists.filter((item) => item.isCompleted).length}/
               {draft.checklists.length}
             </span>
@@ -102,8 +102,8 @@ export default function CardEditorContent({
                 className={[
                   "flex size-4 shrink-0 cursor-pointer items-center justify-center rounded border text-[9px] transition-colors duration-200",
                   item.isCompleted
-                    ? "border-orange-100/40 bg-orange-100/20 text-orange-100"
-                    : "border-orange-50/20 text-transparent hover:border-orange-50/40",
+                    ? "border-(--accent-soft) bg-(--accent)/20 text-(--accent)"
+                    : "border-(--hairline-strong) text-transparent hover:border-(--hairline-strong)",
                 ].join(" ")}
               >
                 ✓
@@ -113,8 +113,8 @@ export default function CardEditorContent({
                 className={[
                   "min-w-0 flex-1 text-[11.5px]",
                   item.isCompleted
-                    ? "text-neutral-500 line-through"
-                    : "text-neutral-300",
+                    ? "text-(--text-muted) line-through"
+                    : "text-(--text-soft)",
                 ].join(" ")}
               >
                 {item.title}
@@ -124,7 +124,7 @@ export default function CardEditorContent({
                 type="button"
                 onClick={() => removeCheck(index)}
                 aria-label="Remove item"
-                className="cursor-pointer text-neutral-600 opacity-0 transition-opacity duration-200 group-hover/check:opacity-100 hover:text-rose-300"
+                className="cursor-pointer text-(--text-subtle) opacity-0 transition-opacity duration-200 group-hover/check:opacity-100 hover:text-(--danger)"
               >
                 <HugeiconsIcon
                   icon={Cancel01Icon}
@@ -136,7 +136,7 @@ export default function CardEditorContent({
           ))}
 
           {draft.checklists.length === 0 && (
-            <p className="text-[11.5px] text-neutral-600">No items yet</p>
+            <p className="text-[11.5px] text-(--text-subtle)">No items yet</p>
           )}
         </div>
 

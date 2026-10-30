@@ -26,7 +26,7 @@ const CtaSection = lazy(
 
 export default function LandingPage() {
   return (
-    <div className="relative min-h-screen text-neutral-100">
+    <div className="relative min-h-screen text-(--text-primary)">
       <main className="relative z-0">
         <HeroSection />
 

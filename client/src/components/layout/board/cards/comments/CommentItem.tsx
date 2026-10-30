@@ -143,16 +143,16 @@ export default function CommentItem({
       <div className="min-w-0 flex-1">
         <div className="flex items-start gap-2">
           <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
-            <span className="truncate text-[12.5px] font-medium tracking-tight text-neutral-100">
+            <span className="truncate text-[12.5px] font-medium tracking-tight text-(--text-primary)">
               {comment.authorName}
             </span>
 
-            <span className="font-mono text-[9px] uppercase tracking-wider text-neutral-600">
+            <span className="font-mono text-[9px] uppercase tracking-wider text-(--text-subtle)">
               {formatRelative(comment.createdAt)}
             </span>
 
             {comment.updatedAt !== comment.createdAt && (
-              <span className="font-mono text-[9px] uppercase tracking-wider text-neutral-700">
+              <span className="font-mono text-[9px] uppercase tracking-wider text-(--text-subtle)">
                 edited
               </span>
             )}
@@ -169,8 +169,8 @@ export default function CommentItem({
                 className={[
                   "flex size-6 cursor-pointer items-center justify-center rounded-md transition-colors duration-200",
                   menuOpen
-                    ? "bg-white/8 text-neutral-100"
-                    : "text-neutral-600 hover:bg-white/6 hover:text-neutral-300",
+                    ? "bg-(--tint-8) text-(--text-primary)"
+                    : "text-(--text-subtle) hover:bg-(--bg-hover) hover:text-(--text-soft)",
                 ].join(" ")}
               >
                 <HugeiconsIcon
@@ -184,7 +184,7 @@ export default function CommentItem({
                 <div
                   role="menu"
                   aria-label="Comment actions"
-                  className="absolute right-0 top-full z-20 mt-1 w-36 rounded-lg border border-orange-50/15 bg-[#141416] p-1"
+                  className="absolute right-0 top-full z-20 mt-1 w-36 rounded-lg border border-(--hairline) bg-(--bg-root) p-1"
                 >
                   <button
                     type="button"
@@ -193,7 +193,7 @@ export default function CommentItem({
                       setMenuOpen(false);
                       setEditing(true);
                     }}
-                    className="flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-left text-[11.5px] text-neutral-300 transition-colors duration-150 hover:bg-white/6 hover:text-neutral-100"
+                    className="flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-left text-[11.5px] text-(--text-soft) transition-colors duration-150 hover:bg-(--bg-hover) hover:text-(--text-primary)"
                   >
                     <HugeiconsIcon
                       icon={Edit02Icon}
@@ -210,7 +210,7 @@ export default function CommentItem({
                       setMenuOpen(false);
                       onDelete(comment.id);
                     }}
-                    className="flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-left text-[11.5px] text-rose-300 transition-colors duration-150 hover:bg-rose-500/10 hover:text-rose-200"
+                    className="flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-left text-[11.5px] text-(--danger) transition-colors duration-150 hover:bg-(--tint-4) hover:text-(--danger)"
                   >
                     <HugeiconsIcon
                       icon={Delete02Icon}
@@ -243,7 +243,7 @@ export default function CommentItem({
               rows={2}
               autoFocus
               aria-label="Edit comment"
-              className="w-full resize-none rounded-lg border border-orange-50/15 bg-white/4 px-2.5 py-2 text-[12.5px] text-neutral-100 outline-hidden transition-colors duration-200 hover:border-orange-50/25 focus:border-white/25"
+              className="w-full resize-none rounded-lg border border-(--hairline) bg-(--tint-4) px-2.5 py-2 text-[12.5px] text-(--text-primary) outline-hidden transition-colors duration-200 hover:border-(--hairline-strong) focus:border-(--border-strong)"
             />
 
             <div className="mt-1.5 flex items-center justify-end gap-2">
@@ -253,7 +253,7 @@ export default function CommentItem({
                   setEditing(false);
                   setDraft(comment.text);
                 }}
-                className="h-7 cursor-pointer rounded-none rounded-tl-lg rounded-br-lg border border-orange-50/20 px-2.5 text-[11px] text-neutral-300 transition-colors duration-200 hover:border-orange-50/35 hover:bg-white/4 hover:text-neutral-100"
+                className="h-7 cursor-pointer rounded-none rounded-tl-lg rounded-br-lg border border-(--hairline-strong) px-2.5 text-[11px] text-(--text-soft) transition-colors duration-200 hover:border-(--hairline-strong) hover:bg-(--tint-4) hover:text-(--text-primary)"
               >
                 Cancel
               </button>
@@ -262,7 +262,7 @@ export default function CommentItem({
                 type="button"
                 onClick={save}
                 disabled={!draft.trim() || isSaving}
-                className="flex h-7 cursor-pointer items-center gap-1.5 rounded-none rounded-tr-lg rounded-bl-lg bg-white px-2.5 text-[11px] font-semibold text-black transition-colors duration-200 hover:bg-neutral-200 disabled:cursor-not-allowed disabled:bg-white/20 disabled:text-neutral-500"
+                className="flex h-7 cursor-pointer items-center gap-1.5 rounded-none rounded-tr-lg rounded-bl-lg bg-(--solid-bg) px-2.5 text-[11px] font-semibold text-(--solid-text) transition-colors duration-200 hover:bg-(--solid-bg-hover) disabled:cursor-not-allowed disabled:bg-(--tint-15) disabled:text-(--text-muted)"
               >
                 {isSaving && (
                   <HugeiconsIcon
@@ -277,7 +277,7 @@ export default function CommentItem({
             </div>
           </div>
         ) : (
-          <p className="mt-1 whitespace-pre-wrap wrap-break-word text-[12.5px] leading-5 text-neutral-300">
+          <p className="mt-1 whitespace-pre-wrap wrap-break-word text-[12.5px] leading-5 text-(--text-soft)">
             {comment.text}
           </p>
         )}
@@ -299,8 +299,8 @@ export default function CommentItem({
               className={[
                 "flex h-7 cursor-pointer items-center gap-1.5 rounded-md px-2 text-[11px] transition-colors duration-200",
                 replyOpen
-                  ? "text-orange-100"
-                  : "text-neutral-500 hover:bg-white/5 hover:text-neutral-200",
+                  ? "text-(--accent)"
+                  : "text-(--text-muted) hover:bg-(--bg-hover) hover:text-(--text-primary)",
               ].join(" ")}
             >
               <HugeiconsIcon icon={ReplyIcon} size={12} strokeWidth={1.8} />
@@ -318,7 +318,7 @@ export default function CommentItem({
                 type="button"
                 onClick={() => setRepliesOpen((previous) => !previous)}
                 aria-expanded={repliesOpen}
-                className="flex h-7 cursor-pointer items-center gap-1.5 rounded-md px-2 text-[11px] text-neutral-400 transition-colors duration-200 hover:bg-white/5 hover:text-orange-100"
+                className="flex h-7 cursor-pointer items-center gap-1.5 rounded-md px-2 text-[11px] text-(--text-secondary) transition-colors duration-200 hover:bg-(--bg-hover) hover:text-(--accent)"
               >
                 <HugeiconsIcon
                   icon={repliesOpen ? ArrowDown01Icon : Message01Icon}
@@ -351,7 +351,7 @@ export default function CommentItem({
               autoFocus
               placeholder={`Reply to ${comment.authorName}…`}
               aria-label={`Reply to ${comment.authorName}`}
-              className="w-full resize-none rounded-lg border border-orange-50/15 bg-white/4 px-2.5 py-2 text-[12.5px] text-neutral-100 outline-hidden transition-colors duration-200 placeholder:text-neutral-600 hover:border-orange-50/25 focus:border-white/25"
+              className="w-full resize-none rounded-lg border border-(--hairline) bg-(--tint-4) px-2.5 py-2 text-[12.5px] text-(--text-primary) outline-hidden transition-colors duration-200 placeholder:text-(--text-subtle) hover:border-(--hairline-strong) focus:border-(--border-strong)"
             />
 
             <div className="mt-1.5 flex items-center justify-end gap-2">
@@ -361,7 +361,7 @@ export default function CommentItem({
                   setReplyOpen(false);
                   setReplyText("");
                 }}
-                className="h-7 cursor-pointer rounded-none rounded-tl-lg rounded-br-lg border border-orange-50/20 px-2.5 text-[11px] text-neutral-300 transition-colors duration-200 hover:border-orange-50/35 hover:bg-white/4 hover:text-neutral-100"
+                className="h-7 cursor-pointer rounded-none rounded-tl-lg rounded-br-lg border border-(--hairline-strong) px-2.5 text-[11px] text-(--text-soft) transition-colors duration-200 hover:border-(--hairline-strong) hover:bg-(--tint-4) hover:text-(--text-primary)"
               >
                 Cancel
               </button>
@@ -370,7 +370,7 @@ export default function CommentItem({
                 type="button"
                 onClick={submitReply}
                 disabled={!replyText.trim() || createReply.isPending}
-                className="flex h-7 cursor-pointer items-center gap-1.5 rounded-none rounded-tr-lg rounded-bl-lg bg-white px-2.5 text-[11px] font-semibold text-black transition-colors duration-200 hover:bg-neutral-200 disabled:cursor-not-allowed disabled:bg-white/20 disabled:text-neutral-500"
+                className="flex h-7 cursor-pointer items-center gap-1.5 rounded-none rounded-tr-lg rounded-bl-lg bg-(--solid-bg) px-2.5 text-[11px] font-semibold text-(--solid-text) transition-colors duration-200 hover:bg-(--solid-bg-hover) disabled:cursor-not-allowed disabled:bg-(--tint-15) disabled:text-(--text-muted)"
               >
                 {createReply.isPending && (
                   <HugeiconsIcon

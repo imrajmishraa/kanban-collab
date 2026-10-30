@@ -158,11 +158,11 @@ export default function DashboardSidebar({
           /* The navbar is z-50 and keeps its collapsed offset, so a rail that
              floats over the page has to sit above it or the two overlap. */
           floating ? "z-60" : "z-40",
-          "bg-(--bg-root) border-r border-orange-50/10",
+          "bg-(--bg-root) border-r border-(--hairline)",
           "transition-[width,border-color] duration-200 ease-out",
           "motion-reduce:transition-none",
           "md:flex",
-          open ? "w-64" : "w-16",
+          open ? "w-64" : "w-18",
         ].join(" ")}
       >
         <div className="shrink-0">

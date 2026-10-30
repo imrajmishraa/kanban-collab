@@ -123,7 +123,7 @@ export default function DashboardNavbar() {
           "fixed top-0 right-0 z-50 hidden h-14 md:flex",
           "items-center gap-2 px-5 ",
           "transition-[left,background-color] duration-200",
-          sidebarCollapsed ? "left-16" : "left-64",
+          sidebarCollapsed ? "left-18" : "left-64",
           scrolled ? "bg-(--bg-root)/85 backdrop-blur-md" : "bg-transparent",
         ].join(" ")}
       >
@@ -171,7 +171,7 @@ export default function DashboardNavbar() {
         {/* Centred page title: the workspace name inside a workspace, and a
             plain label everywhere else. */}
         {pageTitle && (
-          <span className="pointer-events-none absolute left-1/2 max-w-[40%] -translate-x-1/2 truncate text-[12.5px] font-medium tracking-tight text-neutral-300">
+          <span className="pointer-events-none absolute left-1/2 max-w-[40%] -translate-x-1/2 truncate text-[12.5px] font-medium tracking-tight text-(--text-soft)">
             {pageTitle}
           </span>
         )}

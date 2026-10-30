@@ -20,7 +20,7 @@ export default function HowItWorksHero() {
             eyebrow-orbit
             inline-flex items-center gap-3
             rounded-full
-            bg-[#0B0B10]/70
+            bg-(--bg-root)/70
             px-4 py-2
             font-mono text-[10px] uppercase tracking-[0.22em]
             text-(--text-secondary)
@@ -55,7 +55,7 @@ export default function HowItWorksHero() {
         <h1 className="mt-8 max-w-3xl font-mono text-[2.5rem] font-medium leading-[1.04] tracking-[-0.045em] text-(--text-primary) sm:text-5xl md:text-6xl lg:text-[4.25rem]">
           Plan.
           <br />
-          <span className="bg-linear-to-b from-(--brand-hover) via-(--brand) to-(--brand-hover)/70 bg-clip-text text-transparent">
+          <span className="from-(--brand-hover) via-(--brand) text-(--text-primary)">
             Organize.
           </span>
           <br />
@@ -102,15 +102,15 @@ export default function HowItWorksHero() {
             className="
               group inline-flex min-w-44 items-center justify-center gap-2
               rounded-full
-              border border-white/10
-              bg-white/3
+              border border-(--border)
+              bg-(--tint-3)
               px-6 py-3
               font-mono text-sm text-(--text-secondary)
               shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]
               backdrop-blur-xl backdrop-saturate-150
               transition-all duration-300
-              hover:border-white/20
-              hover:bg-white/6
+              hover:border-(--border-strong)
+              hover:bg-(--bg-hover)
               hover:text-(--text-primary)
               active:scale-[0.98]
             "
@@ -152,13 +152,13 @@ export default function HowItWorksHero() {
           <div
             className="
               group/frame relative rounded-3xl
-              border border-white/10
-              bg-white/3
+              border border-(--border)
+              bg-(--tint-3)
               p-2
               shadow-[inset_0_1px_0_rgba(255,255,255,0.10),0_30px_80px_-20px_rgba(0,0,0,0.6)]
               backdrop-blur-xl backdrop-saturate-150
               transition-all duration-500
-              hover:border-white/16
+              hover:border-(--border-strong)
               hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_40px_100px_-20px_rgba(0,0,0,0.7)]
             "
           >
@@ -177,28 +177,28 @@ export default function HowItWorksHero() {
             <div
               className="
                 relative overflow-hidden rounded-[18px]
-                border border-white/6
-                bg-[#0F0F12]
+                border border-(--border-subtle)
+                bg-(--bg-surface)
                 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)]
               "
             >
               {/* ── Window chrome ──────────────────────────── */}
-              <div className="flex h-11 items-center justify-between border-b border-white/6 px-4">
+              <div className="flex h-11 items-center justify-between border-b border-(--border-subtle) px-4">
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-1.5">
-                    <span className="h-2.5 w-2.5 rounded-full border border-rose-500/70 bg-rose-500/10" />
-                    <span className="h-2.5 w-2.5 rounded-full border border-yellow-500/70 bg-yellow-500/10" />
-                    <span className="h-2.5 w-2.5 rounded-full border border-emerald-500/70 bg-emerald-500/10" />
+                    <span className="h-2.5 w-2.5 rounded-full border border-(--danger)/30 bg-(--tint-4)" />
+                    <span className="h-2.5 w-2.5 rounded-full border border-(--warning)/30 bg-(--tint-4)" />
+                    <span className="h-2.5 w-2.5 rounded-full border border-(--success)/30 bg-(--tint-4)" />
                   </div>
                   <span className="hidden font-mono text-[11px] tracking-wider text-(--text-secondary) sm:block">
                     kanban.local/workflow
                   </span>
                 </div>
 
-                <span className="flex items-center gap-1.5 rounded-full border border-emerald-400/20 bg-emerald-400/8 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.15em] text-emerald-400">
+                <span className="flex items-center gap-1.5 rounded-full border border-(--success)/30 bg-(--tint-4) px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.15em] text-(--success)">
                   <span className="relative flex h-1.5 w-1.5">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-(--tint-4) opacity-60" />
+                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-(--tint-4)" />
                   </span>
                   Live
                 </span>
@@ -207,7 +207,7 @@ export default function HowItWorksHero() {
               {/* ═══════════════════════════════════════════════════
                   WORKFLOW STAGES
                   ═══════════════════════════════════════════════════ */}
-              <div className="relative grid gap-px bg-white/4 sm:grid-cols-3">
+              <div className="relative grid gap-px bg-(--tint-4) sm:grid-cols-3">
                 <StagePanel
                   number="01"
                   title="Plan"
@@ -243,7 +243,7 @@ export default function HowItWorksHero() {
               </div>
 
               {/* ── Progress bar ───────────────────────────── */}
-              <div className="border-t border-white/6 px-4 py-3.5 sm:px-6">
+              <div className="border-t border-(--border-subtle) px-4 py-3.5 sm:px-6">
                 <div className="flex items-center gap-3">
                   <span className="shrink-0 font-mono text-[9px] uppercase tracking-[0.15em] text-(--text-secondary)/50">
                     Workflow
@@ -280,7 +280,7 @@ export default function HowItWorksHero() {
 
           <div
             aria-hidden="true"
-            className="pointer-events-none mx-auto mt-3 h-8 w-4/5 rounded-[50%] bg-white/3 blur-3xl"
+            className="pointer-events-none mx-auto mt-3 h-8 w-4/5 rounded-[50%] bg-(--tint-3) blur-3xl"
           />
 
           <p className="mt-6 text-center font-mono text-[10px] uppercase tracking-[0.28em] text-(--text-secondary)/45">
@@ -323,8 +323,8 @@ function StagePanel({
   > = {
     done: {
       label: "Done",
-      dot: "bg-emerald-400",
-      text: "text-emerald-400/80",
+      dot: "bg-(--tint-4)",
+      text: "text-(--success)",
     },
     active: {
       label: "In progress",
@@ -333,7 +333,7 @@ function StagePanel({
     },
     pending: {
       label: "Next",
-      dot: "bg-white/25",
+      dot: "bg-(--tint-15)",
       text: "text-(--text-secondary)/55",
     },
   };
@@ -343,9 +343,9 @@ function StagePanel({
   return (
     <div
       className="
-        group/step relative overflow-hidden bg-[#0F0F12] p-6
+        group/step relative overflow-hidden bg-(--bg-surface) p-6
         transition-colors duration-500
-        hover:bg-[#111116]
+        hover:bg-(--bg-surface)
       "
     >
       {status === "active" && (
@@ -394,10 +394,10 @@ function StagePanel({
           border transition-all duration-500
           ${
             status === "done"
-              ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-400 shadow-[0_0_20px_-6px_rgba(52,211,153,0.6)]"
+              ? "border-(--success)/30 bg-(--tint-4) text-(--success) shadow-[0_0_20px_-6px_rgba(52,211,153,0.6)]"
               : status === "active"
                 ? "border-(--brand)/40 bg-(--brand)/10 text-(--brand-hover) shadow-[0_0_20px_-6px_var(--brand)]"
-                : "border-white/8 bg-white/3 text-(--text-secondary)"
+                : "border-(--border) bg-(--tint-3) text-(--text-secondary)"
           }
         `}
       >
@@ -426,25 +426,25 @@ function StagePanel({
 function PlanVisual() {
   return (
     <div className="relative h-full">
-      <div className="absolute left-0 top-0 w-32 rounded-md border border-emerald-400/25 bg-emerald-400/6 p-2.5">
+      <div className="absolute left-0 top-0 w-32 rounded-md border border-(--success)/30 bg-(--tint-4) p-2.5">
         <div className="flex items-center gap-1.5">
-          <span className="flex h-3 w-3 items-center justify-center rounded-full border border-emerald-400/50 bg-emerald-400/15 text-emerald-400">
+          <span className="flex h-3 w-3 items-center justify-center rounded-full border border-(--success)/30 bg-(--tint-4) text-(--success)">
             <HugeiconsIcon icon={Tick02Icon} size={6} />
           </span>
-          <span className="h-1 flex-1 rounded-full bg-emerald-400/35" />
+          <span className="h-1 flex-1 rounded-full bg-(--tint-4)" />
         </div>
-        <div className="mt-2 h-1 w-3/4 rounded-full bg-emerald-400/20" />
+        <div className="mt-2 h-1 w-3/4 rounded-full bg-(--tint-4)" />
       </div>
 
-      <div className="absolute right-0 top-8 w-32 rounded-md border border-dashed border-white/15 bg-white/1 p-2.5">
-        <div className="h-1 w-full rounded-full bg-white/12" />
-        <div className="mt-2 h-1 w-2/3 rounded-full bg-white/8" />
-        <div className="mt-2 h-1 w-1/2 rounded-full bg-white/5" />
+      <div className="absolute right-0 top-8 w-32 rounded-md border border-dashed border-(--border-strong) bg-(--tint-2) p-2.5">
+        <div className="h-1 w-full rounded-full bg-(--tint-10)" />
+        <div className="mt-2 h-1 w-2/3 rounded-full bg-(--tint-8)" />
+        <div className="mt-2 h-1 w-1/2 rounded-full bg-(--tint-5)" />
       </div>
 
-      <div className="absolute bottom-0 left-4 w-32 rounded-md border border-dashed border-white/12 bg-white/1 p-2.5">
-        <div className="h-1 w-full rounded-full bg-white/10" />
-        <div className="mt-2 h-1 w-2/3 rounded-full bg-white/6" />
+      <div className="absolute bottom-0 left-4 w-32 rounded-md border border-dashed border-(--border) bg-(--tint-2) p-2.5">
+        <div className="h-1 w-full rounded-full bg-(--tint-10)" />
+        <div className="mt-2 h-1 w-2/3 rounded-full bg-(--tint-6)" />
       </div>
 
       <div className="absolute bottom-4 right-2 flex items-center gap-1.5 rounded-full border border-(--brand)/40 bg-(--brand)/10 px-2 py-1 backdrop-blur-sm">
@@ -484,7 +484,7 @@ function OrganizeVisual() {
             <div className="flex items-center gap-1">
               <span
                 className={`h-0.5 w-3 rounded-full ${
-                  i === 1 ? "bg-(--brand)/70" : "bg-white/14"
+                  i === 1 ? "bg-(--brand)/70" : "bg-(--tint-15)"
                 }`}
               />
               <span className="font-mono text-[7px] uppercase tracking-[0.15em] text-(--text-secondary)/40">
@@ -493,21 +493,21 @@ function OrganizeVisual() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <div className="rounded border border-white/6 bg-white/2 p-1.5">
-                <div className="h-0.5 w-full rounded-full bg-white/12" />
+              <div className="rounded border border-(--border-subtle) bg-(--tint-2) p-1.5">
+                <div className="h-0.5 w-full rounded-full bg-(--tint-10)" />
               </div>
 
               {i === 1 && (
-                <div className="rounded border border-white/6 bg-white/2 p-1.5">
-                  <div className="h-0.5 w-3/4 rounded-full bg-white/10" />
+                <div className="rounded border border-(--border-subtle) bg-(--tint-2) p-1.5">
+                  <div className="h-0.5 w-3/4 rounded-full bg-(--tint-10)" />
                 </div>
               )}
 
               {i === 2 && (
-                <div className="rounded border border-emerald-400/20 bg-emerald-400/5 p-1.5">
+                <div className="rounded border border-(--success)/30 bg-(--tint-4) p-1.5">
                   <div className="flex items-center gap-1">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400/70" />
-                    <span className="h-0.5 flex-1 rounded-full bg-emerald-400/30" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-(--tint-4)" />
+                    <span className="h-0.5 flex-1 rounded-full bg-(--tint-4)" />
                   </div>
                 </div>
               )}
@@ -553,7 +553,7 @@ function OrganizeVisual() {
             strokeLinejoin="round"
           />
         </svg>
-        <span className="rounded-[3px] bg-(--brand) px-1 py-0.5 font-mono text-[7px] font-medium leading-none text-white shadow-[0_2px_4px_-1px_var(--brand)]">
+        <span className="rounded-[3px] bg-(--brand) px-1 py-0.5 font-mono text-[7px] font-medium leading-none text-(--text-primary) shadow-[0_2px_4px_-1px_var(--brand)]">
           You
         </span>
       </div>
@@ -601,22 +601,22 @@ function CompleteVisual() {
         })}
       </svg>
 
-      <div className="relative flex h-16 w-16 items-center justify-center rounded-full border-2 border-emerald-400/40 bg-emerald-400/10 shadow-[0_0_30px_-4px_rgba(52,211,153,0.5)]">
-        <span className="absolute inset-1 animate-ping rounded-full border border-emerald-400/30" />
+      <div className="relative flex h-16 w-16 items-center justify-center rounded-full border-2 border-(--success)/30 bg-(--tint-4) shadow-[0_0_30px_-4px_rgba(52,211,153,0.5)]">
+        <span className="absolute inset-1 animate-ping rounded-full border border-(--success)/30" />
         <HugeiconsIcon
           icon={CheckmarkCircle02Icon}
           size={26}
-          className="text-emerald-400"
+          className="text-(--success)"
         />
       </div>
 
-      <div className="absolute -left-1 top-2 w-24 rounded border border-white/6 bg-white/2 p-2 opacity-50">
-        <div className="h-1 w-full rounded-full bg-white/14" />
-        <div className="mt-1.5 h-1 w-3/4 rounded-full bg-white/8" />
+      <div className="absolute -left-1 top-2 w-24 rounded border border-(--border-subtle) bg-(--tint-2) p-2 opacity-50">
+        <div className="h-1 w-full rounded-full bg-(--tint-15)" />
+        <div className="mt-1.5 h-1 w-3/4 rounded-full bg-(--tint-8)" />
       </div>
-      <div className="absolute -right-1 bottom-2 w-24 rounded border border-white/6 bg-white/2 p-2 opacity-50">
-        <div className="h-1 w-full rounded-full bg-white/14" />
-        <div className="mt-1.5 h-1 w-2/3 rounded-full bg-white/8" />
+      <div className="absolute -right-1 bottom-2 w-24 rounded border border-(--border-subtle) bg-(--tint-2) p-2 opacity-50">
+        <div className="h-1 w-full rounded-full bg-(--tint-15)" />
+        <div className="mt-1.5 h-1 w-2/3 rounded-full bg-(--tint-8)" />
       </div>
     </div>
   );

@@ -82,16 +82,16 @@ export default function NewWorkspace({ onClose }: NewWorkspaceProps = {}) {
   });
 
   return (
-    <div className="w-full rounded-xl border border-orange-50/15 bg-[#0a0a0a]/95 backdrop-blur-sm">
+    <div className="w-full rounded-xl border border-(--hairline) bg-(--bg-root)/95 backdrop-blur-sm">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4 border-b border-orange-50/10 px-5 py-4">
+      <div className="flex items-start justify-between gap-4 border-b border-(--hairline) px-5 py-4">
         <div>
-          <h1 className="text-[14px] font-medium tracking-tight text-neutral-100">
+          <h1 className="text-[14px] font-medium tracking-tight text-(--text-primary)">
             New workspace
           </h1>
-          <p className="mt-0.5 text-[11px] text-neutral-400">
+          <p className="mt-0.5 text-[11px] text-(--text-secondary)">
             Create a space for your{" "}
-            <span className="font-medium text-orange-100 capitalize">team</span>
+            <span className="font-medium text-(--accent) capitalize">team</span>
           </p>
         </div>
 
@@ -107,7 +107,7 @@ export default function NewWorkspace({ onClose }: NewWorkspaceProps = {}) {
             type="button"
             onClick={handleCancel}
             aria-label="Close"
-            className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-transparent text-neutral-500 transition-colors duration-200 hover:border-orange-50/15 hover:bg-white/5 hover:text-neutral-200"
+            className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-transparent text-(--text-muted) transition-colors duration-200 hover:border-(--hairline) hover:bg-(--bg-hover) hover:text-(--text-primary)"
           >
             <HugeiconsIcon icon={Cancel01Icon} size={14} strokeWidth={1.8} />
           </button>
@@ -121,7 +121,7 @@ export default function NewWorkspace({ onClose }: NewWorkspaceProps = {}) {
           <div>
             <label
               htmlFor="ws-name"
-              className="mb-1.5 block text-[11px] font-medium text-neutral-300"
+              className="mb-1.5 block text-[11px] font-medium text-(--text-soft)"
             >
               Name
             </label>
@@ -133,19 +133,19 @@ export default function NewWorkspace({ onClose }: NewWorkspaceProps = {}) {
               autoFocus
               className={[
                 "w-full rounded-lg border px-3 py-2",
-                "text-[13px] text-neutral-100 placeholder:text-neutral-600",
+                "text-[13px] text-(--text-primary) placeholder:text-(--text-subtle)",
                 "outline-hidden transition-colors duration-200",
                 // focus-visible:outline-hidden wins over the global
                 // `:focus-visible { outline: 2px solid var(--brand) }` in
                 // index.css, which is what painted the orange ring.
                 "focus-visible:outline-hidden",
                 errors.name
-                  ? "border-rose-400/40 bg-white/3 focus:border-rose-400/60"
-                  : "border-orange-50/15 bg-white/3 hover:border-orange-50/25 focus:border-white/25 focus:bg-white/5",
+                  ? "border-(--danger)/30 bg-(--tint-3) focus:border-(--danger)/30"
+                  : "border-(--hairline) bg-(--tint-3) hover:border-(--hairline-strong) focus:border-(--border-strong) focus:bg-(--tint-5)",
               ].join(" ")}
             />
             {errors.name && (
-              <p className="mt-1.5 text-[10px] text-rose-300">
+              <p className="mt-1.5 text-[10px] text-(--danger)">
                 {errors.name.message}
               </p>
             )}
@@ -155,10 +155,12 @@ export default function NewWorkspace({ onClose }: NewWorkspaceProps = {}) {
           <div>
             <label
               htmlFor="ws-desc"
-              className="mb-1.5 block text-[11px] font-medium text-neutral-300"
+              className="mb-1.5 block text-[11px] font-medium text-(--text-soft)"
             >
               Description{" "}
-              <span className="font-normal text-neutral-500">(optional)</span>
+              <span className="font-normal text-(--text-muted)">
+                (optional)
+              </span>
             </label>
             <textarea
               id="ws-desc"
@@ -167,16 +169,16 @@ export default function NewWorkspace({ onClose }: NewWorkspaceProps = {}) {
               rows={3}
               className={[
                 "w-full resize-none rounded-lg border px-3 py-2",
-                "text-[13px] text-neutral-100 placeholder:text-neutral-600",
+                "text-[13px] text-(--text-primary) placeholder:text-(--text-subtle)",
                 "outline-hidden transition-colors duration-200",
                 "focus-visible:outline-hidden",
                 errors.description
-                  ? "border-rose-400/40 bg-white/3 focus:border-rose-400/60"
-                  : "border-orange-50/15 bg-white/3 hover:border-orange-50/25 focus:border-white/25 focus:bg-white/5",
+                  ? "border-(--danger)/30 bg-(--tint-3) focus:border-(--danger)/30"
+                  : "border-(--hairline) bg-(--tint-3) hover:border-(--hairline-strong) focus:border-(--border-strong) focus:bg-(--tint-5)",
               ].join(" ")}
             />
             {errors.description && (
-              <p className="mt-1.5 text-[10px] text-rose-300">
+              <p className="mt-1.5 text-[10px] text-(--danger)">
                 {errors.description.message}
               </p>
             )}
@@ -189,7 +191,7 @@ export default function NewWorkspace({ onClose }: NewWorkspaceProps = {}) {
           <button
             type="button"
             onClick={handleCancel}
-            className="flex h-9 cursor-pointer items-center rounded-none rounded-tl-lg rounded-br-lg border border-orange-50/20 px-4 text-[12px] text-neutral-300 transition-colors duration-200 hover:border-orange-50/35 hover:bg-white/4 hover:text-neutral-100"
+            className="flex h-9 cursor-pointer items-center rounded-none rounded-tl-lg rounded-br-lg border border-(--hairline-strong) px-4 text-[12px] text-(--text-soft) transition-colors duration-200 hover:border-(--hairline-strong) hover:bg-(--tint-4) hover:text-(--text-primary)"
           >
             Cancel
           </button>
@@ -198,7 +200,7 @@ export default function NewWorkspace({ onClose }: NewWorkspaceProps = {}) {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="flex h-9 cursor-pointer items-center gap-1.5 rounded-none rounded-tr-lg rounded-bl-lg bg-white px-4 text-[12px] font-semibold text-black transition-colors duration-200 hover:bg-neutral-200 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex h-9 cursor-pointer items-center gap-1.5 rounded-none rounded-tr-lg rounded-bl-lg bg-(--solid-bg) px-4 text-[12px] font-semibold text-(--solid-text) transition-colors duration-200 hover:bg-(--solid-bg-hover) disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isSubmitting ? (
               <>

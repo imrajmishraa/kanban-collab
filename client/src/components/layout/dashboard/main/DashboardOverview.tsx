@@ -47,15 +47,15 @@ export default function DashboardOverview({
             key={label}
             className="
               group relative min-w-0 rounded-xl
-              border border-orange-50/15 bg-white/3
+              border border-(--hairline) bg-(--tint-3)
               p-3.5 sm:p-4
               transition-colors duration-200
-              hover:border-orange-50/25 hover:bg-white/5
+              hover:border-(--hairline-strong) hover:bg-(--bg-hover)
             "
           >
             <div className="flex items-center justify-between gap-2">
               {/* Caps are fine here: these are data labels. */}
-              <p className="truncate font-mono text-[9.5px] font-medium uppercase tracking-[0.14em] text-neutral-500 sm:text-[10px] sm:tracking-[0.18em]">
+              <p className="truncate font-mono text-[9.5px] font-medium uppercase tracking-[0.14em] text-(--text-muted) sm:text-[10px] sm:tracking-[0.18em]">
                 {label}
               </p>
 
@@ -63,11 +63,11 @@ export default function DashboardOverview({
                 icon={icon}
                 size={14}
                 strokeWidth={1.6}
-                className="shrink-0 text-neutral-600 transition-colors duration-200 group-hover:text-orange-100"
+                className="shrink-0 text-(--text-subtle) transition-colors duration-200 group-hover:text-(--accent)"
               />
             </div>
 
-            <p className="mt-2.5 text-[22px] font-semibold leading-none tracking-tight tabular-nums text-neutral-100 sm:mt-3 sm:text-[26px]">
+            <p className="mt-2.5 text-[22px] font-semibold leading-none tracking-tight tabular-nums text-(--text-primary) sm:mt-3 sm:text-[26px]">
               {pad(value)}
             </p>
           </div>

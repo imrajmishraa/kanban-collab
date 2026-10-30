@@ -38,12 +38,12 @@ const SidebarHeader = ({
             }}
             aria-label="Expand sidebar"
             className="
-            group relative flex size-9 cursor-pointer
+            group relative flex size-10 cursor-pointer
             items-center justify-center
             rounded-full
-            bg-white/2
+            bg-(--tint-2)
             transition-colors
-            hover:bg-white/6
+            hover:bg-(--bg-hover)
           "
           >
             {/* Logo, visible normally, hidden on hover */}
@@ -54,7 +54,7 @@ const SidebarHeader = ({
               height={28}
               draggable={false}
               className="
-              h-8 w-8 rounded-full
+              h-9 w-9 rounded-full
               transition-all duration-150
               group-hover:scale-75
               group-hover:opacity-0
@@ -65,17 +65,17 @@ const SidebarHeader = ({
                 the rail opens by hovering, an arrow when it opens on click. */}
             <HugeiconsIcon
               icon={mode === "hover" ? Cursor02Icon : SidebarLeftIcon}
-              size={18}
+              size={20}
               strokeWidth={1.8}
               className="
               absolute
-              text-neutral-500
+              text-(--text-muted)
               opacity-0
               scale-75
               transition-all duration-150
               group-hover:scale-100
               group-hover:opacity-100
-              group-hover:text-neutral-100
+              group-hover:text-(--text-primary)
             "
             />
           </button>
@@ -100,7 +100,7 @@ const SidebarHeader = ({
           draggable={false}
           className="h-8 w-8 rounded-full transition-all duration-300"
         />
-        <span className="text-[14px] font-semibold tracking-tight text-neutral-100">
+        <span className="text-[14px] font-semibold tracking-tight text-(--text-primary)">
           Kanban
         </span>
       </button>
@@ -156,7 +156,7 @@ function HeaderIconButton({
           e.stopPropagation();
           onClick();
         }}
-        className="flex size-8 cursor-pointer items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-white/6 hover:text-neutral-100"
+        className="flex size-8 cursor-pointer items-center justify-center rounded-full text-(--text-muted) transition-colors hover:bg-(--bg-hover) hover:text-(--text-primary)"
       >
         {icon}
       </button>

@@ -167,7 +167,7 @@ export default function DashboardBoardEmbed({
           <h2 className="truncate font-mono text-[15px] font-semibold text-(--text-primary)">
             {state.name}
           </h2>
-          <code className="shrink-0 rounded border border-white/10 bg-white/4 px-1.5 py-0.5 font-mono text-[10px] text-(--text-muted)">
+          <code className="shrink-0 rounded border border-(--border) bg-(--tint-4) px-1.5 py-0.5 font-mono text-[10px] text-(--text-muted)">
             {boardId}
           </code>
           <span className="hidden shrink-0 font-mono text-[10px] text-(--text-muted) sm:inline">

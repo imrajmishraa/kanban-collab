@@ -159,7 +159,7 @@ export function WorkspacePage() {
   if (isLoading) {
     return (
       <BoardShell>
-        <div className="h-8 w-48 animate-pulse rounded bg-white/6" />
+        <div className="h-8 w-48 animate-pulse rounded bg-(--tint-6)" />
       </BoardShell>
     );
   }
@@ -182,7 +182,7 @@ export function WorkspacePage() {
         setMenuOpen(false);
         run();
       }}
-      className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[11.5px] text-neutral-300 transition-colors duration-150 hover:bg-white/6 hover:text-neutral-100"
+      className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[11.5px] text-(--text-soft) transition-colors duration-150 hover:bg-(--bg-hover) hover:text-(--text-primary)"
     >
       <HugeiconsIcon icon={icon} size={13} strokeWidth={1.6} />
       {label}
@@ -191,9 +191,9 @@ export function WorkspacePage() {
 
   return (
     <BoardShell>
-      <header className="flex flex-col gap-4 border-b border-orange-50/10 pb-6 sm:flex-row sm:items-end sm:justify-between">
+      <header className="flex flex-col gap-4 border-b border-(--hairline) pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div className="flex min-w-0 items-start gap-3">
-          <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-orange-50/20 bg-white/3 text-[15px] font-semibold text-neutral-300">
+          <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-(--hairline-strong) bg-(--tint-3) text-[15px] font-semibold text-(--text-soft)">
             {avatarUrl ? (
               <img src={avatarUrl} alt="" className="size-full object-cover" />
             ) : (
@@ -202,22 +202,22 @@ export function WorkspacePage() {
           </span>
 
           <div className="flex min-w-0 flex-col gap-1.5">
-            <h1 className="flex items-center gap-2 text-[22px] font-semibold tracking-tight text-neutral-100 sm:text-[26px]">
+            <h1 className="flex items-center gap-2 text-[22px] font-semibold tracking-tight text-(--text-primary) sm:text-[26px]">
               <span className="truncate">{name}</span>
               {isStarred && (
                 <HugeiconsIcon
                   icon={StarIcon}
                   size={14}
                   strokeWidth={1.8}
-                  className="shrink-0 text-orange-100"
+                  className="shrink-0 text-(--accent)"
                   aria-label="Starred"
                 />
               )}
             </h1>
 
-            <p className="max-w-xl text-[12.5px] leading-5 text-neutral-400">
+            <p className="max-w-xl text-[12.5px] leading-5 text-(--text-secondary)">
               Every board in this workspace, with its columns, cards and{" "}
-              <span className="font-medium capitalize text-orange-100">
+              <span className="font-medium capitalize text-(--accent)">
                 members
               </span>
             </p>
@@ -228,7 +228,7 @@ export function WorkspacePage() {
           <button
             type="button"
             onClick={() => setDialog("member")}
-            className="flex h-9 cursor-pointer items-center gap-1.5 rounded-none rounded-tl-lg rounded-br-lg border border-orange-50/20 px-4 text-[12px] text-neutral-200 transition-colors duration-200 hover:border-orange-50/35 hover:bg-white/4 hover:text-neutral-100"
+            className="flex h-9 cursor-pointer items-center gap-1.5 rounded-none rounded-tl-lg rounded-br-lg border border-(--hairline-strong) px-4 text-[12px] text-(--text-primary) transition-colors duration-200 hover:border-(--hairline-strong) hover:bg-(--tint-4) hover:text-(--text-primary)"
           >
             <HugeiconsIcon icon={UserGroupIcon} size={13} strokeWidth={1.8} />
             Add member
@@ -237,7 +237,7 @@ export function WorkspacePage() {
           <button
             type="button"
             onClick={() => setDialog("board")}
-            className="flex h-9 cursor-pointer items-center gap-1.5 rounded-none rounded-tr-lg rounded-bl-lg bg-white px-4 text-[12px] font-semibold text-black transition-colors duration-200 hover:bg-neutral-200"
+            className="flex h-9 cursor-pointer items-center gap-1.5 rounded-none rounded-tr-lg rounded-bl-lg bg-(--solid-bg) px-4 text-[12px] font-semibold text-(--solid-text) transition-colors duration-200 hover:bg-(--solid-bg-hover)"
           >
             <HugeiconsIcon icon={Add01Icon} size={13} strokeWidth={2} />
             Add board
@@ -254,8 +254,8 @@ export function WorkspacePage() {
               className={[
                 "flex size-9 cursor-pointer items-center justify-center rounded-none rounded-tl-lg rounded-br-lg border transition-colors duration-200",
                 menuOpen
-                  ? "border-orange-50/30 bg-white/6 text-neutral-100"
-                  : "border-orange-50/20 text-neutral-400 hover:border-orange-50/35 hover:bg-white/4 hover:text-neutral-100",
+                  ? "border-(--hairline-strong) bg-(--tint-6) text-(--text-primary)"
+                  : "border-(--hairline-strong) text-(--text-secondary) hover:border-(--hairline-strong) hover:bg-(--tint-4) hover:text-(--text-primary)",
               ].join(" ")}
             >
               <HugeiconsIcon
@@ -269,7 +269,7 @@ export function WorkspacePage() {
               <div
                 role="menu"
                 aria-label="Workspace actions"
-                className="absolute right-0 top-full z-30 mt-1 w-48 rounded-lg border border-orange-50/15 bg-[#141416] p-1"
+                className="absolute right-0 top-full z-30 mt-1 w-48 rounded-lg border border-(--hairline) bg-(--bg-root) p-1"
               >
                 {menuItem("Edit workspace", Edit02Icon, () =>
                   setDialog("rename"),
@@ -301,10 +301,10 @@ export function WorkspacePage() {
       />
 
       <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-[13px] font-medium tracking-tight text-neutral-100">
+        <h2 className="text-[13px] font-medium tracking-tight text-(--text-primary)">
           Boards
           {items.length > 0 && (
-            <span className="ml-1.5 font-mono text-[10px] tabular-nums text-neutral-500">
+            <span className="ml-1.5 font-mono text-[10px] tabular-nums text-(--text-muted)">
               {totalBoards || items.length}
             </span>
           )}
@@ -314,10 +314,10 @@ export function WorkspacePage() {
       </div>
 
       {items.length === 0 ? (
-        <div className="mt-4 rounded-xl border border-dashed border-orange-50/20 px-5 py-12 text-center">
-          <p className="text-[12.5px] text-neutral-400">
+        <div className="mt-4 rounded-xl border border-dashed border-(--hairline-strong) px-5 py-12 text-center">
+          <p className="text-[12.5px] text-(--text-secondary)">
             No boards in this workspace yet, create one to get{" "}
-            <span className="font-medium capitalize text-orange-100">
+            <span className="font-medium capitalize text-(--accent)">
               started
             </span>
           </p>
@@ -341,7 +341,7 @@ export function WorkspacePage() {
           type="button"
           onClick={fetchNextPage}
           disabled={isFetchingNextPage}
-          className="mx-auto mt-6 flex h-9 items-center gap-2 rounded-none rounded-tl-lg rounded-br-lg border border-orange-50/20 px-4 text-[12px] text-neutral-200 transition-colors duration-200 hover:border-orange-50/35 hover:bg-white/4 hover:text-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
+          className="mx-auto mt-6 flex h-9 items-center gap-2 rounded-none rounded-tl-lg rounded-br-lg border border-(--hairline-strong) px-4 text-[12px] text-(--text-primary) transition-colors duration-200 hover:border-(--hairline-strong) hover:bg-(--tint-4) hover:text-(--text-primary) disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isFetchingNextPage ? "Loading…" : "Load more boards"}
         </button>

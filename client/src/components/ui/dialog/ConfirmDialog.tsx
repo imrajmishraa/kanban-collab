@@ -48,7 +48,7 @@ export default function ConfirmDialog({
 
   return (
     <div
-      className="fixed inset-0 z-200 flex items-center justify-center bg-black/60 p-4"
+      className="fixed inset-0 z-200 flex items-center justify-center bg-(--scrim) p-4"
       onClick={(event) => {
         if (event.target === event.currentTarget) onCancel();
       }}
@@ -58,7 +58,7 @@ export default function ConfirmDialog({
         aria-modal="true"
         aria-labelledby="confirm-dialog-title"
         aria-describedby="confirm-dialog-message"
-        className="w-full max-w-sm rounded-xl border border-white/10 bg-(--bg-surface) p-5 text-(--text-primary) shadow-xl"
+        className="w-full max-w-sm rounded-xl border border-(--border) bg-(--bg-surface) p-5 text-(--text-primary) shadow-xl"
       >
         <h2
           id="confirm-dialog-title"
@@ -77,7 +77,7 @@ export default function ConfirmDialog({
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-lg border border-white/10 bg-white/4 px-3 py-1.5 font-mono text-[11px] uppercase tracking-widest text-(--text-secondary) transition-colors hover:border-white/20"
+            className="rounded-lg border border-(--border) bg-(--tint-4) px-3 py-1.5 font-mono text-[11px] uppercase tracking-widest text-(--text-secondary) transition-colors hover:border-(--border-strong)"
           >
             {cancelLabel}
           </button>

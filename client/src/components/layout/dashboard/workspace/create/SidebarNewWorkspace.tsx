@@ -58,11 +58,11 @@ export default function SidebarNewWorkspace({
             aria-label={`New workspace (${SHORTCUT})`}
             className="
               mx-auto flex size-9 ml-1 cursor-pointer items-center justify-center
-              rounded-xl border border-orange-50/15 bg-white/5
+              rounded-xl border border-(--hairline) bg-(--tint-5)
               text-(--text-primary)
               transition-colors duration-200
-              hover:border-orange-50/25 hover:bg-white/8
-              focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white/20
+              hover:border-(--hairline-strong) hover:bg-(--tint-8)
+              focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-(--tint-15)
             "
           >
             <HugeiconsIcon icon={AddCircleIcon} size={18} strokeWidth={1.6} />
@@ -82,11 +82,11 @@ export default function SidebarNewWorkspace({
         onClick={open}
         className="
           group/new flex h-9 w-full cursor-pointer items-center gap-2.5
-          rounded-xl border border-orange-50/15 bg-white/5
+          rounded-xl border border-(--hairline) bg-(--tint-5)
           px-3 text-(--text-primary)
           transition-colors duration-200
-          hover:border-orange-50/25 hover:bg-white/8
-          focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white/20
+          hover:border-(--hairline-strong) hover:bg-(--tint-8)
+          focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-(--tint-15)
         "
       >
         <HugeiconsIcon
@@ -106,7 +106,7 @@ export default function SidebarNewWorkspace({
         <kbd
           className="
             ml-auto flex shrink-0 items-center gap-0.5 rounded-md
-            border border-orange-50/15 bg-white/6 px-1.5 py-0.5
+            border border-(--hairline) bg-(--tint-6) px-1.5 py-0.5
             font-mono text-[10px] text-(--text-secondary)
             opacity-0 transition-[opacity,transform] duration-200 ease-out
             translate-x-1

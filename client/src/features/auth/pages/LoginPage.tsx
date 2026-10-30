@@ -100,7 +100,7 @@ export default function LoginPage() {
         className="pointer-events-none absolute inset-0 overflow-hidden"
       >
         <div className="absolute -left-32 top-1/4 h-96 w-96 rounded-full bg-(--brand)/6 blur-[120px] transition-transform duration-[8s] ease-in-out" />
-        <div className="absolute -right-32 bottom-1/4 h-80 w-80 rounded-full bg-emerald-500/5 blur-[100px] transition-transform duration-[10s] ease-in-out" />
+        <div className="absolute -right-32 bottom-1/4 h-80 w-80 rounded-full bg-(--success)/5 blur-[100px] transition-transform duration-[10s] ease-in-out" />
         <div
           className="absolute inset-0 opacity-[0.04]"
           style={{
@@ -113,7 +113,7 @@ export default function LoginPage() {
 
       <div className="relative grid h-full lg:grid-cols-[1.15fr_1fr]">
         {/* LEFT — Advertisement panel */}
-        <aside className="relative hidden overflow-hidden border-r border-white/8 lg:flex lg:flex-col">
+        <aside className="relative hidden overflow-hidden border-r border-(--border) lg:flex lg:flex-col">
           <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 opacity-50"
@@ -134,23 +134,23 @@ export default function LoginPage() {
 
           <div className="relative flex h-full flex-col p-8 xl:p-12">
             <div className="flex flex-1 flex-col justify-center">
-              <div className="inline-flex items-center gap-2.5 self-start rounded-full border border-white/8 bg-white/3 px-3 py-1.5 backdrop-blur-xl">
+              <div className="inline-flex items-center gap-2.5 self-start rounded-full border border-(--border) bg-(--tint-3) px-3 py-1.5 backdrop-blur-xl">
                 <span className="relative flex h-1.5 w-1.5">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-(--success) opacity-60" />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-(--success)" />
                 </span>
-                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/60">
+                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-(--text-primary)/60">
                   2,847 teams working now
                 </span>
               </div>
 
-              <h1 className="mt-6 max-w-lg font-mono text-[1.85rem] font-normal leading-[1.1] tracking-[-0.03em] text-white xl:text-[2.25rem]">
+              <h1 className="mt-6 max-w-lg font-mono text-[1.85rem] font-normal leading-[1.1] tracking-[-0.03em] text-(--text-primary) xl:text-[2.25rem]">
                 Where teams move
                 <br />
-                <span className="text-white/35">work forward.</span>
+                <span className="text-(--text-primary)/35">work forward.</span>
               </h1>
 
-              <p className="mt-4 max-w-md font-mono text-[13px] leading-[1.75] text-white/50">
+              <p className="mt-4 max-w-md font-mono text-[13px] leading-[1.75] text-(--text-primary)/50">
                 Sign in to jump back into your boards — see what your team
                 shipped while you were gone.
               </p>
@@ -177,10 +177,10 @@ export default function LoginPage() {
           <div className="relative flex flex-1 items-center justify-center px-4 py-5 sm:px-6 lg:px-10 pt-30">
             <div className="w-full max-w-95">
               <div>
-                <h2 className="font-mono text-[1.5rem] font-normal leading-[1.15] tracking-[-0.02em] text-white sm:text-[1.65rem]">
+                <h2 className="font-mono text-[1.5rem] font-normal leading-[1.15] tracking-[-0.02em] text-(--text-primary) sm:text-[1.65rem]">
                   Welcome back
                 </h2>
-                <p className="mt-2 font-mono text-[12px] leading-[1.65] text-white/45">
+                <p className="mt-2 font-mono text-[12px] leading-[1.65] text-(--text-primary)/45">
                   Sign in to continue to your workspace.
                 </p>
               </div>
@@ -201,21 +201,21 @@ export default function LoginPage() {
               </div>
 
               <div className="my-5 flex items-center gap-3">
-                <span className="h-px flex-1 bg-white/8" />
-                <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-white/30">
+                <span className="h-px flex-1 bg-(--tint-8)" />
+                <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-(--text-primary)/30">
                   or with email
                 </span>
-                <span className="h-px flex-1 bg-white/8" />
+                <span className="h-px flex-1 bg-(--tint-8)" />
               </div>
 
               {errors.root && (
                 <div
                   role="alert"
                   aria-live="polite"
-                  className="mb-4 flex items-start gap-2.5 rounded-lg border border-rose-500/20 bg-rose-500/5 px-3.5 py-2.5"
+                  className="mb-4 flex items-start gap-2.5 rounded-lg border border-(--danger)/20 bg-(--danger)/5 px-3.5 py-2.5"
                 >
-                  <span className="mt-1.25 h-1.5 w-1.5 shrink-0 rounded-full bg-rose-400" />
-                  <p className="font-mono text-[12px] leading-[1.55] text-rose-200">
+                  <span className="mt-1.25 h-1.5 w-1.5 shrink-0 rounded-full bg-(--danger)" />
+                  <p className="font-mono text-[12px] leading-[1.55] text-(--danger)">
                     {errors.root.message}
                   </p>
                 </div>
@@ -225,12 +225,12 @@ export default function LoginPage() {
                 <div className="space-y-1.5">
                   <label
                     htmlFor={emailId}
-                    className="block font-mono text-[11px] uppercase tracking-[0.18em] text-white/45"
+                    className="block font-mono text-[11px] uppercase tracking-[0.18em] text-(--text-primary)/45"
                   >
                     Email
                   </label>
                   <div className="group/input relative">
-                    <span className="pointer-events-none absolute left-3.5 top-1/2 flex h-4 w-4 -translate-y-1/2 items-center justify-center text-white/30 transition-colors group-focus-within/input:text-(--brand)">
+                    <span className="pointer-events-none absolute left-3.5 top-1/2 flex h-4 w-4 -translate-y-1/2 items-center justify-center text-(--text-primary)/30 transition-colors group-focus-within/input:text-(--brand)">
                       <HugeiconsIcon icon={Mail01Icon} size={14} />
                     </span>
                     <input
@@ -242,19 +242,18 @@ export default function LoginPage() {
                       aria-invalid={errors.email ? "true" : "false"}
                       {...registerField("email")}
                       className={[
-                        "w-full rounded-lg border bg-white/2",
+                        "w-full rounded-lg border bg-(--tint-2)",
                         "py-2.5 pl-10 pr-3.5",
-                        "font-mono text-[13px] text-white/90 placeholder:text-white/25",
+                        "font-mono text-[13px] text-(--text-primary)/90 placeholder:text-(--text-primary)/25",
                         "outline-hidden transition-all duration-200",
                         errors.email
-                          ? "border-rose-500/50 focus:border-rose-500/70"
-                          : "border-white/10 hover:border-white/14 focus:border-(--brand)/60 focus:bg-white/3",
-                        "focus:shadow-[0_0_0_3px_rgba(255,140,66,0.12)]",
+                          ? "border-(--danger)/50 focus:border-(--danger)"
+                          : "border-(--border) hover:border-(--border-strong) focus:border-(--brand)/60 focus:bg-(--tint-3)",
                       ].join(" ")}
                     />
                   </div>
                   {errors.email && (
-                    <p className="font-mono text-[11px] leading-normal text-rose-400">
+                    <p className="font-mono text-[11px] leading-normal text-(--danger)">
                       {errors.email.message}
                     </p>
                   )}
@@ -264,19 +263,19 @@ export default function LoginPage() {
                   <div className="flex items-center justify-between">
                     <label
                       htmlFor={passwordId}
-                      className="block font-mono text-[11px] uppercase tracking-[0.18em] text-white/45"
+                      className="block font-mono text-[11px] uppercase tracking-[0.18em] text-(--text-primary)/45"
                     >
                       Password
                     </label>
                     <Link
                       to="/auth/forgot-password"
-                      className="font-mono text-[11px] text-white/40 transition-colors duration-200 hover:text-(--brand)"
+                      className="font-mono text-[11px] text-(--text-primary)/40 transition-colors duration-200 hover:text-(--brand)"
                     >
                       Forgot?
                     </Link>
                   </div>
                   <div className="group/input relative">
-                    <span className="pointer-events-none absolute left-3.5 top-1/2 flex h-4 w-4 -translate-y-1/2 items-center justify-center text-white/30 transition-colors group-focus-within/input:text-(--brand)">
+                    <span className="pointer-events-none absolute left-3.5 top-1/2 flex h-4 w-4 -translate-y-1/2 items-center justify-center text-(--text-primary)/30 transition-colors group-focus-within/input:text-(--brand)">
                       <HugeiconsIcon icon={LockPasswordIcon} size={14} />
                     </span>
                     <input
@@ -287,14 +286,13 @@ export default function LoginPage() {
                       aria-invalid={errors.password ? "true" : "false"}
                       {...registerField("password")}
                       className={[
-                        "w-full rounded-lg border bg-white/2",
+                        "w-full rounded-lg border bg-(--tint-2)",
                         "py-2.5 pl-10 pr-11",
-                        "font-mono text-[13px] text-white/90 placeholder:text-white/25",
+                        "font-mono text-[13px] text-(--text-primary)/90 placeholder:text-(--text-primary)/25",
                         "outline-hidden transition-all duration-200",
                         errors.password
-                          ? "border-rose-500/50 focus:border-rose-500/70"
-                          : "border-white/10 hover:border-white/14 focus:border-(--brand)/60 focus:bg-white/3",
-                        "focus:shadow-[0_0_0_3px_rgba(255,140,66,0.12)]",
+                          ? "border-(--danger)/50 focus:border-(--danger)"
+                          : "border-(--border) hover:border-(--border-strong) focus:border-(--brand)/60 focus:bg-(--tint-3)",
                       ].join(" ")}
                     />
                     <button
@@ -303,7 +301,7 @@ export default function LoginPage() {
                       aria-label={
                         showPassword ? "Hide password" : "Show password"
                       }
-                      className="absolute right-3 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded text-white/30 transition-colors hover:text-white/60"
+                      className="absolute right-3 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded text-(--text-primary)/30 transition-colors hover:text-(--text-primary)/60"
                     >
                       <HugeiconsIcon
                         icon={showPassword ? ViewOffIcon : ViewIcon}
@@ -312,7 +310,7 @@ export default function LoginPage() {
                     </button>
                   </div>
                   {errors.password && (
-                    <p className="font-mono text-[11px] leading-normal text-rose-400">
+                    <p className="font-mono text-[11px] leading-normal text-(--danger)">
                       {errors.password.message}
                     </p>
                   )}
@@ -320,7 +318,7 @@ export default function LoginPage() {
 
                 <label
                   htmlFor={rememberId}
-                  className="flex cursor-pointer items-center gap-2.5 font-mono text-[12px] text-white/55 select-none"
+                  className="flex cursor-pointer items-center gap-2.5 font-mono text-[12px] text-(--text-primary)/55 select-none"
                 >
                   <span className="relative flex h-4 w-4 shrink-0 items-center justify-center">
                     <input
@@ -332,7 +330,7 @@ export default function LoginPage() {
                     />
                     <span
                       className="
-                        absolute inset-0 rounded border border-white/15 bg-white/2
+                        absolute inset-0 rounded border border-(--border-strong) bg-(--tint-2)
                         transition-all duration-200
                         peer-checked:border-(--brand)/60 peer-checked:bg-(--brand)/15
                         peer-focus-visible:ring-2 peer-focus-visible:ring-(--brand)/40
@@ -398,11 +396,11 @@ export default function LoginPage() {
                 </button>
               </form>
 
-              <p className="mt-6 text-center font-mono text-[12px] leading-normal text-white/45">
+              <p className="mt-6 text-center font-mono text-[12px] leading-normal text-(--text-primary)/45">
                 Don't have an account?{" "}
                 <Link
                   to="/auth/register"
-                  className="text-white/85 underline decoration-white/20 underline-offset-4 transition-colors duration-200 hover:text-(--brand) hover:decoration-(--brand)/60"
+                  className="text-(--text-primary)/85 underline decoration-white/20 underline-offset-4 transition-colors duration-200 hover:text-(--brand) hover:decoration-(--brand)/60"
                 >
                   Create one
                 </Link>

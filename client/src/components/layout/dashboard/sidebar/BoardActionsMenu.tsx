@@ -180,8 +180,8 @@ export function BoardActionsMenu({
           justify-center
           rounded-full
 
-          bg-[#141416]
-          text-neutral-500
+          bg-(--bg-root)
+          text-(--text-muted)
 
           opacity-0
           pointer-events-none
@@ -189,8 +189,8 @@ export function BoardActionsMenu({
           transition-all
           duration-150
 
-          hover:bg-white/[0.08]
-          hover:text-neutral-100
+          hover:bg-(--tint-8)
+          hover:text-(--text-primary)
 
           focus-visible:pointer-events-auto
           focus-visible:opacity-100
@@ -223,8 +223,8 @@ export function BoardActionsMenu({
               overflow-hidden
               rounded-lg
               border
-              border-orange-50/20
-              bg-[#141416]
+              border-(--hairline-strong)
+              bg-(--bg-root)
 
               
 
@@ -272,7 +272,7 @@ export function BoardActionsMenu({
               onClick={handleAction(onShare)}
             />
 
-            <div aria-hidden="true" className="my-1 h-px bg-white/[0.06]" />
+            <div aria-hidden="true" className="my-1 h-px bg-(--tint-6)" />
 
             <MenuItem
               icon={Delete02Icon}
@@ -309,14 +309,14 @@ function MenuItem({
         "text-left font-mono text-[12px]",
         "transition-colors duration-100",
         "focus-visible:outline-hidden",
-        "focus-visible:bg-white/[0.08]",
+        "focus-visible:bg-(--tint-8)",
 
         danger
           ? ["text-(--danger)", "hover:bg-(--danger)/8"].join(" ")
           : [
-              "text-neutral-400",
-              "hover:bg-white/[0.06]",
-              "hover:text-orange-400",
+              "text-(--text-secondary)",
+              "hover:bg-(--tint-6)",
+              "hover:text-(--brand)",
             ].join(" "),
       ].join(" ")}
     >

@@ -97,7 +97,7 @@ export default function TechnologySection() {
       {/* Cool wash, left side */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute left-[-260px] top-[280px] h-[520px] w-[720px] rounded-[50%] bg-white/[0.018] blur-[140px]"
+        className="pointer-events-none absolute left-[-260px] top-[280px] h-[520px] w-[720px] rounded-[50%] bg-(--tint-2) blur-[140px]"
       />
 
       {/* Warm echo, bottom-right */}
@@ -180,7 +180,7 @@ export default function TechnologySection() {
 
             <h2 className="mt-6 font-mono text-3xl font-medium leading-[1.08] tracking-[-0.04em] text-(--text-primary) sm:text-4xl lg:text-5xl">
               Built on technology{" "}
-              <span className="bg-linear-to-b from-(--brand-hover) via-(--brand) to-(--brand-hover)/70 bg-clip-text text-transparent">
+              <span className="from-(--brand-hover) via-(--brand) text-(--text-primary)">
                 that scales with the work.
               </span>
             </h2>
@@ -195,7 +195,7 @@ export default function TechnologySection() {
           <div className="flex items-center gap-4 lg:pb-2">
             <span
               aria-hidden="true"
-              className="hidden h-px w-12 bg-white/[0.08] lg:block"
+              className="hidden h-px w-12 bg-(--tint-8) lg:block"
             />
             <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-(--text-secondary)/55">
               Stack v0.1.0
@@ -217,7 +217,7 @@ export default function TechnologySection() {
             className="
               relative rounded-[24px]
               border border-white/[0.10]
-              bg-white/[0.03]
+              bg-(--tint-3)
               p-2
               shadow-[inset_0_1px_0_rgba(255,255,255,0.10),0_30px_80px_-20px_rgba(0,0,0,0.6)]
               backdrop-blur-xl backdrop-saturate-150
@@ -229,14 +229,14 @@ export default function TechnologySection() {
               className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[radial-gradient(60%_100%_at_50%_0%,rgba(255,255,255,0.06),transparent_70%)]"
             />
 
-            <div className="relative overflow-hidden rounded-[18px] border border-white/[0.05] bg-[#0B0B0F]">
+            <div className="relative overflow-hidden rounded-[18px] border border-white/[0.05] bg-(--bg-root)">
               {/* Window header */}
               <div className="flex h-11 items-center justify-between border-b border-white/[0.04] px-4">
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-1.5">
-                    <span className="h-2.5 w-2.5 rounded-full border border-rose-500/70 bg-rose-500/10" />
-                    <span className="h-2.5 w-2.5 rounded-full border border-yellow-500/70 bg-yellow-500/10" />
-                    <span className="h-2.5 w-2.5 rounded-full border border-emerald-500/70 bg-emerald-500/10" />
+                    <span className="h-2.5 w-2.5 rounded-full border border-(--danger)/30 bg-(--tint-4)" />
+                    <span className="h-2.5 w-2.5 rounded-full border border-(--warning)/30 bg-(--tint-4)" />
+                    <span className="h-2.5 w-2.5 rounded-full border border-(--success)/30 bg-(--tint-4)" />
                   </div>
                   <span className="font-mono text-[11px] tracking-[0.05em] text-(--text-secondary)">
                     kanban / architecture
@@ -245,8 +245,8 @@ export default function TechnologySection() {
 
                 <span className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.15em] text-(--text-secondary)/55">
                   <span className="relative flex h-1.5 w-1.5">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-(--tint-4) opacity-60" />
+                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-(--tint-4)" />
                   </span>
                   system://ready
                 </span>
@@ -284,11 +284,11 @@ export default function TechnologySection() {
                         className="
                           group/layer relative overflow-hidden rounded-xl
                           border border-white/[0.08]
-                          bg-[#0F0F12]
+                          bg-(--bg-surface)
                           p-5
                           transition-all duration-500
                           hover:border-(--brand)/40
-                          hover:bg-[#111116]
+                          hover:bg-(--bg-surface)
                         "
                       >
                         {/* Top radial accent */}
@@ -334,7 +334,7 @@ export default function TechnologySection() {
                               key={tech}
                               className="
                                 rounded-md border border-white/[0.07]
-                                bg-white/[0.03]
+                                bg-(--tint-3)
                                 px-2 py-0.5
                                 font-mono text-[10px] tracking-[0.05em] text-(--text-secondary)
                                 backdrop-blur-sm
@@ -354,12 +354,12 @@ export default function TechnologySection() {
                           aria-hidden="true"
                         >
                           {/* Desktop: horizontal arrow */}
-                          <span className="hidden h-6 w-6 items-center justify-center rounded-full border border-white/[0.08] bg-[#0B0B0F] text-(--text-secondary)/60 lg:flex">
+                          <span className="hidden h-6 w-6 items-center justify-center rounded-full border border-white/[0.08] bg-(--bg-root) text-(--text-secondary)/60 lg:flex">
                             <HugeiconsIcon icon={ArrowRight01Icon} size={10} />
                           </span>
 
                           {/* Mobile: rotated arrow */}
-                          <span className="flex h-6 w-6 rotate-90 items-center justify-center rounded-full border border-white/[0.08] bg-[#0B0B0F] text-(--text-secondary)/60 lg:hidden">
+                          <span className="flex h-6 w-6 rotate-90 items-center justify-center rounded-full border border-white/[0.08] bg-(--bg-root) text-(--text-secondary)/60 lg:hidden">
                             <HugeiconsIcon icon={ArrowRight01Icon} size={10} />
                           </span>
                         </div>
@@ -394,14 +394,14 @@ export default function TechnologySection() {
               className="
                 group/tech relative overflow-hidden rounded-2xl
                 border border-white/[0.07]
-                bg-white/[0.02]
+                bg-(--tint-2)
                 p-5
                 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]
                 backdrop-blur-xl backdrop-saturate-150
                 transition-all duration-500
                 hover:-translate-y-0.5
                 hover:border-white/[0.14]
-                hover:bg-white/[0.035]
+                hover:bg-(--tint-4)
                 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.10),0_20px_48px_-24px_rgba(0,0,0,0.7)]
               "
             >

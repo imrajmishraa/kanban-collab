@@ -15,14 +15,14 @@ export default function BoardError({
       role="alert"
       className="flex h-full min-h-100 items-center justify-center bg-(--bg-root) px-6"
     >
-      <div className="relative w-full max-w-md overflow-hidden rounded-xl border border-white/8 bg-white/4 p-6 text-center">
+      <div className="relative w-full max-w-md overflow-hidden rounded-xl border border-(--border) bg-(--tint-4) p-6 text-center">
         {/* Top hairline — same accent as every other panel */}
         <span
           aria-hidden="true"
           className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-white/15 to-transparent"
         />
 
-        <div className="mx-auto flex size-10 items-center justify-center rounded-md border border-white/10 bg-white/4 text-(--danger)">
+        <div className="mx-auto flex size-10 items-center justify-center rounded-md border border-(--border) bg-(--tint-4) text-(--danger)">
           <HugeiconsIcon icon={TriangleAlertIcon} size={18} strokeWidth={1.6} />
         </div>
 
@@ -44,7 +44,7 @@ export default function BoardError({
           <button
             type="button"
             onClick={onRetry}
-            className="group/retry mx-auto mt-5 inline-flex h-9 cursor-pointer items-center gap-2 rounded-full border border-white/8 bg-white/6 px-4 font-mono text-[12px] text-(--text-primary) transition-colors duration-200 hover:bg-white/10"
+            className="group/retry mx-auto mt-5 inline-flex h-9 cursor-pointer items-center gap-2 rounded-full border border-(--border) bg-(--tint-6) px-4 font-mono text-[12px] text-(--text-primary) transition-colors duration-200 hover:bg-(--tint-10)"
           >
             <HugeiconsIcon
               icon={Refresh01Icon}

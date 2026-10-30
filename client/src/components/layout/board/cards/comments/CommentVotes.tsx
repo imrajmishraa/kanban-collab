@@ -39,8 +39,8 @@ export default function CommentVotes({
           className={[
             base,
             userAction === 1
-              ? "text-orange-100 hover:bg-white/5"
-              : "text-neutral-500 hover:bg-white/5 hover:text-neutral-200",
+              ? "text-(--accent) hover:bg-(--bg-hover)"
+              : "text-(--text-muted) hover:bg-(--bg-hover) hover:text-(--text-primary)",
           ].join(" ")}
         >
           <HugeiconsIcon
@@ -64,8 +64,8 @@ export default function CommentVotes({
           className={[
             base,
             userAction === -1
-              ? "text-orange-100 hover:bg-white/5"
-              : "text-neutral-500 hover:bg-white/5 hover:text-neutral-200",
+              ? "text-(--accent) hover:bg-(--bg-hover)"
+              : "text-(--text-muted) hover:bg-(--bg-hover) hover:text-(--text-primary)",
           ].join(" ")}
         >
           <HugeiconsIcon

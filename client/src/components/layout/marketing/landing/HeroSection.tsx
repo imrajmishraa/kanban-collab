@@ -62,7 +62,7 @@ export default function HeroSection() {
                   eyebrow-orbit
                   mb-10 inline-flex items-center gap-2.5
                   rounded-full
-                  bg-[#0B0B10]/70
+                  bg-(--bg-root)/70
                   px-4 py-2
                   font-mono text-[10px] uppercase tracking-[0.22em]
                   text-(--text-secondary)
@@ -95,7 +95,7 @@ export default function HeroSection() {
               <span className="block perspective-midrange">
                 <motion.span
                   variants={line}
-                  className="block bg-linear-to-b from-(--brand-hover) via-(--brand) to-(--brand-hover)/70 bg-clip-text text-transparent"
+                  className="block from-(--brand-hover) via-(--brand) text-(--text-primary)"
                 >
                   Organize.
                 </motion.span>
@@ -156,15 +156,15 @@ export default function HeroSection() {
                 className="
                   inline-flex min-w-44 items-center justify-center gap-2
                   rounded-full
-                  border border-white/10
-                  bg-white/3
+                  border border-(--border)
+                  bg-(--tint-3)
                   px-6 py-3
                   font-mono text-sm text-(--text-secondary)
                   shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]
                   backdrop-blur-xl backdrop-saturate-150
                   transition-colors duration-300
-                  hover:border-white/20
-                  hover:bg-white/6
+                  hover:border-(--border-strong)
+                  hover:bg-(--bg-hover)
                   hover:text-(--text-primary)
                 "
               >
@@ -205,7 +205,7 @@ export default function HeroSection() {
 
             <div
               aria-hidden
-              className="pointer-events-none mx-auto mt-3 h-8 w-4/5 rounded-[50%] bg-white/2.5 blur-3xl"
+              className="pointer-events-none mx-auto mt-3 h-8 w-4/5 rounded-[50%] bg-(--tint-2).5 blur-3xl"
             />
           </motion.div>
         </motion.div>

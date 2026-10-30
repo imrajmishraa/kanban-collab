@@ -8,19 +8,26 @@
          Zustand store in stores/theme.ts writes. Keep this FIRST in <head>. -->
     <script>
       (function () {
-        var theme = "dark";
+        /* The store persists `mode`, not `theme`, so read that first and fall
+           back to the older `theme` entry for anyone mid-migration. */
+        var prefersLight = false;
+        try {
+          prefersLight = window.matchMedia("(prefers-color-scheme: light)").matches;
+        } catch (e) {
+          prefersLight = false;
+        }
+
+        var mode = "system";
         try {
           var saved = JSON.parse(localStorage.getItem("kanban-theme") || "{}");
-          if (saved && saved.state && saved.state.theme) {
-            theme = saved.state.theme;
-          } else if (window.matchMedia("(prefers-color-scheme: light)").matches) {
-            theme = "light";
-          }
+          var state = saved && saved.state ? saved.state : {};
+          mode = state.mode || state.theme || "system";
         } catch (e) {
-          if (window.matchMedia("(prefers-color-scheme: light)").matches) {
-            theme = "light";
-          }
+          mode = "system";
         }
+
+        var theme = mode === "system" ? (prefersLight ? "light" : "dark") : mode;
+        if (theme !== "light" && theme !== "dark") theme = "dark";
         var root = document.documentElement;
         root.classList.toggle("light", theme === "light");
         root.classList.toggle("dark", theme === "dark");

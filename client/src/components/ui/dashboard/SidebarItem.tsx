@@ -29,19 +29,19 @@ export default function SidebarItem({
       aria-label={collapsed ? label : undefined}
       className={({ isActive }) =>
         [
-          "group/item relative flex h-9 cursor-pointer items-center rounded-lg",
+          "group/item relative flex h-10 cursor-pointer items-center rounded-lg",
           "text-[12.5px] tracking-tight",
           "transition-colors duration-200",
 
           collapsed
-            ? "w-9 justify-center px-0"
+            ? "w-10 justify-center px-0"
             : nested
               ? "w-full justify-start gap-2 pr-3 pl-9"
               : "w-full justify-start gap-3 px-3",
 
           isActive
-            ? "bg-white/6 text-neutral-100"
-            : "text-neutral-400 hover:bg-white/4 hover:text-neutral-100",
+            ? "bg-(--tint-6) text-(--text-primary)"
+            : "text-(--text-secondary) hover:bg-(--tint-4) hover:text-(--text-primary)",
         ].join(" ")
       }
     >
@@ -50,11 +50,11 @@ export default function SidebarItem({
           {!nested && (
             <span
               className={[
-                "flex size-5 shrink-0 items-center justify-center",
+                "flex size-6 shrink-0 items-center justify-center",
                 "transition-colors duration-200",
                 isActive
-                  ? "text-orange-100"
-                  : "text-neutral-500 group-hover/item:text-neutral-200",
+                  ? "text-(--accent)"
+                  : "text-(--text-muted) group-hover/item:text-(--text-primary)",
               ].join(" ")}
             >
               {icon}
@@ -66,7 +66,7 @@ export default function SidebarItem({
               className={[
                 "min-w-0 flex-1 truncate",
                 "transition-colors duration-200",
-                isActive ? "text-neutral-100" : "text-neutral-400",
+                isActive ? "text-(--text-primary)" : "text-(--text-secondary)",
               ].join(" ")}
             >
               {label}
@@ -74,7 +74,7 @@ export default function SidebarItem({
           )}
 
           {!collapsed && badge !== undefined && badge !== "" && (
-            <span className="shrink-0 rounded-full bg-orange-100/10 px-1.5 py-0.5 font-mono text-[9px] font-medium tabular-nums text-orange-100">
+            <span className="shrink-0 rounded-full bg-(--accent-soft) px-1.5 py-0.5 font-mono text-[9px] font-medium tabular-nums text-(--accent)">
               {badge}
             </span>
           )}

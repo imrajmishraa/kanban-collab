@@ -57,10 +57,10 @@ interface CursorData {
 
 const PRESENCE: PresenceUser[] = [
   { initials: "RM", name: "Maya", color: "bg-(--brand)", status: "active" },
-  { initials: "RI", name: "Rio", color: "bg-sky-500", status: "active" },
-  { initials: "SA", name: "Sam", color: "bg-pink-500", status: "active" },
-  { initials: "NV", name: "Noah", color: "bg-emerald-500", status: "idle" },
-  { initials: "AK", name: "Aki", color: "bg-amber-500", status: "active" },
+  { initials: "RI", name: "Rio", color: "bg-(--tint-4)", status: "active" },
+  { initials: "SA", name: "Sam", color: "bg-(--tint-4)", status: "active" },
+  { initials: "NV", name: "Noah", color: "bg-(--tint-4)", status: "idle" },
+  { initials: "AK", name: "Aki", color: "bg-(--tint-4)", status: "active" },
 ];
 
 const COLUMNS: ColumnData[] = [
@@ -166,7 +166,7 @@ const COMMENT_THREAD = [
   },
   {
     initials: "RI",
-    color: "bg-sky-500",
+    color: "bg-(--tint-4)",
     name: "Rio",
     text: "On it — reviewing now",
     time: "just now",
@@ -174,17 +174,17 @@ const COMMENT_THREAD = [
 ];
 
 const PRIORITY_COLORS: Record<Priority, string> = {
-  low: "bg-sky-400",
-  med: "bg-amber-400",
-  high: "bg-rose-400",
+  low: "bg-(--tint-4)",
+  med: "bg-(--tint-4)",
+  high: "bg-(--tint-4)",
 };
 
 const TAG_COLORS: Record<string, string> = {
-  design: "border-purple-400/25 bg-purple-400/8 text-purple-300",
-  frontend: "border-sky-400/25 bg-sky-400/8 text-sky-300",
-  backend: "border-emerald-400/25 bg-emerald-400/8 text-emerald-300",
-  setup: "border-white/15 bg-white/5 text-white/60",
-  database: "border-cyan-400/25 bg-cyan-400/8 text-cyan-300",
+  design: "border-(--hairline) bg-(--tint-4) text-(--text-secondary)",
+  frontend: "border-(--hairline) bg-(--tint-4) text-(--text-secondary)",
+  backend: "border-(--success)/30 bg-(--tint-4) text-(--success)",
+  setup: "border-(--border-strong) bg-(--tint-5) text-(--text-primary)/60",
+  database: "border-(--hairline) bg-(--tint-4) text-(--text-secondary)",
 };
 
 /* ═══════════════════════════════════════════════════════════════
@@ -241,29 +241,29 @@ export default function StepThreeSection() {
           {/* ── LEFT: Content ─────────────────────────────────── */}
           <div className="order-1">
             {/* Orbiting pill kicker */}
-            <div className="eyebrow-orbit inline-flex items-center gap-3 rounded-full bg-[#08080C] px-4 py-1.5 font-mono text-[11px] uppercase tracking-[0.24em]">
+            <div className="eyebrow-orbit inline-flex items-center gap-3 rounded-full bg-(--bg-root) px-4 py-1.5 font-mono text-[11px] uppercase tracking-[0.24em]">
               <span className="eyebrow-ring" aria-hidden="true" />
 
               <span className="relative z-2 flex items-center gap-3">
                 <span className="text-(--brand)">03</span>
-                <span aria-hidden="true" className="h-px w-6 bg-white/20" />
-                <span className="text-white/85">Collaborate</span>
+                <span aria-hidden="true" className="h-px w-6 bg-(--tint-15)" />
+                <span className="text-(--text-primary)/85">Collaborate</span>
               </span>
             </div>
 
-            <h2 className="mt-8 font-mono text-[1.75rem] font-normal leading-[1.05] tracking-[-0.03em] text-white sm:text-[2.25rem] lg:text-[2.5rem]">
+            <h2 className="mt-8 font-mono text-[1.75rem] font-normal leading-[1.05] tracking-[-0.03em] text-(--text-primary) sm:text-[2.25rem] lg:text-[2.5rem]">
               Work together.
               <br />
-              <span className="text-white/35">Stay in sync.</span>
+              <span className="text-(--text-primary)/35">Stay in sync.</span>
             </h2>
 
-            <p className="mt-6 max-w-sm font-mono text-[13px] leading-[1.85] text-white/55 sm:text-[14px]">
+            <p className="mt-6 max-w-sm font-mono text-[13px] leading-[1.85] text-(--text-primary)/55 sm:text-[14px]">
               Your team works from the same shared state. Changes are
               synchronized in real time so everyone sees the latest version of
               the board without waiting for a refresh.
             </p>
 
-            <div className="mt-10 space-y-0 border-y border-white/10">
+            <div className="mt-10 space-y-0 border-y border-(--border)">
               <StepPoint>See who is currently working on the board.</StepPoint>
 
               <StepPoint>
@@ -276,13 +276,15 @@ export default function StepThreeSection() {
             </div>
 
             <div className="mt-10 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.24em]">
-              <span className="text-white/30">Next</span>
+              <span className="text-(--text-primary)/30">Next</span>
               <HugeiconsIcon
                 icon={ArrowRight02Icon}
                 size={12}
-                className="text-white/25"
+                className="text-(--text-primary)/25"
               />
-              <span className="text-white/60">Complete your work</span>
+              <span className="text-(--text-primary)/60">
+                Complete your work
+              </span>
             </div>
           </div>
 
@@ -293,11 +295,11 @@ export default function StepThreeSection() {
               className="pointer-events-none absolute -inset-x-6 -bottom-10 -top-8 rounded-[50%] bg-(--brand)/6 blur-[120px] sm:-inset-x-14 sm:-bottom-14 sm:-top-10 lg:blur-[130px]"
             />
 
-            <div className="relative overflow-hidden rounded-xl border border-white/10 bg-[#08080C] shadow-[0_40px_100px_-30px_rgba(0,0,0,0.85)] sm:rounded-2xl">
+            <div className="relative overflow-hidden rounded-xl border border-(--border) bg-(--bg-root) shadow-[0_40px_100px_-30px_rgba(0,0,0,0.85)] sm:rounded-2xl">
               <CollaborationScene />
             </div>
 
-            <div className="mt-3 flex items-baseline justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-white/35 sm:mt-4 sm:tracking-[0.24em]">
+            <div className="mt-3 flex items-baseline justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-(--text-primary)/35 sm:mt-4 sm:tracking-[0.24em]">
               <span>Fig. 03 — Live collaboration</span>
               <span>Step 03 / 04</span>
             </div>
@@ -317,29 +319,29 @@ function CollaborationScene() {
   return (
     <div className="relative">
       {/* ── Chrome bar ──────────────────────────────────────── */}
-      <div className="flex h-10 items-center justify-between border-b border-white/6 px-3 sm:h-11 sm:px-4 lg:h-12 lg:px-5">
+      <div className="flex h-10 items-center justify-between border-b border-(--border-subtle) px-3 sm:h-11 sm:px-4 lg:h-12 lg:px-5">
         <div className="flex items-center gap-2 sm:gap-3.5">
           <div className="flex items-center gap-1 sm:gap-1.5">
-            <span className="h-2 w-2 rounded-full border border-rose-500/70 bg-rose-500/10 sm:h-2.5 sm:w-2.5" />
-            <span className="h-2 w-2 rounded-full border border-yellow-500/70 bg-yellow-500/10 sm:h-2.5 sm:w-2.5" />
-            <span className="h-2 w-2 rounded-full border border-emerald-500/70 bg-emerald-500/10 sm:h-2.5 sm:w-2.5" />
+            <span className="h-2 w-2 rounded-full border border-(--danger)/30 bg-(--tint-4) sm:h-2.5 sm:w-2.5" />
+            <span className="h-2 w-2 rounded-full border border-(--warning)/30 bg-(--tint-4) sm:h-2.5 sm:w-2.5" />
+            <span className="h-2 w-2 rounded-full border border-(--success)/30 bg-(--tint-4) sm:h-2.5 sm:w-2.5" />
           </div>
-          <span className="truncate font-mono text-[10px] tracking-wider text-white/55 sm:text-[11px] lg:text-[12px]">
+          <span className="truncate font-mono text-[10px] tracking-wider text-(--text-primary)/55 sm:text-[11px] lg:text-[12px]">
             kanban.board / sprint-04
           </span>
         </div>
 
         <div className="flex items-center gap-1.5 sm:gap-2">
-          <span className="hidden h-6 w-6 items-center justify-center rounded-md border border-white/8 text-white/40 sm:flex lg:h-7 lg:w-7">
+          <span className="hidden h-6 w-6 items-center justify-center rounded-md border border-(--border) text-(--text-primary)/40 sm:flex lg:h-7 lg:w-7">
             <HugeiconsIcon icon={Search01Icon} size={11} />
           </span>
-          <span className="hidden h-6 w-6 items-center justify-center rounded-md border border-white/8 text-white/40 sm:flex lg:h-7 lg:w-7">
+          <span className="hidden h-6 w-6 items-center justify-center rounded-md border border-(--border) text-(--text-primary)/40 sm:flex lg:h-7 lg:w-7">
             <HugeiconsIcon icon={Notification01Icon} size={11} />
           </span>
-          <span className="flex items-center gap-1 rounded-full border border-emerald-400/20 bg-emerald-400/8 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.12em] text-emerald-400 sm:gap-1.5 sm:px-2 sm:py-1 sm:text-[10px]">
+          <span className="flex items-center gap-1 rounded-full border border-(--success)/30 bg-(--tint-4) px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.12em] text-(--success) sm:gap-1.5 sm:px-2 sm:py-1 sm:text-[10px]">
             <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-(--tint-4) opacity-60" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-(--tint-4)" />
             </span>
             <span>5 online</span>
           </span>
@@ -347,7 +349,7 @@ function CollaborationScene() {
       </div>
 
       {/* ── Presence strip ──────────────────────────────────── */}
-      <div className="flex items-center gap-2.5 border-b border-white/6 px-3 py-2 sm:gap-3.5 sm:px-4 sm:py-2.5 lg:px-5">
+      <div className="flex items-center gap-2.5 border-b border-(--border-subtle) px-3 py-2 sm:gap-3.5 sm:px-4 sm:py-2.5 lg:px-5">
         {/* Avatar stack */}
         <div className="flex items-center -space-x-2 shrink-0">
           {PRESENCE.map((user, i) => (
@@ -357,29 +359,29 @@ function CollaborationScene() {
               style={{ zIndex: PRESENCE.length - i }}
             >
               <span
-                className={`flex h-6 w-6 items-center justify-center rounded-full border-2 border-[#08080C] font-mono text-[9px] text-white sm:h-7 sm:w-7 sm:text-[10px] ${user.color}`}
+                className={`flex h-6 w-6 items-center justify-center rounded-full border-2 border-(--hairline) font-mono text-[9px] text-(--text-primary) sm:h-7 sm:w-7 sm:text-[10px] ${user.color}`}
               >
                 {user.initials}
               </span>
               {user.status === "active" && (
-                <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border-2 border-[#08080C] bg-emerald-400" />
+                <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border-2 border-(--hairline) bg-(--tint-4)" />
               )}
             </span>
           ))}
         </div>
 
-        <span className="hidden font-mono text-[10px] text-white/45 sm:inline">
-          <span className="text-white/80">Maya</span>,{" "}
-          <span className="text-white/80">Rio</span>,{" "}
-          <span className="text-white/80">Sam</span> active
+        <span className="hidden font-mono text-[10px] text-(--text-primary)/45 sm:inline">
+          <span className="text-(--text-primary)/80">Maya</span>,{" "}
+          <span className="text-(--text-primary)/80">Rio</span>,{" "}
+          <span className="text-(--text-primary)/80">Sam</span> active
         </span>
 
         <div className="ml-auto flex items-center gap-1.5 font-mono text-[10px] text-(--text-secondary)">
-          <span className="text-white/50">Maya is typing</span>
+          <span className="text-(--text-primary)/50">Maya is typing</span>
           <span className="flex items-center gap-0.5">
-            <span className="h-1 w-1 animate-pulse rounded-full bg-white/50 [animation-delay:0ms]" />
-            <span className="h-1 w-1 animate-pulse rounded-full bg-white/50 [animation-delay:150ms]" />
-            <span className="h-1 w-1 animate-pulse rounded-full bg-white/50 [animation-delay:300ms]" />
+            <span className="h-1 w-1 animate-pulse rounded-full bg-(--tint-15) [animation-delay:0ms]" />
+            <span className="h-1 w-1 animate-pulse rounded-full bg-(--tint-15) [animation-delay:150ms]" />
+            <span className="h-1 w-1 animate-pulse rounded-full bg-(--tint-15) [animation-delay:300ms]" />
           </span>
         </div>
       </div>
@@ -387,7 +389,7 @@ function CollaborationScene() {
       {/* ── Board area with cursor overlays ─────────────────── */}
       <div className="relative">
         {/* Columns — horizontal scroll on mobile, grid on desktop */}
-        <div className="relative flex gap-px overflow-x-auto bg-white/4 snap-x snap-mandatory scrollbar-none lg:grid lg:grid-cols-3 lg:overflow-visible [&::-webkit-scrollbar]:hidden">
+        <div className="relative flex gap-px overflow-x-auto bg-(--tint-4) snap-x snap-mandatory scrollbar-none lg:grid lg:grid-cols-3 lg:overflow-visible [&::-webkit-scrollbar]:hidden">
           {COLUMNS.map((column) => (
             <div
               key={column.title}
@@ -436,18 +438,18 @@ function CollaborationScene() {
         </div>
 
         {/* Comment popup — over the board, bottom-right area */}
-        <div className="absolute bottom-3 right-3 hidden w-56 rounded-lg border border-white/10 bg-[#0B0B0F]/95 p-2.5 shadow-[0_16px_40px_-8px_rgba(0,0,0,0.8)] backdrop-blur-md sm:block sm:bottom-4 sm:right-4 sm:w-60">
+        <div className="absolute bottom-3 right-3 hidden w-56 rounded-lg border border-(--border) bg-(--bg-root)/95 p-2.5 shadow-[0_16px_40px_-8px_rgba(0,0,0,0.8)] backdrop-blur-md sm:block sm:bottom-4 sm:right-4 sm:w-60">
           {/* Popup header */}
-          <div className="flex items-center gap-1.5 border-b border-white/8 pb-2">
+          <div className="flex items-center gap-1.5 border-b border-(--border) pb-2">
             <HugeiconsIcon
               icon={Message01Icon}
               size={11}
               className="text-(--brand)"
             />
-            <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-white/45">
+            <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-(--text-primary)/45">
               Thread
             </span>
-            <span className="ml-auto font-mono text-[9px] text-white/30">
+            <span className="ml-auto font-mono text-[9px] text-(--text-primary)/30">
               {COMMENT_THREAD.length}
             </span>
           </div>
@@ -457,16 +459,18 @@ function CollaborationScene() {
             {COMMENT_THREAD.map((comment, i) => (
               <div key={i} className="flex items-start gap-2">
                 <span
-                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full font-mono text-[8px] text-white ${comment.color}`}
+                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full font-mono text-[8px] text-(--text-primary) ${comment.color}`}
                 >
                   {comment.initials}
                 </span>
                 <div className="flex min-w-0 flex-1 flex-col">
-                  <span className="font-mono text-[10px] leading-tight text-white/90">
-                    <span className="text-white/60">{comment.name}</span>{" "}
+                  <span className="font-mono text-[10px] leading-tight text-(--text-primary)/90">
+                    <span className="text-(--text-primary)/60">
+                      {comment.name}
+                    </span>{" "}
                     {comment.text}
                   </span>
-                  <span className="mt-0.5 font-mono text-[8px] text-white/30">
+                  <span className="mt-0.5 font-mono text-[8px] text-(--text-primary)/30">
                     {comment.time}
                   </span>
                 </div>
@@ -475,8 +479,10 @@ function CollaborationScene() {
           </div>
 
           {/* Reply input */}
-          <div className="mt-2.5 flex items-center gap-2 rounded-md border border-white/8 bg-white/3 px-2 py-1.5">
-            <span className="font-mono text-[10px] text-white/35">Reply…</span>
+          <div className="mt-2.5 flex items-center gap-2 rounded-md border border-(--border) bg-(--tint-3) px-2 py-1.5">
+            <span className="font-mono text-[10px] text-(--text-primary)/35">
+              Reply…
+            </span>
             <span className="ml-auto flex h-3.5 w-3.5 items-center justify-center rounded-full border border-(--brand)/40 bg-(--brand)/15 text-(--brand)">
               <HugeiconsIcon icon={Add01Icon} size={8} />
             </span>
@@ -486,28 +492,28 @@ function CollaborationScene() {
         {/* Mobile edge fade hint */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-linear-to-l from-[#08080C] to-transparent lg:hidden"
+          className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-linear-to-l from-(--tint-3) to-transparent lg:hidden"
         />
       </div>
 
       {/* ── Footer — connection stats ───────────────────────── */}
-      <div className="flex items-center justify-between gap-3 border-t border-white/6 px-3 py-2.5 sm:px-4 sm:py-3 lg:px-5">
+      <div className="flex items-center justify-between gap-3 border-t border-(--border-subtle) px-3 py-2.5 sm:px-4 sm:py-3 lg:px-5">
         <div className="flex min-w-0 items-center gap-2 sm:gap-3.5">
-          <span className="flex items-center gap-1.5 font-mono text-[10px] text-emerald-400/80 sm:text-[11px]">
+          <span className="flex items-center gap-1.5 font-mono text-[10px] text-(--success) sm:text-[11px]">
             <HugeiconsIcon icon={SignalIcon} size={11} />
             <span className="truncate">Connected</span>
           </span>
-          <span className="hidden h-3 w-px bg-white/10 sm:block" />
-          <span className="hidden items-center gap-1.5 font-mono text-[11px] text-white/30 sm:flex">
+          <span className="hidden h-3 w-px bg-(--tint-10) sm:block" />
+          <span className="hidden items-center gap-1.5 font-mono text-[11px] text-(--text-primary)/30 sm:flex">
             <HugeiconsIcon icon={UserGroupIcon} size={11} />
             <span>5 peers</span>
           </span>
-          <span className="hidden h-3 w-px bg-white/10 sm:block" />
-          <span className="hidden font-mono text-[11px] text-white/30 sm:inline">
+          <span className="hidden h-3 w-px bg-(--tint-10) sm:block" />
+          <span className="hidden font-mono text-[11px] text-(--text-primary)/30 sm:inline">
             latency 42ms
           </span>
         </div>
-        <span className="shrink-0 font-mono text-[10px] text-white/30 sm:text-[11px]">
+        <span className="shrink-0 font-mono text-[10px] text-(--text-primary)/30 sm:text-[11px]">
           socket://sync
         </span>
       </div>
@@ -521,23 +527,23 @@ function CollaborationScene() {
 
 function CollabColumn({ title, count, cards, active }: ColumnData) {
   return (
-    <div className="h-full bg-[#08080C] p-3 sm:p-3.5">
+    <div className="h-full bg-(--bg-root) p-3 sm:p-3.5">
       <div className="mb-3 flex items-center justify-between sm:mb-3.5">
         <div className="flex items-center gap-2">
           <span
             className={`h-1 w-1 rounded-full ${
-              active ? "bg-(--brand)" : "bg-white/20"
+              active ? "bg-(--brand)" : "bg-(--tint-15)"
             }`}
           />
           <span
             className={`font-mono text-[10px] uppercase tracking-[0.2em] sm:text-[11px] sm:tracking-[0.22em] ${
-              active ? "text-(--brand)" : "text-white/45"
+              active ? "text-(--brand)" : "text-(--text-primary)/45"
             }`}
           >
             {title}
           </span>
         </div>
-        <span className="font-mono text-[9px] tabular-nums text-white/25 sm:text-[10px]">
+        <span className="font-mono text-[9px] tabular-nums text-(--text-primary)/25 sm:text-[10px]">
           {count}
         </span>
       </div>
@@ -570,10 +576,10 @@ function CollabCard({
 
   return (
     <div
-      className={`relative rounded-md border bg-white/2 p-2.5 sm:p-3 ${
+      className={`relative rounded-md border bg-(--tint-2) p-2.5 sm:p-3 ${
         editing
           ? "border-(--brand)/50 bg-(--brand)/6 shadow-[0_0_0_1px_rgba(255,140,66,0.15)]"
-          : "border-white/6"
+          : "border-(--border-subtle)"
       } ${done ? "opacity-55" : ""}`}
     >
       {/* "Editing" indicator — pulsing dot on the top-left */}
@@ -598,7 +604,9 @@ function CollabCard({
 
       <p
         className={`mt-1.5 font-mono text-[10px] leading-[1.4] sm:mt-2 sm:text-[11px] sm:leading-[1.45] ${
-          done ? "text-white/40 line-through" : "text-white/85"
+          done
+            ? "text-(--text-primary)/40 line-through"
+            : "text-(--text-primary)/85"
         }`}
       >
         {title}
@@ -606,13 +614,13 @@ function CollabCard({
 
       {typeof progress === "number" && !done && (
         <div className="mt-2 sm:mt-2.5">
-          <div className="h-0.5 w-full overflow-hidden rounded-full bg-white/8 sm:h-0.75">
+          <div className="h-0.5 w-full overflow-hidden rounded-full bg-(--tint-8) sm:h-0.75">
             <div
               className="h-full rounded-full bg-(--brand)"
               style={{ width: `${progress}%` }}
             />
           </div>
-          <div className="mt-1 font-mono text-[8px] tabular-nums text-white/30 sm:text-[9px]">
+          <div className="mt-1 font-mono text-[8px] tabular-nums text-(--text-primary)/30 sm:text-[9px]">
             {progress}%
           </div>
         </div>
@@ -620,20 +628,20 @@ function CollabCard({
 
       <div className="mt-2 flex items-center justify-between sm:mt-2.5">
         {meta && (
-          <span className="font-mono text-[8px] tracking-[0.08em] text-white/30 sm:text-[9px]">
+          <span className="font-mono text-[8px] tracking-[0.08em] text-(--text-primary)/30 sm:text-[9px]">
             {meta}
           </span>
         )}
 
         {assignee && (
-          <span className="flex h-4 w-4 items-center justify-center rounded-full border border-white/10 bg-white/5 font-mono text-[7px] text-white/70 sm:h-5 sm:w-5 sm:text-[8px]">
+          <span className="flex h-4 w-4 items-center justify-center rounded-full border border-(--border) bg-(--tint-5) font-mono text-[7px] text-(--text-primary)/70 sm:h-5 sm:w-5 sm:text-[8px]">
             {assignee}
           </span>
         )}
       </div>
 
       {done && (
-        <span className="absolute right-1.5 top-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full border border-emerald-400/40 bg-emerald-400/15 text-emerald-400 sm:right-2 sm:top-2 sm:h-4 sm:w-4">
+        <span className="absolute right-1.5 top-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full border border-(--success)/30 bg-(--tint-4) text-(--success) sm:right-2 sm:top-2 sm:h-4 sm:w-4">
           <HugeiconsIcon icon={CheckmarkCircle02Icon} size={8} />
         </span>
       )}

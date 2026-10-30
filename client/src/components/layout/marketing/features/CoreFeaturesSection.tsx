@@ -133,7 +133,7 @@ export default function CoreFeaturesSection() {
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute right-[-180px] top-[420px] h-[520px] w-[720px] rounded-[50%] bg-white/[0.02] blur-[130px]"
+        className="pointer-events-none absolute right-[-180px] top-[420px] h-[520px] w-[720px] rounded-[50%] bg-(--tint-2) blur-[130px]"
       />
       <div
         aria-hidden="true"
@@ -180,7 +180,7 @@ export default function CoreFeaturesSection() {
 
             <h2 className="mt-6 font-mono text-3xl font-medium leading-[1.08] tracking-[-0.04em] text-(--text-primary) sm:text-4xl lg:text-5xl">
               Everything you need to{" "}
-              <span className="bg-linear-to-b from-(--brand-hover) via-(--brand) to-(--brand-hover)/70 bg-clip-text text-transparent">
+              <span className="from-(--brand-hover) via-(--brand) text-(--text-primary)">
                 organize work.
               </span>
             </h2>
@@ -192,7 +192,7 @@ export default function CoreFeaturesSection() {
           </div>
 
           <div className="flex items-center gap-4 lg:pb-2">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.22em] text-(--text-secondary) backdrop-blur-xl backdrop-saturate-150">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-(--tint-3) px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.22em] text-(--text-secondary) backdrop-blur-xl backdrop-saturate-150">
               <span
                 className={`relative flex h-1.5 w-1.5 ${
                   paused ? "" : "animate-pulse"
@@ -220,7 +220,7 @@ export default function CoreFeaturesSection() {
               className="
                 relative h-72 overflow-hidden rounded-3xl
                 border border-white/[0.08]
-                bg-white/[0.02]
+                bg-(--tint-2)
                 p-2
                 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_30px_80px_-30px_rgba(0,0,0,0.7)]
                 backdrop-blur-xl backdrop-saturate-150
@@ -234,7 +234,7 @@ export default function CoreFeaturesSection() {
                 className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[radial-gradient(60%_100%_at_50%_0%,rgba(255,255,255,0.06),transparent_70%)]"
               />
 
-              <div className="relative h-full overflow-hidden rounded-2xl border border-white/[0.05] bg-[#0B0B0F]">
+              <div className="relative h-full overflow-hidden rounded-2xl border border-white/[0.05] bg-(--bg-root)">
                 <div
                   aria-hidden="true"
                   className="absolute inset-0 opacity-60"
@@ -279,7 +279,7 @@ export default function CoreFeaturesSection() {
                 </div>
 
                 {/* Bottom-left label with glowing dot cluster */}
-                <div className="absolute bottom-4 left-4 flex items-center gap-2.5 rounded-full border border-white/[0.08] bg-[#0B0B10]/70 px-3 py-1.5 backdrop-blur-xl backdrop-saturate-150">
+                <div className="absolute bottom-4 left-4 flex items-center gap-2.5 rounded-full border border-white/[0.08] bg-(--bg-root)/70 px-3 py-1.5 backdrop-blur-xl backdrop-saturate-150">
                   <span className="relative flex h-1.5 w-1.5">
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-(--brand) opacity-60" />
                     <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-(--brand)" />
@@ -298,7 +298,7 @@ export default function CoreFeaturesSection() {
               className="
                 relative overflow-hidden rounded-3xl
                 border border-white/[0.08]
-                bg-white/[0.02]
+                bg-(--tint-2)
                 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]
                 backdrop-blur-xl backdrop-saturate-150
               "
@@ -318,7 +318,7 @@ export default function CoreFeaturesSection() {
                     type="button"
                     onClick={() => selectFeature(i)}
                     className={`group/row relative block w-full text-left transition-colors duration-300 ${
-                      isActive ? "bg-white/[0.03]" : "hover:bg-white/[0.02]"
+                      isActive ? "bg-(--tint-3)" : "hover:bg-(--tint-2)"
                     }`}
                   >
                     {/* Dotted row divider — replaces solid border-b */}
@@ -419,7 +419,7 @@ export default function CoreFeaturesSection() {
                             className={`relative flex h-8 w-8 items-center justify-center rounded-lg border transition-all duration-500 ${
                               isActive
                                 ? "border-(--brand)/40 bg-(--brand)/10 text-(--brand-hover) shadow-[0_0_20px_-6px_var(--brand)]"
-                                : "border-white/[0.08] bg-white/[0.03] text-(--text-secondary) group-hover/row:border-white/[0.14] group-hover/row:text-(--text-primary)"
+                                : "border-white/[0.08] bg-(--tint-3) text-(--text-secondary) group-hover/row:border-white/[0.14] group-hover/row:text-(--text-primary)"
                             }`}
                           >
                             <FeatureIcon name={feature.icon} />
@@ -494,7 +494,7 @@ function BoardVisual() {
           <div className="flex items-center gap-2">
             <span
               className={`h-1 w-6 rounded-full ${
-                col.active ? "bg-(--brand)/60" : "bg-white/[0.14]"
+                col.active ? "bg-(--brand)/60" : "bg-(--tint-14)"
               }`}
             />
             <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-(--text-secondary)/40">
@@ -506,24 +506,24 @@ function BoardVisual() {
             className={`rounded border p-2.5 ${
               col.active
                 ? "border-(--brand)/40 bg-(--brand)/[0.10] shadow-[0_4px_12px_-4px_var(--brand)]"
-                : "border-white/[0.07] bg-white/[0.03]"
+                : "border-white/[0.07] bg-(--tint-3)"
             }`}
           >
             <div
               className={`h-1 w-full rounded-full ${
-                col.active ? "bg-(--brand)/50" : "bg-white/[0.18]"
+                col.active ? "bg-(--brand)/50" : "bg-(--tint-15)"
               }`}
             />
             <div
               className={`mt-1.5 h-1 w-3/4 rounded-full ${
-                col.active ? "bg-(--brand)/25" : "bg-white/[0.10]"
+                col.active ? "bg-(--brand)/25" : "bg-(--tint-10)"
               }`}
             />
           </div>
 
           {!col.active && (
-            <div className="rounded border border-white/[0.07] bg-white/[0.02] p-2.5 opacity-70">
-              <div className="h-1 w-2/3 rounded-full bg-white/[0.12]" />
+            <div className="rounded border border-white/[0.07] bg-(--tint-2) p-2.5 opacity-70">
+              <div className="h-1 w-2/3 rounded-full bg-(--tint-12)" />
             </div>
           )}
         </div>
@@ -535,9 +535,9 @@ function BoardVisual() {
 function MoveVisual() {
   return (
     <div className="relative h-full">
-      <div className="absolute left-[14%] top-[22%] w-40 rounded-md border border-dashed border-white/[0.12] bg-white/[0.01] p-3">
-        <span className="block h-1 w-20 rounded-full bg-white/[0.10]" />
-        <span className="mt-1.5 block h-1 w-12 rounded-full bg-white/[0.06]" />
+      <div className="absolute left-[14%] top-[22%] w-40 rounded-md border border-dashed border-white/[0.12] bg-(--tint-2) p-3">
+        <span className="block h-1 w-20 rounded-full bg-(--tint-10)" />
+        <span className="mt-1.5 block h-1 w-12 rounded-full bg-(--tint-6)" />
       </div>
 
       <svg
@@ -578,19 +578,19 @@ function MoveVisual() {
 function CardVisual() {
   return (
     <div className="flex h-full items-center justify-center p-6">
-      <div className="w-full max-w-sm rounded-lg border border-white/[0.08] bg-white/[0.03] p-5 shadow-[0_12px_32px_-12px_rgba(0,0,0,0.6)]">
+      <div className="w-full max-w-sm rounded-lg border border-white/[0.08] bg-(--tint-3) p-5 shadow-[0_12px_32px_-12px_rgba(0,0,0,0.6)]">
         <div className="flex items-center gap-2">
-          <span className="rounded border border-purple-400/25 bg-purple-400/10 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.08em] text-purple-300">
+          <span className="rounded border border-(--hairline) bg-(--tint-4) px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.08em] text-(--text-secondary)">
             design
           </span>
-          <span className="rounded border border-amber-400/25 bg-amber-400/10 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.08em] text-amber-300">
+          <span className="rounded border border-(--warning)/30 bg-(--tint-4) px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.08em] text-(--warning)">
             high
           </span>
         </div>
 
         <div className="mt-4 space-y-2">
-          <div className="h-1.5 w-full rounded-full bg-white/[0.22]" />
-          <div className="h-1.5 w-4/5 rounded-full bg-white/[0.16]" />
+          <div className="h-1.5 w-full rounded-full bg-(--tint-15)" />
+          <div className="h-1.5 w-4/5 rounded-full bg-(--tint-15)" />
         </div>
 
         <div className="mt-5 space-y-2.5">
@@ -604,12 +604,12 @@ function CardVisual() {
                 className={`flex h-3.5 w-3.5 items-center justify-center rounded-full border ${
                   row.done
                     ? "border-(--brand)/40 bg-(--brand)/15 text-(--brand)"
-                    : "border-white/[0.14] bg-white/[0.02]"
+                    : "border-white/[0.14] bg-(--tint-2)"
                 }`}
               >
                 {row.done && <HugeiconsIcon icon={Tick02Icon} size={7} />}
               </span>
-              <span className={`h-1 rounded-full bg-white/[0.14] ${row.w}`} />
+              <span className={`h-1 rounded-full bg-(--tint-14) ${row.w}`} />
             </div>
           ))}
         </div>
@@ -619,10 +619,10 @@ function CardVisual() {
             TASK-101
           </span>
           <div className="flex -space-x-1.5">
-            <span className="flex h-4 w-4 items-center justify-center rounded-full border border-[#0B0B0F] bg-(--brand) font-mono text-[7px] text-white">
+            <span className="flex h-4 w-4 items-center justify-center rounded-full border border-(--hairline) bg-(--brand) font-mono text-[7px] text-(--text-primary)">
               RM
             </span>
-            <span className="flex h-4 w-4 items-center justify-center rounded-full border border-[#0B0B0F] bg-sky-500 font-mono text-[7px] text-white">
+            <span className="flex h-4 w-4 items-center justify-center rounded-full border border-(--hairline) bg-(--tint-4) font-mono text-[7px] text-(--text-primary)">
               AK
             </span>
           </div>
@@ -636,30 +636,36 @@ function TagVisual() {
   const tags = [
     {
       label: "design",
-      cls: "border-purple-400/30 bg-purple-400/10 text-purple-300",
+      cls: "border-(--hairline) bg-(--tint-4) text-(--text-secondary)",
     },
-    { label: "frontend", cls: "border-sky-400/30 bg-sky-400/10 text-sky-300" },
+    {
+      label: "frontend",
+      cls: "border-(--hairline) bg-(--tint-4) text-(--text-secondary)",
+    },
     {
       label: "backend",
-      cls: "border-emerald-400/30 bg-emerald-400/10 text-emerald-300",
+      cls: "border-(--success)/30 bg-(--tint-4) text-(--success)",
     },
     {
       label: "security",
-      cls: "border-rose-400/30 bg-rose-400/10 text-rose-300",
+      cls: "border-(--danger)/30 bg-(--tint-4) text-(--danger)",
     },
     {
       label: "database",
-      cls: "border-cyan-400/30 bg-cyan-400/10 text-cyan-300",
+      cls: "border-(--hairline) bg-(--tint-4) text-(--text-secondary)",
     },
     {
       label: "urgent",
-      cls: "border-amber-400/30 bg-amber-400/10 text-amber-300",
+      cls: "border-(--warning)/30 bg-(--tint-4) text-(--warning)",
     },
     {
       label: "research",
-      cls: "border-indigo-400/30 bg-indigo-400/10 text-indigo-300",
+      cls: "border-(--hairline) bg-(--tint-4) text-(--text-secondary)",
     },
-    { label: "q3", cls: "border-pink-400/30 bg-pink-400/10 text-pink-300" },
+    {
+      label: "q3",
+      cls: "border-(--hairline) bg-(--tint-4) text-(--text-secondary)",
+    },
   ];
 
   return (
@@ -682,7 +688,7 @@ function CalendarVisual() {
 
   return (
     <div className="flex h-full items-center justify-center p-8">
-      <div className="w-full max-w-sm rounded-lg border border-white/[0.08] bg-white/[0.02] p-4">
+      <div className="w-full max-w-sm rounded-lg border border-white/[0.08] bg-(--tint-2) p-4">
         <div className="flex items-center justify-between">
           <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-(--text-secondary)">
             September
@@ -712,7 +718,7 @@ function CalendarVisual() {
                 key={i}
                 className={`flex aspect-square items-center justify-center rounded font-mono text-[9px] transition-colors ${
                   isHighlight
-                    ? "bg-(--brand) text-white shadow-[0_0_12px_-2px_var(--brand)]"
+                    ? "bg-(--brand) text-(--text-primary) shadow-[0_0_12px_-2px_var(--brand)]"
                     : isPast
                       ? "text-(--text-secondary)/40"
                       : "text-(--text-secondary)/70"
@@ -741,9 +747,9 @@ function CalendarVisual() {
 function UsersVisual() {
   const people = [
     { initials: "MA", color: "bg-(--brand)" },
-    { initials: "RI", color: "bg-sky-500" },
-    { initials: "SA", color: "bg-pink-500" },
-    { initials: "NV", color: "bg-emerald-500" },
+    { initials: "RI", color: "bg-(--tint-4)" },
+    { initials: "SA", color: "bg-(--tint-4)" },
+    { initials: "NV", color: "bg-(--tint-4)" },
   ];
 
   return (
@@ -756,13 +762,13 @@ function UsersVisual() {
             style={{ zIndex: people.length - i }}
           >
             <span
-              className={`flex h-12 w-12 items-center justify-center rounded-full border-2 border-[#0B0B0F] font-mono text-[11px] font-medium text-white shadow-[0_4px_16px_rgba(0,0,0,0.5)] ${p.color}`}
+              className={`flex h-12 w-12 items-center justify-center rounded-full border-2 border-(--hairline) font-mono text-[11px] font-medium text-(--text-primary) shadow-[0_4px_16px_rgba(0,0,0,0.5)] ${p.color}`}
             >
               {p.initials}
             </span>
           </div>
         ))}
-        <span className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-[#0B0B0F] bg-white/[0.06] font-mono text-[10px] text-(--text-secondary) backdrop-blur-sm">
+        <span className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-(--hairline) bg-(--tint-6) font-mono text-[10px] text-(--text-secondary) backdrop-blur-sm">
           +9k
         </span>
       </div>
@@ -778,8 +784,8 @@ function UsersVisual() {
         />
       </svg>
 
-      <div className="flex items-center gap-3 rounded-full border border-white/[0.08] bg-white/[0.03] px-4 py-2 backdrop-blur-xl">
-        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-(--brand) font-mono text-[8px] text-white">
+      <div className="flex items-center gap-3 rounded-full border border-white/[0.08] bg-(--tint-3) px-4 py-2 backdrop-blur-xl">
+        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-(--brand) font-mono text-[8px] text-(--text-primary)">
           MA
         </span>
         <span className="font-mono text-[11px] text-(--text-primary)/90">

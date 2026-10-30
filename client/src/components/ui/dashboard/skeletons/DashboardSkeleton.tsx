@@ -26,7 +26,7 @@ const SkeletonBar = ({ className, tone = "base" }: SkeletonBarProps) => (
   <div
     className={cx(
       "rounded-sm",
-      tone === "dim" ? "bg-white/4" : "bg-white/[0.07]",
+      tone === "dim" ? "bg-(--tint-4)" : "bg-(--tint-7)",
       className,
     )}
   />
@@ -41,7 +41,7 @@ type SkeletonPanelProps = {
 const SkeletonPanel = ({ className, children }: SkeletonPanelProps) => (
   <div
     className={cx(
-      "rounded-xl border border-orange-50/15 bg-white/2",
+      "rounded-xl border border-(--hairline) bg-(--tint-2)",
       className,
     )}
   >
@@ -114,15 +114,15 @@ const DashboardSkeleton = () => {
 
           {/* Activity: fixed height, six rows, matching the real panel */}
           <SkeletonPanel className="h-105 overflow-hidden p-0">
-            <div className="flex items-center justify-between border-b border-orange-50/10 px-4 py-3">
+            <div className="flex items-center justify-between border-b border-(--hairline) px-4 py-3">
               <SkeletonBar className="h-2.5 w-24" />
               <SkeletonBar className="size-4 rounded" tone="dim" />
             </div>
 
-            <div className="divide-y divide-orange-50/6">
+            <div className="divide-y divide-(--hairline)">
               {times(6).map((index) => (
                 <div key={index} className="flex gap-3 px-4 py-3.5">
-                  <div className="size-7 shrink-0 rounded-full bg-white/6" />
+                  <div className="size-7 shrink-0 rounded-full bg-(--tint-6)" />
 
                   <div className="min-w-0 flex-1">
                     <SkeletonBar className="h-2.5 w-24" />

@@ -83,13 +83,13 @@ export default function BoardColumns({
         <button
           type="button"
           onClick={onAddColumn}
-          className="group/add flex h-24 w-64 shrink-0 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-orange-50/20 bg-white/[0.02] text-[12px] text-neutral-400 transition-colors duration-200 hover:border-orange-50/35 hover:bg-white/[0.04] hover:text-neutral-100"
+          className="group/add flex h-24 w-64 shrink-0 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-(--hairline-strong) bg-(--tint-2) text-[12px] text-(--text-secondary) transition-colors duration-200 hover:border-(--hairline-strong) hover:bg-(--tint-4) hover:text-(--text-primary)"
         >
           <HugeiconsIcon
             icon={Add01Icon}
             size={16}
             strokeWidth={1.6}
-            className="transition-colors duration-200 group-hover/add:text-orange-100"
+            className="transition-colors duration-200 group-hover/add:text-(--accent)"
           />
           Add column
         </button>

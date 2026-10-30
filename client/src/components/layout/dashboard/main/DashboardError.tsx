@@ -15,24 +15,24 @@ const DashboardError = ({
       role="alert"
       className="flex min-h-[40vh] items-center justify-center px-4"
     >
-      <div className="w-full max-w-sm rounded-xl border border-orange-50/15 bg-white/3 px-6 py-8 text-center">
-        <div className="mx-auto flex size-10 items-center justify-center rounded-md border border-orange-50/15">
+      <div className="w-full max-w-sm rounded-xl border border-(--hairline) bg-(--tint-3) px-6 py-8 text-center">
+        <div className="mx-auto flex size-10 items-center justify-center rounded-md border border-(--hairline)">
           <HugeiconsIcon
             icon={Alert02Icon}
             size={16}
             strokeWidth={1.6}
-            className="text-amber-300"
+            className="text-(--warning)"
           />
         </div>
 
         <div className="mt-5">
-          <h2 className="text-[13px] font-medium tracking-tight text-neutral-100">
+          <h2 className="text-[13px] font-medium tracking-tight text-(--text-primary)">
             Dashboard unavailable
           </h2>
 
-          <p className="mx-auto mt-2 max-w-xs text-[12px] leading-5 text-neutral-400">
+          <p className="mx-auto mt-2 max-w-xs text-[12px] leading-5 text-(--text-secondary)">
             We could not load your dashboard data. Please try{" "}
-            <span className="font-medium text-orange-100 capitalize">
+            <span className="font-medium text-(--accent) capitalize">
               again
             </span>
           </p>
@@ -46,10 +46,10 @@ const DashboardError = ({
           className="
             group/retry mx-auto mt-6 flex h-9 cursor-pointer items-center gap-2
             rounded-none rounded-tl-lg rounded-br-lg
-            border border-orange-50/20 px-4
-            text-[12px] text-neutral-200
+            border border-(--hairline-strong) px-4
+            text-[12px] text-(--text-primary)
             transition-colors duration-200
-            hover:border-orange-50/35 hover:bg-white/4 hover:text-neutral-100
+            hover:border-(--hairline-strong) hover:bg-(--tint-4) hover:text-(--text-primary)
             disabled:cursor-not-allowed disabled:opacity-50
           "
         >
@@ -58,9 +58,9 @@ const DashboardError = ({
             size={14}
             strokeWidth={1.6}
             className={[
-              "shrink-0 text-neutral-500",
+              "shrink-0 text-(--text-muted)",
               "transition-colors duration-200",
-              !isRetrying && "group-hover/retry:text-orange-100",
+              !isRetrying && "group-hover/retry:text-(--accent)",
               isRetrying && "animate-spin",
             ]
               .filter(Boolean)

@@ -28,13 +28,13 @@ function BoardVisual() {
     <div className="grid h-full grid-cols-3 gap-2 p-4">
       {/* Column 1 */}
       <div className="flex flex-col gap-1.5">
-        <span className="mb-1 h-1 w-6 rounded-full bg-white/[0.14]" />
-        <div className="rounded border border-white/[0.07] bg-white/3 p-2">
-          <span className="block h-1 w-full rounded-full bg-white/18" />
-          <span className="mt-1 block h-1 w-3/4 rounded-full bg-white/10" />
+        <span className="mb-1 h-1 w-6 rounded-full bg-(--tint-14)" />
+        <div className="rounded border border-white/[0.07] bg-(--tint-3) p-2">
+          <span className="block h-1 w-full rounded-full bg-(--tint-15)" />
+          <span className="mt-1 block h-1 w-3/4 rounded-full bg-(--tint-10)" />
         </div>
-        <div className="rounded border border-white/[0.07] bg-white/3 p-2">
-          <span className="block h-1 w-2/3 rounded-full bg-white/[0.14]" />
+        <div className="rounded border border-white/[0.07] bg-(--tint-3) p-2">
+          <span className="block h-1 w-2/3 rounded-full bg-(--tint-14)" />
         </div>
       </div>
 
@@ -79,14 +79,14 @@ function BoardVisual() {
 
       {/* Column 3 — done, faded */}
       <div className="flex flex-col gap-1.5">
-        <span className="mb-1 h-1 w-6 rounded-full bg-white/10" />
-        <div className="rounded border border-white/5 bg-white/2 p-2 opacity-60">
-          <span className="block h-1 w-3/4 rounded-full bg-white/10" />
+        <span className="mb-1 h-1 w-6 rounded-full bg-(--tint-10)" />
+        <div className="rounded border border-(--border-subtle) bg-(--tint-2) p-2 opacity-60">
+          <span className="block h-1 w-3/4 rounded-full bg-(--tint-10)" />
           <span className="mt-1 flex items-center gap-1">
-            <span className="flex h-2 w-2 items-center justify-center rounded-full bg-emerald-400/15 text-emerald-400">
+            <span className="flex h-2 w-2 items-center justify-center rounded-full bg-(--tint-4) text-(--success)">
               <HugeiconsIcon icon={Tick02Icon} size={5} />
             </span>
-            <span className="block h-1 w-8 rounded-full bg-white/8" />
+            <span className="block h-1 w-8 rounded-full bg-(--tint-8)" />
           </span>
         </div>
       </div>
@@ -147,8 +147,8 @@ function CursorsVisual() {
     <div className="relative h-full overflow-hidden p-4">
       {/* Faint board shape behind */}
       <div className="absolute inset-4 grid grid-cols-2 gap-2 opacity-25">
-        <div className="rounded border border-white/8 bg-white/2" />
-        <div className="rounded border border-white/8 bg-white/2" />
+        <div className="rounded border border-(--border) bg-(--tint-2)" />
+        <div className="rounded border border-(--border) bg-(--tint-2)" />
       </div>
 
       {/* Cursor — Maya (brand) */}
@@ -182,10 +182,10 @@ function CursorsVisual() {
       />
 
       {/* Live pulse dot top-right */}
-      <div className="absolute right-4 top-4 flex items-center gap-1.5 rounded-full border border-white/8 bg-white/3 px-2 py-1 backdrop-blur-sm">
+      <div className="absolute right-4 top-4 flex items-center gap-1.5 rounded-full border border-(--border) bg-(--tint-3) px-2 py-1 backdrop-blur-sm">
         <span className="relative flex h-1.5 w-1.5">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-(--tint-4) opacity-60" />
+          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-(--tint-4)" />
         </span>
         <span className="font-mono text-[8px] uppercase tracking-[0.15em] text-(--text-secondary)/70">
           3 online
@@ -237,7 +237,7 @@ function VelocityVisual() {
             duration: 0.5,
             ease: [0.21, 0.47, 0.32, 0.98],
           }}
-          className="flex items-center gap-1 rounded-full border border-emerald-400/25 bg-emerald-400/10 px-1.5 py-0.5 font-mono text-[9px] text-emerald-400"
+          className="flex items-center gap-1 rounded-full border border-(--success)/30 bg-(--tint-4) px-1.5 py-0.5 font-mono text-[9px] text-(--success)"
         >
           <HugeiconsIcon icon={ArrowUp01Icon} size={8} />
           12%
@@ -266,7 +266,7 @@ function VelocityVisual() {
                 className={`absolute inset-0 origin-bottom rounded-t-[3px] ${
                   isLast
                     ? "bg-linear-to-t from-(--brand)/60 to-(--brand) shadow-[0_0_16px_-4px_var(--brand)]"
-                    : "bg-white/8"
+                    : "bg-(--tint-8)"
                 }`}
               />
             </div>
@@ -308,12 +308,12 @@ export default function WhyCard({
         className="
           group/card relative flex h-full flex-col overflow-hidden rounded-2xl
           border border-white/[0.07]
-          bg-white/2
+          bg-(--tint-2)
           backdrop-blur-xl backdrop-saturate-150
           shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]
           transition-all duration-500
           hover:border-white/[0.14]
-          hover:bg-white/[0.035]
+          hover:bg-(--tint-4)
           hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.10),0_24px_56px_-24px_rgba(0,0,0,0.7)]
         "
       >
@@ -324,7 +324,7 @@ export default function WhyCard({
         />
 
         {/* ── Visual stage ─────────────────────────────────────── */}
-        <div className="relative h-48 overflow-hidden border-b border-white/5 bg-[#0B0B0F]">
+        <div className="relative h-48 overflow-hidden border-b border-(--border-subtle) bg-(--bg-root)">
           {/* Faint inner grid */}
           <div
             aria-hidden="true"
@@ -359,7 +359,7 @@ export default function WhyCard({
             <span
               className="
                 flex h-9 w-9 items-center justify-center rounded-[10px]
-                border border-white/9
+                border border-(--border)
                 bg-linear-to-b from-white/5 to-white/1
                 text-(--brand)
                 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]
@@ -391,7 +391,7 @@ export default function WhyCard({
             <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-(--text-secondary)/55 transition-colors duration-500 group-hover/card:text-(--brand-hover)">
               Explore
             </span>
-            <span className="flex h-5 w-5 items-center justify-center rounded-full border border-white/8 bg-white/2 text-(--text-secondary)/70 transition-all duration-500 group-hover/card:translate-x-0.5 group-hover/card:border-(--brand)/40 group-hover/card:bg-(--brand)/10 group-hover/card:text-(--brand-hover)">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full border border-(--border) bg-(--tint-2) text-(--text-secondary)/70 transition-all duration-500 group-hover/card:translate-x-0.5 group-hover/card:border-(--brand)/40 group-hover/card:bg-(--brand)/10 group-hover/card:text-(--brand-hover)">
               <HugeiconsIcon icon={ArrowRight01Icon} size={10} />
             </span>
           </div>

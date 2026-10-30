@@ -23,17 +23,17 @@ export type ViewMode = "board" | "list";
 export const ui = {
   /** Rounded panel on the ChaiUI near-black surface with a warm hairline. */
   panel:
-    "relative overflow-hidden rounded-xl border border-orange-50/15 bg-white/[0.03]",
+    "relative overflow-hidden rounded-xl border border-(--hairline) bg-(--tint-3)",
   panelHover:
-    "transition-colors duration-200 hover:border-orange-50/25 hover:bg-white/[0.05]",
+    "transition-colors duration-200 hover:border-(--hairline-strong) hover:bg-(--tint-5)",
   /** Kept for call sites that still render it, but flat: ChaiUI panels carry
       no gradient glint, the hairline border does the work. */
   hairline: "hidden",
   /** Small uppercase mono label used above headings: caps are fine for data. */
   eyebrow:
-    "font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-neutral-500",
+    "font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-(--text-muted)",
   /** Outline action, mirrored corners, the partner to the solid primary. */
-  pill: "inline-flex cursor-pointer items-center gap-2 rounded-none rounded-tl-lg rounded-br-lg border border-orange-50/20 px-4 py-2 text-[12px] text-neutral-200 transition-colors duration-200 hover:border-orange-50/35 hover:bg-white/[0.04] hover:text-neutral-100",
+  pill: "inline-flex cursor-pointer items-center gap-2 rounded-none rounded-tl-lg rounded-br-lg border border-(--hairline-strong) px-4 py-2 text-[12px] text-(--text-primary) transition-colors duration-200 hover:border-(--hairline-strong) hover:bg-(--tint-4) hover:text-(--text-primary)",
 } as const;
 
 /* ------------------------------------------------------------------ */

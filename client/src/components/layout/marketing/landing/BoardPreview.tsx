@@ -176,17 +176,17 @@ const priorityStyles: Record<
   Priority,
   { dot: string; text: string; label: string }
 > = {
-  low: { dot: "bg-sky-400", text: "text-sky-400/80", label: "Low" },
-  medium: { dot: "bg-amber-400", text: "text-amber-400/80", label: "Med" },
-  high: { dot: "bg-rose-400", text: "text-rose-400/80", label: "High" },
+  low: { dot: "bg-(--tint-4)", text: "text-(--text-secondary)", label: "Low" },
+  medium: { dot: "bg-(--tint-4)", text: "text-(--warning)", label: "Med" },
+  high: { dot: "bg-(--tint-4)", text: "text-(--danger)", label: "High" },
 };
 
 const tagStyles: Record<string, string> = {
-  design: "border-purple-400/25 bg-purple-400/10 text-purple-300",
-  frontend: "border-sky-400/25 bg-sky-400/10 text-sky-300",
-  backend: "border-emerald-400/25 bg-emerald-400/10 text-emerald-300",
-  security: "border-rose-400/25 bg-rose-400/10 text-rose-300",
-  database: "border-cyan-400/25 bg-cyan-400/10 text-cyan-300",
+  design: "border-(--hairline) bg-(--tint-4) text-(--text-secondary)",
+  frontend: "border-(--hairline) bg-(--tint-4) text-(--text-secondary)",
+  backend: "border-(--success)/30 bg-(--tint-4) text-(--success)",
+  security: "border-(--danger)/30 bg-(--tint-4) text-(--danger)",
+  database: "border-(--hairline) bg-(--tint-4) text-(--text-secondary)",
   feature: "border-(--brand)/30 bg-(--brand)/12 text-(--brand-hover)",
 };
 
@@ -236,11 +236,11 @@ function SourceTile({ icon, label }: { icon: IconSvgElement; label: string }) {
     <div
       className={cn(
         "flex flex-col items-center gap-2 rounded-2xl",
-        "border border-white/8 bg-white/3",
+        "border border-(--border) bg-(--tint-3)",
         "px-3 py-4 text-center",
         "backdrop-blur-xl backdrop-saturate-150",
         "transition-colors duration-200 ease-out",
-        "hover:border-white/16 hover:bg-white/4",
+        "hover:border-(--border-strong) hover:bg-(--tint-4)",
       )}
     >
       <HugeiconsIcon
@@ -370,12 +370,12 @@ export default function BoardPreview({
           <div
             className={cn(
               "group/frame relative rounded-3xl",
-              "border border-white/10",
-              "bg-white/3 p-2",
+              "border border-(--border)",
+              "bg-(--tint-3) p-2",
               "shadow-[inset_0_1px_0_rgba(255,255,255,0.10),0_30px_80px_-20px_rgba(0,0,0,0.6)]",
               "backdrop-blur-xl backdrop-saturate-150",
               "transition-colors duration-500",
-              "hover:border-white/16",
+              "hover:border-(--border-strong)",
               "hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_40px_100px_-20px_rgba(0,0,0,0.7)]",
             )}
             style={
@@ -397,8 +397,8 @@ export default function BoardPreview({
             <div
               className="
                 relative overflow-hidden rounded-[18px]
-                border border-white/6
-                bg-[#0F0F12]
+                border border-(--border-subtle)
+                bg-(--bg-surface)
                 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)]
               "
             >
@@ -409,21 +409,21 @@ export default function BoardPreview({
 
               {/* Window header (hidden inside device frames) */}
               {chrome && (
-                <div className="flex h-11 items-center border-b border-white/6 px-4 sm:px-5">
+                <div className="flex h-11 items-center border-b border-(--border-subtle) px-4 sm:px-5">
                   <div className="flex items-center gap-1.5">
-                    <span className="h-2.5 w-2.5 rounded-full border border-rose-500/70 bg-rose-500/10" />
-                    <span className="h-2.5 w-2.5 rounded-full border border-yellow-500/70 bg-yellow-500/10" />
-                    <span className="h-2.5 w-2.5 rounded-full border border-emerald-500/70 bg-emerald-500/10" />
+                    <span className="h-2.5 w-2.5 rounded-full border border-(--danger)/30 bg-(--tint-4)" />
+                    <span className="h-2.5 w-2.5 rounded-full border border-(--warning)/30 bg-(--tint-4)" />
+                    <span className="h-2.5 w-2.5 rounded-full border border-(--success)/30 bg-(--tint-4)" />
                   </div>
 
                   <div className="ml-5 font-mono text-xs text-(--text-secondary)">
                     kanban.board
                   </div>
 
-                  <div className="ml-auto flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.15em] text-emerald-400/80">
+                  <div className="ml-auto flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.15em] text-(--success)">
                     <span className="relative flex h-1.5 w-1.5">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-                      <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-(--tint-4) opacity-60" />
+                      <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-(--tint-4)" />
                     </span>
                     Live
                   </div>
@@ -434,16 +434,16 @@ export default function BoardPreview({
               <div className="relative grid grid-cols-1 sm:grid-cols-3 sm:min-h-75">
                 <LiveCursor
                   name="SP"
-                  chipClass="border-sky-400/30 bg-sky-400/15 text-sky-300"
-                  cursorClass="text-sky-400"
+                  chipClass="border-(--hairline) bg-(--tint-4) text-(--text-secondary)"
+                  cursorClass="text-(--text-secondary)"
                   className="left-[16%] top-[34%] hidden sm:block"
                   path={{ x: [0, 120, -30, 0], y: [0, -36, 44, 0] }}
                   duration={11}
                 />
                 <LiveCursor
                   name="AK"
-                  chipClass="border-amber-400/30 bg-amber-400/15 text-amber-300"
-                  cursorClass="text-amber-400"
+                  chipClass="border-(--warning)/30 bg-(--tint-4) text-(--warning)"
+                  cursorClass="text-(--warning)"
                   className="bottom-[22%] right-[14%] hidden sm:block"
                   path={{ x: [0, -90, 40, 0], y: [0, 30, -20, 0] }}
                   duration={14}
@@ -462,12 +462,12 @@ export default function BoardPreview({
                         p-4 sm:p-5
                         ${
                           columnIndex !== columns.length - 1
-                            ? "border-b border-white/5 sm:border-b-0 sm:border-r"
+                            ? "border-b border-(--border-subtle) sm:border-b-0 sm:border-r"
                             : ""
                         }
                         ${
                           isLiveColumn
-                            ? "transition-colors duration-700 sm:bg-white/1.5"
+                            ? "transition-colors duration-700 sm:bg-(--tint-2).5"
                             : ""
                         }
                       `}
@@ -487,7 +487,7 @@ export default function BoardPreview({
                               stiffness: 300,
                               damping: 18,
                             }}
-                            className="flex h-4 min-w-4 items-center justify-center rounded-full border border-white/8 bg-white/3 px-1.5 font-mono text-[9px] text-(--text-secondary)/70"
+                            className="flex h-4 min-w-4 items-center justify-center rounded-full border border-(--border) bg-(--tint-3) px-1.5 font-mono text-[9px] text-(--text-secondary)/70"
                           >
                             {visibleCards.length}
                           </motion.span>
@@ -505,7 +505,7 @@ export default function BoardPreview({
                           const priority = priorityStyles[card.priority];
                           const tagClass =
                             tagStyles[card.tag] ??
-                            "border-white/[0.08] bg-white/[0.03] text-(--text-secondary)";
+                            "border-white/[0.08] bg-(--tint-3) text-(--text-secondary)";
 
                           const cardBody = (
                             <>
@@ -561,7 +561,7 @@ export default function BoardPreview({
                                     <span
                                       className={`flex items-center gap-1 font-mono text-[9px] ${
                                         card.dueDate === "Today"
-                                          ? "text-rose-400/85"
+                                          ? "text-(--danger)"
                                           : "text-(--text-secondary)/55"
                                       }`}
                                     >
@@ -576,7 +576,7 @@ export default function BoardPreview({
 
                                 <div className="flex items-center gap-1.5">
                                   {card.done && (
-                                    <span className="flex h-4 w-4 items-center justify-center rounded-full border border-emerald-400/40 bg-emerald-400/15 text-emerald-400">
+                                    <span className="flex h-4 w-4 items-center justify-center rounded-full border border-(--success)/30 bg-(--tint-4) text-(--success)">
                                       <HugeiconsIcon
                                         icon={Tick02Icon}
                                         size={8}
@@ -590,7 +590,7 @@ export default function BoardPreview({
                                       ${
                                         isLive
                                           ? "border border-(--brand)/50 bg-(--brand)/15 text-(--brand-hover)"
-                                          : "border border-white/10 bg-white/4"
+                                          : "border border-(--border) bg-(--tint-4)"
                                       }
                                       font-mono text-[8px] font-medium tracking-tight text-(--text-secondary)
                                     `}
@@ -626,10 +626,10 @@ export default function BoardPreview({
                             <div
                               key={card.id}
                               className={`
-                                group/card relative rounded-md border border-white/6
-                                bg-white/2 p-3
+                                group/card relative rounded-md border border-(--border-subtle)
+                                bg-(--tint-2) p-3
                                 transition-all duration-200
-                                hover:-translate-y-0.5 hover:border-white/14 hover:bg-white/4
+                                hover:-translate-y-0.5 hover:border-(--border-strong) hover:bg-(--tint-4)
                                 hover:shadow-[0_10px_24px_-8px_rgba(0,0,0,0.7)]
                                 ${card.done ? "opacity-55" : ""}
                               `}
@@ -646,7 +646,7 @@ export default function BoardPreview({
 
               {/* Window footer (hidden inside device frames) */}
               {chrome && (
-                <div className="flex items-center justify-between border-t border-white/6 px-4 py-2.5 sm:px-5">
+                <div className="flex items-center justify-between border-t border-(--border-subtle) px-4 py-2.5 sm:px-5">
                   <span className="font-mono text-[10px] tracking-widest text-(--text-secondary)/55">
                     workspace://kanban
                   </span>
@@ -660,7 +660,7 @@ export default function BoardPreview({
           </div>
 
           {/* ── Sync status pill ──────────────────────────────────── */}
-          <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/8 bg-white/3 px-4 py-2 backdrop-blur-xl backdrop-saturate-150">
+          <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-(--border) bg-(--tint-3) px-4 py-2 backdrop-blur-xl backdrop-saturate-150">
             <HugeiconsIcon
               icon={FlashIcon}
               size={14}

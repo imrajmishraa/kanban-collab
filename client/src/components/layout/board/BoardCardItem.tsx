@@ -50,8 +50,8 @@ export default function BoardCardItem({
       }}
       onClick={() => onOpen(card)}
       className={[
-        "group/card cursor-pointer rounded-lg border border-orange-50/15 bg-white/[0.03] p-3 text-left",
-        "transition-colors duration-200 hover:border-orange-50/25 hover:bg-white/[0.06]",
+        "group/card cursor-pointer rounded-lg border border-(--hairline) bg-(--tint-3) p-3 text-left",
+        "transition-colors duration-200 hover:border-(--hairline-strong) hover:bg-(--tint-6)",
         isDragging ? "opacity-40" : "opacity-100",
       ].join(" ")}
     >
@@ -63,8 +63,8 @@ export default function BoardCardItem({
               className="rounded-full px-2 py-0.5 font-mono text-[8px] uppercase tracking-widest"
               style={{
                 color: labelColor(label),
-                background: `${labelColor(label)}1f`,
-                border: `1px solid ${labelColor(label)}40`,
+                background: "var(--tint-4)",
+                border: "1px solid var(--hairline)",
               }}
             >
               {label}
@@ -73,19 +73,19 @@ export default function BoardCardItem({
         </div>
       )}
 
-      <p className="font-mono text-[12px] font-medium leading-5 text-neutral-100">
+      <p className="font-mono text-[12px] font-medium leading-5 text-(--text-primary)">
         {card.title}
       </p>
 
       {card.description && (
-        <p className="mt-1.5 line-clamp-2 font-mono text-[11px] leading-5 text-neutral-400">
+        <p className="mt-1.5 line-clamp-2 font-mono text-[11px] leading-5 text-(--text-secondary)">
           {card.description}
         </p>
       )}
 
       {totalChecks > 0 && (
         <div className="mt-3">
-          <div className="mb-1 flex items-center justify-between font-mono text-[9px] text-neutral-500">
+          <div className="mb-1 flex items-center justify-between font-mono text-[9px] text-(--text-muted)">
             <span className="inline-flex items-center gap-1 tabular-nums">
               <HugeiconsIcon
                 icon={ListChecksIcon}
@@ -96,10 +96,13 @@ export default function BoardCardItem({
             </span>
             <span className="tabular-nums">{progress}%</span>
           </div>
-          <div className="h-1 w-full overflow-hidden rounded-full bg-white/[0.10]">
+          <div className="h-1 w-full overflow-hidden rounded-full bg-(--tint-10)">
             <div
               className="h-full rounded-full transition-all"
-              style={{ width: `${progress}%`, background: "var(--brand)" }}
+              style={{
+                width: `${progress}%`,
+                background: "var(--text-primary)",
+              }}
             />
           </div>
         </div>
@@ -111,7 +114,7 @@ export default function BoardCardItem({
             className="inline-flex items-center rounded-full px-2 py-0.5 font-mono text-[9px] tabular-nums"
             style={{
               color: overdue ? "var(--danger)" : "var(--text-muted)",
-              background: overdue ? "rgba(241,107,122,0.1)" : "transparent",
+              background: overdue ? "var(--tint-4)" : "transparent",
             }}
           >
             {formatDue(card.dueDate)}

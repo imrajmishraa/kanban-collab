@@ -99,8 +99,8 @@ export default function BoardColumn({
       className={[
         "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[11.5px] transition-colors duration-150",
         danger
-          ? "text-rose-300 hover:bg-rose-500/10 hover:text-rose-200"
-          : "text-neutral-300 hover:bg-white/6 hover:text-neutral-100",
+          ? "text-(--danger) hover:bg-(--tint-4) hover:text-(--danger)"
+          : "text-(--text-soft) hover:bg-(--bg-hover) hover:text-(--text-primary)",
       ].join(" ")}
     >
       <HugeiconsIcon icon={icon} size={13} strokeWidth={1.6} />
@@ -124,26 +124,26 @@ export default function BoardColumn({
       className={[
         ui.panel,
         "flex h-full w-72 shrink-0 flex-col transition-colors",
-        isDropTarget ? "border-orange-100/40" : "border-orange-50/15",
+        isDropTarget ? "border-(--hairline-strong)" : "border-(--hairline)",
       ].join(" ")}
     >
       <span aria-hidden="true" className={ui.hairline} />
 
       {/* Header */}
-      <header className="flex items-center justify-between gap-2 border-b border-orange-50/10 px-2.5 py-2">
+      <header className="flex items-center justify-between gap-2 border-b border-(--hairline) px-2.5 py-2">
         <div className="flex min-w-0 items-center gap-2">
           <span
             aria-hidden="true"
-            className="flex size-5 shrink-0 items-center justify-center rounded-md border border-orange-50/15 font-mono text-[9px] tabular-nums text-neutral-500"
+            className="flex size-5 shrink-0 items-center justify-center rounded-md border border-(--hairline) font-mono text-[9px] tabular-nums text-(--text-muted)"
           >
             {String(index).padStart(2, "0")}
           </span>
 
-          <h2 className="truncate text-[12px] font-medium tracking-tight text-neutral-100">
+          <h2 className="truncate text-[12px] font-medium tracking-tight text-(--text-primary)">
             {column.name}
           </h2>
 
-          <span className="shrink-0 rounded-md border border-orange-50/15 bg-white/4 px-1.5 font-mono text-[9px] tabular-nums text-neutral-500">
+          <span className="shrink-0 rounded-md border border-(--hairline) bg-(--tint-4) px-1.5 font-mono text-[9px] tabular-nums text-(--text-muted)">
             {cards.length}
           </span>
         </div>
@@ -158,8 +158,8 @@ export default function BoardColumn({
             className={[
               "flex size-6 cursor-pointer items-center justify-center rounded-md border transition-colors duration-200",
               menuOpen
-                ? "border-orange-50/25 bg-white/8 text-neutral-100"
-                : "border-transparent text-neutral-500 hover:border-orange-50/20 hover:bg-white/6 hover:text-neutral-100",
+                ? "border-(--hairline-strong) bg-(--tint-8) text-(--text-primary)"
+                : "border-transparent text-(--text-muted) hover:border-(--hairline-strong) hover:bg-(--bg-hover) hover:text-(--text-primary)",
             ].join(" ")}
           >
             <HugeiconsIcon
@@ -172,7 +172,7 @@ export default function BoardColumn({
           {menuOpen && (
             <div
               role="menu"
-              className="absolute right-0 top-full z-30 mt-1 w-44 rounded-lg border border-orange-50/15 bg-[#141416] p-1"
+              className="absolute right-0 top-full z-30 mt-1 w-44 rounded-lg border border-(--hairline) bg-(--bg-root) p-1"
             >
               {menuItem("Edit column", Edit02Icon, () =>
                 onEditColumn(column.id),
@@ -208,8 +208,8 @@ export default function BoardColumn({
               />
             ))
           ) : (
-            <div className="flex min-h-20 flex-1 items-center justify-center rounded-lg border border-dashed border-orange-50/15 bg-white/2">
-              <p className="text-[11px] text-neutral-600">No cards yet</p>
+            <div className="flex min-h-20 flex-1 items-center justify-center rounded-lg border border-dashed border-(--hairline) bg-(--tint-2)">
+              <p className="text-[11px] text-(--text-subtle)">No cards yet</p>
             </div>
           )}
 
@@ -223,11 +223,11 @@ export default function BoardColumn({
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-orange-50/10 p-2">
+      <footer className="border-t border-(--hairline) p-2">
         <button
           type="button"
           onClick={() => onOpenComposer(column.id)}
-          className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-2 text-[11.5px] text-neutral-500 transition-colors duration-200 hover:bg-white/6 hover:text-neutral-100"
+          className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-2 text-[11.5px] text-(--text-muted) transition-colors duration-200 hover:bg-(--bg-hover) hover:text-(--text-primary)"
         >
           <HugeiconsIcon icon={Add01Icon} size={14} strokeWidth={1.6} />
           Add card

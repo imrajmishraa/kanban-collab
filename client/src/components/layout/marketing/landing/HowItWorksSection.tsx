@@ -39,7 +39,7 @@ export default function HowItWorksSection() {
               From zero to a flowing board
               <br />
               in{" "}
-              <span className="bg-linear-to-b from-(--brand-hover) to-(--brand) bg-clip-text text-transparent">
+              <span className="from-(--brand-hover) to-(--brand) text-(--text-primary)">
                 three moves
               </span>
             </>
@@ -57,19 +57,19 @@ export default function HowItWorksSection() {
                 <div
                   className="
                     relative flex h-full flex-col rounded-2xl
-                    border border-white/8
-                    bg-white/3
+                    border border-(--border)
+                    bg-(--tint-3)
                     p-6 pt-9
                     shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_20px_50px_-20px_rgba(0,0,0,0.6)]
                     backdrop-blur-xl backdrop-saturate-150
                     transition-colors duration-300
-                    hover:border-white/16
+                    hover:border-(--border-strong)
                   "
                 >
                   <span
                     className="
                       inline-flex size-11 shrink-0 items-center justify-center rounded-xl
-                      border border-white/8 bg-white/4
+                      border border-(--border) bg-(--tint-4)
                       text-(--brand-hover)
                       shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]
                     "

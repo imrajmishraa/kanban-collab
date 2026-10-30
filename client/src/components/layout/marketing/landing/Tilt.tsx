@@ -140,7 +140,7 @@ export function SectionHeading({
   return (
     <div className="mx-auto max-w-2xl text-center">
       <Reveal>
-        <div className="inline-flex items-center gap-2.5 rounded-full border border-white/8 bg-white/3 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.22em] text-(--text-secondary) shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-xl backdrop-saturate-150">
+        <div className="inline-flex items-center gap-2.5 rounded-full border border-(--border) bg-(--tint-3) px-4 py-2 font-mono text-[10px] uppercase tracking-[0.22em] text-(--text-secondary) shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-xl backdrop-saturate-150">
           <span className="h-1.5 w-1.5 rounded-full bg-(--brand) shadow-[0_0_8px_var(--brand)]" />
           {eyebrow}
         </div>

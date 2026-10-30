@@ -30,7 +30,7 @@ export default function NewWorkspaceDialog({
     <div className="fixed inset-0 z-100 flex items-start justify-center overflow-y-auto p-4 pt-20">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+        className="fixed inset-0 bg-(--scrim) backdrop-blur-sm"
         onClick={onClose}
         aria-hidden="true"
       />

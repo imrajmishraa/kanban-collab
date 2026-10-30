@@ -7,7 +7,7 @@ import type { PaletteRow, Scope } from "./types";
 
 function SectionLabel({ children }: { children: ReactNode }) {
   return (
-    <p className="px-2 pb-1 pt-3 text-[11px] font-medium text-neutral-500">
+    <p className="px-2 pb-1 pt-3 text-[11px] font-medium text-(--text-muted)">
       {children}
     </p>
   );
@@ -24,7 +24,7 @@ function Hint({
     <p
       className={[
         "px-2.5 py-2 text-[12.5px]",
-        danger ? "text-rose-300" : "text-neutral-500",
+        danger ? "text-(--danger)" : "text-(--text-muted)",
       ].join(" ")}
     >
       {children}
@@ -61,22 +61,22 @@ export function SearchResults({
   onOpenBoard,
 }: SearchResultsProps) {
   return (
-    <div className="w-[46%] shrink-0 overflow-y-auto border-r border-orange-50/10 p-2">
+    <div className="w-[46%] shrink-0 overflow-y-auto border-r border-(--hairline) p-2">
       {scope === "cards" && hasActiveBoard && lastBoardId && (
         <>
           <SectionLabel>Actions</SectionLabel>
           <button
             type="button"
             onClick={() => onOpenBoard(lastBoardId)}
-            className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors duration-200 hover:bg-white/6"
+            className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors duration-200 hover:bg-(--bg-hover)"
           >
             <HugeiconsIcon
               icon={AddCircleIcon}
               size={15}
               strokeWidth={1.6}
-              className="shrink-0 text-neutral-500"
+              className="shrink-0 text-(--text-muted)"
             />
-            <span className="min-w-0 flex-1 truncate text-[13px] text-neutral-200">
+            <span className="min-w-0 flex-1 truncate text-[13px] text-(--text-primary)">
               Open board to add a card
             </span>
           </button>
@@ -112,20 +112,20 @@ export function SearchResults({
                   onMouseEnter={() => onHoverRow(index)}
                   className={[
                     "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors duration-200",
-                    selected ? "bg-white/[0.07]" : "hover:bg-white/5",
+                    selected ? "bg-(--tint-7)" : "hover:bg-(--bg-hover)",
                   ].join(" ")}
                 >
                   <HugeiconsIcon
                     icon={row.icon}
                     size={15}
                     strokeWidth={1.6}
-                    className="shrink-0 text-neutral-500"
+                    className="shrink-0 text-(--text-muted)"
                   />
-                  <span className="min-w-0 flex-1 truncate text-[13px] text-neutral-200">
+                  <span className="min-w-0 flex-1 truncate text-[13px] text-(--text-primary)">
                     {row.title}
                   </span>
                   {row.meta && (
-                    <span className="shrink-0 text-[11px] text-neutral-500">
+                    <span className="shrink-0 text-[11px] text-(--text-muted)">
                       {row.meta}
                     </span>
                   )}

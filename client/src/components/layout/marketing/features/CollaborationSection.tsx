@@ -4,9 +4,9 @@ import { CollaborationColumn } from "@components/ui/marketing/features/Collabora
 
 const presence = [
   { initials: "RM", color: "bg-(--brand)", name: "Rahul" },
-  { initials: "AK", color: "bg-sky-500", name: "Anjali" },
-  { initials: "SP", color: "bg-pink-500", name: "Sam" },
-  { initials: "NV", color: "bg-emerald-500", name: "Noah" },
+  { initials: "AK", color: "bg-(--tint-4)", name: "Anjali" },
+  { initials: "SP", color: "bg-(--tint-4)", name: "Sam" },
+  { initials: "NV", color: "bg-(--tint-4)", name: "Noah" },
 ];
 
 const techIndicators = [
@@ -43,7 +43,7 @@ export default function CollaborationSection() {
       {/* Cool wash on the left, subtle */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute left-[-260px] top-[280px] h-[520px] w-[720px] rounded-[50%] bg-white/[0.018] blur-[140px]"
+        className="pointer-events-none absolute left-[-260px] top-[280px] h-[520px] w-[720px] rounded-[50%] bg-(--tint-2) blur-[140px]"
       />
 
       {/* Very soft warm echo bottom-right, gives the section weight */}
@@ -82,7 +82,7 @@ export default function CollaborationSection() {
             {/* Headline */}
             <h2 className="mt-6 font-mono text-3xl font-medium leading-[1.08] tracking-[-0.04em] text-(--text-primary) sm:text-4xl lg:text-5xl">
               Work together.{" "}
-              <span className="bg-linear-to-b from-(--brand-hover) via-(--brand) to-(--brand-hover)/70 bg-clip-text text-transparent">
+              <span className="from-(--brand-hover) via-(--brand) text-(--text-primary)">
                 See changes instantly.
               </span>
             </h2>
@@ -104,7 +104,7 @@ export default function CollaborationSection() {
                     key={person.initials}
                     className={`
                       relative flex h-8 w-8 items-center justify-center rounded-full
-                      border-2 border-[#0B0B0F] font-mono text-[10px] font-medium text-white
+                      border-2 border-(--hairline) font-mono text-[10px] font-medium text-(--text-primary)
                       shadow-[0_2px_8px_rgba(0,0,0,0.5)]
                       ${person.color}
                     `}
@@ -112,15 +112,15 @@ export default function CollaborationSection() {
                     {person.initials}
                   </span>
                 ))}
-                <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#0B0B0F] bg-white/[0.06] font-mono text-[9px] text-(--text-secondary) backdrop-blur-sm">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-(--hairline) bg-(--tint-6) font-mono text-[9px] text-(--text-secondary) backdrop-blur-sm">
                   +9k
                 </span>
               </div>
 
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.22em] text-(--text-secondary) backdrop-blur-xl backdrop-saturate-150">
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-(--tint-3) px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.22em] text-(--text-secondary) backdrop-blur-xl backdrop-saturate-150">
                 <span className="relative flex h-1.5 w-1.5">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-(--tint-4) opacity-60" />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-(--tint-4)" />
                 </span>
                 Live
               </span>
@@ -145,7 +145,7 @@ export default function CollaborationSection() {
             className="
               group/frame relative rounded-[24px]
               border border-white/[0.10]
-              bg-white/[0.03]
+              bg-(--tint-3)
               p-2
               shadow-[inset_0_1px_0_rgba(255,255,255,0.10),0_30px_80px_-20px_rgba(0,0,0,0.6)]
               backdrop-blur-xl backdrop-saturate-150
@@ -165,7 +165,7 @@ export default function CollaborationSection() {
               className="
                 relative overflow-hidden rounded-[18px]
                 border border-white/[0.05]
-                bg-[#0B0B0F]
+                bg-(--bg-root)
                 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)]
               "
             >
@@ -173,9 +173,9 @@ export default function CollaborationSection() {
               <div className="flex h-11 items-center justify-between border-b border-white/[0.04] px-4">
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-1.5">
-                    <span className="h-2.5 w-2.5 rounded-full border border-rose-500/70 bg-rose-500/10" />
-                    <span className="h-2.5 w-2.5 rounded-full border border-yellow-500/70 bg-yellow-500/10" />
-                    <span className="h-2.5 w-2.5 rounded-full border border-emerald-500/70 bg-emerald-500/10" />
+                    <span className="h-2.5 w-2.5 rounded-full border border-(--danger)/30 bg-(--tint-4)" />
+                    <span className="h-2.5 w-2.5 rounded-full border border-(--warning)/30 bg-(--tint-4)" />
+                    <span className="h-2.5 w-2.5 rounded-full border border-(--success)/30 bg-(--tint-4)" />
                   </div>
                   <span className="font-mono text-[11px] tracking-[0.05em] text-(--text-secondary)">
                     kanban / team-board
@@ -189,7 +189,7 @@ export default function CollaborationSection() {
                         key={person.initials}
                         className={`
                           flex h-5 w-5 items-center justify-center rounded-full
-                          border border-[#0B0B0F] font-mono text-[8px] text-white
+                          border border-(--hairline) font-mono text-[8px] text-(--text-primary)
                           ${person.color}
                         `}
                       >
@@ -198,10 +198,10 @@ export default function CollaborationSection() {
                     ))}
                   </div>
 
-                  <span className="flex items-center gap-1.5 rounded-full border border-emerald-400/20 bg-emerald-400/[0.08] px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.15em] text-emerald-400">
+                  <span className="flex items-center gap-1.5 rounded-full border border-(--success)/30 bg-(--tint-4)/[0.08] px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.15em] text-(--success)">
                     <span className="relative flex h-1.5 w-1.5">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-                      <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-(--tint-4) opacity-60" />
+                      <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-(--tint-4)" />
                     </span>
                     Live
                   </span>
@@ -209,7 +209,7 @@ export default function CollaborationSection() {
               </div>
 
               {/* Board grid */}
-              <div className="relative grid gap-px bg-white/[0.04] sm:grid-cols-3">
+              <div className="relative grid gap-px bg-(--tint-4) sm:grid-cols-3">
                 {/* Live cursors overlaid */}
                 <div
                   aria-hidden="true"
@@ -225,7 +225,7 @@ export default function CollaborationSection() {
                         strokeLinejoin="round"
                       />
                     </svg>
-                    <span className="rounded-[3px] bg-(--brand) px-1.5 py-0.5 font-mono text-[8px] font-medium leading-none text-white shadow-[0_2px_6px_-1px_var(--brand)]">
+                    <span className="rounded-[3px] bg-(--brand) px-1.5 py-0.5 font-mono text-[8px] font-medium leading-none text-(--text-primary) shadow-[0_2px_6px_-1px_var(--brand)]">
                       Rahul
                     </span>
                   </div>
@@ -240,7 +240,7 @@ export default function CollaborationSection() {
                         strokeLinejoin="round"
                       />
                     </svg>
-                    <span className="rounded-[3px] bg-[#38BDF8] px-1.5 py-0.5 font-mono text-[8px] font-medium leading-none text-[#0A0A0A] shadow-[0_2px_6px_-1px_#38BDF8]">
+                    <span className="rounded-[3px] bg-(--text-muted) px-1.5 py-0.5 font-mono text-[8px] font-medium leading-none text-(--text-secondary) ">
                       Anjali
                     </span>
                   </div>
@@ -276,14 +276,14 @@ export default function CollaborationSection() {
                         key={person.initials}
                         className={`
                           relative flex h-6 w-6 items-center justify-center rounded-full
-                          border border-[#0B0B0F] font-mono text-[9px] font-medium text-white
+                          border border-(--hairline) font-mono text-[9px] font-medium text-(--text-primary)
                           ${person.color}
                         `}
                         style={{ zIndex: presence.length - i }}
                       >
                         {person.initials}
                         {i < 2 && (
-                          <span className="absolute -inset-0.5 animate-pulse rounded-full border border-emerald-400/50" />
+                          <span className="absolute -inset-0.5 animate-pulse rounded-full border border-(--success)/30" />
                         )}
                       </span>
                     ))}
@@ -308,7 +308,7 @@ export default function CollaborationSection() {
 
           <div
             aria-hidden="true"
-            className="pointer-events-none mx-auto mt-3 h-8 w-4/5 rounded-[50%] bg-white/[0.025] blur-3xl"
+            className="pointer-events-none mx-auto mt-3 h-8 w-4/5 rounded-[50%] bg-(--tint-2) blur-3xl"
           />
         </div>
 
@@ -322,14 +322,14 @@ export default function CollaborationSection() {
               className="
                 group/tech relative overflow-hidden rounded-2xl
                 border border-white/[0.07]
-                bg-white/[0.02]
+                bg-(--tint-2)
                 p-5
                 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]
                 backdrop-blur-xl backdrop-saturate-150
                 transition-all duration-500
                 hover:-translate-y-0.5
                 hover:border-white/[0.14]
-                hover:bg-white/[0.035]
+                hover:bg-(--tint-4)
                 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.10),0_20px_48px_-24px_rgba(0,0,0,0.7)]
               "
             >

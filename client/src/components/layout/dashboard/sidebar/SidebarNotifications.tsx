@@ -113,9 +113,9 @@ export function SidebarNotifications({ onClose }: SidebarNotificationsProps) {
     <div
       role="dialog"
       aria-label="Notifications"
-      className="absolute bottom-full left-full z-80 mb-2 ml-2 w-84 overflow-hidden rounded-xl border border-orange-50/20 bg-[#141416]"
+      className="absolute bottom-full left-full z-80 mb-2 ml-2 w-84 overflow-hidden rounded-xl border border-(--hairline-strong) bg-(--bg-root)"
     >
-      <div className="flex items-center gap-1 border-b border-orange-50/10 px-2 py-1.5">
+      <div className="flex items-center gap-1 border-b border-(--hairline) px-2 py-1.5">
         {TABS.map((option) => {
           const active = tab === option;
 
@@ -128,13 +128,13 @@ export function SidebarNotifications({ onClose }: SidebarNotificationsProps) {
               className={[
                 "relative h-8 cursor-pointer rounded-md px-2.5 text-[12px] transition-colors duration-200",
                 active
-                  ? "text-neutral-100"
-                  : "text-neutral-500 hover:bg-white/4 hover:text-neutral-200",
+                  ? "text-(--text-primary)"
+                  : "text-(--text-muted) hover:bg-(--tint-4) hover:text-(--text-primary)",
               ].join(" ")}
             >
               {option}
               {active && (
-                <span className="absolute inset-x-2 -bottom-1.75 h-0.5 rounded-full bg-orange-100" />
+                <span className="absolute inset-x-2 -bottom-1.75 h-0.5 rounded-full bg-(--accent)" />
               )}
             </button>
           );
@@ -147,7 +147,7 @@ export function SidebarNotifications({ onClose }: SidebarNotificationsProps) {
                 type="button"
                 onClick={() => markAllRead.mutate()}
                 aria-label="Mark all read"
-                className="flex size-7 cursor-pointer items-center justify-center rounded-md text-neutral-500 transition-colors duration-200 hover:bg-white/6 hover:text-neutral-200"
+                className="flex size-7 cursor-pointer items-center justify-center rounded-md text-(--text-muted) transition-colors duration-200 hover:bg-(--bg-hover) hover:text-(--text-primary)"
               >
                 <HugeiconsIcon icon={Tick02Icon} size={14} strokeWidth={1.7} />
               </button>
@@ -162,7 +162,7 @@ export function SidebarNotifications({ onClose }: SidebarNotificationsProps) {
                 navigate("/settings");
               }}
               aria-label="Notification preferences"
-              className="flex size-7 cursor-pointer items-center justify-center rounded-md text-neutral-500 transition-colors duration-200 hover:bg-white/6 hover:text-neutral-200"
+              className="flex size-7 cursor-pointer items-center justify-center rounded-md text-(--text-muted) transition-colors duration-200 hover:bg-(--bg-hover) hover:text-(--text-primary)"
             >
               <HugeiconsIcon
                 icon={Settings01Icon}
@@ -174,13 +174,13 @@ export function SidebarNotifications({ onClose }: SidebarNotificationsProps) {
         </div>
       </div>
 
-      <div className="flex items-center gap-2 border-b border-orange-50/10 px-2.5 py-2">
-        <div className="flex h-8 min-w-0 flex-1 items-center gap-2 rounded-lg border border-orange-50/15 bg-white/3 px-2.5">
+      <div className="flex items-center gap-2 border-b border-(--hairline) px-2.5 py-2">
+        <div className="flex h-8 min-w-0 flex-1 items-center gap-2 rounded-lg border border-(--hairline) bg-(--tint-3) px-2.5">
           <HugeiconsIcon
             icon={Search01Icon}
             size={13}
             strokeWidth={1.6}
-            className="shrink-0 text-neutral-500"
+            className="shrink-0 text-(--text-muted)"
           />
 
           <input
@@ -188,7 +188,7 @@ export function SidebarNotifications({ onClose }: SidebarNotificationsProps) {
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search notifications"
             aria-label="Search notifications"
-            className="min-w-0 flex-1 bg-transparent text-[12px] tracking-tight text-neutral-100 placeholder:text-neutral-600 outline-hidden"
+            className="min-w-0 flex-1 bg-transparent text-[12px] tracking-tight text-(--text-primary) placeholder:text-(--text-subtle) outline-hidden"
           />
         </div>
 
@@ -198,8 +198,8 @@ export function SidebarNotifications({ onClose }: SidebarNotificationsProps) {
           className={[
             "flex h-8 shrink-0 cursor-pointer items-center gap-1 rounded-lg border px-2.5 text-[11.5px] transition-colors duration-200",
             tab === "Unread"
-              ? "border-orange-50/30 text-orange-100"
-              : "border-orange-50/15 text-neutral-400 hover:border-orange-50/30 hover:text-neutral-100",
+              ? "border-(--hairline-strong) text-(--accent)"
+              : "border-(--hairline) text-(--text-secondary) hover:border-(--hairline-strong) hover:text-(--text-primary)",
           ].join(" ")}
         >
           <HugeiconsIcon icon={Add01Icon} size={12} strokeWidth={2} />
@@ -212,25 +212,25 @@ export function SidebarNotifications({ onClose }: SidebarNotificationsProps) {
           <div className="space-y-px">
             {[0, 1, 2].map((row) => (
               <div key={row} className="flex gap-3 px-3.5 py-3">
-                <div className="size-7 shrink-0 animate-pulse rounded-full bg-white/6" />
+                <div className="size-7 shrink-0 animate-pulse rounded-full bg-(--tint-6)" />
                 <div className="min-w-0 flex-1 space-y-2">
-                  <div className="h-2.5 w-24 animate-pulse rounded bg-white/6" />
-                  <div className="h-2.5 w-full animate-pulse rounded bg-white/4" />
+                  <div className="h-2.5 w-24 animate-pulse rounded bg-(--tint-6)" />
+                  <div className="h-2.5 w-full animate-pulse rounded bg-(--tint-4)" />
                 </div>
               </div>
             ))}
           </div>
         ) : isError ? (
-          <p className="px-3.5 py-10 text-center text-[12px] text-rose-300">
+          <p className="px-3.5 py-10 text-center text-[12px] text-(--danger)">
             Could not load notifications
           </p>
         ) : rows.length === 0 ? (
           <div className="px-3.5 py-12 text-center">
-            <span className="mx-auto flex size-10 items-center justify-center rounded-full border border-orange-50/15 text-neutral-600">
+            <span className="mx-auto flex size-10 items-center justify-center rounded-full border border-(--hairline) text-(--text-subtle)">
               <HugeiconsIcon icon={Message01Icon} size={17} strokeWidth={1.6} />
             </span>
 
-            <p className="mt-3 text-[12.5px] text-neutral-400">
+            <p className="mt-3 text-[12.5px] text-(--text-secondary)">
               {needle
                 ? `Nothing matches “${query.trim()}”`
                 : tab === "Comments"
@@ -241,37 +241,37 @@ export function SidebarNotifications({ onClose }: SidebarNotificationsProps) {
             </p>
           </div>
         ) : (
-          <ul className="divide-y divide-orange-50/6">
+          <ul className="divide-y divide-(--hairline)">
             {rows.map((item) => (
               <li key={item.id}>
                 <button
                   type="button"
                   onClick={() => open(item)}
-                  className="flex w-full cursor-pointer items-start gap-3 px-3.5 py-3 text-left transition-colors duration-200 hover:bg-white/4"
+                  className="flex w-full cursor-pointer items-start gap-3 px-3.5 py-3 text-left transition-colors duration-200 hover:bg-(--tint-4)"
                 >
                   <span
                     aria-hidden="true"
                     className={[
                       "mt-1.5 size-1.5 shrink-0 rounded-full",
-                      item.isRead ? "bg-neutral-700" : "bg-orange-100",
+                      item.isRead ? "bg-(--text-subtle)" : "bg-(--accent)",
                     ].join(" ")}
                   />
 
                   <span className="min-w-0 flex-1">
                     <span className="flex items-baseline justify-between gap-2">
-                      <span className="min-w-0 truncate text-[12px] font-medium tracking-tight text-neutral-100">
+                      <span className="min-w-0 truncate text-[12px] font-medium tracking-tight text-(--text-primary)">
                         {item.title}
                       </span>
 
                       <time
                         dateTime={item.createdAt}
-                        className="shrink-0 font-mono text-[9px] tabular-nums text-neutral-600"
+                        className="shrink-0 font-mono text-[9px] tabular-nums text-(--text-subtle)"
                       >
                         {relativeTime(item.createdAt)}
                       </time>
                     </span>
 
-                    <span className="mt-1 block text-[11.5px] leading-5 text-neutral-400">
+                    <span className="mt-1 block text-[11.5px] leading-5 text-(--text-secondary)">
                       {item.message}
                     </span>
                   </span>

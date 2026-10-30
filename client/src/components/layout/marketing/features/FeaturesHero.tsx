@@ -58,7 +58,7 @@ export default function FeaturesHero() {
                 eyebrow-orbit
                 inline-flex items-center gap-3
                 rounded-full
-                bg-[#0B0B10]/70
+                bg-(--bg-root)/70
                 px-4 py-2
                 font-mono text-[10px] uppercase tracking-[0.22em]
                 text-(--text-secondary)
@@ -143,15 +143,15 @@ export default function FeaturesHero() {
                 className="
                   group inline-flex min-w-44 items-center justify-center gap-2
                   rounded-full
-                  border border-white/10
-                  bg-white/3
+                  border border-(--border)
+                  bg-(--tint-3)
                   px-5 py-2.5
                   font-mono text-sm text-(--text-secondary)
                   shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]
                   backdrop-blur-xl backdrop-saturate-150
                   transition-all duration-300
-                  hover:border-white/20
-                  hover:bg-white/6
+                  hover:border-(--border-strong)
+                  hover:bg-(--bg-hover)
                   hover:text-(--text-primary)
                   active:scale-[0.98]
                 "
@@ -186,8 +186,8 @@ export default function FeaturesHero() {
             <div
               className="
                 relative overflow-hidden rounded-2xl
-                border border-white/8
-                bg-white/2
+                border border-(--border)
+                bg-(--tint-2)
                 p-6
                 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_20px_56px_-28px_rgba(0,0,0,0.7)]
                 backdrop-blur-xl backdrop-saturate-150
@@ -199,10 +199,10 @@ export default function FeaturesHero() {
               />
 
               <div className="flex items-center justify-between">
-                <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-white/65">
+                <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-(--text-primary)/65">
                   At a glance
                 </span>
-                <span className="font-mono text-[10px] tracking-[0.15em] text-white/40">
+                <span className="font-mono text-[10px] tracking-[0.15em] text-(--text-primary)/40">
                   n=4
                 </span>
               </div>
@@ -218,7 +218,7 @@ export default function FeaturesHero() {
                     key={spec.label}
                     className="flex items-baseline justify-between gap-4"
                   >
-                    <dt className="font-mono text-[11px] uppercase tracking-[0.15em] text-white/70">
+                    <dt className="font-mono text-[11px] uppercase tracking-[0.15em] text-(--text-primary)/70">
                       {spec.label}
                     </dt>
                     <dd className="font-mono text-lg font-medium tracking-tight tabular-nums text-(--text-primary)">
@@ -228,8 +228,8 @@ export default function FeaturesHero() {
                 ))}
               </dl>
 
-              <div className="mt-6 border-t border-white/5 pt-4">
-                <p className="font-mono text-[10px] leading-[1.7] text-white/55">
+              <div className="mt-6 border-t border-(--border-subtle) pt-4">
+                <p className="font-mono text-[10px] leading-[1.7] text-(--text-primary)/55">
                   All metrics measured on production infrastructure.
                 </p>
               </div>
@@ -240,7 +240,7 @@ export default function FeaturesHero() {
         {/* ── Capability ribbon ────────────────────────────────── */}
         <div className="mt-20">
           <div className="flex items-center gap-3">
-            <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-white/60">
+            <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-(--text-primary)/60">
               Capability index
             </span>
             <span
@@ -255,10 +255,10 @@ export default function FeaturesHero() {
                 key={cap}
                 className="
                   group/cap inline-flex items-center gap-2 rounded-full
-                  border border-white/8
-                  bg-white/3
+                  border border-(--border)
+                  bg-(--tint-3)
                   px-3.5 py-1.5
-                  font-mono text-[11px] text-white
+                  font-mono text-[11px] text-(--text-primary)
                   backdrop-blur-xl backdrop-saturate-150
                   transition-all duration-300
                   hover:border-(--brand)/40
@@ -266,10 +266,10 @@ export default function FeaturesHero() {
                   hover:text-(--text-primary)
                 "
               >
-                <span className="font-mono text-[9px] tabular-nums text-white/45 transition-colors duration-300 group-hover/cap:text-(--brand)">
+                <span className="font-mono text-[9px] tabular-nums text-(--text-primary)/45 transition-colors duration-300 group-hover/cap:text-(--brand)">
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                <span aria-hidden="true" className="h-3 w-px bg-white/10" />
+                <span aria-hidden="true" className="h-3 w-px bg-(--tint-10)" />
                 {cap}
               </span>
             ))}
@@ -286,13 +286,13 @@ export default function FeaturesHero() {
           <div
             className="
               group/frame relative rounded-3xl
-              border border-white/10
-              bg-white/3
+              border border-(--border)
+              bg-(--tint-3)
               p-2
               shadow-[inset_0_1px_0_rgba(255,255,255,0.10),0_30px_80px_-20px_rgba(0,0,0,0.6)]
               backdrop-blur-xl backdrop-saturate-150
               transition-all duration-500
-              hover:border-white/16
+              hover:border-(--border-strong)
               hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_40px_100px_-20px_rgba(0,0,0,0.7)]
             "
           >
@@ -310,8 +310,8 @@ export default function FeaturesHero() {
             <div
               className="
                 relative overflow-hidden rounded-2xl
-                border border-white/6
-                bg-[#0F0F12]
+                border border-(--border-subtle)
+                bg-(--bg-surface)
                 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)]
               "
             >
@@ -325,7 +325,7 @@ export default function FeaturesHero() {
 
           <div
             aria-hidden="true"
-            className="pointer-events-none mx-auto mt-3 h-8 w-4/5 rounded-full bg-white/25 blur-3xl"
+            className="pointer-events-none mx-auto mt-3 h-8 w-4/5 rounded-full bg-(--tint-15) blur-3xl"
           />
         </div>
       </div>

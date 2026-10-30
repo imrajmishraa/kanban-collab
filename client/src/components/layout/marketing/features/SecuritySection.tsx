@@ -56,13 +56,13 @@ export default function SecuritySection() {
       {/* Cool wash, right side — cool tone fits the "security" theme */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute right-[-240px] top-[320px] h-[560px] w-[820px] rounded-[50%] bg-sky-500/[0.025] blur-[150px]"
+        className="pointer-events-none absolute right-[-240px] top-[320px] h-[560px] w-[820px] rounded-[50%] bg-(--tint-4)/[0.025] blur-[150px]"
       />
 
       {/* Soft echo bottom-left */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute bottom-[-180px] left-[-200px] h-[500px] w-[700px] rounded-[50%] bg-white/[0.018] blur-[150px]"
+        className="pointer-events-none absolute bottom-[-180px] left-[-200px] h-[500px] w-[700px] rounded-[50%] bg-(--tint-2) blur-[150px]"
       />
 
       {/* ═══════════════════════════════════════════════════════════
@@ -138,7 +138,7 @@ export default function SecuritySection() {
 
           <h2 className="mt-6 font-mono text-3xl font-medium leading-[1.08] tracking-[-0.04em] text-(--text-primary) sm:text-4xl lg:text-5xl">
             Your workspace.{" "}
-            <span className="bg-linear-to-b from-(--brand-hover) via-(--brand) to-(--brand-hover)/70 bg-clip-text text-transparent">
+            <span className="from-(--brand-hover) via-(--brand) text-(--text-primary)">
               Protected by design.
             </span>
           </h2>
@@ -157,14 +157,14 @@ export default function SecuritySection() {
               className="
                 group/point relative overflow-hidden rounded-2xl
                 border border-white/[0.07]
-                bg-white/[0.02]
+                bg-(--tint-2)
                 p-6
                 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]
                 backdrop-blur-xl backdrop-saturate-150
                 transition-all duration-500
                 hover:-translate-y-0.5
                 hover:border-white/[0.14]
-                hover:bg-white/[0.035]
+                hover:bg-(--tint-4)
                 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.10),0_20px_48px_-24px_rgba(0,0,0,0.7)]
               "
             >
@@ -219,7 +219,7 @@ export default function SecuritySection() {
             className="
               group/frame relative rounded-[24px]
               border border-white/[0.10]
-              bg-white/[0.03]
+              bg-(--tint-3)
               p-2
               shadow-[inset_0_1px_0_rgba(255,255,255,0.10),0_30px_80px_-20px_rgba(0,0,0,0.6)]
               backdrop-blur-xl backdrop-saturate-150
@@ -239,7 +239,7 @@ export default function SecuritySection() {
               className="
                 relative overflow-hidden rounded-[18px]
                 border border-white/[0.05]
-                bg-[#0B0B0F]
+                bg-(--bg-root)
                 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)]
               "
             >
@@ -247,19 +247,19 @@ export default function SecuritySection() {
               <div className="flex h-11 items-center justify-between border-b border-white/[0.04] px-4">
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-1.5">
-                    <span className="h-2.5 w-2.5 rounded-full border border-rose-500/70 bg-rose-500/10" />
-                    <span className="h-2.5 w-2.5 rounded-full border border-yellow-500/70 bg-yellow-500/10" />
-                    <span className="h-2.5 w-2.5 rounded-full border border-emerald-500/70 bg-emerald-500/10" />
+                    <span className="h-2.5 w-2.5 rounded-full border border-(--danger)/30 bg-(--tint-4)" />
+                    <span className="h-2.5 w-2.5 rounded-full border border-(--warning)/30 bg-(--tint-4)" />
+                    <span className="h-2.5 w-2.5 rounded-full border border-(--success)/30 bg-(--tint-4)" />
                   </div>
                   <span className="font-mono text-[11px] tracking-[0.05em] text-(--text-secondary)">
                     kanban / security
                   </span>
                 </div>
 
-                <span className="flex items-center gap-1.5 rounded-full border border-emerald-400/20 bg-emerald-400/[0.08] px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.15em] text-emerald-400">
+                <span className="flex items-center gap-1.5 rounded-full border border-(--success)/30 bg-(--tint-4)/[0.08] px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.15em] text-(--success)">
                   <span className="relative flex h-1.5 w-1.5">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-(--tint-4) opacity-60" />
+                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-(--tint-4)" />
                   </span>
                   Secure
                 </span>
@@ -284,15 +284,15 @@ export default function SecuritySection() {
                       >
                         <div className="flex items-center gap-2.5">
                           <span className="relative flex h-2 w-2">
-                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-40" />
-                            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-(--tint-4) opacity-40" />
+                            <span className="relative inline-flex h-2 w-2 rounded-full bg-(--tint-4)" />
                           </span>
                           <span className="font-mono text-[11px] text-(--text-secondary)/85">
                             {row.label}
                           </span>
                         </div>
 
-                        <span className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.15em] text-emerald-400/80">
+                        <span className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.15em] text-(--success)">
                           <HugeiconsIcon icon={Tick02Icon} size={10} />
                           {row.value}
                         </span>
@@ -317,16 +317,14 @@ export default function SecuritySection() {
                     <p className="text-(--text-secondary)/50">
                       validating workspace access...
                     </p>
-                    <p className="text-emerald-400/80">
+                    <p className="text-(--success)">
                       ✓ authentication verified
                     </p>
-                    <p className="text-emerald-400/80">✓ session validated</p>
-                    <p className="text-emerald-400/80">
-                      ✓ authorization verified
-                    </p>
+                    <p className="text-(--success)">✓ session validated</p>
+                    <p className="text-(--success)">✓ authorization verified</p>
                     <p className="text-(--text-secondary)/65">
-                      status: <span className="text-emerald-400">ready</span>
-                      <span className="ml-0.5 inline-block h-3 w-[6px] translate-y-0.5 animate-pulse bg-emerald-400/80" />
+                      status: <span className="text-(--success)">ready</span>
+                      <span className="ml-0.5 inline-block h-3 w-[6px] translate-y-0.5 animate-pulse bg-(--tint-4)" />
                     </p>
                   </div>
                 </div>
@@ -352,7 +350,7 @@ export default function SecuritySection() {
           {/* Under-frame reflection */}
           <div
             aria-hidden="true"
-            className="pointer-events-none mx-auto mt-3 h-8 w-4/5 rounded-[50%] bg-white/[0.025] blur-3xl"
+            className="pointer-events-none mx-auto mt-3 h-8 w-4/5 rounded-[50%] bg-(--tint-2) blur-3xl"
           />
         </div>
       </div>

@@ -17,7 +17,7 @@ export default function FeaturesCTA() {
             className="
               group/panel relative overflow-hidden rounded-[28px]
               border border-white/[0.12]
-              bg-white/[0.03]
+              bg-(--tint-3)
               px-6 py-16 text-center
               shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_40px_100px_-30px_rgba(0,0,0,0.8),0_0_0_1px_rgba(255,255,255,0.02)]
               backdrop-blur-2xl backdrop-saturate-[1.8]
@@ -45,7 +45,7 @@ export default function FeaturesCTA() {
                   eyebrow-orbit
                   inline-flex items-center gap-3
                   rounded-full
-                  bg-[#0B0B10]/70
+                  bg-(--bg-root)/70
                   px-4 py-2
                   font-mono text-[10px] uppercase tracking-[0.22em]
                   text-(--text-secondary)
@@ -90,7 +90,7 @@ export default function FeaturesCTA() {
             {/* ── Headline ────────────────────────────────────── */}
             <h2 className="relative mt-8 font-mono text-3xl font-medium leading-[1.06] tracking-[-0.045em] text-(--text-primary) sm:text-4xl lg:text-[3.5rem]">
               Ready to move your work{" "}
-              <span className="bg-linear-to-b from-(--brand-hover) via-(--brand) to-(--brand-hover)/70 bg-clip-text text-transparent">
+              <span className="from-(--brand-hover) via-(--brand) text-(--text-primary)">
                 forward?
               </span>
             </h2>
@@ -136,14 +136,14 @@ export default function FeaturesCTA() {
                   inline-flex min-w-[180px] items-center justify-center gap-2
                   rounded-full
                   border border-white/[0.10]
-                  bg-white/[0.03]
+                  bg-(--tint-3)
                   px-6 py-3
                   font-mono text-sm text-(--text-secondary)
                   shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]
                   backdrop-blur-xl backdrop-saturate-150
                   transition-all duration-300
                   hover:border-white/[0.20]
-                  hover:bg-white/[0.06]
+                  hover:bg-(--tint-6)
                   hover:text-(--text-primary)
                   active:scale-[0.98]
                 "
@@ -174,7 +174,7 @@ export default function FeaturesCTA() {
             className="pointer-events-none absolute inset-x-16 -bottom-24 top-32 -z-10"
           >
             <div className="absolute inset-0 rounded-[40%] bg-(--brand)/[0.18] blur-[100px]" />
-            <div className="absolute inset-x-12 top-12 bottom-0 rounded-[50%] bg-sky-500/[0.06] blur-[90px]" />
+            <div className="absolute inset-x-12 top-12 bottom-0 rounded-[50%] bg-(--tint-4)/[0.06] blur-[90px]" />
           </div>
         </div>
       </div>

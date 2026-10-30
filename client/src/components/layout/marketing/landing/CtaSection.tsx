@@ -14,9 +14,9 @@ const trustPoints = ["Free forever", "No credit card", "Cancel anytime"];
 
 const team = [
   { initials: "RM", color: "bg-(--brand)" },
-  { initials: "AK", color: "bg-sky-500" },
-  { initials: "SP", color: "bg-emerald-500" },
-  { initials: "NV", color: "bg-pink-500" },
+  { initials: "AK", color: "bg-(--tint-4)" },
+  { initials: "SP", color: "bg-(--tint-4)" },
+  { initials: "NV", color: "bg-(--tint-4)" },
 ];
 
 export default function CtaSection() {
@@ -25,7 +25,7 @@ export default function CtaSection() {
       {/* Cool counter-glow for depth */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 top-70 h-95 w-205 -translate-x-1/2 rounded-[50%] bg-white/2 blur-[130px]"
+        className="pointer-events-none absolute left-1/2 top-70 h-95 w-205 -translate-x-1/2 rounded-[50%] bg-(--tint-2) blur-[130px]"
       />
 
       <div className="relative mx-auto max-w-7xl px-4 py-28 sm:px-6 sm:py-32 lg:px-8 lg:py-40">
@@ -43,8 +43,8 @@ export default function CtaSection() {
               <div
                 className="
                   group/cta relative overflow-hidden rounded-3xl
-                  border border-white/8
-                  bg-white/2
+                  border border-(--border)
+                  bg-(--tint-2)
                   px-8 py-16 text-center
                   shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_30px_80px_-30px_rgba(0,0,0,0.7)]
                   backdrop-blur-xl backdrop-saturate-150
@@ -66,19 +66,19 @@ export default function CtaSection() {
                 {/* Corner brackets — technical drawing marks */}
                 <span
                   aria-hidden="true"
-                  className="pointer-events-none absolute left-4 top-4 h-3.5 w-3.5 border-l border-t border-white/12 transition-colors duration-500 group-hover/cta:border-(--brand)/50"
+                  className="pointer-events-none absolute left-4 top-4 h-3.5 w-3.5 border-l border-t border-(--border) transition-colors duration-500 group-hover/cta:border-(--brand)/50"
                 />
                 <span
                   aria-hidden="true"
-                  className="pointer-events-none absolute right-4 top-4 h-3.5 w-3.5 border-r border-t border-white/12 transition-colors duration-500 group-hover/cta:border-(--brand)/50"
+                  className="pointer-events-none absolute right-4 top-4 h-3.5 w-3.5 border-r border-t border-(--border) transition-colors duration-500 group-hover/cta:border-(--brand)/50"
                 />
                 <span
                   aria-hidden="true"
-                  className="pointer-events-none absolute bottom-4 left-4 h-3.5 w-3.5 border-b border-l border-white/12 transition-colors duration-500 group-hover/cta:border-(--brand)/50"
+                  className="pointer-events-none absolute bottom-4 left-4 h-3.5 w-3.5 border-b border-l border-(--border) transition-colors duration-500 group-hover/cta:border-(--brand)/50"
                 />
                 <span
                   aria-hidden="true"
-                  className="pointer-events-none absolute bottom-4 right-4 h-3.5 w-3.5 border-b border-r border-white/12 transition-colors duration-500 group-hover/cta:border-(--brand)/50"
+                  className="pointer-events-none absolute bottom-4 right-4 h-3.5 w-3.5 border-b border-r border-(--border) transition-colors duration-500 group-hover/cta:border-(--brand)/50"
                 />
 
                 {/* ── Kicker — orbiting pill matching hero + why ──── */}
@@ -88,7 +88,7 @@ export default function CtaSection() {
                       eyebrow-orbit
                       inline-flex items-center gap-2.5
                       rounded-full
-                      bg-[#0B0B10]/70
+                      bg-(--bg-root)/70
                       px-4 py-2
                       font-mono text-[10px] uppercase tracking-[0.22em]
                       text-(--text-secondary)
@@ -111,7 +111,7 @@ export default function CtaSection() {
                 {/* ── Headline ───────────────────────────────────── */}
                 <h2 className="relative z-2 font-mono text-3xl font-medium leading-[1.1] tracking-[-0.04em] text-(--text-primary) sm:text-4xl md:text-5xl">
                   Turn ideas into{" "}
-                  <span className="bg-linear-to-b from-(--brand-hover) via-(--brand) to-(--brand-hover)/70 bg-clip-text text-transparent">
+                  <span className="from-(--brand-hover) via-(--brand) text-(--text-primary)">
                     progress.
                   </span>
                 </h2>
@@ -158,15 +158,15 @@ export default function CtaSection() {
                     className="
                       inline-flex min-w-44 items-center justify-center gap-2
                       rounded-full
-                      border border-white/10
-                      bg-white/3
+                      border border-(--border)
+                      bg-(--tint-3)
                       px-6 py-3
                       font-mono text-sm text-(--text-secondary)
                       shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]
                       backdrop-blur-xl backdrop-saturate-150
                       transition-all duration-300
-                      hover:border-white/20
-                      hover:bg-white/6
+                      hover:border-(--border-strong)
+                      hover:bg-(--bg-hover)
                       hover:text-(--text-primary)
                       active:scale-[0.98]
                     "
@@ -210,7 +210,7 @@ export default function CtaSection() {
                           key={person.initials}
                           className={`
                             flex h-8 w-8 items-center justify-center rounded-full
-                            border-2 border-[#0B0B10] font-mono text-[10px] font-medium text-white
+                            border-2 border-(--hairline) font-mono text-[10px] font-medium text-(--text-primary)
                             shadow-[0_2px_8px_rgba(0,0,0,0.5)]
                             ${person.color}
                           `}
@@ -218,13 +218,13 @@ export default function CtaSection() {
                           {person.initials}
                         </span>
                       ))}
-                      <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#0B0B10] bg-white/6 font-mono text-[10px] text-white backdrop-blur-sm">
+                      <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-(--hairline) bg-(--tint-6) font-mono text-[10px] text-(--text-primary) backdrop-blur-sm">
                         +9k
                       </span>
                     </div>
 
                     {/* Text next to avatars */}
-                    <span className="font-mono text-[11px] tracking-wider text-white/70">
+                    <span className="font-mono text-[11px] tracking-wider text-(--text-primary)/70">
                       Trusted by teams shipping together
                     </span>
                   </div>

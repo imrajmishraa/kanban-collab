@@ -40,28 +40,28 @@ function DesktopFrame({
       <div
         className={cn(
           "relative rounded-[25px] p-1 shadow-2xl",
-          "bg-linear-to-b from-zinc-700 via-zinc-800 to-zinc-900",
-          "ring-1 ring-black/60",
+          "bg-linear-to-b from-(--tint-3) via-(--tint-2) to-transparent",
+          "ring-1 ring-(--border)",
         )}
       >
         {/* polished bevel highlight */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 rounded-[15px] ring-1 ring-white/5 ring-inset"
+          className="pointer-events-none absolute inset-0 rounded-[15px] ring-1 ring-(--tint-15) ring-inset"
         />
 
         {/* thick black display bezel — the "sides" of a real screen */}
-        <div className="relative rounded-[20px] bg-black p-3 ring-1 ring-white/5 ring-inset">
+        <div className="relative rounded-[20px] bg-black p-3 ring-1 ring-(--tint-15) ring-inset">
           {/* ── Screen ── */}
           <div
             className={cn(
               "relative w-full overflow-hidden rounded-xl",
               screenAspect,
-              "bg-[#0B0B10] ring-1 ring-white/10",
+              "bg-(--bg-root) ring-1 ring-(--tint-15)",
             )}
           >
             {/* ── Wallpaper ── */}
-            <div className="absolute inset-0 bg-[#050810]">
+            <div className="absolute inset-0 bg-[var(--bg-root)]">
               <div className="absolute inset-0 [background:radial-gradient(70%_55%_at_75%_16%,rgba(43,88,158,0.5),transparent_60%),radial-gradient(55%_45%_at_16%_78%,rgba(94,60,154,0.42),transparent_62%),radial-gradient(42%_36%_at_86%_68%,rgba(214,146,58,0.22),transparent_60%)]" />
             </div>
 
@@ -69,7 +69,7 @@ function DesktopFrame({
             <div
               className={cn(
                 "relative z-20 flex h-8 items-center justify-between bg-black/25 px-3.5",
-                "text-[11px] text-white/85 backdrop-blur-md",
+                "text-[11px] text-(--text-primary)/85 backdrop-blur-md",
               )}
             >
               <div className="flex items-center gap-4">
@@ -84,7 +84,7 @@ function DesktopFrame({
                   (m) => (
                     <span
                       key={m}
-                      className="hidden cursor-pointer text-white/75 hover:text-white sm:inline"
+                      className="hidden cursor-pointer text-(--text-primary)/75 hover:text-(--text-primary) sm:inline"
                     >
                       {m}
                     </span>
@@ -96,7 +96,7 @@ function DesktopFrame({
                 <span className="flex items-center gap-1.5">
                   <svg
                     viewBox="0 0 26 12"
-                    className="h-3 w-6 cursor-pointer text-white/85"
+                    className="h-3 w-6 cursor-pointer text-(--text-primary)/85"
                     aria-hidden="true"
                   >
                     <rect
@@ -161,35 +161,35 @@ function DesktopFrame({
               className="absolute left-1/2 top-0 z-30 h-6.5 w-24 -translate-x-1/2 rounded-b-sm bg-black"
             >
               {/* camera lens */}
-              <span className="absolute left-1/2 top-1/2 size-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle_at_35%_35%,#2e3a4a,#0a0f14_70%)] ring-1 ring-white/10" />
+              <span className="absolute left-1/2 top-1/2 size-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle_at_35%_35%,#2e3a4a,#0a0f14_70%)] ring-1 ring-(--tint-15)" />
             </div>
 
             {/* ── Brave browser window ── */}
             <div
               className={cn(
                 "group/bus absolute bottom-0 left-1/2 top-[9%] min-h-0 w-full -translate-x-1/2",
-                "flex flex-col overflow-hidden rounded-xs bg-zinc-900",
-                "shadow-[0_24px_60px_rgba(0,0,0,0.6)] ring-1 ring-white/15",
+                "flex flex-col overflow-hidden rounded-xs bg-(--tint-4)",
+                "shadow-[0_24px_60px_rgba(0,0,0,0.6)] ring-1 ring-(--tint-15)",
               )}
             >
               {/* Tab strip */}
-              <div className="mb-0.5 flex items-end gap-1 bg-zinc-900/95 pl-3">
+              <div className="mb-0.5 flex items-end gap-1 bg-(--tint-4) pl-3">
                 {/* traffic lights */}
                 <div className="flex items-center gap-2 pb-1.5">
                   <button
                     type="button"
                     aria-label="Close window"
-                    className="group/tl relative size-3 rounded-full bg-[#FF5F57] ring-1 ring-black/25"
+                    className="group/tl relative size-3 rounded-full bg-(--danger) ring-1 ring-(--border)"
                   />
                   <button
                     type="button"
                     aria-label="Minimise"
-                    className="group/tl relative size-3 rounded-full bg-[#FEBC2E] ring-1 ring-black/25"
+                    className="group/tl relative size-3 rounded-full bg-(--warning) ring-1 ring-(--border)"
                   />
                   <button
                     type="button"
                     aria-label="Maximise"
-                    className="group/tl relative size-3 rounded-full bg-[#28C840] ring-1 ring-black/25"
+                    className="group/tl relative size-3 rounded-full bg-(--success) ring-1 ring-(--border)"
                   />
                 </div>
 
@@ -211,13 +211,13 @@ function DesktopFrame({
                 </div>
 
                 {/* new tab */}
-                <span className="ml-0.5 mb-1 flex size-5 shrink-0 cursor-default items-center justify-center rounded-sm p-0.5 text-zinc-500 transition-colors hover:bg-white/10 hover:text-zinc-200">
+                <span className="ml-0.5 mb-1 flex size-5 shrink-0 cursor-default items-center justify-center rounded-sm p-0.5 text-(--text-secondary) transition-colors hover:bg-(--tint-10) hover:text-(--text-secondary)">
                   <ChromeIcon d={P.plusTab} size={12} />
                 </span>
               </div>
 
               {/* Toolbar */}
-              <div className="flex h-10 shrink-0 items-center gap-1 border-b border-black/40 bg-zinc-800 px-2.5">
+              <div className="flex h-10 shrink-0 items-center gap-1 border-b border-black/40 bg-(--tint-4) px-2.5">
                 <ToolbarButton d={P.back} />
                 <ToolbarButton d={P.forward} />
                 <ToolbarButton d={P.reload} />
@@ -226,19 +226,19 @@ function DesktopFrame({
                 <div
                   className={cn(
                     "mx-auto flex h-6.5 w-full max-w-md items-center gap-2 rounded-full",
-                    "bg-zinc-900/90 px-3 text-[11px] text-zinc-300 ring-1 ring-white/10",
+                    "bg-(--tint-4) px-3 text-[11px] text-(--text-secondary) ring-1 ring-(--tint-15)",
                   )}
                 >
                   {/* Brave shields */}
                   <ChromeIcon
                     d={P.shield}
                     size={12}
-                    className="shrink-0 text-[#FB542B]"
+                    className="shrink-0 text-(--text-secondary)"
                   />
                   {/* lock */}
                   <svg
                     viewBox="0 0 24 24"
-                    className="size-3 shrink-0 text-zinc-500"
+                    className="size-3 shrink-0 text-(--text-secondary)"
                     {...STROKE}
                     strokeWidth={1.6}
                   >
@@ -258,7 +258,7 @@ function DesktopFrame({
               </div>
 
               {/* ── Viewport: the app renders here ── */}
-              <div className="min-h-0 flex-1 overflow-y-auto bg-[#0B0B10] scrollbar-none [&::-webkit-scrollbar]:hidden">
+              <div className="min-h-0 flex-1 overflow-y-auto bg-(--bg-root) scrollbar-none [&::-webkit-scrollbar]:hidden">
                 <div className="h-full">{children}</div>
               </div>
             </div>

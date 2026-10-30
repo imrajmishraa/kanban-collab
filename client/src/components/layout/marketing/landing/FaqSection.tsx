@@ -64,8 +64,8 @@ export default function FaqSection() {
                     transition-colors duration-300
                     ${
                       isOpen
-                        ? "border-white/14 bg-white/4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_16px_40px_-16px_rgba(0,0,0,0.6)]"
-                        : "border-white/8 bg-white/2 hover:border-white/12"
+                        ? "border-(--border-strong) bg-(--tint-4) shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_16px_40px_-16px_rgba(0,0,0,0.6)]"
+                        : "border-(--border) bg-(--tint-2) hover:border-(--border)"
                     }
                   `}
                 >
@@ -91,7 +91,7 @@ export default function FaqSection() {
                         ${
                           isOpen
                             ? "border-(--brand)/35 bg-(--brand)/12 text-(--brand-hover)"
-                            : "border-white/8 bg-white/3 text-(--text-secondary)"
+                            : "border-(--border) bg-(--tint-3) text-(--text-secondary)"
                         }
                       `}
                     >
@@ -114,7 +114,7 @@ export default function FaqSection() {
                           ease: [0.21, 0.47, 0.32, 0.98],
                         }}
                       >
-                        <p className="border-t border-white/6 px-5 pb-5 pt-4 font-mono text-xs leading-[1.9] text-(--text-secondary)">
+                        <p className="border-t border-(--border-subtle) px-5 pb-5 pt-4 font-mono text-xs leading-[1.9] text-(--text-secondary)">
                           {faq.a}
                         </p>
                       </motion.div>

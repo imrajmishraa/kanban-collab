@@ -7,15 +7,15 @@ export default function DashboardHeader() {
   const { open: openNewWorkspace } = useNewWorkspaceDialog();
 
   return (
-    <header className="flex flex-col gap-6 border-b border-orange-50/10 pb-6 sm:flex-row sm:items-end sm:justify-between">
+    <header className="flex flex-col gap-6 border-b border-(--hairline) pb-6 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <h1 className="mt-3 text-[22px] font-semibold tracking-tight text-neutral-100 sm:text-[26px]">
+        <h1 className="mt-3 text-[22px] font-semibold tracking-tight text-(--text-primary) sm:text-[26px]">
           Welcome back
         </h1>
 
-        <p className="mt-2 max-w-xl text-[12.5px] leading-5 text-neutral-400">
+        <p className="mt-2 max-w-xl text-[12.5px] leading-5 text-(--text-secondary)">
           Here is your workspace at a{" "}
-          <span className="font-medium text-orange-100 capitalize">glance</span>
+          <span className="font-medium text-(--accent) capitalize">glance</span>
         </p>
       </div>
 
@@ -26,10 +26,10 @@ export default function DashboardHeader() {
         className="
           group/new inline-flex w-fit cursor-pointer items-center gap-2
           rounded-none rounded-tr-lg rounded-bl-lg
-          bg-white px-4 py-2
-          text-[12px] font-semibold text-black
+          bg-(--solid-bg) px-4 py-2
+          text-[12px] font-semibold text-(--solid-text)
           transition-colors duration-200
-          hover:bg-neutral-200
+          hover:bg-(--solid-bg-hover)
         "
       >
         <HugeiconsIcon

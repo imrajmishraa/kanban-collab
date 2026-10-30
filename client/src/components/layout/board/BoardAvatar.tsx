@@ -48,7 +48,7 @@ export function Avatar({ member, size = 24, ring = true }: AvatarProps) {
     return (
       <span
         title={label}
-        className={`${shared} border border-orange-50/20 transition-transform duration-200 hover:scale-[1.04]`}
+        className={`${shared} border border-(--hairline-strong) transition-transform duration-200 hover:scale-[1.04]`}
         style={style}
       >
         <img
@@ -64,7 +64,7 @@ export function Avatar({ member, size = 24, ring = true }: AvatarProps) {
   return (
     <span
       title={label}
-      className={`${shared} text-black`}
+      className={`${shared} text-(--on-color)`}
       style={{ ...style, background: resolved.color }}
     >
       {initials(label)}
@@ -97,7 +97,7 @@ export function AvatarStack({ ids, size = 24, max = 3 }: AvatarStackProps) {
 
       {extra > 0 && (
         <span
-          className="inline-flex items-center justify-center rounded-full border border-orange-50/15 bg-white/6 font-mono text-neutral-400"
+          className="inline-flex items-center justify-center rounded-full border border-(--hairline) bg-(--tint-6) font-mono text-(--text-secondary)"
           style={{
             width: size,
             height: size,

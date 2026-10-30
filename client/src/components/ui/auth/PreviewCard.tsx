@@ -20,22 +20,22 @@ export function PreviewCard({
       className={`rounded border p-1.5 ${
         active
           ? "border-(--brand)/40 bg-(--brand)/6"
-          : "border-white/6 bg-white/2"
+          : "border-(--border-subtle) bg-(--tint-2)"
       }`}
     >
       <div className="flex items-center gap-1">
         <span
           className={`h-1 w-1 rounded-full ${
-            active ? "bg-(--brand)" : "bg-white/25"
+            active ? "bg-(--accent-fill)" : "bg-(--tint-15)"
           }`}
         />
         <span
           className={`h-1 rounded-full ${
-            active ? "w-12 bg-(--brand)/50" : "w-10 bg-white/15"
+            active ? "w-12 bg-(--brand)/50" : "w-10 bg-(--tint-15)"
           }`}
         />
       </div>
-      <div className="mt-1.5 h-1 w-3/4 rounded-full bg-white/10" />
+      <div className="mt-1.5 h-1 w-3/4 rounded-full bg-(--tint-10)" />
     </div>
   );
 }

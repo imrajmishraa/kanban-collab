@@ -43,12 +43,13 @@ const MINI_COLUMNS = [
     cards: [
       {
         tag: "design",
-        tagColor: "border-purple-400/25 bg-purple-400/8 text-purple-300",
+        tagColor: "border-(--hairline) bg-(--tint-4) text-(--text-secondary)",
         width: "w-4/5",
       },
       {
         tag: "frontend",
-        tagColor: "border-sky-400/25 bg-sky-400/8 text-sky-300",
+        tagColor:
+          "border-(--hairline-strong) bg-(--tint-4) text-(--text-primary)",
         width: "w-3/5",
       },
     ] as MiniCard[],
@@ -60,12 +61,12 @@ const MINI_COLUMNS = [
     cards: [
       {
         tag: "backend",
-        tagColor: "border-emerald-400/25 bg-emerald-400/8 text-emerald-300",
+        tagColor: "border-(--success)/25 bg-(--success)/8 text-(--success)",
         width: "w-4/5",
       },
       {
         tag: "lost",
-        tagColor: "border-rose-400/30 bg-rose-400/10 text-rose-300",
+        tagColor: "border-(--danger)/30 bg-(--danger)/10 text-(--danger)",
         width: "w-3/5",
         missing: true,
       },
@@ -77,12 +78,13 @@ const MINI_COLUMNS = [
     cards: [
       {
         tag: "setup",
-        tagColor: "border-white/15 bg-white/5 text-white/60",
+        tagColor:
+          "border-(--border-strong) bg-(--tint-5) text-(--text-primary)/60",
         width: "w-3/5",
       },
       {
         tag: "database",
-        tagColor: "border-cyan-400/25 bg-cyan-400/8 text-cyan-300",
+        tagColor: "border-(--hairline) bg-(--tint-4) text-(--text-secondary)",
         width: "w-4/5",
       },
     ] as MiniCard[],
@@ -157,25 +159,25 @@ export default function NotFound() {
           {/* LEFT: Copy */}
           <div>
             {/* Orbiting pill kicker */}
-            <div className="eyebrow-orbit inline-flex items-center gap-3 rounded-full bg-[#08080C] px-4 py-1.5 font-mono text-[11px] uppercase tracking-[0.24em]">
+            <div className="eyebrow-orbit inline-flex items-center gap-3 rounded-full bg-(--bg-root) px-4 py-1.5 font-mono text-[11px] uppercase tracking-[0.24em]">
               <span className="eyebrow-ring" aria-hidden="true" />
 
               <span className="relative z-2 flex items-center gap-3">
                 <span className="text-(--danger)">404</span>
-                <span aria-hidden="true" className="h-px w-6 bg-white/20" />
-                <span className="text-white/85">Not found</span>
+                <span aria-hidden="true" className="h-px w-6 bg-(--tint-15)" />
+                <span className="text-(--text-primary)/85">Not found</span>
               </span>
             </div>
 
             {/* Headline — two-tone, editorial */}
-            <h1 className="mt-10 font-mono text-[2rem] font-normal leading-[1.05] tracking-[-0.03em] text-white sm:text-[2.5rem] lg:text-[3rem]">
+            <h1 className="mt-10 font-mono text-[2rem] font-normal leading-[1.05] tracking-[-0.03em] text-(--text-primary) sm:text-[2.5rem] lg:text-[3rem]">
               This page
               <br />
-              <span className="text-white/35">doesn't exist.</span>
+              <span className="text-(--text-primary)/35">doesn't exist.</span>
             </h1>
 
             {/* Description */}
-            <p className="mt-6 max-w-sm font-mono text-[13px] leading-[1.85] text-white/55 sm:text-[14px]">
+            <p className="mt-6 max-w-sm font-mono text-[13px] leading-[1.85] text-(--text-primary)/55 sm:text-[14px]">
               The page you're looking for may have been moved, renamed, or never
               existed in the first place.
             </p>
@@ -215,23 +217,23 @@ export default function NotFound() {
                 className="
                   group inline-flex min-w-42 cursor-pointer items-center justify-center gap-2
                   rounded-full
-                  border border-white/10
-                  bg-white/3
+                  border border-(--border)
+                  bg-(--tint-3)
                   px-5 py-2.5
-                  font-mono text-sm text-white/55
+                  font-mono text-sm text-(--text-primary)/55
                   shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]
                   backdrop-blur-xl backdrop-saturate-150
                   transition-all duration-300
-                  hover:border-white/20
-                  hover:bg-white/6
-                  hover:text-white
+                  hover:border-(--border-strong)
+                  hover:bg-(--bg-hover)
+                  hover:text-(--text-primary)
                   active:scale-[0.98]
                 "
               >
                 <HugeiconsIcon
                   icon={DashboardSquare01Icon}
                   size={13}
-                  className="text-white/40 transition-colors group-hover:text-(--brand)"
+                  className="text-(--text-primary)/40 transition-colors group-hover:text-(--brand)"
                 />
                 <span>Dashboard</span>
               </Link>
@@ -246,7 +248,7 @@ export default function NotFound() {
 
         <div className="relative mt-20">
           <div className="flex items-center gap-3">
-            <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-white/35">
+            <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-(--text-primary)/35">
               Or try one of these
             </span>
             <span
@@ -274,19 +276,19 @@ function ShortcutLink({ to, icon, label }: ShortcutItem) {
       to={to}
       className="
         group inline-flex cursor-pointer items-center gap-2 rounded-full
-        border border-white/8 bg-white/3 px-3.5 py-1.5
-        font-mono text-[11px] text-white/55
+        border border-(--border) bg-(--tint-3) px-3.5 py-1.5
+        font-mono text-[11px] text-(--text-primary)/55
         backdrop-blur-xl backdrop-saturate-150
         transition-all duration-200
-        hover:border-white/16
-        hover:bg-white/5
-        hover:text-white
+        hover:border-(--border-strong)
+        hover:bg-(--bg-hover)
+        hover:text-(--text-primary)
       "
     >
       <HugeiconsIcon
         icon={icon}
         size={12}
-        className="text-white/40 transition-colors duration-200 group-hover:text-(--brand)"
+        className="text-(--text-primary)/40 transition-colors duration-200 group-hover:text-(--brand)"
       />
       <span>{label}</span>
     </Link>
@@ -305,21 +307,21 @@ function LostBoardScene() {
       />
 
       {/* Framed board */}
-      <div className="relative overflow-hidden rounded-xl border border-white/10 bg-[#08080C] shadow-[0_40px_100px_-30px_rgba(0,0,0,0.85)] sm:rounded-2xl">
+      <div className="relative overflow-hidden rounded-xl border border-(--border) bg-(--bg-root) shadow-[0_40px_100px_-30px_rgba(0,0,0,0.85)] sm:rounded-2xl">
         {/* Chrome bar */}
-        <div className="flex h-10 items-center justify-between border-b border-white/6 px-3 sm:h-11 sm:px-4">
+        <div className="flex h-10 items-center justify-between border-b border-(--border-subtle) px-3 sm:h-11 sm:px-4">
           <div className="flex items-center gap-2 sm:gap-3.5">
             <div className="flex items-center gap-1 sm:gap-1.5">
-              <span className="h-2 w-2 rounded-full border border-rose-500/70 bg-rose-500/10 sm:h-2.5 sm:w-2.5" />
-              <span className="h-2 w-2 rounded-full border border-yellow-500/70 bg-yellow-500/10 sm:h-2.5 sm:w-2.5" />
-              <span className="h-2 w-2 rounded-full border border-emerald-500/70 bg-emerald-500/10 sm:h-2.5 sm:w-2.5" />
+              <span className="h-2 w-2 rounded-full border border-(--danger)/70 bg-(--tint-4) sm:h-2.5 sm:w-2.5" />
+              <span className="h-2 w-2 rounded-full border border-(--warning)/70 bg-(--tint-4) sm:h-2.5 sm:w-2.5" />
+              <span className="h-2 w-2 rounded-full border border-(--success)/70 bg-(--tint-4) sm:h-2.5 sm:w-2.5" />
             </div>
-            <span className="truncate font-mono text-[10px] tracking-wider text-white/55 sm:text-[11px]">
+            <span className="truncate font-mono text-[10px] tracking-wider text-(--text-primary)/55 sm:text-[11px]">
               kanban.board / sprint-04
             </span>
           </div>
 
-          <span className="flex items-center gap-1 rounded-full border border-rose-400/20 bg-rose-400/8 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.15em] text-rose-400 sm:gap-1.5 sm:px-2.5 sm:py-1 sm:text-[10px]">
+          <span className="flex items-center gap-1 rounded-full border border-(--danger)/20 bg-(--danger)/8 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.15em] text-(--danger) sm:gap-1.5 sm:px-2.5 sm:py-1 sm:text-[10px]">
             <HugeiconsIcon icon={Alert02Icon} size={10} />
             <span className="hidden sm:inline">1 missing</span>
             <span className="sm:hidden">!</span>
@@ -327,18 +329,18 @@ function LostBoardScene() {
         </div>
 
         {/* Board columns */}
-        <div className="grid grid-cols-3 gap-px bg-white/4 p-px">
+        <div className="grid grid-cols-3 gap-px bg-(--tint-4) p-px">
           {MINI_COLUMNS.map((column) => (
             <MiniColumn key={column.title} {...column} />
           ))}
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between border-t border-white/6 px-3 py-2.5 sm:px-4 sm:py-3">
-          <span className="font-mono text-[10px] text-white/30 sm:text-[11px]">
+        <div className="flex items-center justify-between border-t border-(--border-subtle) px-3 py-2.5 sm:px-4 sm:py-3">
+          <span className="font-mono text-[10px] text-(--text-primary)/30 sm:text-[11px]">
             22 of 23 tasks found
           </span>
-          <span className="font-mono text-[10px] text-rose-400/70 sm:text-[11px]">
+          <span className="font-mono text-[10px] text-(--danger)/70 sm:text-[11px]">
             1 missing
           </span>
         </div>
@@ -373,27 +375,27 @@ function LostBoardScene() {
           />
 
           {/* The card */}
-          <div className="relative w-40 rounded-md border border-dashed border-rose-400/40 bg-[#08080C] p-3 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.7)]">
+          <div className="relative w-40 rounded-md border border-dashed border-(--danger)/40 bg-(--bg-root) p-3 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.7)]">
             <div className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-rose-400/60" />
-              <span className="rounded border border-rose-400/30 bg-rose-400/8 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.08em] text-rose-300">
+              <span className="h-1.5 w-1.5 rounded-full bg-(--danger)/60" />
+              <span className="rounded border border-(--danger)/30 bg-(--danger)/8 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.08em] text-(--danger)">
                 lost
               </span>
             </div>
 
-            <p className="mt-2 font-mono text-[11px] leading-[1.4] text-white/55">
+            <p className="mt-2 font-mono text-[11px] leading-[1.4] text-(--text-primary)/55">
               TASK-???
             </p>
 
-            <div className="mt-2.5 h-0.75 w-full overflow-hidden rounded-full bg-white/6">
-              <div className="h-full w-1/3 rounded-full bg-rose-400/40" />
+            <div className="mt-2.5 h-0.75 w-full overflow-hidden rounded-full bg-(--tint-6)">
+              <div className="h-full w-1/3 rounded-full bg-(--danger)/40" />
             </div>
 
             <div className="mt-2.5 flex items-center justify-between">
-              <span className="font-mono text-[9px] text-white/25">
+              <span className="font-mono text-[9px] text-(--text-primary)/25">
                 nowhere
               </span>
-              <span className="flex h-5 w-5 items-center justify-center rounded-full border border-rose-400/30 bg-rose-400/8 font-mono text-[10px] text-rose-300">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full border border-(--danger)/30 bg-(--danger)/8 font-mono text-[10px] text-(--danger)">
                 ?
               </span>
             </div>
@@ -418,23 +420,23 @@ function MiniColumn({
   active?: boolean;
 }) {
   return (
-    <div className="h-full bg-[#08080C] p-3 sm:p-3.5">
+    <div className="h-full bg-(--bg-root) p-3 sm:p-3.5">
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span
             className={`h-1 w-1 rounded-full ${
-              active ? "bg-(--brand)" : "bg-white/20"
+              active ? "bg-(--brand)" : "bg-(--tint-15)"
             }`}
           />
           <span
             className={`font-mono text-[10px] uppercase tracking-[0.2em] ${
-              active ? "text-(--brand)" : "text-white/45"
+              active ? "text-(--brand)" : "text-(--text-primary)/45"
             }`}
           >
             {title}
           </span>
         </div>
-        <span className="font-mono text-[9px] tabular-nums text-white/25">
+        <span className="font-mono text-[9px] tabular-nums text-(--text-primary)/25">
           {count}
         </span>
       </div>
@@ -445,9 +447,9 @@ function MiniColumn({
             // Missing card slot — dashed, tilted slightly
             <div
               key={i}
-              className="relative flex h-14 items-center justify-center rounded-md border border-dashed border-rose-400/40 bg-rose-400/2"
+              className="relative flex h-14 items-center justify-center rounded-md border border-dashed border-(--danger)/40 bg-(--danger)/2"
             >
-              <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-rose-400/70">
+              <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-(--danger)/70">
                 Missing
               </span>
             </div>
@@ -455,20 +457,20 @@ function MiniColumn({
             // Normal card
             <div
               key={i}
-              className="rounded-md border border-white/6 bg-white/2 p-2.5"
+              className="rounded-md border border-(--border-subtle) bg-(--tint-2) p-2.5"
             >
               <div className="flex items-center gap-1.5">
                 <span
                   className={`h-1.5 w-1.5 rounded-full ${
                     card.tag === "design"
-                      ? "bg-purple-400"
+                      ? "bg-(--tint-8)"
                       : card.tag === "frontend"
-                        ? "bg-sky-400"
+                        ? "bg-(--text-muted)"
                         : card.tag === "backend"
-                          ? "bg-emerald-400"
+                          ? "bg-(--success)"
                           : card.tag === "database"
-                            ? "bg-cyan-400"
-                            : "bg-white/40"
+                            ? "bg-(--tint-4)"
+                            : "bg-(--tint-4)0"
                   }`}
                 />
                 <span
@@ -479,7 +481,7 @@ function MiniColumn({
               </div>
 
               <div
-                className={`mt-2 h-1 rounded-full bg-white/12 ${card.width}`}
+                className={`mt-2 h-1 rounded-full bg-(--tint-10) ${card.width}`}
               />
             </div>
           ),

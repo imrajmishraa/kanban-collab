@@ -15,6 +15,7 @@ import {
 } from "@hugeicons/core-free-icons";
 
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
+import { Tooltip } from "#components/Tooltips/ToolTip";
 
 interface SidebarSearchProps {
   collapsed: boolean;
@@ -186,20 +187,29 @@ export default function SidebarSearch({ collapsed }: SidebarSearchProps) {
     <div ref={containerRef} className="relative px-3 pb-2">
       {collapsed ? (
         <div className="flex justify-center">
-          <button
-            type="button"
-            onClick={(event) => {
-              /* The collapsed rail expands on any click. Opening Find is not
-                 a request to expand it, so stop the click here. */
-              event.stopPropagation();
-              setOpen((previous) => !previous);
-            }}
-            aria-label="Find"
-            aria-expanded={open}
-            className="flex size-8 cursor-pointer items-center justify-center rounded-lg text-neutral-500 transition-colors duration-200 hover:bg-white/6 hover:text-neutral-200"
+          <Tooltip
+            label="Find"
+            highlight="F"
+            side="right"
+            shape="solid"
+            size="md"
+            gap={10}
           >
-            <HugeiconsIcon icon={Search01Icon} size={15} strokeWidth={1.6} />
-          </button>
+            <button
+              type="button"
+              onClick={(event) => {
+                /* The collapsed rail expands on any click. Opening Find is not
+           a request to expand it, so stop the click here. */
+                event.stopPropagation();
+                setOpen((previous) => !previous);
+              }}
+              aria-label="Find"
+              aria-expanded={open}
+              className="flex size-9 cursor-pointer items-center justify-center rounded-lg text-(--text-muted) transition-colors duration-200 hover:bg-(--bg-hover) hover:text-(--text-primary)"
+            >
+              <HugeiconsIcon icon={Search01Icon} size={15} strokeWidth={1.6} />
+            </button>
+          </Tooltip>
         </div>
       ) : (
         <button
@@ -213,22 +223,22 @@ export default function SidebarSearch({ collapsed }: SidebarSearchProps) {
                it, so the box appears to be the thing that grew. */
             open ? "pointer-events-none opacity-0" : "opacity-100",
             open
-              ? "border-orange-50/30 bg-white/5"
-              : "border-orange-50/15 bg-white/3 hover:border-orange-50/30 hover:bg-white/5",
+              ? "border-(--hairline-strong) bg-(--tint-5)"
+              : "border-(--hairline) bg-(--tint-3) hover:border-(--hairline-strong) hover:bg-(--bg-hover)",
           ].join(" ")}
         >
           <HugeiconsIcon
             icon={Search01Icon}
             size={14}
             strokeWidth={1.6}
-            className="shrink-0 text-neutral-500 transition-colors duration-200 group-hover/find:text-neutral-300"
+            className="shrink-0 text-(--text-muted) transition-colors duration-200 group-hover/find:text-(--text-soft)"
           />
 
-          <span className="min-w-0 flex-1 truncate text-[12.5px] tracking-tight text-neutral-500">
+          <span className="min-w-0 flex-1 truncate text-[12.5px] tracking-tight text-(--text-muted)">
             Find
           </span>
 
-          <kbd className="shrink-0 rounded border border-orange-50/15 bg-white/6 px-1.5 py-0.5 font-mono text-[9px] text-neutral-500">
+          <kbd className="shrink-0 rounded border border-(--hairline) bg-(--tint-6) px-1.5 py-0.5 font-mono text-[9px] text-(--text-muted)">
             F
           </kbd>
         </button>
@@ -245,18 +255,18 @@ export default function SidebarSearch({ collapsed }: SidebarSearchProps) {
         onClick={(event) => event.stopPropagation()}
         onPointerDown={(event) => event.stopPropagation()}
         className={[
-          "absolute z-50 overflow-hidden border bg-[#0c0c0d]",
+          "absolute z-50 overflow-hidden border bg-(--bg-root)",
           "transition-[width,border-radius,opacity] duration-300 ease-out",
           "motion-reduce:transition-none",
           "left-3 top-0",
           open
-            ? "w-80 rounded-xl border-orange-50/20 opacity-100"
-            : "pointer-events-none w-[calc(100%-1.5rem)] rounded-lg border-orange-50/20 opacity-0",
+            ? "w-80 rounded-xl border-(--hairline-strong) opacity-100"
+            : "pointer-events-none w-[calc(100%-1.5rem)] rounded-lg border-(--hairline-strong) opacity-0",
         ].join(" ")}
       >
         <div
           className={[
-            "flex items-center gap-2.5 border-b border-orange-50/10",
+            "flex items-center gap-2.5 border-b border-(--hairline)",
             "transition-[height,padding] duration-300 ease-out motion-reduce:transition-none",
             open ? "h-12 px-4" : "h-9 px-2.5",
           ].join(" ")}
@@ -265,7 +275,7 @@ export default function SidebarSearch({ collapsed }: SidebarSearchProps) {
             icon={Search01Icon}
             size={15}
             strokeWidth={1.7}
-            className="shrink-0 text-neutral-500"
+            className="shrink-0 text-(--text-muted)"
           />
 
           <input
@@ -279,13 +289,13 @@ export default function SidebarSearch({ collapsed }: SidebarSearchProps) {
             placeholder="Find"
             aria-label="Find"
             className={[
-              "min-w-0 flex-1 bg-transparent tracking-tight text-neutral-100 placeholder:text-neutral-600 outline-hidden",
+              "min-w-0 flex-1 bg-transparent tracking-tight text-(--text-primary) placeholder:text-(--text-subtle) outline-hidden",
               "transition-[font-size] duration-300 ease-out motion-reduce:transition-none",
               open ? "text-[14px]" : "text-[12.5px]",
             ].join(" ")}
           />
 
-          <kbd className="shrink-0 rounded border border-orange-50/15 bg-white/1 px-1.5 py-0.5 font-mono text-[9px] text-neutral-400">
+          <kbd className="shrink-0 rounded border border-(--hairline) bg-(--tint-2) px-1.5 py-0.5 font-mono text-[9px] text-(--text-secondary)">
             Esc
           </kbd>
         </div>
@@ -299,7 +309,7 @@ export default function SidebarSearch({ collapsed }: SidebarSearchProps) {
           ].join(" ")}
         >
           {results.length === 0 ? (
-            <p className="px-2 py-6 text-center text-[12px] text-neutral-500">
+            <p className="px-2 py-6 text-center text-[12px] text-(--text-muted)">
               Nothing matches “{query.trim()}”
             </p>
           ) : (
@@ -312,13 +322,15 @@ export default function SidebarSearch({ collapsed }: SidebarSearchProps) {
                 className={[
                   "flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left",
                   "transition-colors duration-150",
-                  index === cursor ? "bg-white/8" : "hover:bg-white/6",
+                  index === cursor ? "bg-(--tint-8)" : "hover:bg-(--bg-hover)",
                 ].join(" ")}
               >
                 <span
                   className={[
-                    "flex size-8 shrink-0 items-center justify-center rounded-md border border-orange-50/15",
-                    index === cursor ? "text-orange-100" : "text-neutral-500",
+                    "flex size-8 shrink-0 items-center justify-center rounded-md border border-(--hairline)",
+                    index === cursor
+                      ? "text-(--accent)"
+                      : "text-(--text-muted)",
                   ].join(" ")}
                 >
                   <HugeiconsIcon
@@ -329,10 +341,10 @@ export default function SidebarSearch({ collapsed }: SidebarSearchProps) {
                 </span>
 
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[13px] font-medium tracking-tight text-neutral-100">
+                  <span className="block truncate text-[13px] font-medium tracking-tight text-(--text-primary)">
                     {entry.label}
                   </span>
-                  <span className="block truncate text-[11.5px] text-neutral-500">
+                  <span className="block truncate text-[11.5px] text-(--text-muted)">
                     {entry.context}
                   </span>
                 </span>
@@ -341,7 +353,7 @@ export default function SidebarSearch({ collapsed }: SidebarSearchProps) {
                   icon={ArrowRight01Icon}
                   size={12}
                   strokeWidth={2}
-                  className="shrink-0 text-neutral-700"
+                  className="shrink-0 text-(--text-subtle)"
                 />
               </button>
             ))

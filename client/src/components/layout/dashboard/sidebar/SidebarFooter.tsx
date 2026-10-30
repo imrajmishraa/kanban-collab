@@ -97,7 +97,7 @@ export default function SidebarFooter({
       <div
         ref={containerRef}
         onClick={(event) => event.stopPropagation()}
-        className="relative flex shrink-0 flex-col items-center gap-1 border-orange-50/15 py-2"
+        className="relative flex shrink-0 flex-col items-center gap-1 border-(--hairline) py-2"
       >
         {panel === "account" && (
           <SidebarAccountMenu
@@ -119,7 +119,7 @@ export default function SidebarFooter({
             onClick={() => toggle("account")}
             aria-label="Account"
             aria-expanded={panel === "account"}
-            className="flex size-9 cursor-pointer items-center justify-center rounded-lg transition-colors duration-200 motion-reduce:transition-none"
+            className="flex size-10 cursor-pointer items-center justify-center rounded-lg transition-colors duration-200 motion-reduce:transition-none"
           >
             <Avatar
               member={{
@@ -128,7 +128,7 @@ export default function SidebarFooter({
                 avatarUrl: user?.avatarUrl ?? null,
                 color: avatarColor(user?.id ?? "me"),
               }}
-              size={26}
+              size={28}
               ring={false}
             />
           </button>
@@ -142,7 +142,7 @@ export default function SidebarFooter({
       ref={containerRef}
       onMouseEnter={onEnter}
       onMouseLeave={onLeave}
-      className="relative shrink-0 border-orange-50/15 px-3 py-2"
+      className="relative shrink-0 border-(--hairline) px-3 py-2"
     >
       {panel === "account" && (
         <SidebarAccountMenu
@@ -178,11 +178,11 @@ export default function SidebarFooter({
             avatarUrl: user?.avatarUrl ?? null,
             color: avatarColor(user?.id ?? "me"),
           }}
-          size={26}
+          size={28}
           ring={false}
         />
 
-        <span className="min-w-0 flex-1 truncate text-[12.5px] font-medium tracking-tight text-neutral-100">
+        <span className="min-w-0 flex-1 truncate text-[12.5px] font-medium tracking-tight text-(--text-primary)">
           {user?.fullName ?? "Account"}
         </span>
 
@@ -197,8 +197,8 @@ export default function SidebarFooter({
             "flex size-7 shrink-0 items-center justify-center rounded-full border",
             "transition-colors duration-200 motion-reduce:transition-none",
             panel === "account"
-              ? "border-orange-50/30 bg-white/8 text-neutral-100"
-              : "border-orange-50/15 text-neutral-400",
+              ? "border-(--hairline-strong) bg-(--tint-8) text-(--text-primary)"
+              : "border-(--hairline) text-(--text-secondary)",
           ].join(" ")}
         >
           <HugeiconsIcon icon={MoreHorizontalIcon} size={14} strokeWidth={2} />

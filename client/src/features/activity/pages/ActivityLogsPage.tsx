@@ -90,13 +90,13 @@ function dayLabel(iso: string): string {
 
 function LogsSkeleton() {
   return (
-    <div className="divide-y divide-orange-50/6">
+    <div className="divide-y divide-(--hairline)">
       {Array.from({ length: 8 }).map((_, index) => (
         <div key={index} className="flex gap-3 px-4 py-3.5">
-          <div className="size-7 shrink-0 animate-pulse rounded-full bg-white/6" />
+          <div className="size-7 shrink-0 animate-pulse rounded-full bg-(--tint-6)" />
           <div className="min-w-0 flex-1 space-y-2">
-            <div className="h-2.5 w-28 animate-pulse rounded bg-white/6" />
-            <div className="h-2.5 w-full animate-pulse rounded bg-white/4" />
+            <div className="h-2.5 w-28 animate-pulse rounded bg-(--tint-6)" />
+            <div className="h-2.5 w-full animate-pulse rounded bg-(--tint-4)" />
           </div>
         </div>
       ))}
@@ -169,24 +169,24 @@ export default function ActivityLogsPage() {
 
   return (
     <BoardShell>
-      <header className="flex flex-col gap-4 border-b border-orange-50/10 pb-6 sm:flex-row sm:items-end sm:justify-between">
+      <header className="flex flex-col gap-4 border-b border-(--hairline) pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div className="flex flex-col gap-1.5">
-          <p className="font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-neutral-500">
+          <p className="font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-(--text-muted)">
             {activeWorkspaceName || "Workspace"}
           </p>
 
-          <h1 className="text-[22px] font-semibold tracking-tight text-neutral-100 sm:text-[26px]">
+          <h1 className="text-[22px] font-semibold tracking-tight text-(--text-primary) sm:text-[26px]">
             Activity logs
           </h1>
 
-          <p className="max-w-xl text-[12.5px] leading-5 text-neutral-400">
+          <p className="max-w-xl text-[12.5px] leading-5 text-(--text-secondary)">
             Everything that happened across your workspaces, newest{" "}
-            <span className="font-medium text-orange-100">first</span>
+            <span className="font-medium text-(--accent)">first</span>
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 rounded-lg border border-orange-50/15 bg-white/3 p-1">
+          <div className="flex items-center gap-1 rounded-lg border border-(--hairline) bg-(--tint-3) p-1">
             {FILTERS.map((option) => (
               <button
                 key={option}
@@ -201,8 +201,8 @@ export default function ActivityLogsPage() {
                 className={[
                   "h-7 cursor-pointer rounded-md px-2.5 text-[11.5px] transition-colors duration-200",
                   filter === option
-                    ? "bg-white/8 text-orange-100"
-                    : "text-neutral-500 hover:bg-white/5 hover:text-neutral-200",
+                    ? "bg-(--tint-8) text-(--accent)"
+                    : "text-(--text-muted) hover:bg-(--bg-hover) hover:text-(--text-primary)",
                 ].join(" ")}
               >
                 {option}
@@ -215,7 +215,7 @@ export default function ActivityLogsPage() {
             onClick={() => void refetch()}
             disabled={isFetching}
             aria-label="Refresh activity"
-            className="flex size-9 cursor-pointer items-center justify-center rounded-lg border border-orange-50/15 text-neutral-400 transition-colors duration-200 hover:border-orange-50/30 hover:text-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex size-9 cursor-pointer items-center justify-center rounded-lg border border-(--hairline) text-(--text-secondary) transition-colors duration-200 hover:border-(--hairline-strong) hover:text-(--text-primary) disabled:cursor-not-allowed disabled:opacity-50"
           >
             <HugeiconsIcon
               icon={RefreshIcon}
@@ -229,7 +229,7 @@ export default function ActivityLogsPage() {
         </div>
       </header>
 
-      <section className="mt-6 overflow-hidden rounded-xl border border-orange-50/15 bg-white/3">
+      <section className="mt-6 overflow-hidden rounded-xl border border-(--hairline) bg-(--tint-3)">
         {isLoading ? (
           <LogsSkeleton />
         ) : isError ? (
@@ -241,22 +241,22 @@ export default function ActivityLogsPage() {
           </div>
         ) : entries.length === 0 ? (
           <div className="px-6 py-16 text-center">
-            <span className="mx-auto flex size-9 items-center justify-center rounded-lg border border-orange-50/15 text-neutral-600">
+            <span className="mx-auto flex size-9 items-center justify-center rounded-lg border border-(--hairline) text-(--text-subtle)">
               <HugeiconsIcon icon={Time04Icon} size={16} strokeWidth={1.6} />
             </span>
 
-            <p className="mt-3 text-[12.5px] text-neutral-400">
+            <p className="mt-3 text-[12.5px] text-(--text-secondary)">
               {filter === "All"
                 ? "Nothing has happened yet"
                 : `No ${filter.toLowerCase()} activity yet`}
             </p>
           </div>
         ) : (
-          <ul className="divide-y divide-orange-50/6">
+          <ul className="divide-y divide-(--hairline)">
             {rows.map(({ entry, day, showDay }) => (
               <li key={entry.id}>
                 {showDay && (
-                  <p className="border-b border-orange-50/6 bg-white/2 px-4 py-1.5 font-mono text-[9px] uppercase tracking-[0.14em] text-neutral-500">
+                  <p className="border-b border-(--hairline) bg-(--tint-2) px-4 py-1.5 font-mono text-[9px] uppercase tracking-[0.14em] text-(--text-muted)">
                     {day}
                   </p>
                 )}
@@ -264,7 +264,7 @@ export default function ActivityLogsPage() {
                 <button
                   type="button"
                   onClick={() => navigate(`/boards/${entry.boardId}`)}
-                  className="flex w-full cursor-pointer items-start gap-3 px-4 py-3.5 text-left transition-colors duration-200 hover:bg-white/4"
+                  className="flex w-full cursor-pointer items-start gap-3 px-4 py-3.5 text-left transition-colors duration-200 hover:bg-(--tint-4)"
                 >
                   <span className="mt-0.5 shrink-0">
                     <Avatar
@@ -281,24 +281,24 @@ export default function ActivityLogsPage() {
 
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline justify-between gap-2">
-                      <p className="min-w-0 truncate text-[12.5px] font-medium tracking-tight text-neutral-100">
+                      <p className="min-w-0 truncate text-[12.5px] font-medium tracking-tight text-(--text-primary)">
                         {entry.actorName}
                       </p>
 
                       <time
                         dateTime={entry.createdAt}
-                        className="shrink-0 font-mono text-[9px] tabular-nums text-neutral-600"
+                        className="shrink-0 font-mono text-[9px] tabular-nums text-(--text-subtle)"
                       >
                         {relativeTime(entry.createdAt)}
                       </time>
                     </div>
 
-                    <p className="mt-1 text-[12px] leading-5 text-neutral-400">
+                    <p className="mt-1 text-[12px] leading-5 text-(--text-secondary)">
                       {entry.message}
                     </p>
 
                     {(entry.workspaceName || entry.boardName) && (
-                      <p className="mt-1.5 truncate font-mono text-[9px] uppercase tracking-wider text-neutral-600">
+                      <p className="mt-1.5 truncate font-mono text-[9px] uppercase tracking-wider text-(--text-subtle)">
                         {[entry.workspaceName, entry.boardName]
                           .filter(Boolean)
                           .join(" / ")}
@@ -310,7 +310,7 @@ export default function ActivityLogsPage() {
                     icon={ArrowRight01Icon}
                     size={12}
                     strokeWidth={2}
-                    className="mt-1 shrink-0 text-neutral-700"
+                    className="mt-1 shrink-0 text-(--text-subtle)"
                   />
                 </button>
               </li>
@@ -321,7 +321,7 @@ export default function ActivityLogsPage() {
         <div ref={sentinelRef} className="h-px" />
 
         {isFetchingNextPage && (
-          <div className="flex items-center justify-center gap-2 py-3 text-[11px] text-neutral-500">
+          <div className="flex items-center justify-center gap-2 py-3 text-[11px] text-(--text-muted)">
             <HugeiconsIcon
               icon={Loading03Icon}
               size={12}
@@ -333,7 +333,7 @@ export default function ActivityLogsPage() {
         )}
 
         {!hasNextPage && entries.length > 0 && (
-          <p className="py-3 text-center text-[10px] uppercase tracking-wider text-neutral-700">
+          <p className="py-3 text-center text-[10px] uppercase tracking-wider text-(--text-subtle)">
             End of activity
           </p>
         )}

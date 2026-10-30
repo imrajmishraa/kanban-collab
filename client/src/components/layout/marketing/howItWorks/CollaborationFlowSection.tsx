@@ -47,11 +47,11 @@ export default function CollaborationFlowSection() {
             }}
           />
 
-          <div className="relative overflow-hidden rounded-xl border border-white/10 bg-[#08080C] shadow-[0_40px_100px_-30px_rgba(0,0,0,0.85)] sm:rounded-2xl">
+          <div className="relative overflow-hidden rounded-xl border border-(--border) bg-(--bg-root) shadow-[0_40px_100px_-30px_rgba(0,0,0,0.85)] sm:rounded-2xl">
             <FlowScene />
           </div>
 
-          <div className="mt-3 flex items-baseline justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-white/35 sm:mt-4 sm:tracking-[0.24em]">
+          <div className="mt-3 flex items-baseline justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-(--text-primary)/35 sm:mt-4 sm:tracking-[0.24em]">
             <span>Fig. 04 — Collaboration flow</span>
             <span>Step 04 / 04</span>
           </div>
@@ -66,23 +66,25 @@ export default function CollaborationFlowSection() {
 function Header() {
   return (
     <div className="max-w-2xl">
-      <div className="eyebrow-orbit inline-flex items-center gap-3 rounded-full bg-[#08080C] px-4 py-1.5 font-mono text-[11px] uppercase tracking-[0.24em]">
+      <div className="eyebrow-orbit inline-flex items-center gap-3 rounded-full bg-(--bg-root) px-4 py-1.5 font-mono text-[11px] uppercase tracking-[0.24em]">
         <span className="eyebrow-ring" aria-hidden="true" />
 
         <span className="relative z-2 flex items-center gap-3">
           <span className="text-(--brand)">04</span>
-          <span aria-hidden="true" className="h-px w-6 bg-white/20" />
-          <span className="text-white/85">Collaboration flow</span>
+          <span aria-hidden="true" className="h-px w-6 bg-(--tint-15)" />
+          <span className="text-(--text-primary)/85">Collaboration flow</span>
         </span>
       </div>
 
-      <h2 className="mt-8 font-mono text-[1.75rem] font-normal leading-[1.05] tracking-[-0.03em] text-white sm:text-[2.25rem] lg:text-[2.5rem]">
+      <h2 className="mt-8 font-mono text-[1.75rem] font-normal leading-[1.05] tracking-[-0.03em] text-(--text-primary) sm:text-[2.25rem] lg:text-[2.5rem]">
         One shared state.
         <br />
-        <span className="text-white/35">Everyone stays in sync.</span>
+        <span className="text-(--text-primary)/35">
+          Everyone stays in sync.
+        </span>
       </h2>
 
-      <p className="mt-6 max-w-sm font-mono text-[13px] leading-[1.85] text-white/55 sm:text-[14px]">
+      <p className="mt-6 max-w-sm font-mono text-[13px] leading-[1.85] text-(--text-primary)/55 sm:text-[14px]">
         When someone changes the board, that change propagates through the
         collaboration layer and reaches every connected client in milliseconds.
       </p>

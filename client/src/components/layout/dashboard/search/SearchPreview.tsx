@@ -14,7 +14,7 @@ export function SearchPreview({ active, scope, onOpen }: SearchPreviewProps) {
   if (!active) {
     return (
       <div className="flex min-w-0 flex-1 flex-col p-4">
-        <p className="m-auto text-[12.5px] text-neutral-600">
+        <p className="m-auto text-[12.5px] text-(--text-subtle)">
           Select a result to preview
         </p>
       </div>
@@ -28,16 +28,16 @@ export function SearchPreview({ active, scope, onOpen }: SearchPreviewProps) {
           icon={active.icon}
           size={16}
           strokeWidth={1.6}
-          className="mt-0.5 shrink-0 text-neutral-500"
+          className="mt-0.5 shrink-0 text-(--text-muted)"
         />
         <div className="min-w-0">
-          <p className="truncate text-[13.5px] font-medium text-neutral-100">
+          <p className="truncate text-[13.5px] font-medium text-(--text-primary)">
             {active.title}
           </p>
           {active.meta && (
-            <p className="mt-0.5 text-[11.5px] text-neutral-500">
+            <p className="mt-0.5 text-[11.5px] text-(--text-muted)">
               {scope === "cards" ? "Board" : "Updated"}:{" "}
-              <span className="font-medium capitalize text-orange-100">
+              <span className="font-medium capitalize text-(--accent)">
                 {active.meta}
               </span>
             </p>
@@ -48,7 +48,7 @@ export function SearchPreview({ active, scope, onOpen }: SearchPreviewProps) {
       <button
         type="button"
         onClick={() => onOpen(active)}
-        className="mt-auto flex h-9 items-center justify-center gap-1.5 rounded-none rounded-tr-lg rounded-bl-lg bg-white px-4 text-[12px] font-semibold text-black transition-colors duration-200 hover:bg-neutral-200"
+        className="mt-auto flex h-9 items-center justify-center gap-1.5 rounded-none rounded-tr-lg rounded-bl-lg bg-(--solid-bg) px-4 text-[12px] font-semibold text-(--solid-text) transition-colors duration-200 hover:bg-(--solid-bg-hover)"
       >
         Open board
         <HugeiconsIcon icon={ArrowRight01Icon} size={13} strokeWidth={2} />

@@ -87,7 +87,7 @@ export default function NotesPage() {
   return (
     <div className="min-h-screen bg-(--bg-root) text-(--text-primary)">
       <div className="mx-auto w-full max-w-4xl px-5 py-8 sm:px-6 lg:px-8">
-        <header className="border-b border-white/8 pb-6">
+        <header className="border-b border-(--border) pb-6">
           <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-(--text-muted)">
             {activeWorkspaceName ?? "Workspace"}
           </p>
@@ -102,27 +102,27 @@ export default function NotesPage() {
         {/* Composer */}
         <form
           onSubmit={handleSubmit}
-          className="mt-6 rounded-xl border border-white/8 bg-white/3 p-4"
+          className="mt-6 rounded-xl border border-(--border) bg-(--tint-3) p-4"
         >
           <input
             value={title}
             onChange={(event) => setTitle(event.target.value)}
             placeholder="Note title…"
             maxLength={200}
-            className="h-10 w-full rounded-lg border border-white/8 bg-white/4 px-3 font-mono text-[13px] text-(--text-primary) outline-hidden placeholder:text-(--text-muted) focus:border-(--brand-border)"
+            className="h-10 w-full rounded-lg border border-(--border) bg-(--tint-4) px-3 font-mono text-[13px] text-(--text-primary) outline-hidden placeholder:text-(--text-muted) focus:border-(--brand-border)"
           />
           <textarea
             value={body}
             onChange={(event) => setBody(event.target.value)}
             placeholder="Write something…"
             rows={3}
-            className="mt-2 w-full resize-none rounded-lg border border-white/8 bg-white/4 p-3 font-mono text-[12px] leading-5 text-(--text-primary) outline-hidden placeholder:text-(--text-muted) focus:border-(--brand-border)"
+            className="mt-2 w-full resize-none rounded-lg border border-(--border) bg-(--tint-4) p-3 font-mono text-[12px] leading-5 text-(--text-primary) outline-hidden placeholder:text-(--text-muted) focus:border-(--brand-border)"
           />
           <div className="mt-2 flex justify-end">
             <button
               type="submit"
               disabled={!title.trim() || createNote.isPending}
-              className="h-9 rounded-full border border-(--brand-border) bg-(--brand-muted) px-4 font-mono text-[11px] text-(--brand-hover) transition-colors hover:bg-[rgba(255,107,53,0.18)] hover:text-(--text-primary) disabled:cursor-not-allowed disabled:border-white/8 disabled:bg-transparent disabled:text-(--text-muted)"
+              className="h-9 rounded-full border border-(--brand-border) bg-(--brand-muted) px-4 font-mono text-[11px] text-(--brand-hover) transition-colors hover:bg-[rgba(255,107,53,0.18)] hover:text-(--text-primary) disabled:cursor-not-allowed disabled:border-(--border) disabled:bg-transparent disabled:text-(--text-muted)"
             >
               {createNote.isPending ? "Saving…" : "Add note"}
             </button>
@@ -135,16 +135,16 @@ export default function NotesPage() {
             {[0, 1, 2].map((row) => (
               <div
                 key={row}
-                className="h-24 animate-pulse rounded-xl border border-white/8 bg-white/4"
+                className="h-24 animate-pulse rounded-xl border border-(--border) bg-(--tint-4)"
               />
             ))}
           </div>
         ) : notesQuery.isError ? (
-          <p className="mt-6 rounded-xl border border-dashed border-white/10 bg-white/2 px-5 py-8 text-center font-mono text-[12px] text-(--text-muted)">
+          <p className="mt-6 rounded-xl border border-dashed border-(--border) bg-(--tint-2) px-5 py-8 text-center font-mono text-[12px] text-(--text-muted)">
             Couldn't load notes. Please try again.
           </p>
         ) : notes.length === 0 ? (
-          <p className="mt-6 rounded-xl border border-dashed border-white/10 bg-white/2 px-5 py-10 text-center font-mono text-[12px] text-(--text-muted)">
+          <p className="mt-6 rounded-xl border border-dashed border-(--border) bg-(--tint-2) px-5 py-10 text-center font-mono text-[12px] text-(--text-muted)">
             No notes yet. Add your first one above.
           </p>
         ) : (
@@ -152,7 +152,7 @@ export default function NotesPage() {
             {notes.map((note) => (
               <article
                 key={note.id}
-                className="relative rounded-xl border border-white/8 bg-white/3 p-4"
+                className="relative rounded-xl border border-(--border) bg-(--tint-3) p-4"
               >
                 <div className="flex items-start justify-between gap-3">
                   <h2 className="min-w-0 font-mono text-[13px] font-semibold text-(--text-primary)">
@@ -166,7 +166,7 @@ export default function NotesPage() {
                         "rounded-full border px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider transition-colors",
                         note.isPinned
                           ? "border-(--brand-border) bg-(--brand-muted) text-(--brand-hover)"
-                          : "border-white/10 text-(--text-muted) hover:text-(--text-primary)",
+                          : "border-(--border) text-(--text-muted) hover:text-(--text-primary)",
                       ].join(" ")}
                     >
                       {note.isPinned ? "Pinned" : "Pin"}
@@ -174,7 +174,7 @@ export default function NotesPage() {
                     <button
                       type="button"
                       onClick={() => deleteNote.mutate(note.id)}
-                      className="rounded-full border border-white/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-(--danger) transition-colors hover:bg-white/6"
+                      className="rounded-full border border-(--border) px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-(--danger) transition-colors hover:bg-(--bg-hover)"
                     >
                       Delete
                     </button>

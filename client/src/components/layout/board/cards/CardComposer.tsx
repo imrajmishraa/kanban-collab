@@ -28,7 +28,7 @@ export default function CardComposer({
   };
 
   return (
-    <div className="rounded-lg border border-(--brand-border) bg-white/6 p-2">
+    <div className="rounded-lg border border-(--brand-border) bg-(--tint-6) p-2">
       <textarea
         ref={inputRef}
         value={title}
@@ -42,14 +42,14 @@ export default function CardComposer({
         }}
         rows={2}
         placeholder="Card title…"
-        className="w-full resize-none bg-transparent text-[12px] text-neutral-100 outline-hidden placeholder:text-neutral-500"
+        className="w-full resize-none bg-transparent text-[12px] text-(--text-primary) outline-hidden placeholder:text-(--text-muted)"
       />
 
       <div className="mt-2 flex items-center justify-between">
         <button
           type="button"
           onClick={submit}
-          className="rounded-md border border-orange-50/20 bg-white/4 px-3 py-1.5 text-[10px] uppercase tracking-wider text-neutral-300 transition-colors duration-200 hover:border-orange-50/35 hover:text-neutral-100"
+          className="rounded-md border border-(--hairline-strong) bg-(--tint-4) px-3 py-1.5 text-[10px] uppercase tracking-wider text-(--text-soft) transition-colors duration-200 hover:border-(--hairline-strong) hover:text-(--text-primary)"
         >
           Add
         </button>
@@ -58,7 +58,7 @@ export default function CardComposer({
           type="button"
           onClick={onCancel}
           aria-label="Cancel"
-          className="flex size-7 items-center justify-center rounded-full text-neutral-500 transition-colors hover:text-neutral-100"
+          className="flex size-7 items-center justify-center rounded-full text-(--text-muted) transition-colors hover:text-(--text-primary)"
         >
           <HugeiconsIcon icon={Cancel01Icon} size={14} strokeWidth={1.6} />
         </button>

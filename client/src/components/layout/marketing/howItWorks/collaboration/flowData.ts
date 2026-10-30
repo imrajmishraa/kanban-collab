@@ -76,7 +76,7 @@ export const EVENTS: EventItem[] = [
   {
     initials: "RI",
     name: "Rio",
-    color: "bg-sky-500",
+    color: "bg-(--tint-4)",
     action: "edited",
     task: "Board layout",
     time: "12ms",
@@ -85,7 +85,7 @@ export const EVENTS: EventItem[] = [
   {
     initials: "SA",
     name: "Sam",
-    color: "bg-pink-500",
+    color: "bg-(--tint-4)",
     action: "completed",
     task: "Project init",
     time: "28ms",
@@ -95,11 +95,11 @@ export const EVENTS: EventItem[] = [
 
 export const PEERS: PeerChip[] = [
   { initials: "RM", color: "bg-(--brand)", x: "18%", y: "26%", label: "Maya" },
-  { initials: "RI", color: "bg-sky-500", x: "62%", y: "42%", label: "Rio" },
-  { initials: "SA", color: "bg-pink-500", x: "34%", y: "68%", label: "Sam" },
+  { initials: "RI", color: "bg-(--tint-4)", x: "62%", y: "42%", label: "Rio" },
+  { initials: "SA", color: "bg-(--tint-4)", x: "34%", y: "68%", label: "Sam" },
   {
     initials: "NV",
-    color: "bg-emerald-500",
+    color: "bg-(--tint-4)",
     x: "78%",
     y: "72%",
     label: "Noah",

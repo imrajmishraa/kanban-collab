@@ -12,15 +12,15 @@ import { boardKeys } from "@/hooks/dashboard/useBoards";
 import { toastSuccess, toastError } from "@/lib/toast";
 
 const inputClass =
-  "w-full rounded-lg border border-orange-50/15 bg-white/[0.03] px-3 py-2 text-[13px] text-neutral-100 placeholder:text-neutral-600 outline-hidden transition-colors duration-200 hover:border-orange-50/25 focus:border-white/25 focus:bg-white/[0.05] focus-visible:outline-hidden";
+  "w-full rounded-lg border border-(--hairline) bg-(--tint-3) px-3 py-2 text-[13px] text-(--text-primary) placeholder:text-(--text-subtle) outline-hidden transition-colors duration-200 hover:border-(--hairline-strong) focus:border-(--border-strong) focus:bg-(--tint-5) focus-visible:outline-hidden";
 
-const labelClass = "text-[11px] font-medium text-neutral-300";
+const labelClass = "text-[11px] font-medium text-(--text-soft)";
 
 const cancelClass =
-  "flex h-9 cursor-pointer items-center rounded-none rounded-tl-lg rounded-br-lg border border-orange-50/20 px-4 text-[12px] text-neutral-300 transition-colors duration-200 hover:border-orange-50/35 hover:bg-white/[0.04] hover:text-neutral-100";
+  "flex h-9 cursor-pointer items-center rounded-none rounded-tl-lg rounded-br-lg border border-(--hairline-strong) px-4 text-[12px] text-(--text-soft) transition-colors duration-200 hover:border-(--hairline-strong) hover:bg-(--tint-4) hover:text-(--text-primary)";
 
 const submitClass =
-  "flex h-9 cursor-pointer items-center gap-1.5 rounded-none rounded-tr-lg rounded-bl-lg bg-white px-4 text-[12px] font-semibold text-black transition-colors duration-200 hover:bg-neutral-200 disabled:cursor-not-allowed disabled:opacity-50";
+  "flex h-9 cursor-pointer items-center gap-1.5 rounded-none rounded-tr-lg rounded-bl-lg bg-(--solid-bg) px-4 text-[12px] font-semibold text-(--solid-text) transition-colors duration-200 hover:bg-(--solid-bg-hover) disabled:cursor-not-allowed disabled:opacity-50";
 
 /* ── Edit board ─────────────────────────────────────────────────────────── */
 
@@ -102,7 +102,7 @@ export function EditBoardDialog({
               placeholder="What is this board for?"
               className={`mt-1.5 resize-none ${inputClass}`}
             />
-            <p className="mt-1.5 text-[11px] text-neutral-600">
+            <p className="mt-1.5 text-[11px] text-(--text-subtle)">
               {description.trim().length}/500
             </p>
           </div>
@@ -196,7 +196,7 @@ export function EditColumnDialog({
               placeholder="What goes in this column?"
               className={`mt-1.5 resize-none ${inputClass}`}
             />
-            <p className="mt-1.5 text-[11px] text-neutral-600">
+            <p className="mt-1.5 text-[11px] text-(--text-subtle)">
               {description.trim().length}/300
             </p>
           </div>
@@ -300,9 +300,9 @@ export function DeleteBoardDialog({
       onClose={onClose}
     >
       <div className="p-5">
-        <p className="text-[12.5px] leading-5 text-neutral-400">
-          <span className="font-medium text-neutral-200">{boardName}</span> and
-          every card on it will be removed for everyone in the workspace.
+        <p className="text-[12.5px] leading-5 text-(--text-secondary)">
+          <span className="font-medium text-(--text-primary)">{boardName}</span>{" "}
+          and every card on it will be removed for everyone in the workspace.
         </p>
 
         <div className="mt-6 flex items-center justify-end gap-2">
@@ -313,7 +313,7 @@ export function DeleteBoardDialog({
             type="button"
             onClick={() => remove.mutate()}
             disabled={remove.isPending}
-            className="flex h-9 cursor-pointer items-center gap-1.5 rounded-none rounded-tr-lg rounded-bl-lg bg-rose-500 px-4 text-[12px] font-semibold text-white transition-colors duration-200 hover:bg-rose-400 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex h-9 cursor-pointer items-center gap-1.5 rounded-none rounded-tr-lg rounded-bl-lg bg-(--tint-4) px-4 text-[12px] font-semibold text-(--text-primary) transition-colors duration-200 hover:bg-(--tint-4) disabled:cursor-not-allowed disabled:opacity-50"
           >
             {remove.isPending && (
               <HugeiconsIcon

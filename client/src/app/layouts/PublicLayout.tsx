@@ -38,7 +38,7 @@ function ScrollCorner() {
       transition={{ duration: 0.3, ease: [0.21, 0.47, 0.32, 0.98] }}
       className={`
         fixed bottom-6 right-6 z-60 flex size-11 cursor-pointer items-center
-        justify-center rounded-full bg-[#0B0B10]/70
+        justify-center rounded-full bg-(--bg-root)/70
         text-(--text-secondary) shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_12px_32px_-8px_rgba(0,0,0,0.6)]
         backdrop-blur-xl backdrop-saturate-150
         transition-colors duration-300

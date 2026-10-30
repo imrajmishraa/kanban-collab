@@ -25,10 +25,10 @@ export function OAuthButton({
       aria-label={`Continue with ${label}`}
       className="
         group/oauth relative flex items-center justify-center gap-2.5
-        rounded-lg border border-white/10 bg-white/3
-        px-4 py-2.5 font-mono text-[12px] text-white/80
+        rounded-lg border border-(--border) bg-(--tint-3)
+        px-4 py-2.5 font-mono text-[12px] text-(--text-primary)/80
         transition-all duration-200
-        hover:border-white/20 hover:bg-white/5 hover:text-white
+        hover:border-(--border-strong) hover:bg-(--bg-hover) hover:text-(--text-primary)
         focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-(--brand)/40
         disabled:cursor-not-allowed disabled:opacity-50
         active:scale-[0.99]

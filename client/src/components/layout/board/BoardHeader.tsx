@@ -53,8 +53,8 @@ function IconButton({
       className={[
         "flex size-9 cursor-pointer items-center justify-center rounded-lg border transition-colors duration-200",
         active
-          ? "border-orange-50/25 bg-white/[0.06] text-orange-100"
-          : "border-orange-50/15 text-neutral-500 hover:border-orange-50/25 hover:bg-white/[0.05] hover:text-neutral-100",
+          ? "border-(--hairline-strong) bg-(--tint-6) text-(--accent)"
+          : "border-(--hairline) text-(--text-muted) hover:border-(--hairline-strong) hover:bg-(--tint-5) hover:text-(--text-primary)",
       ].join(" ")}
     >
       <HugeiconsIcon icon={icon} size={16} strokeWidth={1.6} />
@@ -121,8 +121,8 @@ export default function BoardHeader({
       className={[
         "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[11.5px] transition-colors duration-150",
         danger
-          ? "text-rose-300 hover:bg-rose-500/10 hover:text-rose-200"
-          : "text-neutral-300 hover:bg-white/[0.06] hover:text-neutral-100",
+          ? "text-(--danger) hover:bg-(--tint-4) hover:text-(--danger)"
+          : "text-(--text-soft) hover:bg-(--tint-6) hover:text-(--text-primary)",
       ].join(" ")}
     >
       <HugeiconsIcon icon={icon} size={13} strokeWidth={1.6} />
@@ -131,29 +131,29 @@ export default function BoardHeader({
   );
 
   return (
-    <header className="flex flex-col gap-6 border-b border-orange-50/10 pb-6 sm:flex-row sm:items-end sm:justify-between">
+    <header className="flex flex-col gap-6 border-b border-(--hairline) pb-6 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
         {workspaceName && (
-          <p className="font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-neutral-500">
+          <p className="font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-(--text-muted)">
             {workspaceName}
           </p>
         )}
 
-        <h1 className="mt-2 flex items-center gap-2 text-[22px] font-semibold tracking-tight text-neutral-100 sm:text-[26px]">
+        <h1 className="mt-2 flex items-center gap-2 text-[22px] font-semibold tracking-tight text-(--text-primary) sm:text-[26px]">
           <span className="truncate">{name}</span>
           {isPinned && (
             <HugeiconsIcon
               icon={StarIcon}
               size={14}
               strokeWidth={1.8}
-              className="shrink-0 text-orange-100"
+              className="shrink-0 text-(--accent)"
               aria-label="Starred"
             />
           )}
         </h1>
 
         {description && (
-          <p className="mt-2 max-w-xl text-[12.5px] leading-5 text-neutral-400">
+          <p className="mt-2 max-w-xl text-[12.5px] leading-5 text-(--text-secondary)">
             {description}
           </p>
         )}
@@ -178,7 +178,7 @@ export default function BoardHeader({
             icon={Share08Icon}
             size={14}
             strokeWidth={1.6}
-            className="shrink-0 text-neutral-500"
+            className="shrink-0 text-(--text-muted)"
           />
           Share
         </button>
@@ -194,7 +194,7 @@ export default function BoardHeader({
             <div
               role="menu"
               aria-label="Board actions"
-              className="absolute right-0 top-full z-30 mt-1 w-44 rounded-lg border border-orange-50/15 bg-[#141416] p-1"
+              className="absolute right-0 top-full z-30 mt-1 w-44 rounded-lg border border-(--hairline) bg-(--bg-root) p-1"
             >
               {item("Edit board", Edit02Icon, () => setDialog("edit"))}
               {item(isPinned ? "Remove star" : "Star board", StarIcon, () =>

@@ -18,8 +18,8 @@ export default function Tab({
       className={cn(
         "flex h-6 min-w-0 items-center gap-2 rounded-t-md px-3 text-[10px]",
         active
-          ? "bg-zinc-800 text-zinc-100"
-          : "text-zinc-400 transition-colors duration-150 hover:bg-white/5 hover:text-zinc-200",
+          ? "bg-(--tint-4) text-(--text-secondary)"
+          : "text-(--text-secondary) transition-colors duration-150 hover:bg-(--bg-hover) hover:text-(--text-secondary)",
       )}
     >
       <span className="flex size-3.5 shrink-0 items-center justify-center">
@@ -34,7 +34,7 @@ export default function Tab({
         {label}
       </span>
       {active && (
-        <span className="flex size-3 shrink-0 items-center justify-center rounded-sm text-zinc-500 transition-colors hover:bg-white/10 hover:text-zinc-200">
+        <span className="flex size-3 shrink-0 items-center justify-center rounded-sm text-(--text-secondary) transition-colors hover:bg-(--tint-10) hover:text-(--text-secondary)">
           <ChromeIcon d={P.close} size={8} />
         </span>
       )}

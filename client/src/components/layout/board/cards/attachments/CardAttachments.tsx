@@ -37,9 +37,9 @@ export default function CardAttachments({ cardId }: CardAttachmentsProps) {
   };
 
   return (
-    <section className="mt-5 border-t border-orange-50/15 pt-4">
+    <section className="mt-5 border-t border-(--hairline) pt-4">
       <div className="flex items-center justify-between">
-        <h3 className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-neutral-500">
+        <h3 className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-(--text-muted)">
           Attachments{attachments.data ? ` (${attachments.data.length})` : ""}
         </h3>
 
@@ -47,7 +47,7 @@ export default function CardAttachments({ cardId }: CardAttachmentsProps) {
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={upload.isPending}
-          className="rounded-lg border border-orange-50/15 bg-white/4 px-2.5 py-1 font-mono text-[10px] text-neutral-400 transition-colors hover:text-neutral-100 disabled:opacity-40"
+          className="rounded-lg border border-(--hairline) bg-(--tint-4) px-2.5 py-1 font-mono text-[10px] text-(--text-secondary) transition-colors hover:text-(--text-primary) disabled:opacity-40"
         >
           {upload.isPending ? "Uploading…" : "Add file"}
         </button>
@@ -70,7 +70,7 @@ export default function CardAttachments({ cardId }: CardAttachmentsProps) {
 
       <div className="mt-3 space-y-2">
         {attachments.isLoading && (
-          <p className="font-mono text-[11px] text-neutral-500">
+          <p className="font-mono text-[11px] text-(--text-muted)">
             Loading attachments…
           </p>
         )}
@@ -82,7 +82,7 @@ export default function CardAttachments({ cardId }: CardAttachmentsProps) {
         )}
 
         {attachments.data?.length === 0 && (
-          <p className="font-mono text-[11px] text-neutral-500">
+          <p className="font-mono text-[11px] text-(--text-muted)">
             No files attached.
           </p>
         )}
@@ -90,18 +90,18 @@ export default function CardAttachments({ cardId }: CardAttachmentsProps) {
         {attachments.data?.map((attachment) => (
           <div
             key={attachment.id}
-            className="flex items-center gap-3 rounded-lg border border-orange-50/15 bg-white/3 px-3 py-2"
+            className="flex items-center gap-3 rounded-lg border border-(--hairline) bg-(--tint-3) px-3 py-2"
           >
             <div className="min-w-0 flex-1">
               <a
                 href={attachment.url}
                 target="_blank"
                 rel="noreferrer"
-                className="block truncate font-mono text-[11px] text-neutral-100 hover:underline"
+                className="block truncate font-mono text-[11px] text-(--text-primary) hover:underline"
               >
                 {attachment.name}
               </a>
-              <p className="font-mono text-[10px] text-neutral-500">
+              <p className="font-mono text-[10px] text-(--text-muted)">
                 {formatSize(attachment.size)} · {attachment.fileType}
               </p>
             </div>
@@ -110,7 +110,7 @@ export default function CardAttachments({ cardId }: CardAttachmentsProps) {
               type="button"
               onClick={() => remove.mutate(attachment.id)}
               disabled={remove.isPending}
-              className="shrink-0 font-mono text-[10px] text-neutral-500 transition-colors hover:text-(--danger) disabled:opacity-50"
+              className="shrink-0 font-mono text-[10px] text-(--text-muted) transition-colors hover:text-(--danger) disabled:opacity-50"
             >
               Remove
             </button>
