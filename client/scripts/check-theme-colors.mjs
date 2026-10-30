@@ -2,7 +2,7 @@
 /**
  * Fails when a raw colour utility appears in the client.
  *
- * The app is themed with tokens: `bg-(--bg-surface)`, `text-(--text-muted)`,
+ * The app is themed with tokens: `bg-(--bg-root)`, `text-(--text-muted)`,
  * `border-(--hairline)` and so on. Every one of those flips between the dark
  * and light palettes in `src/index.css`. A raw utility does not, which is how
  * a screen ends up unreadable in one of the two themes.

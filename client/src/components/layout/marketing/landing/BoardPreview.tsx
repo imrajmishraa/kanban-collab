@@ -398,7 +398,7 @@ export default function BoardPreview({
               className="
                 relative overflow-hidden rounded-[18px]
                 border border-(--border-subtle)
-                bg-(--bg-surface)
+                bg-(--bg-root)
                 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)]
               "
             >

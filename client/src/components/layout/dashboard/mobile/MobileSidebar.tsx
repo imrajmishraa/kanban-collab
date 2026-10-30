@@ -70,7 +70,7 @@ export default function MobileSidebar({
         onClick={(event) => event.stopPropagation()}
         className={[
           "fixed inset-y-0 left-0 z-50 flex w-72 flex-col md:hidden",
-          "border-r border-(--border) bg-(--bg-surface)",
+          "border-r border-(--border) bg-(--bg-root)",
           "shadow-[12px_0_40px_rgba(0,0,0,0.45)]",
           "transition-transform duration-200 ease-out",
           open ? "translate-x-0" : "-translate-x-full",

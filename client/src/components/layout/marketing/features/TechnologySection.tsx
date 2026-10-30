@@ -284,11 +284,11 @@ export default function TechnologySection() {
                         className="
                           group/layer relative overflow-hidden rounded-xl
                           border border-white/[0.08]
-                          bg-(--bg-surface)
+                          bg-(--bg-root)
                           p-5
                           transition-all duration-500
                           hover:border-(--brand)/40
-                          hover:bg-(--bg-surface)
+                          hover:bg-(--bg-root)
                         "
                       >
                         {/* Top radial accent */}

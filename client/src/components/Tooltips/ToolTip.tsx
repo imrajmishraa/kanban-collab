@@ -121,7 +121,7 @@ const SHAPE_CLASS: Record<TooltipShape, string> = {
   // flat on purpose (ChaiUI cards carry no shadow).
   solid: [
     "rounded-[10px] px-3 py-1.5",
-    "border border-(--hairline) bg-black/95 text-(--text-primary) backdrop-blur-sm",
+    "border border-(--inverse-border) bg-(--inverse-bg) text-(--inverse-text)",
   ].join(" "),
 };
 
@@ -145,11 +145,11 @@ const TONE_CLASS: Record<TooltipTone, string> = {
    or every non-default shape would wear a mismatched arrow. */
 
 const ARROW_CLASS: Record<TooltipShape, string> = {
-  default: "border-(--hairline) bg-black/95",
-  sharp: "border-(--hairline) bg-black/95",
-  soft: "border-(--hairline) bg-black/95",
-  pill: "border-(--hairline) bg-black/95",
-  card: "border-(--hairline) bg-black/95",
+  default: "border-(--inverse-border) bg-(--inverse-bg)",
+  sharp: "border-(--inverse-border) bg-(--inverse-bg)",
+  soft: "border-(--inverse-border) bg-(--inverse-bg)",
+  pill: "border-(--inverse-border) bg-(--inverse-bg)",
+  card: "border-(--inverse-border) bg-(--inverse-bg)",
   glass: "border-(--hairline-strong) bg-(--tint-6)",
   neon: "border-(--accent-soft) bg-(--accent-soft)",
   gradient: "border-(--accent-soft) bg-(--accent-soft)",
@@ -157,8 +157,19 @@ const ARROW_CLASS: Record<TooltipShape, string> = {
   outline: "border-(--hairline-strong) bg-transparent",
   terminal: "border-(--hairline) bg-(--bg-card)",
   badge: "border-(--accent-soft) bg-(--accent-soft)",
-  solid: "border-(--hairline) bg-black/95",
+  solid: "border-(--inverse-border) bg-(--inverse-bg)",
 };
+
+/* These shapes turn their back on the theme, so their text, and their one
+   accent phrase, must invert with the capsule rather than follow the page. */
+const INVERTED_SHAPES: ReadonlySet<TooltipShape> = new Set([
+  "default",
+  "sharp",
+  "soft",
+  "pill",
+  "card",
+  "solid",
+]);
 
 const ARROW_TONE_CLASS: Record<TooltipTone, string> = {
   neutral: "",
@@ -486,10 +497,10 @@ export function Tooltip({
               "max-w-[min(60vw,18rem)] whitespace-normal",
               height !== undefined && "flex items-center overflow-hidden",
               maxHeight !== undefined && "overflow-hidden",
-              /* ChaiUI base surface: near-black, warm hairline, flat. No shadow,
-                 which is why the border has to carry the separation. */
-              "border border-(--hairline) bg-black/95 backdrop-blur-sm",
-              "text-[11px] font-medium tracking-[0.01em] text-(--text-primary)",
+              /* The capsule inverts: light on a dark page, dark on a light one.
+                 Flat, so the inverted hairline and the ink carry the separation. */
+              "border border-(--inverse-border) bg-(--inverse-bg) text-(--inverse-text)",
+              "text-[11px] font-medium tracking-[0.01em]",
               align === "center" && "text-center",
               align === "right" && "text-right",
               /* Shape classes come AFTER the base fill/text/shadow
@@ -509,7 +520,14 @@ export function Tooltip({
           >
             {label}
             {highlight ? (
-              <span className="ml-1 font-medium text-(--accent) capitalize">
+              <span
+                className={cn(
+                  "ml-1 font-medium capitalize",
+                  INVERTED_SHAPES.has(shape)
+                    ? "text-(--inverse-accent)"
+                    : "text-(--accent)",
+                )}
+              >
                 {highlight}
               </span>
             ) : null}

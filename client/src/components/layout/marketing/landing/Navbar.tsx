@@ -162,7 +162,7 @@ export default function Navbar({
   const accentBar = isDarkNav ? "bg-(--success)" : "bg-(--success)";
   const dividerBg = isDarkNav ? "bg-[var(--hairline)]" : "bg-[var(--hairline)]";
   const surface = isDarkNav
-    ? "bg-(--bg-root) border-[var(--hairline)] hover:border-[var(--hairline-strong)] hover:bg-(--bg-surface) hover:text-[var(--text-primary)]"
+    ? "bg-(--bg-root) border-[var(--hairline)] hover:border-[var(--hairline-strong)] hover:bg-(--bg-root) hover:text-[var(--text-primary)]"
     : "bg-(--solid-bg) border-[var(--hairline)] hover:border-[var(--hairline-strong)] hover:bg-(--text-primary) hover:text-[var(--text-primary)]";
   const focusRing = isDarkNav
     ? "focus-visible:ring-[var(--success)]/40"
@@ -448,7 +448,7 @@ export default function Navbar({
                   : cn(
                       inkSecondary,
                       isDarkNav
-                        ? "hover:bg-(--bg-surface) hover:text-[var(--text-primary)]"
+                        ? "hover:bg-(--bg-root) hover:text-[var(--text-primary)]"
                         : "hover:bg-(--text-primary) hover:text-[var(--text-primary)]",
                     ),
               );
@@ -499,7 +499,7 @@ export default function Navbar({
                     : cn(
                         inkSecondary,
                         isDarkNav
-                          ? "hover:bg-(--bg-surface) hover:text-[var(--text-primary)]"
+                          ? "hover:bg-(--bg-root) hover:text-[var(--text-primary)]"
                           : "hover:bg-(--text-primary) hover:text-[var(--text-primary)]",
                       ),
                 )}
@@ -606,7 +606,7 @@ export default function Navbar({
                   "transition-colors duration-150 cursor-pointer",
                   "disabled:cursor-not-allowed disabled:opacity-50",
                   isDarkNav
-                    ? "text-[var(--text-secondary)] hover:bg-(--bg-surface) hover:text-[var(--text-primary)]"
+                    ? "text-[var(--text-secondary)] hover:bg-(--bg-root) hover:text-[var(--text-primary)]"
                     : "text-[var(--text-secondary)] hover:bg-(--text-primary) hover:text-[var(--text-primary)]",
                 )}
               >

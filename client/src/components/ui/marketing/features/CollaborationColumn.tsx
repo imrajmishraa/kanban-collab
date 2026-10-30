@@ -10,7 +10,7 @@ export function CollaborationColumn({
   cards,
 }: CollaborationColumnProps) {
   return (
-    <div className="min-h-52 bg-(--bg-surface) p-4 sm:min-h-60">
+    <div className="min-h-52 bg-(--bg-root) p-4 sm:min-h-60">
       <div className="mb-5 flex items-center justify-between">
         <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.15em] text-(--text-muted)">
           {title}
@@ -25,7 +25,7 @@ export function CollaborationColumn({
         {cards.map((card) => (
           <div
             key={card}
-            className="border border-(--hairline) bg-(--bg-card) px-3 py-3"
+            className="border border-(--hairline) bg-(--bg-root) px-3 py-3"
           >
             <p className="text-xs text-(--text-soft)">{card}</p>
 

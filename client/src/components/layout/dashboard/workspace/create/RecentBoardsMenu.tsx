@@ -125,7 +125,7 @@ export function RecentBoardsMenu() {
           aria-label="Boards"
           className={[
             "absolute left-0 top-full z-50 mt-1.5 flex w-54 flex-col overflow-hidden rounded-lg",
-            "border border-(--border) bg-(--bg-surface)",
+            "border border-(--border) bg-(--bg-root)",
             "shadow-[0_8px_24px_-6px_rgba(0,0,0,0.7)]",
           ].join(" ")}
         >

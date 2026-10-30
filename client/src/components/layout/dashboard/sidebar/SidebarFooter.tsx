@@ -167,7 +167,7 @@ export default function SidebarFooter({
         aria-haspopup="menu"
         aria-expanded={panel === "account"}
         className={[
-          "flex w-full cursor-pointer items-center gap-2 rounded-lg px-1.5 py-1.5 text-left",
+          "group flex w-full cursor-pointer items-center gap-2 rounded-lg px-1.5 py-1.5 text-left",
           "transition-colors duration-200 motion-reduce:transition-none",
         ].join(" ")}
       >
@@ -198,7 +198,10 @@ export default function SidebarFooter({
             "transition-colors duration-200 motion-reduce:transition-none",
             panel === "account"
               ? "border-(--hairline-strong) bg-(--tint-8) text-(--text-primary)"
-              : "border-(--hairline) text-(--text-secondary)",
+              : [
+                  "border-(--hairline) text-(--text-secondary)",
+                  "group-hover:border-(--hairline-strong) group-hover:bg-(--tint-9) group-hover:text-(--text-primary)",
+                ].join(" "),
           ].join(" ")}
         >
           <HugeiconsIcon icon={MoreHorizontalIcon} size={14} strokeWidth={2} />

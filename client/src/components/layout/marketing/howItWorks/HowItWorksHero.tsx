@@ -178,7 +178,7 @@ export default function HowItWorksHero() {
               className="
                 relative overflow-hidden rounded-[18px]
                 border border-(--border-subtle)
-                bg-(--bg-surface)
+                bg-(--bg-root)
                 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)]
               "
             >
@@ -343,9 +343,9 @@ function StagePanel({
   return (
     <div
       className="
-        group/step relative overflow-hidden bg-(--bg-surface) p-6
+        group/step relative overflow-hidden bg-(--bg-root) p-6
         transition-colors duration-500
-        hover:bg-(--bg-surface)
+        hover:bg-(--bg-root)
       "
     >
       {status === "active" && (

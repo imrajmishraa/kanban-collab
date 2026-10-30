@@ -15,7 +15,7 @@ import {
 } from "@hugeicons/core-free-icons";
 
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
-import { Tooltip } from "#components/Tooltips/ToolTip";
+import { Tooltip } from "@components/Tooltips/ToolTip";
 
 interface SidebarSearchProps {
   collapsed: boolean;
@@ -205,9 +205,9 @@ export default function SidebarSearch({ collapsed }: SidebarSearchProps) {
               }}
               aria-label="Find"
               aria-expanded={open}
-              className="flex size-9 cursor-pointer items-center justify-center rounded-lg text-(--text-muted) transition-colors duration-200 hover:bg-(--bg-hover) hover:text-(--text-primary)"
+              className="flex size-9 cursor-pointer items-center justify-center rounded-full text-(--text-muted) transition-colors duration-200 hover:bg-(--bg-hover) hover:text-(--text-primary)"
             >
-              <HugeiconsIcon icon={Search01Icon} size={15} strokeWidth={1.6} />
+              <HugeiconsIcon icon={Search01Icon} size={16} strokeWidth={1.6} />
             </button>
           </Tooltip>
         </div>
@@ -238,7 +238,7 @@ export default function SidebarSearch({ collapsed }: SidebarSearchProps) {
             Find
           </span>
 
-          <kbd className="shrink-0 rounded border border-(--hairline) bg-(--tint-6) px-1.5 py-0.5 font-mono text-[9px] text-(--text-muted)">
+          <kbd className="shrink-0 rounded border border-(--hairline) bg-(--root) px-1.5 py-0.5 font-mono text-[10px] text-(--text-secondary)">
             F
           </kbd>
         </button>
@@ -295,7 +295,7 @@ export default function SidebarSearch({ collapsed }: SidebarSearchProps) {
             ].join(" ")}
           />
 
-          <kbd className="shrink-0 rounded border border-(--hairline) bg-(--tint-2) px-1.5 py-0.5 font-mono text-[9px] text-(--text-secondary)">
+          <kbd className="shrink-0 rounded border border-(--hairline) bg-(--root) px-1.5 py-0.5 font-mono text-[10px] text-(--text-secondary)">
             Esc
           </kbd>
         </div>

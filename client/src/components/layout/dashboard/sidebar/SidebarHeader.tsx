@@ -50,11 +50,11 @@ const SidebarHeader = ({
             <img
               src={logo}
               alt=""
-              width={28}
-              height={28}
+              width={16}
+              height={16}
               draggable={false}
               className="
-              h-9 w-9 rounded-full
+              h-7 w-7 rounded-full
               transition-all duration-150
               group-hover:scale-75
               group-hover:opacity-0
@@ -65,7 +65,7 @@ const SidebarHeader = ({
                 the rail opens by hovering, an arrow when it opens on click. */}
             <HugeiconsIcon
               icon={mode === "hover" ? Cursor02Icon : SidebarLeftIcon}
-              size={20}
+              size={16}
               strokeWidth={1.8}
               className="
               absolute
@@ -95,10 +95,10 @@ const SidebarHeader = ({
         <img
           src={logo}
           alt=""
-          width={28}
-          height={28}
+          width={16}
+          height={16}
           draggable={false}
-          className="h-8 w-8 rounded-full transition-all duration-300"
+          className="h-6 w-6 rounded-full transition-all duration-300"
         />
         <span className="text-[14px] font-semibold tracking-tight text-(--text-primary)">
           Kanban

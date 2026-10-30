@@ -1,7 +1,7 @@
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ArrowRight01Icon,
-  BellIcon,
+  BellRingIcon,
   DashboardSquare02Icon,
   Search01Icon,
 } from "@hugeicons/core-free-icons";
@@ -89,7 +89,7 @@ export function NotificationsButton({
         }
         className="relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-(--hairline) bg-(--tint-4) text-(--text-secondary) transition-colors duration-200 hover:border-(--hairline-strong) hover:bg-(--tint-8) hover:text-(--text-primary)"
       >
-        <HugeiconsIcon icon={BellIcon} size={16} strokeWidth={1.6} />
+        <HugeiconsIcon icon={BellRingIcon} size={16} strokeWidth={1.6} />
         {unreadCount > 0 && (
           <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-(--accent) px-1 font-mono text-[9px] font-semibold leading-none text-(--solid-text)">
             {unreadCount > 9 ? "9+" : unreadCount}

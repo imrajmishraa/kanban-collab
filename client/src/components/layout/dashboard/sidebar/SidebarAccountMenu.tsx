@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
-  BellIcon,
   BookOpen02Icon,
   LayoutLeftIcon,
   ComputerIcon,
@@ -17,6 +16,7 @@ import {
   SmilePlusIcon,
   MessageQuestionIcon,
   KanbanIcon,
+  BellRingIcon,
 } from "@hugeicons/core-free-icons";
 
 import { Tooltip } from "@components/Tooltips/ToolTip";
@@ -138,7 +138,7 @@ export function SidebarAccountMenu({
     },
     {
       label: "Notifications",
-      icon: BellIcon,
+      icon: BellRingIcon,
       onClick: () => go("/account/settings/profile"),
     },
     { label: "Home", icon: Home03Icon, onClick: () => go("/home") },

@@ -311,7 +311,7 @@ export default function FeaturesHero() {
               className="
                 relative overflow-hidden rounded-2xl
                 border border-(--border-subtle)
-                bg-(--bg-surface)
+                bg-(--bg-root)
                 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)]
               "
             >

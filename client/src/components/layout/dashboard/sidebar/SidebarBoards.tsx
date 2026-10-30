@@ -332,7 +332,7 @@ const SidebarBoards = ({
             min-h-0
             overflow-visible
             rounded-xl
-            bg-(--bg-surface)
+            bg-(--bg-root)
           "
         >
           <div
