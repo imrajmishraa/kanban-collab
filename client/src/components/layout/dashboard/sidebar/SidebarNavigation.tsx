@@ -179,7 +179,7 @@ const SidebarNavigation = ({ collapsed }: SidebarNavigationProps) => {
      plain link to its first page. */
   if (collapsed) {
     return (
-      <nav aria-label="Main navigation" className="px-3 py-3">
+      <nav aria-label="Main navigation" className="py-1 ml-4">
         <div className="flex flex-col gap-0.5">
           {[
             { ...home, iconNode: homeIcon },
@@ -190,7 +190,7 @@ const SidebarNavigation = ({ collapsed }: SidebarNavigationProps) => {
                 iconNode: (
                   <HugeiconsIcon
                     icon={entry.icon}
-                    size={16}
+                    size={18}
                     strokeWidth={1.5}
                   />
                 ),

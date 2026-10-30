@@ -163,6 +163,26 @@
   z-index: 1;
 }
 
+/* Going to light, the incoming frame is clipped before any JavaScript runs.
+   Without this it is unclipped from the moment the snapshot is taken until
+   `ready` resolves, so the full light page shows for a frame and then the
+   circle starts from the button. */
+.vt-grow::view-transition-new(root) {
+  clip-path: circle(var(--vt-seed, 0px) at var(--vt-x, 50%) var(--vt-y, 50%));
+}
+
+/* Going to dark the layers swap: the outgoing light frame has to sit on top so
+   it can shrink into the toggle and uncover the dark page underneath. Without
+   the swap the frame that shrinks is the hidden one, so nothing appears to
+   move. */
+.vt-collapse::view-transition-old(root) {
+  z-index: 2;
+}
+
+.vt-collapse::view-transition-new(root) {
+  z-index: 1;
+}
+
 /* BASE */
 
 html {

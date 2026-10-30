@@ -184,7 +184,7 @@ export default function SidebarSearch({ collapsed }: SidebarSearchProps) {
   };
 
   return (
-    <div ref={containerRef} className="relative px-3 pb-2">
+    <div ref={containerRef} className="relative ml-2.5 mr-2.5">
       {collapsed ? (
         <div className="flex justify-center">
           <Tooltip
@@ -258,7 +258,7 @@ export default function SidebarSearch({ collapsed }: SidebarSearchProps) {
           "absolute z-50 overflow-hidden border bg-(--bg-root)",
           "transition-[width,border-radius,opacity] duration-300 ease-out",
           "motion-reduce:transition-none",
-          "left-3 top-0",
+          "top-0",
           open
             ? "w-80 rounded-xl border-(--hairline-strong) opacity-100"
             : "pointer-events-none w-[calc(100%-1.5rem)] rounded-lg border-(--hairline-strong) opacity-0",
