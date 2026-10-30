@@ -18,6 +18,12 @@ interface SidebarFooterProps {
   onLogout: () => Promise<void>;
   /** Off where the rail cannot change, such as the mobile drawer. */
   showSidebarMode?: boolean;
+  /**
+   * Hover mode: the pointer arriving on the footer opens the menu, because the
+   * rail itself already opened that way and a click would be a second gesture
+   * for the same intent.
+   */
+  hoverMode?: boolean;
 }
 
 type Panel = "account" | "notifications" | null;
@@ -27,9 +33,11 @@ export default function SidebarFooter({
   user,
   onLogout,
   showSidebarMode,
+  hoverMode = false,
 }: SidebarFooterProps) {
   const [panel, setPanel] = useState<Panel>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const closeTimer = useRef<number | null>(null);
 
   useEffect(() => {
     if (!panel) return;
@@ -56,11 +64,37 @@ export default function SidebarFooter({
   const toggle = (next: Exclude<Panel, null>) =>
     setPanel((current) => (current === next ? null : next));
 
+  const cancelClose = () => {
+    if (closeTimer.current !== null) {
+      window.clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+  };
+
+  useEffect(() => cancelClose, []);
+
+  /* The container holds the menu as well, so moving the pointer from the row
+     into the menu never counts as leaving. */
+  const onEnter = () => {
+    if (!hoverMode) return;
+    cancelClose();
+    setPanel("account");
+  };
+
+  const onLeave = () => {
+    if (!hoverMode) return;
+    cancelClose();
+    closeTimer.current = window.setTimeout(() => {
+      closeTimer.current = null;
+      setPanel(null);
+    }, 150);
+  };
+
   if (collapsed) {
     return (
       <div
         ref={containerRef}
-        className="relative flex shrink-0 flex-col items-center gap-1 border-t border-orange-50/15 py-3"
+        className="relative flex shrink-0 flex-col items-center gap-1 border-orange-50/15 py-2"
       >
         {panel === "account" && (
           <SidebarAccountMenu
@@ -77,7 +111,7 @@ export default function SidebarFooter({
             onClick={() => toggle("account")}
             aria-label="Account"
             aria-expanded={panel === "account"}
-            className="flex size-9 cursor-pointer items-center justify-center rounded-lg transition-colors duration-200 hover:bg-white/6 motion-reduce:transition-none"
+            className="flex size-9 cursor-pointer items-center justify-center rounded-lg transition-colors duration-200 motion-reduce:transition-none"
           >
             <Avatar
               member={{
@@ -98,7 +132,9 @@ export default function SidebarFooter({
   return (
     <div
       ref={containerRef}
-      className="relative shrink-0 border-t border-orange-50/15 px-3 py-3"
+      onMouseEnter={onEnter}
+      onMouseLeave={onLeave}
+      className="relative shrink-0 border-orange-50/15 px-3 py-2"
     >
       {panel === "account" && (
         <SidebarAccountMenu
@@ -112,13 +148,14 @@ export default function SidebarFooter({
       {/* One target for the whole row. */}
       <button
         type="button"
-        onClick={() => toggle("account")}
+        /* In hover mode a click opens rather than toggles: the pointer already
+           opened it, and closing on click would fight the hover. */
+        onClick={() => (hoverMode ? setPanel("account") : toggle("account"))}
         aria-haspopup="menu"
         aria-expanded={panel === "account"}
         className={[
           "flex w-full cursor-pointer items-center gap-2 rounded-lg px-1.5 py-1.5 text-left",
           "transition-colors duration-200 motion-reduce:transition-none",
-          panel === "account" ? "bg-white/6" : "hover:bg-white/4",
         ].join(" ")}
       >
         <Avatar

@@ -200,6 +200,7 @@ export default function DashboardSidebar({
             user={user}
             onLogout={handleLogout}
             showSidebarMode={mode !== "collapsed"}
+            hoverMode={mode === "hover"}
           />
         </div>
       </aside>

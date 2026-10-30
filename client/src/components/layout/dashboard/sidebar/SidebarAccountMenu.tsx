@@ -6,7 +6,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import {
   BellIcon,
   BookOpen02Icon,
-  ArrowRight,
+  LayoutLeftIcon,
   ComputerIcon,
   Home03Icon,
   LogoutSquare01Icon,
@@ -140,7 +140,7 @@ export function SidebarAccountMenu({
     <div
       role="menu"
       aria-label="Account"
-      className="absolute bottom-full z-80 w-68 overflow-hidden rounded-xl border border-orange-50/20 bg-[#010101]"
+      className="absolute bottom-full z-80 w-68 overflow-hidden rounded-xl border border-orange-50/20 mb-0.5 bg-[#010101]"
     >
       <div className="flex items-start gap-2 border-b border-orange-50/10 px-3.5 py-3">
         <div className="min-w-0 flex-1">
@@ -187,7 +187,7 @@ export function SidebarAccountMenu({
       {/* Sidebar: a row that serves its own child panel on click. The icon is
           the left-right chevrons turned upright, to read as rail width. */}
       {showSidebarMode && (
-        <div className="border-orange-50/10 mr-2 ml-1.5">
+        <div className="border-orange-50/10 mr-2 ml-1.5 mb-1.5">
           <button
             ref={sidebarRowRef}
             type="button"
@@ -206,7 +206,7 @@ export function SidebarAccountMenu({
           >
             <span className="min-w-0 flex-1 truncate">Sidebar</span>
             <HugeiconsIcon
-              icon={ArrowRight}
+              icon={LayoutLeftIcon}
               size={14}
               strokeWidth={1.6}
               className="shrink-0 text-neutral-500"
