@@ -123,10 +123,10 @@ export default function DashboardNavbar() {
       <header
         className={[
           "fixed top-0 right-0 z-50 hidden h-14 md:flex",
-          "items-center gap-2 px-5 ",
+          "items-center gap-2 px-5 border-b border-white/10",
           "transition-[left,background-color] duration-200",
           sidebarCollapsed ? "left-16" : "left-64",
-          scrolled ? "bg-(--bg-root)/85 backdrop-blur-md" : "bg-transparent",
+          scrolled ? "bg-(--bg-root)/90 backdrop-blur-md" : "bg-transparent",
         ].join(" ")}
       >
         <nav

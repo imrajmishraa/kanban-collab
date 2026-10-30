@@ -5,8 +5,10 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Add01Icon,
   ArrowRight01Icon,
+  DashboardSquare01Icon,
   Folder01Icon,
   KanbanIcon,
+  LogsIcon,
   Note01Icon,
   Search01Icon,
   UserGroupIcon,
@@ -25,6 +27,7 @@ const DESTINATIONS: Record<string, { label: string; icon: typeof KanbanIcon }> =
     "/boards": { label: "Boards", icon: KanbanIcon },
     "/members": { label: "Members", icon: UserGroupIcon },
     "/notes": { label: "Notes", icon: Note01Icon },
+    "/activity": { label: "Activity Logs", icon: LogsIcon },
   };
 
 const SEARCH_DEBOUNCE_MS = 300;
@@ -148,7 +151,7 @@ export function RequireWorkspace({ children }: { children: ReactNode }) {
                     ) : (
                       <span className="flex size-6 shrink-0 items-center justify-center rounded-md border border-orange-50/15 text-neutral-500 transition-colors duration-200 group-hover/row:text-neutral-300">
                         <HugeiconsIcon
-                          icon={Folder01Icon}
+                          icon={DashboardSquare01Icon}
                           size={12}
                           strokeWidth={1.7}
                         />

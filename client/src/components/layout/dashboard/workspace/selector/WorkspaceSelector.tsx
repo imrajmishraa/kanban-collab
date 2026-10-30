@@ -275,7 +275,7 @@ export function WorkspaceSelector({
               "flex h-7 cursor-pointer items-center gap-2 rounded-md px-2",
               "text-[11.5px] tracking-tight",
               "transition-colors duration-200",
-              "text-neutral-300 hover:bg-white/6 hover:text-neutral-100",
+              "text-neutral-300 ",
               "disabled:cursor-default disabled:hover:bg-transparent",
               triggerClassName,
             ]

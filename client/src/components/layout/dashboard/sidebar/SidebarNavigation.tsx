@@ -1,18 +1,10 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
-  LogsIcon,
-  ArrowLeft01Icon,
   ArrowRight01Icon,
   DashboardSquare02Icon,
-  KanbanIcon,
-  Message01Icon,
-  Note01Icon,
-  Settings01Icon,
-  UserGroupIcon,
-  UserIcon,
 } from "@hugeicons/core-free-icons";
 
 import SidebarItem from "@components/ui/dashboard/SidebarItem";
@@ -22,79 +14,65 @@ import { avatarColor } from "@/features/boards/board.helpers";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { useWorkspaces } from "@/hooks/dashboard/useWorkspaces";
 
+import SidebarDrillPanel from "./SidebarDrillPanel";
+import {
+  buildNavigation,
+  hasChildren,
+  resolveTrail,
+  trailForRoute,
+  type NavNode,
+  type NavSection,
+} from "./navConfig";
+
 interface SidebarNavigationProps {
   collapsed: boolean;
 }
 
-interface Leaf {
-  label: string;
-  href: string;
-  icon: typeof KanbanIcon;
-}
-
-interface DrillChild {
-  label: string;
-  href: string;
-  icon: typeof KanbanIcon;
-  /** Optional group heading, like the reference's COMPUTE and CDN. */
-  section?: string;
-}
-
-interface Drilldown {
-  key: string;
-  label: string;
-  icon: typeof KanbanIcon;
-  children: DrillChild[];
-}
-
-/* The first row is the account's project list, or the selected workspace's
-   own overview. It is built in the component because the label, href and icon
-   all change with the selection. */
-const REST: Leaf[] = [
-  { label: "Boards", href: "/boards", icon: KanbanIcon },
-  { label: "Notes", href: "/notes", icon: Note01Icon },
-  { label: "Members", href: "/members", icon: UserGroupIcon },
-];
+const OPEN_TRAIL_KEY = "sidebar.openTrail";
 
 /**
- * Rows with a chevron open a panel inside the sidebar rather than navigating:
- * the list is replaced by that section's own pages, with a back arrow and a
- * centred title, the way the reference's Observability panel works.
+ * A panel the user opened by hand, tied to the route it was opened on. When
+ * the route moves on, the stored route stops matching and the URL takes over
+ * again, so no effect is needed to reset it.
  */
-const DRILLDOWNS: Drilldown[] = [
-  {
-    key: "activity",
-    label: "Activity",
-    icon: LogsIcon,
-    children: [
-      { label: "All activity", href: "/activity", icon: LogsIcon },
-      {
-        label: "Comments",
-        href: "/activity?type=comments",
-        icon: Message01Icon,
-      },
-      { label: "Cards", href: "/activity?type=cards", icon: KanbanIcon },
-      {
-        label: "Boards",
-        href: "/activity?type=boards",
-        icon: DashboardSquare02Icon,
-      },
-    ],
-  },
-  {
-    key: "settings",
-    label: "Settings",
-    icon: Settings01Icon,
-    children: [
-      { label: "Profile", href: "/user/profile", icon: UserIcon },
-      { label: "Preferences", href: "/settings", icon: Settings01Icon },
-    ],
-  },
-];
+interface ManualTrail {
+  route: string;
+  keys: string[];
+}
+
+/** The last panel the user opened, so a reload on a sectionless route restores it. */
+function readSavedTrail(): string[] {
+  try {
+    const raw = window.localStorage.getItem(OPEN_TRAIL_KEY);
+    const parsed: unknown = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed)
+      ? parsed.filter((entry): entry is string => typeof entry === "string")
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveTrail(keys: string[]) {
+  try {
+    window.localStorage.setItem(OPEN_TRAIL_KEY, JSON.stringify(keys));
+  } catch {
+    /* storage is best effort; the panel still works for this session */
+  }
+}
+
+const ROW = [
+  "group/row flex h-9 w-full cursor-pointer items-center gap-3 rounded-lg px-3",
+  "text-[13px] tracking-tight transition-colors duration-200",
+  "motion-reduce:transition-none",
+].join(" ");
+
+const ROW_IDLE = "text-neutral-400 hover:bg-white/4 hover:text-neutral-100";
+const ROW_ACTIVE = "bg-white/6 text-neutral-100";
 
 const SidebarNavigation = ({ collapsed }: SidebarNavigationProps) => {
-  const { pathname } = useLocation();
-  const [openSection, setOpenSection] = useState<string | null>(null);
+  const { pathname, search } = useLocation();
+  const routeKey = `${pathname}${search}`;
 
   const { activeWorkspaceId, activeWorkspaceName } = useActiveWorkspace();
 
@@ -105,18 +83,62 @@ const SidebarNavigation = ({ collapsed }: SidebarNavigationProps) => {
     ? workspaces.find((workspace) => workspace.id === activeWorkspaceId)
     : undefined;
 
-  const home: Leaf = activeWorkspaceId
-    ? {
-        label: "Overview",
-        href: `/workspaces/${activeWorkspaceId}`,
-        icon: DashboardSquare02Icon,
-      }
-    : { label: "Projects", href: "/dashboard", icon: DashboardSquare02Icon };
+  const sections = useMemo(
+    () =>
+      buildNavigation({
+        workspaceId: activeWorkspaceId,
+        memberCount: active?.members.length,
+      }),
+    [activeWorkspaceId, active?.members.length],
+  );
 
-  const primary = [home, ...REST];
+  /* The panel the current route implies. Derived, never stored, so a deep link
+     and a reload both land in the right place without an effect. */
+  const routeTrail = useMemo(
+    () => trailForRoute(sections, routeKey),
+    [sections, routeKey],
+  );
 
-  /* The workspace's own image when it has one, otherwise the Projects glyph
-     the row already used. */
+  /* Seeded once from storage, and only when the route implies no panel of its
+     own. A lazy initialiser keeps this out of render-after-render land. */
+  const [manual, setManual] = useState<ManualTrail | null>(() => {
+    if (routeTrail.length > 0) return null;
+    const saved = readSavedTrail();
+    if (saved.length === 0) return null;
+
+    /* Keep only the part of a saved trail that still exists in the config. */
+    const keys = resolveTrail(sections, saved).map((node) => node.key);
+    return keys.length > 0 ? { route: routeKey, keys } : null;
+  });
+
+  /* Manual wins only while the route it was opened on is still current. */
+  const trailKeys =
+    manual && manual.route === routeKey ? manual.keys : routeTrail;
+
+  const trail = useMemo(
+    () => resolveTrail(sections, trailKeys),
+    [sections, trailKeys],
+  );
+
+  const commit = (route: string, keys: string[]) => {
+    setManual({ route, keys });
+    saveTrail(keys);
+  };
+
+  /* Drilling navigates too, so the panel is remembered for the destination
+     route rather than the one we are leaving. */
+  const drill = (node: NavNode) => {
+    commit(node.href, [...trailKeys, node.key]);
+  };
+
+  const back = () => {
+    commit(routeKey, trailKeys.slice(0, -1));
+  };
+
+  const home = sections[0]!;
+  const primary = sections.filter((entry) => entry.placement === "primary");
+  const secondary = sections.filter((entry) => entry.placement === "secondary");
+
   const homeIcon = active?.avatarUrl ? (
     <Avatar
       member={{
@@ -132,7 +154,16 @@ const SidebarNavigation = ({ collapsed }: SidebarNavigationProps) => {
     <HugeiconsIcon icon={DashboardSquare02Icon} size={16} strokeWidth={1.5} />
   );
 
-  const section = DRILLDOWNS.find((entry) => entry.key === openSection);
+  /* A section is active when the route sits at it or below it, so /boards/:id
+     keeps the Boards row lit. */
+  const isUnder = (href: string) => {
+    const path = href.split("?")[0] ?? href;
+    return pathname === path || pathname.startsWith(`${path}/`);
+  };
+
+  const isSectionActive = (section: NavSection) =>
+    isUnder(section.href) ||
+    (section.children ?? []).some((child) => isUnder(child.href));
 
   /* Collapsed, a drilldown has no room to expand into, so the row becomes a
      plain link to its first page. */
@@ -142,15 +173,22 @@ const SidebarNavigation = ({ collapsed }: SidebarNavigationProps) => {
         <div className="flex flex-col gap-0.5">
           {[
             { ...home, iconNode: homeIcon },
-            ...REST.map((entry) => ({
-              ...entry,
-              iconNode: (
-                <HugeiconsIcon icon={entry.icon} size={16} strokeWidth={1.5} />
-              ),
-            })),
-            ...DRILLDOWNS.map((entry) => ({
+            ...primary
+              .filter((entry) => entry.key !== home.key)
+              .map((entry) => ({
+                ...entry,
+                iconNode: (
+                  <HugeiconsIcon
+                    icon={entry.icon}
+                    size={16}
+                    strokeWidth={1.5}
+                  />
+                ),
+              })),
+            ...secondary.map((entry) => ({
               label: entry.label,
-              href: entry.children[0]!.href,
+              badge: entry.badge,
+              href: entry.children?.[0]?.href ?? entry.href,
               iconNode: (
                 <HugeiconsIcon icon={entry.icon} size={16} strokeWidth={1.5} />
               ),
@@ -169,168 +207,92 @@ const SidebarNavigation = ({ collapsed }: SidebarNavigationProps) => {
     );
   }
 
-  if (section) {
-    /* Group the children by their optional heading, keeping order. */
-    const groups: Array<{ title?: string; items: DrillChild[] }> = [];
+  const openNode = trail[trail.length - 1];
 
-    for (const child of section.children) {
-      const last = groups[groups.length - 1];
-
-      if (last && last.title === child.section) {
-        last.items.push(child);
-      } else {
-        groups.push({ title: child.section, items: [child] });
-      }
-    }
-
+  if (openNode && hasChildren(openNode)) {
     return (
-      <nav
-        aria-label={`${section.label} navigation`}
-        className="border-b border-orange-50/10 px-3 py-3"
-      >
-        <div className="mb-1 flex h-9 items-center gap-1">
-          <button
-            type="button"
-            onClick={() => setOpenSection(null)}
-            aria-label="Back"
-            className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-neutral-500 transition-colors duration-200 hover:bg-white/6 hover:text-neutral-200"
-          >
-            <HugeiconsIcon icon={ArrowLeft01Icon} size={14} strokeWidth={1.8} />
-          </button>
-
-          <p className="min-w-0 flex-1 truncate text-center text-[13px] font-medium tracking-tight text-neutral-100">
-            {section.label}
-          </p>
-
-          {/* Balances the back button so the title stays centred. */}
-          <span aria-hidden="true" className="size-7 shrink-0" />
-        </div>
-
-        {groups.map((group, index) => (
-          <div key={group.title ?? `group-${index}`} className="mt-1">
-            {group.title && (
-              <p className="px-3 pb-1 pt-2 text-[9.5px] font-medium uppercase tracking-[0.14em] text-neutral-600">
-                {group.title}
-              </p>
-            )}
-
-            <div className="flex flex-col gap-0.5">
-              {group.items.map((child) => (
-                <NavLink
-                  key={child.href}
-                  to={child.href}
-                  end
-                  className={({ isActive }) =>
-                    [
-                      "flex h-9 cursor-pointer items-center gap-3 rounded-lg px-3",
-                      "text-[12.5px] tracking-tight transition-colors duration-200",
-                      isActive
-                        ? "bg-white/6 text-neutral-100"
-                        : "text-neutral-400 hover:bg-white/4 hover:text-neutral-100",
-                    ].join(" ")
-                  }
-                >
-                  {({ isActive }) => (
-                    <>
-                      <span
-                        className={[
-                          "flex size-5 shrink-0 items-center justify-center",
-                          isActive ? "text-orange-100" : "text-neutral-500",
-                        ].join(" ")}
-                      >
-                        <HugeiconsIcon
-                          icon={child.icon}
-                          size={16}
-                          strokeWidth={1.5}
-                        />
-                      </span>
-
-                      <span className="min-w-0 flex-1 truncate">
-                        {child.label}
-                      </span>
-                    </>
-                  )}
-                </NavLink>
-              ))}
-            </div>
-          </div>
-        ))}
-      </nav>
+      <SidebarDrillPanel
+        node={openNode}
+        parents={trail.slice(0, -1)}
+        routeKey={routeKey}
+        onBack={back}
+        onDrill={drill}
+      />
     );
   }
+
+  const renderSection = (section: NavSection) => {
+    const isActive = isSectionActive(section);
+    const openable = hasChildren(section);
+
+    const iconSlot = (
+      <span
+        className={[
+          "flex size-5 shrink-0 items-center justify-center",
+          isActive
+            ? "text-orange-100"
+            : "text-neutral-500 group-hover/row:text-neutral-200",
+        ].join(" ")}
+      >
+        {section.key === home.key ? (
+          homeIcon
+        ) : (
+          <HugeiconsIcon icon={section.icon} size={18} strokeWidth={1.5} />
+        )}
+      </span>
+    );
+
+    const labelSlot = (
+      <span className="min-w-0 flex-1 truncate text-left">{section.label}</span>
+    );
+
+    const badgeSlot =
+      section.badge !== undefined && section.badge !== "" ? (
+        <span className="shrink-0 rounded-full bg-orange-100/10 px-1.5 py-0.5 font-mono text-[9px] font-medium tabular-nums text-orange-100">
+          {section.badge}
+        </span>
+      ) : null;
+
+    return (
+      <NavLink
+        key={section.key}
+        to={section.href}
+        /* One click: the page opens, and the child nav opens with it. A leaf
+           has nothing to open, so it just navigates. */
+        onClick={
+          openable ? () => commit(section.href, [section.key]) : undefined
+        }
+        aria-current={isActive ? "page" : undefined}
+        className={[ROW, isActive ? ROW_ACTIVE : ROW_IDLE].join(" ")}
+      >
+        {iconSlot}
+        {labelSlot}
+        {badgeSlot}
+
+        {/* No children, no chevron. */}
+        {openable && (
+          <HugeiconsIcon
+            icon={ArrowRight01Icon}
+            size={12}
+            strokeWidth={1.8}
+            className="shrink-0 text-neutral-600 transition-transform duration-200 group-hover/row:translate-x-0.5 motion-reduce:transition-none"
+          />
+        )}
+      </NavLink>
+    );
+  };
 
   return (
     <nav
       aria-label="Main navigation"
       className="border-b border-orange-50/10 px-3 py-3"
     >
-      <div className="flex flex-col gap-0.5">
-        {primary.map((entry) => (
-          <SidebarItem
-            key={entry.href}
-            label={entry.label}
-            href={entry.href}
-            end={
-              entry.href === "/dashboard" ||
-              entry.href.startsWith("/workspaces/")
-            }
-            icon={
-              entry === home ? (
-                homeIcon
-              ) : (
-                <HugeiconsIcon icon={entry.icon} size={16} strokeWidth={1.5} />
-              )
-            }
-            collapsed={false}
-          />
-        ))}
-      </div>
+      <div className="flex flex-col gap-0.5">{primary.map(renderSection)}</div>
 
       <div aria-hidden="true" className="my-2 h-px bg-orange-50/10" />
 
       <div className="flex flex-col gap-0.5">
-        {DRILLDOWNS.map((entry) => {
-          const isActive = entry.children.some((child) =>
-            pathname.startsWith(child.href.split("?")[0]!),
-          );
-
-          return (
-            <button
-              key={entry.key}
-              type="button"
-              onClick={() => setOpenSection(entry.key)}
-              className={[
-                "group/row flex h-9 w-full cursor-pointer items-center gap-3 rounded-lg px-3",
-                "text-[12.5px] tracking-tight transition-colors duration-200",
-                isActive
-                  ? "bg-white/6 text-neutral-100"
-                  : "text-neutral-400 hover:bg-white/4 hover:text-neutral-100",
-              ].join(" ")}
-            >
-              <span
-                className={[
-                  "flex size-5 shrink-0 items-center justify-center",
-                  isActive
-                    ? "text-orange-100"
-                    : "text-neutral-500 group-hover/row:text-neutral-200",
-                ].join(" ")}
-              >
-                <HugeiconsIcon icon={entry.icon} size={16} strokeWidth={1.5} />
-              </span>
-
-              <span className="min-w-0 flex-1 truncate text-left">
-                {entry.label}
-              </span>
-
-              <HugeiconsIcon
-                icon={ArrowRight01Icon}
-                size={12}
-                strokeWidth={1.8}
-                className="shrink-0 text-neutral-600 transition-transform duration-200 group-hover/row:translate-x-0.5"
-              />
-            </button>
-          );
-        })}
+        {secondary.map(renderSection)}
       </div>
     </nav>
   );

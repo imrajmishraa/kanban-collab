@@ -3,9 +3,7 @@ import { useCallback, useMemo, useState } from "react";
 import SidebarHeader from "./SidebarHeader";
 import SidebarNavigation from "./SidebarNavigation";
 import SidebarSearch from "./SidebarSearch";
-import SidebarBoards from "./SidebarBoards";
 import SidebarFooter from "./SidebarFooter";
-import { SidebarSelectMode } from "./SidebarSelectMode";
 
 import MobileSidebar from "../mobile/MobileSidebar";
 import SidebarMobileHeader from "../mobile/SidebarMobileHeader";
@@ -39,20 +37,18 @@ export default function DashboardSidebar({
   const queryClient = useQueryClient();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [selectMode, setSelectMode] = useState(false);
-  const [selectedBoards, setSelectedBoards] = useState<Set<string>>(new Set());
   const [shareBoardId, setShareBoardId] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<{
     ids: string[];
     label: string;
   } | null>(null);
-  const [pinnedBoardIds, setPinnedBoardIds] = useState<string[]>(() => {
-    try {
-      return JSON.parse(localStorage.getItem("kanban.pinnedBoards") ?? "[]");
-    } catch {
-      return [];
-    }
-  });
+  // const [pinnedBoardIds, setPinnedBoardIds] = useState<string[]>(() => {
+  //   try {
+  //     return JSON.parse(localStorage.getItem("kanban.pinnedBoards") ?? "[]");
+  //   } catch {
+  //     return [];
+  //   }
+  // });
 
   // Same limit as every other boards consumer so the list shares one query
   // (and one request) across the sidebar, navbar and dashboard.
@@ -88,12 +84,6 @@ export default function DashboardSidebar({
     openBoards();
   };
 
-  // Single write path for pins: state + localStorage always in sync.
-  const updatePinnedBoards = (next: string[]) => {
-    setPinnedBoardIds(next);
-    localStorage.setItem("kanban.pinnedBoards", JSON.stringify(next));
-  };
-
   const handleLogout = async () => {
     try {
       await logout();
@@ -112,64 +102,6 @@ export default function DashboardSidebar({
     }
   };
 
-  /** Rename a board (T17), then refresh the affected lists. */
-  const handleRenameBoard = async (boardId: string) => {
-    const board = boards.find((b) => b.id === boardId);
-    const next = window.prompt("Rename board", board?.name ?? "");
-
-    if (!next || !next.trim()) return;
-
-    try {
-      await boardApi.updateBoard(boardId, { name: next.trim() });
-      void queryClient.invalidateQueries({ queryKey: boardKeys.all });
-    } catch {
-      // Validation / network failures surface through the API layer; the board
-      // simply stays as it was.
-    }
-  };
-
-  /** Open the share dialog for a board (T14). */
-  const handleShareBoard = (boardId: string) => setShareBoardId(boardId);
-
-  const toggleBoardSelection = (id: string) => {
-    setSelectedBoards((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
-  const closeSelectMode = () => {
-    setSelectMode(false);
-    setSelectedBoards(new Set());
-  };
-
-  const handleBulkPin = (ids: string[]) => {
-    updatePinnedBoards([...new Set([...pinnedBoardIds, ...ids])]);
-    closeSelectMode();
-  };
-
-  const requestDeleteBoards = (ids: string[], label: string) => {
-    if (ids.length === 0) return;
-    setPendingDelete({ ids, label });
-  };
-
-  const handleBulkDelete = () => {
-    requestDeleteBoards(
-      Array.from(selectedBoards),
-      `Delete ${selectedBoards.size} board(s)? This can't be undone.`,
-    );
-  };
-
-  const requestDeleteBoard = (boardId: string) => {
-    const board = boards.find((b) => b.id === boardId);
-    requestDeleteBoards(
-      [boardId],
-      `Delete “${board?.name ?? "this board"}”? This can't be undone.`,
-    );
-  };
-
   const confirmDelete = async () => {
     if (!pendingDelete) return;
     const { ids } = pendingDelete;
@@ -177,21 +109,12 @@ export default function DashboardSidebar({
     await Promise.all(
       ids.map((id) => handleDeleteBoard(id).catch(() => undefined)),
     );
-    closeSelectMode();
-  };
-
-  const handlePinBoard = (boardId: string, pinned: boolean) => {
-    updatePinnedBoards(
-      pinned
-        ? [...new Set([...pinnedBoardIds, boardId])]
-        : pinnedBoardIds.filter((id) => id !== boardId),
-    );
   };
 
   return (
     <>
       <aside
-        onClick={collapsed && !selectMode ? onToggle : undefined}
+        onClick={collapsed ? onToggle : undefined}
         className={[
           "fixed left-0 top-0 z-40 hidden h-screen flex-col",
           /* Same colour as the page it sits beside. The hairline is what
@@ -210,71 +133,31 @@ export default function DashboardSidebar({
           />
         </div>
 
-        {selectMode && !collapsed ? (
-          <SidebarSelectMode
-            boards={boards}
-            selected={selectedBoards}
-            onToggle={toggleBoardSelection}
-            onClose={closeSelectMode}
-            onPin={handleBulkPin}
-            onDelete={handleBulkDelete}
-            pinnedBoardIds={pinnedBoardIds}
-            onPinBoard={(id) => {
-              const isPinned = pinnedBoardIds.includes(id);
-              handlePinBoard(id, !isPinned);
+        <SidebarSearch collapsed={collapsed} />
+
+        <div className="relative min-h-0 flex-1">
+          <div className="h-full overflow-y-auto">
+            <SidebarNavigation collapsed={collapsed} />
+          </div>
+
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-(--bg-root)"
+            style={{
+              maskImage: "linear-gradient(to top, black 40%, transparent 100%)",
+              WebkitMaskImage:
+                "linear-gradient(to top, black 40%, transparent 100%)",
             }}
-            onRenameBoard={handleRenameBoard}
-            onShareBoard={handleShareBoard}
-            onDeleteBoard={requestDeleteBoard}
           />
-        ) : (
-          <>
-            <SidebarSearch collapsed={collapsed} />
+        </div>
 
-            <div className="relative min-h-0 flex-1">
-              <div className="h-full overflow-y-auto">
-                <SidebarNavigation collapsed={collapsed} />
-                <SidebarBoards
-                  key={activeWorkspaceId ?? "none"}
-                  collapsed={collapsed}
-                  open={boardsOpen}
-                  onToggle={toggleBoards}
-                  boards={boards}
-                  isLoading={isBoardsLoading}
-                  isError={isBoardsError}
-                  hasNextPage={hasNextPage ?? false}
-                  isFetchingNextPage={isFetchingNextPage}
-                  onLoadMore={handleLoadMoreBoards}
-                  pinnedBoardIds={pinnedBoardIds}
-                  onPin={handlePinBoard}
-                  onRename={handleRenameBoard}
-                  onShare={handleShareBoard}
-                  onDelete={requestDeleteBoard}
-                  onEnterSelectMode={() => setSelectMode(true)}
-                />
-              </div>
-
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-(--bg-root)"
-                style={{
-                  maskImage:
-                    "linear-gradient(to top, black 40%, transparent 100%)",
-                  WebkitMaskImage:
-                    "linear-gradient(to top, black 40%, transparent 100%)",
-                }}
-              />
-            </div>
-
-            <div className="shrink-0">
-              <SidebarFooter
-                collapsed={collapsed}
-                user={user}
-                onLogout={handleLogout}
-              />
-            </div>
-          </>
-        )}
+        <div className="shrink-0">
+          <SidebarFooter
+            collapsed={collapsed}
+            user={user}
+            onLogout={handleLogout}
+          />
+        </div>
       </aside>
 
       <SidebarMobileHeader onMenuClick={() => setMobileMenuOpen(true)} />
