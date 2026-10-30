@@ -1,10 +1,10 @@
 # Design
 
-How the kanban app looks, moves and is built. This is the reference for anyone adding a screen, a component or a route: the tokens, the layout rules, the interaction model, and the conventions the code already follows.
+How the kanban app looks, moves and is built. This is the reference for anyone adding a screen, a component or a route: the tokens, the rules, the component recipes, and the conventions the code already follows.
 
-The visual language is **ChaiUI**, the chaicode.com design system. Sections 1 to 17 describe how this app applies it, including the parts it deliberately does not follow. Section 17 records that mapping rule by rule, so a future reader can tell a decision from a mistake.
+The visual language is **ChaiUI**, the chaicode.com design system, applied with the project's own tokens. Section 17 records the mapping rule by rule, so a future reader can tell a decision from a mistake.
 
-The app is dark-only. There is no light theme to design for and no plan to add one, so every surface, border and text colour below assumes a near-black background.
+The app ships **two themes**, dark and light, plus a `system` mode that follows the OS. Dark is the default and the `:root` palette, so first paint is correct without JavaScript. Every surface, border and text colour below is a token with a value in each theme.
 
 ---
 
@@ -28,87 +28,137 @@ Tailwind v4 means there is no config file. Theme values live in `client/src/inde
 className="bg-(--bg-root) text-(--text-primary)"
 ```
 
+Never hardcode a colour in a component. `npm run lint:colors` fails the build if you do.
+
 ---
 
-## 2. Design tokens
+## 2. Tokens
 
-Defined once in `client/src/index.css`. Never hardcode a hex value in a component.
+Defined once in `client/src/index.css`: `:root` holds dark, `.light` overrides it. There is no `.dark` block, so there is exactly one source per theme.
 
 ### Surfaces
 
-| Token | Value | Use |
+| Token | Dark | Light | Use |
+|---|---|---|---|
+| `--bg-root` | `rgb(0,0,0)` | `rgb(250,250,250)` | The page. Also the rail, and every popover, menu and dialog |
+| `--bg-surface` | `rgb(20,20,21)` | `rgb(255,255,255)` | Reserved for a panel that must lift off the page |
+| `--bg-card` | `rgb(26,26,28)` | `rgb(255,255,255)` | Cards and list rows |
+| `--bg-elevated` | `rgb(36,36,38)` | `rgb(255,255,255)` | Reserved. Floating surfaces use `--bg-root` instead |
+| `--bg-hover` | `rgba(255,255,255,.05)` | `rgba(0,0,0,.04)` | Hover fills |
+| `--bg-active` | `rgba(255,255,255,.08)` | `rgba(0,0,0,.06)` | Pressed fills |
+
+Two rules govern surfaces.
+
+**A background is a surface or a tint. Never a colour.** A panel, row, chip or bar takes `--bg-root`, one of the surface steps, a `--tint-*`, or `transparent`. Status meaning travels in the text colour, not in a coloured fill.
+
+**A floating surface is the page colour.** Popovers, menus, dialogs and sheets sit on `bg-(--bg-root)` and are separated by a hairline. `--bg-elevated` exists but is not used for them: a grey panel on a black page reads as a different material, not as a layer.
+
+### Washes
+
+One scale, so a component asks for a strength and the theme decides whether that strength is white or black.
+
+| Token | Dark | Light |
 |---|---|---|
-| `--bg-root` | `#050505` | Page background, and the sidebar |
-| `--bg-surface` | `rgb(27, 27, 28)` | Reserved; the sidebar no longer uses it |
-| `--bg-card` | `#1c1c1e` | Cards, list rows |
-| `--bg-elevated` | `rgb(44, 44, 46)` | Menus, popovers, dialogs |
-| `--bg-hover` | `#28282c` | Hover fills |
-| `--bg-active` | `#2e2e33` | Pressed fills |
+| `--tint-2` | `rgba(255,255,255,.02)` | `rgba(0,0,0,.02)` |
+| `--tint-3` | `.03` | `.025` |
+| `--tint-4` | `.04` | `.03` |
+| `--tint-5` | `.05` | `.035` |
+| `--tint-6` | `.06` | `.045` |
+| `--tint-8` | `.08` | `.06` |
+| `--tint-10` | `.10` | `.08` |
+| `--tint-15` | `.15` | `.12` |
 
-The sidebar shares `--bg-root` with the page it sits beside. What separates them is a hairline (`border-r border-orange-50/10`), not a fill. A grey rail beside a black page reads as a separate product.
+Use `--tint-4` for a hover on a row that already has a background, `--tint-6` for a selected row, `--tint-8` for an open menu trigger, `--tint-3` for a field or a quiet panel.
 
-### Borders
+### Edges
 
-| Token | Value |
-|---|---|
-| `--border` | `rgba(255,255,255,0.08)` |
-| `--border-strong` | `rgba(255,255,255,0.14)` |
-| `--border-subtle` | `rgba(255,255,255,0.05)` |
+| Token | Dark | Light | Use |
+|---|---|---|---|
+| `--hairline` | `rgba(255,245,235,.1)` | `rgba(60,30,10,.12)` | Every panel edge, divider and row separator |
+| `--hairline-strong` | `rgba(255,245,235,.18)` | `rgba(60,30,10,.22)` | Floating panels, focused fields, open triggers |
+| `--border` | `rgba(255,255,255,.1)` | `rgba(0,0,0,.1)` | Neutral edges where the warm tone would be wrong |
+| `--border-strong` | `rgba(255,255,255,.16)` | `rgba(0,0,0,.18)` | |
+| `--border-subtle` | `rgba(255,255,255,.06)` | `rgba(0,0,0,.06)` | |
 
-Newer components use the Tailwind arbitrary form instead, which is equivalent and easier to nudge per surface: `border-orange-50/[0.06]` at rest, `/15` for controls, `/20` for floating panels, `/30` on hover.
-
-### Brand
-
-| Token | Value |
-|---|---|
-| `--brand` | `#ff6b35` |
-| `--brand-hover` | `#ff814f` |
-| `--brand-active` | `#e95725` |
-| `--brand-muted` | `rgba(255,107,53,0.1)` |
-| `--brand-border` | `rgba(255,107,53,0.3)` |
+The warm hairline is the default edge in this system. `--border` is the exception, used inside dense data surfaces where a warm line would tint the content.
 
 ### Text
 
-`--text-primary #f5f5f5`, `--text-soft #cccccc`, `--text-secondary #a3a3a3`, `--text-muted #666666`, `--text-subtle #3f3f3f`.
+| Token | Dark | Light | Use |
+|---|---|---|---|
+| `--text-primary` | `rgb(245,245,245)` | `rgb(17,17,17)` | Headings, active rows, values |
+| `--text-soft` | `rgb(204,204,204)` | `rgb(56,56,56)` | Row labels at rest |
+| `--text-secondary` | `rgb(163,163,163)` | `rgb(90,90,90)` | Body copy, meta |
+| `--text-muted` | `rgb(120,120,120)` | `rgb(120,120,120)` | Icons at rest, placeholders, timestamps |
+| `--text-subtle` | `rgb(72,72,72)` | `rgb(165,165,165)` | Inert text, disabled labels |
 
-In practice components use the `neutral-*` scale, which lands in the same range and has more steps: `text-neutral-100` for primary, `400` for body, `500` for secondary, `600` for meta, `700` for inert.
+### Accent and brand
 
-### Status
+| Token | Dark | Light | Use |
+|---|---|---|---|
+| `--accent` | `rgb(255,224,178)` cream | `rgb(146,64,14)` amber | The one highlight. Active icons, a highlighted phrase, an active segment |
+| `--accent-soft` | cream at `.14` | amber at `.1` | The wash behind an accent chip or a hint |
+| `--accent-fill` | `rgba(124,45,18,.4)` | amber at `.16` | The active fill of a segmented control |
+| `--brand` | `#ff6b35` | `#c2410c` | The logo, a link on hover, the focus ring |
+| `--brand-hover` / `--brand-active` | `#ff814f` / `#e95725` | `#9a3412` / `#7c2d12` | |
+| `--brand-muted` / `--brand-border` | brand at `.1` / `.3` | brand at `.1` / `.32` | |
 
-`--success #35d399`, `--warning #f5b84b`, `--danger #f16b7a`.
+Cream only works on black, so the accent flips to deep amber in light. `#ff6b35` is about 2.6:1 on `rgb(250,250,250)` and cannot carry text, which is why the light brand is `#c2410c`.
+
+### Actions
+
+| Token | Dark | Light | Use |
+|---|---|---|---|
+| `--solid-bg` | `rgb(255,255,255)` | `rgb(10,10,10)` | The one solid button on a screen |
+| `--solid-bg-hover` | `rgb(229,229,229)` | `rgb(38,38,38)` | |
+| `--solid-text` | `rgb(10,10,10)` | `rgb(250,250,250)` | The text on it |
+
+The solid button inverts with the theme: white on black in dark, near-black on white in light.
+
+### Special purpose
+
+| Token | Dark | Light | Use |
+|---|---|---|---|
+| `--on-color` | `rgb(10,10,10)` | `rgb(10,10,10)` | Ink on a coloured disc: avatar initials, presence dots. Does not flip, because the identity palette does not |
+| `--inverse-bg` | `rgb(245,245,245)` | `rgb(17,17,17)` | The tooltip capsule, which turns its back on the theme |
+| `--inverse-text` | `rgb(10,10,10)` | `rgb(250,250,250)` | |
+| `--inverse-border` | `rgba(0,0,0,.12)` | `rgba(255,255,255,.14)` | |
+| `--inverse-accent` | `rgb(146,64,14)` | `rgb(255,224,178)` | The highlighted phrase inside an inverted capsule |
+| `--glass` | `rgba(13,13,13,.72)` | `rgba(255,255,255,.72)` | `.glass-surface` |
+| `--scrim` | `rgba(0,0,0,.55)` | `rgba(0,0,0,.35)` | Behind a dialog |
+| `--scrollbar-thumb` / `-hover` | `#292929` / `#3a3a3a` | `#d4d4d4` / `#b4b4b4` | |
+| `--success` / `--warning` / `--danger` | `#35d399` / `#f5b84b` / `#f16b7a` | `#047857` / `#a16207` / `#be123c` | Text and 1px edges only |
 
 ---
 
 ## 3. Orange is never a fill
 
-This is the strictest rule in the system. Orange carries meaning, so it must not become decoration or a status chip.
+The strictest rule in the system. Orange carries meaning, so it must not become decoration.
 
 Allowed:
 
 - The logo.
-- `hover:text-brand` on text links.
-- The badge glint, and a 1.5px dot for unread.
-- A 10% footer hairline.
-- A segmented control's active fill, in dark brown rather than orange.
-- Icon colour on an active row (`text-orange-100`), a text colour, not a fill.
+- `text-(--brand)` on a link or an icon that is being hovered.
+- The focus ring, which is a 2px outline.
+- A 1.5px dot for unread, and the badge glint.
+- The active fill of a segmented control, in dark brown (`--accent-fill`) with cream text, not orange.
+- `text-(--accent)` on an active row's icon. That is a text colour.
 
-Not allowed:
+Not allowed: orange buttons, orange status pills, orange card borders, orange progress bars, orange section headers, and any orange wash behind a panel.
 
-- Orange buttons, orange status pills, orange card borders, orange section headers, orange progress bars.
-
-A primary action is **white on dark**. There is one per screen:
+A primary action is **the solid button**, one per screen:
 
 ```tsx
-className="rounded-none rounded-tr-lg rounded-bl-lg bg-white text-neutral-900"
+className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-none rounded-tr-lg rounded-bl-lg bg-(--solid-bg) px-4 text-sm font-medium text-(--solid-text) transition-colors duration-200 hover:bg-(--solid-bg-hover) motion-reduce:transition-none"
 ```
 
-Secondary actions are an outline with mirrored corners:
+Secondary is the outline with mirrored corners:
 
 ```tsx
-className="rounded-none rounded-tr-lg rounded-bl-lg border border-orange-50/20"
+className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-none rounded-tl-lg rounded-br-lg border border-(--hairline-strong) bg-transparent px-4 text-sm font-medium text-(--text-soft) transition-colors duration-200 hover:bg-(--tint-4) hover:text-(--text-primary) motion-reduce:transition-none"
 ```
 
-Danger is a red fill, and only inside a confirm dialog.
+Danger is red text on a neutral fill, and only inside a confirm dialog.
 
 ---
 
@@ -117,32 +167,51 @@ Danger is a red fill, and only inside a confirm dialog.
 | Role | Family | Size and weight |
 |---|---|---|
 | UI text | Plus Jakarta Sans | 12.5px to 14px, 400 to 500 |
-| Headings | Plus Jakarta Sans | 22px to 26px, 600, `tracking-tight` |
+| Headings | Plus Jakarta Sans | 19px to 26px, 600 to 700, `tracking-tight` |
 | Data labels, keys, timestamps | JetBrains Mono | 9px to 10px, uppercase, `tracking-[0.14em]` |
 
-Both are loaded from Google Fonts in `client/index.html`. Body copy never uses the mono face; mono is reserved for numbers, keycaps and small labels where alignment or tabular figures matter.
-
-Numbers that sit in columns get `tabular-nums`. Counts, times and member totals all use it so they do not jitter as values change.
+Both are loaded from Google Fonts in `client/index.html`. Body copy never uses the mono face; mono is reserved for numbers, keycaps and small labels where alignment matters. Numbers in columns get `tabular-nums`.
 
 ---
 
 ## 5. Shape and depth
 
 - Controls and rows: `rounded-lg`.
-- Panels, popovers, dialogs: `rounded-xl`.
+- Panels and popovers: `rounded-xl`.
+- Dialogs: `rounded-2xl`.
 - Avatars and dots: full circle.
-- Buttons: the asymmetric pair above, `rounded-none rounded-tr-lg rounded-bl-lg`, mirrored for secondary.
+- Buttons: `rounded-none rounded-tr-lg rounded-bl-lg`, mirrored for secondary.
 
-**No shadows on cards, panels or popovers.** Depth comes from a hairline border and a background one step lighter than the page. A shadow on a `#050505` background reads as grime, not elevation.
+**No shadows on cards, panels or popovers.** Depth comes from a hairline and, where needed, one step of lightness. A shadow on a black page reads as grime.
 
 ---
 
 ## 6. Motion
 
-- Duration 150ms for colour and hover, 200ms for layout shifts, 300ms for overlays that grow or unroll.
-- Animate `transform`, `opacity`, `width`, `max-height`, `border-radius`. Never animate `box-shadow` or `filter`.
-- Every animation is wrapped for reduced motion: `motion-reduce:transition-none`.
-- Menus appear by opacity and a 2px translate, not by scale. Scaling text looks like a zoom bug.
+| What | Duration | Curve |
+|---|---|---|
+| Colour, hover, focus | 150ms | `ease` |
+| Layout shifts, width, accordion | 200ms | `ease-out` |
+| Menus and popovers | 150ms to 200ms | opacity plus a 2px translate |
+| The theme reveal | 2000ms | see below |
+
+Rules:
+
+- Animate `transform`, `opacity`, `width`, `max-height`, `clip-path`. Never `box-shadow`.
+- Every transition carries `motion-reduce:transition-none`.
+- Menus appear by opacity and a small translate, never by scale: scaling text looks like a zoom bug.
+
+### The theme reveal
+
+`lib/themeReveal.ts` wraps the class flip in a View Transition and clips the snapshot to a circle centred on the control that was pressed.
+
+- **Dark to light**: the new frame opens out of the button, `cubic-bezier(0.22, 1, 0.36, 1)`.
+- **Light to dark**: the old frame closes back into it, `cubic-bezier(0.64, 0, 0.78, 0)`, which is the same curve reversed in time.
+- Both start and end at the button's own radius, so the two directions are exact mirrors.
+- `fill: "both"` holds the first and last frames, or the clip is released early and the page flashes.
+- The origin is published as `--vt-x`, `--vt-y`, `--vt-seed` before the transition starts, so the incoming frame is already clipped on its first paint.
+- `.vt-grow` and `.vt-collapse` in `index.css` do the pre-clip and the layer swap.
+- No View Transitions, or reduced motion, and the theme changes with no animation at all.
 
 ---
 
@@ -153,48 +222,44 @@ Numbers that sit in columns get `tabular-nums`. Counts, times and member totals 
 |              |  navbar 56px, fixed, blurred on scroll   |
 |  sidebar     +------------------------------------------+
 |  256px       |                                          |
-|  (64px       |  page content                            |
+|  (72px       |  page content                            |
 |   collapsed) |  max-w-7xl, px-5 sm:px-6 lg:px-8, py-6   |
 |              |                                          |
 +--------------+------------------------------------------+
 ```
 
-- Sidebar: `w-64` expanded, `w-16` collapsed, `transition-[width] duration-200`.
-- Navbar: `h-14`, `fixed top-0 right-0`, offset `left-64` or `left-16` to match the rail, `z-50`.
-- Main: `ml-64` or `ml-16`, `h-screen`, `overflow-y-auto`.
-- Page frame: `BoardShell` gives every in-app page the same width and padding, so a new page inherits the grid without deciding anything.
-- Marketing pages use `max-w-6xl` and are exempt from the app shell.
+- Rail: `w-64` expanded, `w-18` collapsed, `transition-[width] duration-200`.
+- Navbar: `h-14`, `fixed top-0 right-0`, offset `left-64` or `left-18` to match the rail, `z-50`.
+- Main: `ml-64` or `ml-18`, `h-screen`, `overflow-y-auto`.
+- Rail z-index: `z-40`, and `z-60` while it floats open over the page in hover mode, so it wins against the navbar it covers.
+- Page frame: `BoardShell` gives every in-app page the same width and padding.
 
-Mobile is a separate composition: the rail becomes a drawer (`MobileSidebar`, `w-72`, `z-50`), the navbar is replaced by a compact header, and the page keeps its own scroll.
+Stacking order, low to high: rail 40, navbar 50, floating rail 60, popover and menu 80, dialog 100, tooltip 999.
+
+Mobile is a separate composition: the rail becomes a drawer (`MobileSidebar`, `w-72`), the navbar is replaced by a compact header, and the page keeps its own scroll.
 
 ---
 
 ## 8. Shell anatomy
 
-### Sidebar
+### Rail
 
-Top to bottom: brand and collapse control, **Find** (`F`), primary navigation, the workspace's board list, then the account footer.
+Top to bottom: brand, **Find** (`F`), primary navigation, then the account footer.
 
-Navigation, in order:
-
-1. `Projects` to `/dashboard` when no workspace is selected, `Overview` to `/workspaces/:id` when one is. The icon slot shows the workspace's avatar if it has one, otherwise the Projects glyph.
-2. `Boards`, `Notes`, `Members`.
-3. A hairline.
-4. `Activity` and `Settings`, both drilldowns.
-
-A drilldown row has a right chevron. Clicking it replaces the navigation list with that section's own pages, headed by a back arrow and a centred title. It is a panel inside the sidebar, not a modal and not an inline accordion. Grouped children can carry an uppercase section label.
-
-The board list is a collapsible group with a chevron that rotates 90 degrees while open. Pinned boards survive a reload.
+- Collapsed controls are one step larger than they look: header button `size-10` with the mark at `h-9 w-9`, search `size-9`, footer avatar `size-10` with a 28px avatar, nav rows `h-10 w-10` with a `size-6` icon box.
+- Every control centres on the rail's midpoint. Nothing offsets.
+- Three modes, set from the account menu's Sidebar row: `open`, `collapsed`, `hover`. In `hover` the rail opens on pointer enter and the collapse control is replaced by a pin.
+- Navigation: `Overview`, `Boards`, `Notes`, `Members`, a hairline, then `Activity` and `Settings`.
 
 ### Footer
 
-Avatar, name, then two round controls: a three-dots account menu and a bell. Both open upward as popovers. The bell carries a cream dot when unread, and its `aria-label` includes the count so the state is not colour-only.
+Avatar, name, and a three-dots affordance. The whole row is one button that toggles the account menu; the dots are decoration, not a second control. In hover mode the pointer opens the menu and a click closes it.
 
 ### Navbar
 
-Left: a breadcrumb of grid icon, workspace switcher, and (on board routes only) a second chevron with the board switcher. Centre: the page title, `pointer-events-none`. Right: search, then notifications.
+Left: grid icon, workspace switcher, and on board routes a second chevron with the board switcher. Centre: the page title, `pointer-events-none`. Right: search, notifications.
 
-With no workspace selected, the switcher collapses to a single "All Workspaces" pill on every route, not just the dashboard. An empty breadcrumb beside a page asking you to pick a workspace is worse than no breadcrumb.
+With no workspace selected the switcher collapses to an "All Workspaces" pill on every route, not just the overview.
 
 ---
 
@@ -205,38 +270,157 @@ With no workspace selected, the switcher collapses to a single "All Workspaces" 
 | `/`, `/features`, `/how-it-works` | Marketing | public |
 | `/auth/login`, `/auth/register`, `/auth/forgot-password` | Auth | guest only |
 | `/auth/callback` | OAuth return | public |
-| `/dashboard` | Projects overview | authenticated |
+| `/workspaces` | Workspace overview | authenticated |
 | `/workspaces/:workspaceId` | One workspace | authenticated |
-| `/boards` | Board list | `RequireWorkspace` |
-| `/boards/:boardId` | Board canvas | authenticated, board carries its workspace |
-| `/notes`, `/members`, `/activity` | Workspace pages | `RequireWorkspace` |
-| `/user/profile`, `/settings` | Account | authenticated |
+| `/workspaces/:workspaceId/boards` | Board list | `RequireWorkspace` |
+| `/workspaces/:workspaceId/boards/:boardId` | Board canvas | authenticated |
+| `/workspaces/:workspaceId/{notes,members,activity}` | Workspace pages | `RequireWorkspace` |
+| `/account/settings/{profile,notifications}` | Account | authenticated |
+| `/workspaces/~/settings/{general,notifications}` | Workspace settings | `RequireWorkspace` |
 
-`RequireWorkspace` renders a picker in place when nothing is selected: the destination's name, a search field, the workspace list, and a create button. It does not redirect and it is not a lock.
+`RequireWorkspace` renders a picker in place when nothing is selected: the destination's name, a search field, the workspace list, and a create button. It does not redirect.
 
 ---
 
-## 10. Components
+## 10. Component recipes
 
-### Board canvas
+Copy these. Every one is on tokens, on the hairline, and free of shadow.
 
-Columns scroll horizontally, each with a header, a count, a card list and a composer. Cards show title, labels, assignee avatars, comment and attachment counts, and a cover image when set. Dragging reorders within and across columns, and the order is persisted through Yjs so two people dragging at once converge.
+### Buttons
 
-### Card palette
+| Variant | Classes | When |
+|---|---|---|
+| Solid | `h-9 rounded-none rounded-tr-lg rounded-bl-lg bg-(--solid-bg) px-4 text-sm font-medium text-(--solid-text) hover:bg-(--solid-bg-hover)` | One per screen, the primary action |
+| Outline | `h-9 rounded-none rounded-tl-lg rounded-br-lg border border-(--hairline-strong) px-4 text-sm font-medium text-(--text-soft) hover:bg-(--tint-4) hover:text-(--text-primary)` | Beside the solid one |
+| Ghost | `h-8 rounded-lg px-2.5 text-(--text-secondary) hover:bg-(--tint-4) hover:text-(--text-primary)` | Rows, toolbars, icon-free actions |
+| Danger | `h-9 rounded-lg border border-(--danger)/30 px-4 text-(--danger) hover:bg-(--tint-4)` | Inside a confirm dialog only |
 
-`⌘I` or `⌘K` on a board opens the card palette: a single command surface for the board, with the card's fields, comments and attachments. Clicking a card opens it rather than a separate modal, so there is one editing surface, not two.
+Every button carries `cursor-pointer transition-colors duration-200 motion-reduce:transition-none` and `disabled:cursor-not-allowed disabled:opacity-40`.
+
+### Icon button
+
+```tsx
+className="flex size-8 cursor-pointer items-center justify-center rounded-lg text-(--text-muted) transition-colors duration-200 hover:bg-(--tint-4) hover:text-(--text-primary) motion-reduce:transition-none"
+```
+
+Icon-only means `aria-label` plus a tooltip whose label matches it.
+
+### Theme controls
+
+Three-mode segmented control, for System, Light and Dark:
+
+```tsx
+<div role="group" aria-label="Theme" className="flex shrink-0 items-center gap-0.5 rounded-full border border-(--hairline) bg-(--tint-3) p-0.5">
+  {THEMES.map((entry) => (
+    <button
+      type="button"
+      role="menuitemradio"
+      aria-checked={entry.mode === mode}
+      aria-label={entry.label}
+      onClick={(event) => setThemeMode(entry.mode, event.currentTarget)}
+      className={[
+        "flex size-6 cursor-pointer items-center justify-center rounded-full",
+        "transition-colors duration-150 motion-reduce:transition-none",
+        entry.mode === mode
+          ? "bg-(--tint-10) text-(--accent)"
+          : "text-(--text-muted) hover:text-(--text-primary)",
+      ].join(" ")}
+    >
+      <HugeiconsIcon icon={entry.icon} size={12} strokeWidth={1.7} />
+    </button>
+  ))}
+</div>
+```
+
+Two details matter. `role="menuitemradio"` with `aria-checked`, because it is a choice inside a menu, and `event.currentTarget` passed to `setThemeMode`, because that is the origin the reveal starts from.
+
+A single toggle button, where one control flips between two themes:
+
+```tsx
+<button
+  type="button"
+  aria-label={theme === "dark" ? "Switch to light" : "Switch to dark"}
+  onClick={(event) => setThemeMode(theme === "dark" ? "light" : "dark", event.currentTarget)}
+  className="flex size-9 cursor-pointer items-center justify-center rounded-lg text-(--text-muted) transition-colors duration-200 hover:bg-(--tint-4) hover:text-(--text-primary) motion-reduce:transition-none"
+>
+  <HugeiconsIcon icon={theme === "dark" ? SunIcon : MoonIcon} size={16} strokeWidth={1.7} />
+</button>
+```
+
+The icon shows the destination, not the current state.
+
+### Segmented control
+
+For two or three mutually exclusive options in a row, such as the feedback category:
+
+```tsx
+<div role="group" className="flex overflow-hidden rounded-md border border-(--hairline)">
+  <button className="h-8 flex-1 px-2 text-[12px] font-medium bg-(--accent-fill) text-(--accent)">Something broke</button>
+  <button className="h-8 flex-1 border-l border-(--hairline) px-2 text-[12px] font-medium text-(--text-secondary) hover:text-(--text-primary)">An idea</button>
+</div>
+```
+
+The active segment is the one place a fill is allowed to be a colour, and it is dark brown with cream text, never orange.
+
+### Chips and tags
+
+```tsx
+className="inline-flex items-center rounded-full border border-(--hairline) bg-(--tint-4) px-2.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-(--text-soft)"
+```
+
+A card label keeps its identity colour as **text**, with a neutral fill and a hairline edge. Never fill a chip with its own colour.
+
+### Fields
+
+```tsx
+<input className="h-9 w-full rounded-lg border border-(--hairline) bg-transparent px-3 text-sm text-(--text-primary) placeholder:text-(--text-subtle) outline-hidden transition-colors duration-200 focus:border-(--hairline-strong) motion-reduce:transition-none" />
+```
+
+- No orange focus halo. The border firms up, and the global `:focus-visible` ring is suppressed for fields in `index.css`.
+- A label above at `text-sm font-medium text-(--text-soft)`, a hint below at `text-[11px] text-(--text-muted)`.
+- An error state is `border-(--danger)/50` with `text-(--danger)` under it, never a filled red field.
+
+### Popover and menu
+
+```tsx
+className="absolute z-80 overflow-hidden rounded-xl border border-(--hairline-strong) bg-(--bg-root) p-1"
+```
+
+Rows inside are `h-8 rounded-md px-2.5 text-[12.5px] text-(--text-soft) hover:bg-(--tint-4) hover:text-(--text-primary)`, with the icon at `text-(--text-muted)` lifting on `group-hover`.
+
+### Dialog
+
+```tsx
+<div className="fixed inset-0 z-100 flex items-center justify-center bg-(--scrim) p-4 backdrop-blur-sm">
+  <div role="dialog" aria-modal="true" aria-labelledby={titleId} className="w-full max-w-md rounded-2xl border border-(--hairline) bg-(--bg-root) p-6">
+```
+
+Escape closes it, a pointerdown on the backdrop closes it, and focus moves to the first thing worth typing in.
+
+### Tooltip
+
+The capsule **inverts**: light on a dark page, dark on a light one.
+
+```tsx
+className="border border-(--inverse-border) bg-(--inverse-bg) text-(--inverse-text)"
+```
+
+The arrow matches, and the optional highlight phrase uses `text-(--inverse-accent)` on an inverted shape and `text-(--accent)` on the shapes that keep page colours (`glass`, `neon`, `gradient`, `badge`, `outline`, `ink`, `terminal`).
 
 ### Avatars
 
-`Avatar` resolves its own name and image from `useActiveWorkspaceMembers`, so a caller passes an id and gets the right face without threading data. Initials are the fallback, tinted by a deterministic colour from the id. Workspace avatars come from `avatarUrl` with the same fallback.
+```tsx
+className="inline-flex items-center justify-center rounded-full font-mono text-[9px] font-semibold text-(--on-color)"
+style={{ background: identityColor(id) }}
+```
 
-### Notifications
+The identity palette is the same in both themes, so the ink on it is `--on-color`, which does not flip. Initials are the fallback for a missing image, never an empty circle.
 
-Two surfaces over one query: the navbar sheet (full height, tabs, mark read, clear, mute) and the footer popover (Inbox / Unread / Comments, search, filter). Both read `notificationsApi.listNotifications` under one query key, so they cannot disagree.
+### Toasts, skeletons, empty states
 
-### Activity
-
-`/activity` is a cursor-paginated feed grouped by day, with filter chips that live in the URL (`?type=comments`), so a filtered view can be linked and survives a reload. Day headers are derived by comparing each row with the one above, never by mutating a variable during render.
+- Toast: `rounded-xl border border-(--hairline) bg-(--bg-root) px-3.5 py-2.5 text-[12.5px]`, with a 1px semantic edge and the message in `--text-soft`.
+- Skeleton: `animate-pulse rounded bg-(--tint-6)`, shaped like the content it replaces, never a spinner in an empty box.
+- Empty state: an icon in a hairline circle, one sentence, and an action if there is an obvious one.
 
 ---
 
@@ -248,25 +432,24 @@ Two surfaces over one query: the navbar sheet (full height, tabs, mark read, cle
 | `N` | Open notifications | Anywhere outside a text field |
 | `⌘K` / `Ctrl+K` | Search palette | Everywhere except board routes |
 | `⌘I` or `⌘K` | Card palette | Board routes |
-| `⌘⇧K` | New project | Sidebar |
-| `Enter` | Submit composer or comment | Text fields |
-| `Shift+Enter` | Newline | Text fields |
+| `⌘⇧K` | New project | Rail |
+| `Enter` / `Shift+Enter` | Submit / newline | Text fields |
 | `Esc` | Close the top overlay | Overlays |
 
-Every global handler ignores events while the caret is in an `input`, `textarea`, `select` or contentEditable element, and ignores modified keys. Typing a name must never open a panel.
+Every global handler ignores events while the caret is in an `input`, `textarea`, `select` or contentEditable element, and ignores modified keys. Guard `event.key` with `?? ""`, because not every keydown that reaches the window carries one.
 
 ---
 
 ## 12. States
 
-Every data surface answers four questions:
+Every data surface answers four questions.
 
-1. **Loading.** Skeletons shaped like the real content, never a spinner in the middle of an empty box. `DashboardSkeleton` mirrors the actual tile and row layout so nothing jumps when data lands.
-2. **Empty.** An icon in a hairline circle, one sentence, and an action if there is an obvious one. "Nothing has happened yet", not "No data".
-3. **Error.** What failed, in plain words, and a retry. `BoardError` is the shared shape.
-4. **Partial.** Infinite lists show a "Loading more" row with a spinner, and "End of activity" when the cursor runs out.
+1. **Loading.** Skeletons shaped like the real content.
+2. **Empty.** An icon in a hairline circle, one sentence, an action if there is one. "Nothing has happened yet", not "No data".
+3. **Error.** What failed, in plain words, and a retry.
+4. **Partial.** Infinite lists show a "Loading more" row, and "End of activity" when the cursor runs out.
 
-Realtime surfaces also show who else is present, and reconcile after a reconnect rather than silently diverging.
+Realtime surfaces also show who is present, and reconcile after a reconnect rather than silently diverging.
 
 ---
 
@@ -284,13 +467,13 @@ Realtime surfaces also show who else is present, and reconcile after a reconnect
 
 ## 14. Accessibility
 
-- Icon-only controls carry `aria-label`. Controls with visible text do not get a tooltip.
-- Tooltips appear only on icon-only controls, and the label matches the `aria-label`.
-- Toggle state uses `aria-expanded` or `aria-pressed`, not colour alone.
+- Icon-only controls carry `aria-label`, and their tooltip matches it.
+- Toggle state uses `aria-expanded`, `aria-pressed` or `aria-checked`, never colour alone.
 - Hidden but mounted panels get `inert` and `aria-hidden`, so nothing offscreen is tabbable.
-- Focus rings are removed only where a control has a stronger visual focus state. Never remove focus indication from a link or a text field without replacing it.
+- The global ring is `outline: 2px solid var(--brand)`. It is suppressed for text fields and for `[tabindex="-1"]` containers focused only to catch arrow keys.
 - Decorative icons and dividers are `aria-hidden="true"`.
-- Contrast targets 4.5:1 for body text. `neutral-600` is for meta text only, never for a control label.
+- Body text targets 4.5:1 in both themes. `--text-muted` is for meta only, never a control label.
+- A theme change is a preference, not a mode: the control reflects `mode`, which can be `system`.
 
 ---
 
@@ -302,26 +485,29 @@ client/src/
   features/     one folder per domain: boards, workspaces, notes, activity, settings
   components/   layout/ (composition), ui/ (primitives), Tooltips/
   hooks/        dashboard and auth hooks
-  stores/       Zustand stores
+  lib/          themeReveal and small helpers
+  stores/       Zustand stores: theme, sidebarState, activeWorkspace
   api/          one module per resource, typed
   types/        API and domain types
   validations/  zod schemas shared with the server
 ```
 
 - Aliases: `@/` for `src`, `@components/` for `src/components`.
-- API modules return unwrapped payloads: `response.data.data`, so callers never touch the envelope.
-- One query key object per resource (`notificationKeys.all`), invalidated after mutations.
-- Stores hold what survives a navigation; query cache holds what the server owns.
-- Tailwind only. No CSS modules, no styled components, no inline style objects except for values that must be computed (a width from a measurement, a colour from an id).
+- API modules return unwrapped payloads, so callers never touch the envelope.
+- One query key object per resource, invalidated after mutations.
+- Stores hold what survives a navigation; the query cache holds what the server owns.
+- Tailwind only. Inline `style` is for computed values: a width from a measurement, an identity colour from an id.
+- `npm run lint:colors` fails on a raw palette utility, a hardcoded hex, a raw white or black wash, and the malformed `bg-(var(--x))` shorthand.
 
 ### React Compiler rules this codebase has been bitten by
 
-These all pass `tsc`, so the compiler is the gate, not the type checker:
+These pass `tsc`, so the compiler is the gate:
 
-- **No mutation during render.** Derive, do not accumulate. A `let lastDay` reassigned inside `.map()` is rejected; compare with the previous item instead.
-- **Declare state above the callbacks that use it.** A setter read before its `const [x, setX]` declaration fails even inside a closure.
-- **No `window` reads during render.** Use `useLocation()`, not `window.location.pathname`, or the value is captured once and never updates.
-- **Effects that write state must not fight the URL.** A page that syncs a store from its route needs a "already synced this route" guard, or clearing that store is undone on the next render.
+- **No mutation during render.** Derive, do not accumulate.
+- **Declare state above the callbacks that use it.**
+- **No `window` reads during render.** Use `useLocation()`.
+- **Effects that write state must not fight the URL.** Guard with a "synced this route" key.
+- **A reset effect is usually the wrong shape.** Derive from a key, or let the component unmount.
 
 ---
 
@@ -329,84 +515,77 @@ These all pass `tsc`, so the compiler is the gate, not the type checker:
 
 | Do | Don't |
 |---|---|
+| Backgrounds from surfaces and tints | A coloured fill behind a panel, chip or bar |
 | Hairline borders for separation | Shadows on panels |
-| White primary button, one per screen | Orange filled buttons |
-| `bg-(--bg-root)` for page and rail, hairline between | A grey rail beside a black page |
-| Derive values during render | Mutate a variable inside `.map()` |
-| `aria-label` on icon buttons, tooltip to match | Tooltip on a control that already has text |
+| Floating surfaces on `bg-(--bg-root)` | A grey popover on a black page |
+| One solid button per screen | Orange filled buttons |
+| `--on-color` ink on an avatar disc | `--solid-text` on a coloured disc |
+| Inverted tooltip capsule | A page-coloured tooltip on a page |
 | `motion-reduce:transition-none` on every transition | Unconditional animation |
+| `aria-label` on icon buttons, tooltip to match | Tooltip on a control that already has text |
 | Sentence case, no em dash | Title Case, em dash |
 | Skeleton shaped like the content | Spinner in an empty box |
-| One editing surface per card | A modal and a palette for the same card |
+| Guard `event.key` with `?? ""` | `event.key.toLowerCase()` on an unguarded event |
 
 ---
 
 ## 17. ChaiUI alignment
 
-The design language is ChaiUI, the chaicode.com look. Its own description: neutral near-black, white type, one quiet cream accent, warm hairlines, and orange almost nowhere. Premium comes from restraint.
+The design language is ChaiUI, the chaicode.com look: neutral near-black, white type, one quiet cream accent, warm hairlines, and orange almost nowhere. Premium comes from restraint.
 
 Sources, in priority order:
 
 1. `https://ui.chaicode.com/.well-known/skills/chaiui/SKILL.md` for the rules.
-2. `https://ui.chaicode.com/llms.txt` for the component index.
-3. The live docs, which show every component in both themes with its code.
+2. `https://ui.chaicode.com/.well-known/skills/chaiui/references/components.md` and `recipes.md` for exact class strings.
+3. The live docs, which show every component in both themes.
 
-When a detail is not covered, read those. Do not infer a rule from a screenshot.
-
-### Which mode this project uses
-
-ChaiUI offers three ways in: install shipped components through its shadcn registry, hand-build from its recipes on Tailwind v4, or follow the Tailwind 3 guide.
-
-This project uses the second. There is no shadcn and no `components.json` here, so `npx shadcn add @chaiui/...` does not apply. Tokens live in `client/src/index.css` and every component is hand-built. If shadcn is ever added, the registry route becomes available and shipped components should be preferred over hand-rolling.
+This project hand-builds from the recipes on Tailwind v4. There is no shadcn and no `components.json`, so `npx shadcn add @chaiui/...` does not apply.
 
 ### Adopted without change
 
 | ChaiUI rule | Where it shows up |
 |---|---|
-| Orange is never a fill, with the same allow-list | Section 3, the white primary button |
-| Cream as the accent, one highlighted phrase per paragraph | `text-orange-100` spans, active icons |
+| Orange is never a fill, with the same allow-list | Section 3 |
+| Cream as the accent, one highlighted phrase per paragraph | `text-(--accent)`, the tooltip highlight |
 | Warm hairlines, no shadow on cards or panels | Every surface |
-| Solid button corners `rounded-none rounded-tr-lg rounded-bl-lg`, one per screen | Section 3 |
-| Outline button with mirrored corners | Secondary actions |
-| Sticky, transparent header that blurs only after scroll | Navbar `scrolled ? bg-(--bg-root)/85 backdrop-blur-md` |
-| Meaning as text colour or a thin outline, never filled status pills | Activity, notifications, member counts |
-| Motion 200 to 300ms, always respecting `prefers-reduced-motion` | Section 6 |
-| No em dashes, sentence case, caps only for data labels | Section 13 |
-| Destructive actions in a confirm dialog that states exactly what happens | Workspace, board and card deletion |
+| Solid button corners `rounded-none rounded-tr-lg rounded-bl-lg`, one per screen | Section 10 |
+| Outline button with mirrored corners | Section 10 |
+| Sticky, transparent header that blurs after scroll | Navbar |
+| Meaning as text colour or a thin outline, never a filled status pill | Activity, notifications, members |
+| Motion 200 to 300ms, always respecting reduced motion | Section 6 |
+| No em dashes, sentence case, caps for data labels only | Section 13 |
+| Destructive actions in a confirm dialog that states what happens | Workspace, board and card deletion |
+| Dark and light, with a theme switcher | `stores/theme.ts`, the account menu |
 
 ### Deliberate deviations
 
-Each of these is a decision, not an oversight.
-
 | ChaiUI | This app | Why |
 |---|---|---|
-| Background `#0a0a0a` | `#050505` | A board is a large dark field with cards on it. A deeper base keeps columns and cards distinguishable without lifting every card's lightness. |
-| Manrope everywhere, Montserrat for titles, Onest wordmark | Plus Jakarta Sans, JetBrains Mono for data | This UI works at 12 to 13px, where Jakarta holds its shape better. Mono is needed for timestamps, counts and keycaps, which ChaiUI does not have. |
-| Dark and light, with a theme switcher | Dark only, no switcher | The product has one theme. A switcher would ship a light surface nobody tested. |
-| The chaicode background SVG behind the page | Not used | It is a marketing surface. Inside an app shell it competes with the content it is meant to frame. |
-| One width, `max-w-6xl` with `p-6 sm:p-12` | `max-w-7xl` with `px-5 sm:px-6 lg:px-8 py-6` in the app, `max-w-6xl` on marketing | Board columns need the extra width. Marketing pages keep the skill's width. |
-| `framer-motion` for hovers and reveals | CSS transitions only | No animation library in the bundle. Everything here animates width, opacity or max-height, which CSS handles. |
-| shadcn `bg-primary` buttons on cards | Hairline outline buttons | Cards are dense here. A grey fill reads as disabled next to them. |
-| Highlight phrase in Montserrat, capitalised | Highlight in the body face | Same one-phrase-per-paragraph discipline, without a third typeface. |
+| Background `#0a0a0a` | `rgb(0,0,0)` | A board is a large dark field with cards on it. A deeper base keeps columns and cards distinguishable without lifting every card. |
+| Manrope everywhere, Montserrat for titles | Plus Jakarta Sans, JetBrains Mono for data | This UI works at 12 to 13px, where Jakarta holds its shape. Mono is needed for timestamps, counts and keycaps. |
+| Theme switcher as a two-way toggle | Three modes, System, Light, Dark | The OS preference is a real choice, and a two-way toggle cannot express "follow it". |
+| Instant theme change | A 2000ms iris out of the pressed control | The reveal is the one piece of theatre in an otherwise quiet product, and it is skipped entirely under reduced motion. |
+| The chaicode background SVG behind the page | Not used | It is a marketing surface. Inside an app shell it competes with the content. |
+| `max-w-6xl` with `p-6 sm:p-12` | `max-w-7xl` in the app, `max-w-6xl` on marketing | Board columns need the width. |
+| `framer-motion` for hovers and reveals | CSS transitions and the View Transitions API | No animation library in the bundle. |
+| shadcn `bg-primary` buttons on cards | Hairline outline buttons | Cards are dense. A grey fill reads as disabled next to them. |
 
 ### The check before shipping
 
-Adapted from the skill's own closing checklist:
-
-- Search the diff for em dashes, and for saturated orange fills: `bg-orange-500`, `bg-orange-600`, `#FF7D0C`. The `orange-50` hairlines and `orange-100` cream accents are expected and are not what this catches.
-- Confirm no new filled status pill and no coloured card border slipped in.
+- `npm run lint:colors` must be clean.
+- Search the diff for em dashes and for saturated orange fills.
+- Confirm no new filled status pill and no coloured card border.
 - Confirm every new transition carries `motion-reduce:transition-none`.
-- Check phone width for sideways scroll.
-- If the ChaiUI docs already ship the component, compare against it before hand-rolling.
+- Look at the screen in both themes, at 1280 and at 375.
+- If the ChaiUI docs already ship the component, compare before hand-rolling.
 
 ---
 
 ## 18. Known gaps
 
-Honest list of what this document cannot promise yet:
-
 - CI does not run `npm run verify` or `npm test`, so type and lint errors reach review rather than blocking a push.
-- `client` install cannot complete in a constrained sandbox, so `tsc -b`, `eslint` and `knip` are only ever run locally or on a full machine.
-- Dead files remain in the tree with no importers: `CardDetailModal`, `CardAttachmentsDialog`, `CardCommentsDialog`, `DashboardBoardEmbed`, `RecentBoardsSection`, `RecentBoardsMenu`, `WorkspaceBoardCard`, `SidebarNewWorkspace`, `stores/theme.ts`, `stores/useBoardStore.ts`, `types/models.ts`, `types/websocket.ts`.
+- `client` install cannot complete in a constrained sandbox, so `tsc -b`, `eslint` and `knip` are only run locally.
+- Dead files remain with no importers: `CardDetailModal`, `CardAttachmentsDialog`, `CardCommentsDialog`, `DashboardBoardEmbed`, `RecentBoardsSection`, `RecentBoardsMenu`, `WorkspaceBoardCard`, `SidebarNewWorkspace`, `SidebarSelectMode`, `stores/useBoardStore.ts`, `types/models.ts`, `types/websocket.ts`.
+- `--bg-surface`, `--bg-card` and `--bg-elevated` are still stepped values, so a panel that uses one reads as grey rather than black. Everything floating is on `--bg-root`; the steps are kept for cards and may be flattened.
+- Arbitrary `shadow-[...]` utilities remain in marketing, and two are brand-tinted glows. They are the next cleanup, and they are deliberately outside `lint:colors`.
 - `MobileSidebar` still carries two stale token classes.
-- The `.dark` token block exists but the app never toggles it.
