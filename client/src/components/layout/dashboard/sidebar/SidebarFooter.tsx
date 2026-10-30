@@ -7,6 +7,7 @@ import { Avatar } from "@components/layout/board/BoardAvatar";
 import { Tooltip } from "@components/Tooltips/ToolTip";
 
 import SidebarAccountMenu from "./SidebarAccountMenu";
+import FeedbackDialog from "./FeedbackDialog";
 
 import { avatarColor } from "@/features/boards/board.helpers";
 
@@ -36,6 +37,7 @@ export default function SidebarFooter({
   hoverMode = false,
 }: SidebarFooterProps) {
   const [panel, setPanel] = useState<Panel>(null);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const closeTimer = useRef<number | null>(null);
 
@@ -103,7 +105,12 @@ export default function SidebarFooter({
             onLogout={onLogout}
             onClose={() => setPanel(null)}
             showSidebarMode={showSidebarMode}
+            onFeedback={() => setFeedbackOpen(true)}
           />
+        )}
+
+        {feedbackOpen && (
+          <FeedbackDialog onClose={() => setFeedbackOpen(false)} user={user} />
         )}
 
         <Tooltip label="Account" side="right" shape="solid" size="sm">
@@ -143,7 +150,12 @@ export default function SidebarFooter({
           onLogout={onLogout}
           onClose={() => setPanel(null)}
           showSidebarMode={showSidebarMode}
+          onFeedback={() => setFeedbackOpen(true)}
         />
+      )}
+
+      {feedbackOpen && (
+        <FeedbackDialog onClose={() => setFeedbackOpen(false)} user={user} />
       )}
 
       {/* One target for the whole row. */}

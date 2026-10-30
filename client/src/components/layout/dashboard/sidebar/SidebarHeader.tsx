@@ -1,9 +1,11 @@
 import { HugeiconsIcon } from "@hugeicons/react";
-import { SidebarLeftIcon } from "@hugeicons/core-free-icons";
+import { Cursor02Icon, SidebarLeftIcon } from "@hugeicons/core-free-icons";
 import { useNavigate } from "react-router-dom";
 
 import logo from "@/assets/logo.svg?inline";
 import { Tooltip } from "@components/Tooltips/ToolTip";
+
+import { useSidebarState, type SidebarMode } from "@/stores/sidebarState";
 
 interface SidebarHeaderProps {
   collapsed: boolean;
@@ -11,14 +13,18 @@ interface SidebarHeaderProps {
   toggleLabel?: string;
   /** True while the rail is open only because the pointer is over it. */
   hovering?: boolean;
+  /** Decides which hover hint the collapsed logo shows. */
+  mode?: SidebarMode;
 }
 
 const SidebarHeader = ({
   collapsed,
   onToggle,
   hovering = false,
+  mode = "open",
 }: SidebarHeaderProps) => {
   const navigate = useNavigate();
+  const setMode = useSidebarState((state) => state.setMode);
 
   if (collapsed) {
     return (
@@ -55,9 +61,10 @@ const SidebarHeader = ({
             "
             />
 
-            {/* Arrow, hidden normally, visible on hover */}
+            {/* Hover hint, hidden normally, visible on hover: a pointer when
+                the rail opens by hovering, an arrow when it opens on click. */}
             <HugeiconsIcon
-              icon={SidebarLeftIcon}
+              icon={mode === "hover" ? Cursor02Icon : SidebarLeftIcon}
               size={18}
               strokeWidth={1.8}
               className="
@@ -98,10 +105,24 @@ const SidebarHeader = ({
         </span>
       </button>
 
-      {/* Hovered open, the rail is open because of the pointer, so a control
-          that collapses it has nothing to act on. */}
-      {!hovering && (
-        <div className="flex items-center gap-0.5">
+      {/* Hovered open, the rail is open because of the pointer, so collapsing
+          it has nothing to act on. The cursor takes its place and pins the rail
+          open, which is the useful action in that state. */}
+      <div className="flex items-center gap-0.5">
+        {hovering ? (
+          <Tooltip label="Keep open" side="bottom" shape="solid" size="md">
+            <HeaderIconButton
+              icon={
+                <HugeiconsIcon
+                  icon={Cursor02Icon}
+                  size={15}
+                  strokeWidth={1.6}
+                />
+              }
+              onClick={() => setMode("open")}
+            />
+          </Tooltip>
+        ) : (
           <Tooltip label="Collapse" side="bottom" shape="solid" size="md">
             <HeaderIconButton
               icon={
@@ -114,8 +135,8 @@ const SidebarHeader = ({
               onClick={onToggle}
             />
           </Tooltip>
-        </div>
-      )}
+        )}
+      </div>
     </header>
   );
 };

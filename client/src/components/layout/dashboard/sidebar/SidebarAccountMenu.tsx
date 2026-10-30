@@ -32,6 +32,8 @@ interface SidebarAccountMenuProps {
   onLogout: () => Promise<void>;
   onClose: () => void;
   showSidebarMode?: boolean;
+  /** Opens the feedback form. The menu closes first. */
+  onFeedback?: () => void;
 }
 
 interface Row {
@@ -62,6 +64,7 @@ export function SidebarAccountMenu({
   onLogout,
   onClose,
   showSidebarMode = true,
+  onFeedback,
 }: SidebarAccountMenuProps) {
   const navigate = useNavigate();
 
@@ -127,7 +130,10 @@ export function SidebarAccountMenu({
     {
       label: "Feedback",
       icon: SmilePlusIcon,
-      onClick: () => null, // open a component where user can fill his feedback
+      onClick: () => {
+        onClose();
+        onFeedback?.();
+      },
     },
     {
       label: "Notifications",
@@ -242,6 +248,7 @@ export function SidebarAccountMenu({
                   onSelect={(next) => {
                     setSidebarMode(next);
                     setAnchor(null);
+                    onClose();
                   }}
                 />
               </div>,

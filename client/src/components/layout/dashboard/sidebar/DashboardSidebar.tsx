@@ -154,12 +154,11 @@ export default function DashboardSidebar({
           /* Visible, not hidden: the rail's own panels are wider than the rail
              and open beside it, over the page. The nav clips itself, so only
              those panels escape. */
-          "fixed left-0 top-0 z-40 hidden h-screen flex-col overflow-visible",
-          /* One fill in every state: the rail is the page's own surface, and
-             what separates it is the hairline. Hovered open the edge firms up
-             so it still reads as a layer over the content it covers. */
-          "bg-(--bg-root) border-r",
-          floating ? "border-orange-50/25" : "border-orange-50/10",
+          "fixed left-0 top-0 hidden h-screen flex-col overflow-visible",
+          /* The navbar is z-50 and keeps its collapsed offset, so a rail that
+             floats over the page has to sit above it or the two overlap. */
+          floating ? "z-60" : "z-40",
+          "bg-(--bg-root) border-r border-orange-50/10",
           "transition-[width,border-color] duration-200 ease-out",
           "motion-reduce:transition-none",
           "md:flex",
@@ -171,6 +170,7 @@ export default function DashboardSidebar({
             collapsed={!open}
             onToggle={onToggle}
             hovering={floating}
+            mode={mode}
           />
         </div>
 
