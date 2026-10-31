@@ -10,7 +10,7 @@
   --bg-surface: rgb(20, 20, 21);
   --bg-card: rgb(26, 26, 28);
   --bg-elevated: rgb(40, 40, 42);
-  --bg-hover: rgba(255, 255, 255, 0.10);
+  --bg-hover: rgba(255, 255, 255, 0.1);
   --bg-active: rgba(255, 255, 255, 0.15);
 
   /* One scale for washes, so a component asks for a strength and the theme
@@ -86,7 +86,7 @@
   --bg-surface: rgb(255, 255, 255);
   --bg-card: rgb(255, 255, 255);
   --bg-elevated: rgb(255, 255, 255);
-  --bg-hover: rgba(0, 0, 0, 0.10);
+  --bg-hover: rgba(0, 0, 0, 0.1);
   --bg-active: rgba(0, 0, 0, 0.15);
 
   --tint-2: rgba(0, 0, 0, 0.03);
@@ -156,7 +156,6 @@
   --font-mono:
     "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, monospace;
 }
-
 
 ::view-transition-old(root),
 ::view-transition-new(root) {
