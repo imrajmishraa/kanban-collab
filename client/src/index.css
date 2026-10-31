@@ -9,32 +9,32 @@
   --bg-root: rgb(0, 0, 0);
   --bg-surface: rgb(20, 20, 21);
   --bg-card: rgb(26, 26, 28);
-  --bg-elevated: rgb(36, 36, 38);
-  --bg-hover: rgba(255, 255, 255, 0.05);
-  --bg-active: rgba(255, 255, 255, 0.08);
+  --bg-elevated: rgb(40, 40, 42);
+  --bg-hover: rgba(255, 255, 255, 0.10);
+  --bg-active: rgba(255, 255, 255, 0.15);
 
   /* One scale for washes, so a component asks for a strength and the theme
      decides whether that strength is white or black. */
-  --tint-2: rgba(255, 255, 255, 0.02);
-  --tint-3: rgba(255, 255, 255, 0.03);
-  --tint-4: rgba(255, 255, 255, 0.04);
-  --tint-5: rgba(255, 255, 255, 0.05);
-  --tint-6: rgba(255, 255, 255, 0.06);
-  --tint-8: rgba(255, 255, 255, 0.08);
-  --tint-10: rgba(255, 255, 255, 0.1);
-  --tint-15: rgba(255, 255, 255, 0.15);
+  --tint-2: rgba(255, 255, 255, 0.03);
+  --tint-3: rgba(255, 255, 255, 0.04);
+  --tint-4: rgba(255, 255, 255, 0.05);
+  --tint-5: rgba(255, 255, 255, 0.06);
+  --tint-6: rgba(255, 255, 255, 0.07);
+  --tint-8: rgba(255, 255, 255, 0.09);
+  --tint-10: rgba(255, 255, 255, 0.11);
+  --tint-15: rgba(255, 255, 255, 0.16);
 
   --border: rgba(255, 255, 255, 0.1);
-  --border-strong: rgba(255, 255, 255, 0.16);
+  --border-strong: rgba(255, 255, 255, 0.18);
   --border-subtle: rgba(255, 255, 255, 0.06);
 
   /* The warm hairline that separates panels. Not a brand colour, so it has its
      own name and its own value per theme. */
-  --hairline: rgba(255, 245, 235, 0.1);
+  --hairline: rgba(255, 245, 235, 0.12);
   --hairline-strong: rgba(255, 245, 235, 0.18);
 
   /* The cream accent, and the one orange fill the system allows. */
-  --accent: rgb(255, 224, 178);
+  --accent: rgb(255, 228, 180);
   --accent-soft: rgba(255, 224, 178, 0.14);
   --accent-fill: rgba(124, 45, 18, 0.4);
 
@@ -45,14 +45,14 @@
   --brand-border: rgba(255, 107, 53, 0.3);
 
   --text-primary: rgb(245, 245, 245);
-  --text-soft: rgb(204, 204, 204);
-  --text-secondary: rgb(163, 163, 163);
-  --text-muted: rgb(120, 120, 120);
-  --text-subtle: rgb(72, 72, 72);
+  --text-soft: rgb(210, 204, 204);
+  --text-secondary: rgb(175, 175, 175);
+  --text-muted: rgb(140, 140, 140);
+  --text-subtle: rgb(90, 90, 90);
 
   /* The solid action and the text that sits on it. */
   --solid-bg: rgb(255, 255, 255);
-  --solid-bg-hover: rgb(229, 229, 229);
+  --solid-bg-hover: rgb(220, 220, 220);
   --solid-text: rgb(10, 10, 10);
 
   /* Ink for a coloured disc: an avatar or a presence dot. The identity palette
@@ -86,17 +86,17 @@
   --bg-surface: rgb(255, 255, 255);
   --bg-card: rgb(255, 255, 255);
   --bg-elevated: rgb(255, 255, 255);
-  --bg-hover: rgba(0, 0, 0, 0.04);
-  --bg-active: rgba(0, 0, 0, 0.06);
+  --bg-hover: rgba(0, 0, 0, 0.10);
+  --bg-active: rgba(0, 0, 0, 0.15);
 
-  --tint-2: rgba(0, 0, 0, 0.02);
-  --tint-3: rgba(0, 0, 0, 0.025);
-  --tint-4: rgba(0, 0, 0, 0.03);
-  --tint-5: rgba(0, 0, 0, 0.035);
-  --tint-6: rgba(0, 0, 0, 0.045);
-  --tint-8: rgba(0, 0, 0, 0.06);
-  --tint-10: rgba(0, 0, 0, 0.08);
-  --tint-15: rgba(0, 0, 0, 0.12);
+  --tint-2: rgba(0, 0, 0, 0.03);
+  --tint-3: rgba(0, 0, 0, 0.04);
+  --tint-4: rgba(0, 0, 0, 0.05);
+  --tint-5: rgba(0, 0, 0, 0.06);
+  --tint-6: rgba(0, 0, 0, 0.07);
+  --tint-8: rgba(0, 0, 0, 0.09);
+  --tint-10: rgba(0, 0, 0, 0.11);
+  --tint-15: rgba(0, 0, 0, 0.16);
 
   --border: rgba(0, 0, 0, 0.1);
   --border-strong: rgba(0, 0, 0, 0.18);
@@ -117,7 +117,7 @@
   --brand-muted: rgba(194, 65, 12, 0.1);
   --brand-border: rgba(194, 65, 12, 0.32);
 
-  --text-primary: rgb(17, 17, 17);
+  --text-primary: rgb(26, 26, 26);
   --text-soft: rgb(56, 56, 56);
   --text-secondary: rgb(90, 90, 90);
   --text-muted: rgb(120, 120, 120);
