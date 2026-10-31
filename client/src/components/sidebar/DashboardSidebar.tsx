@@ -11,9 +11,9 @@ import SidebarMobileHeader from "@/components/mobile/SidebarMobileHeader";
 import { useWorkspaces } from "@/hooks/useWorkspaces";
 import { useBoards, boardKeys, BOARDS_LIST_LIMIT } from "@/hooks/useBoards";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
-import { useSidebarState } from "@/features/dashboard/stores/sidebarState";
+import { useSidebarState } from "@/features/dashboard";
 import { useAuth } from "@/hooks/useAuth";
-import { boardApi } from "@/features/boards/api/boardApi";
+import { boardApi } from "@/features/boards";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { ShareBoardDialog } from "./ShareBoardDialog";

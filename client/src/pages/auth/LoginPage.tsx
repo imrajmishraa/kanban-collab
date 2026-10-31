@@ -12,14 +12,11 @@ import {
   ViewOffIcon,
 } from "@hugeicons/core-free-icons";
 import { useAuth } from "@/hooks/useAuth";
-import {
-  loginSchema,
-  type LoginFormData,
-} from "@/features/auth/validations/auth.validator";
-import { OAuthButton } from "@/features/auth/components/OAuthButton";
+import { loginSchema, type LoginFormData } from "@/features/auth";
+import { OAuthButton } from "@/features/auth";
 import { StatBlock } from "@/components/auth/StatBlock";
 import { LiveBoardPreview } from "@/components/auth/LiveBoardPreview";
-import { useUnifiedOAuth } from "@/features/auth/hooks/useUnifiedOAuth";
+import { useUnifiedOAuth } from "@/features/auth";
 
 /* TYPES */
 

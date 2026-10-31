@@ -3,16 +3,13 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import { useQuery } from "@tanstack/react-query";
 
-import { WorkspaceSelector } from "@/features/dashboard/components/workspace/WorkspaceSelector";
-import { notificationKeys } from "@/features/dashboard/components/notifications";
+import { WorkspaceSelector } from "@/features/dashboard";
+import { notificationKeys } from "@/features/dashboard";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
-import { useSidebarState } from "@/features/dashboard/stores/sidebarState";
-import { notificationsApi } from "@/features/dashboard/api/notificationsApi";
-import {
-  NavbarSearchIcon,
-  NotificationsButton,
-} from "@/features/dashboard/components/workspace/NavbarIcons";
-import NotificationsPanel from "@/features/dashboard/components/notifications/NotificationsPanel";
+import { useSidebarState } from "@/features/dashboard";
+import { notificationsApi } from "@/features/dashboard";
+import { NavbarSearchIcon, NotificationsButton } from "@/features/dashboard";
+import { NotificationsPanel } from "@/features/dashboard";
 
 export default function DashboardNavbar() {
   const sentinelRef = useRef<HTMLDivElement>(null);

@@ -11,7 +11,7 @@ import {
 
 import { Avatar } from "@/components/board/BoardAvatar";
 
-import { avatarColor } from "@/features/boards/board.helpers";
+import { avatarColor } from "@/features/boards";
 import { useActivityFeed } from "@/hooks/useActivityFeed";
 
 /** How many rows fit before the list starts scrolling. */

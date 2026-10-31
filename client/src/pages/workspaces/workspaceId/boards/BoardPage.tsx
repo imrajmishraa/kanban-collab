@@ -6,17 +6,14 @@ import { Add01Icon } from "@hugeicons/core-free-icons";
 
 import BoardError from "@/components/board/BoardError";
 
-import {
-  BoardMessage,
-  BoardShell,
-} from "@/features/boards/components/BoardStates";
-import WorkspaceOverview from "@/features/boards/components/WorkspaceOverview";
-import { useActiveWorkspaceMembers } from "@/features/boards/hooks/useActiveWorkspaceMembers";
-import { useWorkspaceBoards } from "@/features/boards/hooks/useWorkspaceBoards";
+import { BoardMessage, BoardShell } from "@/features/boards";
+import { WorkspaceOverview } from "@/features/boards";
+import { useActiveWorkspaceMembers } from "@/features/boards";
+import { useWorkspaceBoards } from "@/features/boards";
 
-import { BoardCard } from "@/features/workspaces/components/BoardCard";
-import { BoardSearch } from "@/features/workspaces/components/BoardSearch";
-import { CreateBoardDialog } from "@/features/workspaces/components/workspace-dialogs";
+import { BoardCard } from "@/features/workspaces";
+import { BoardSearch } from "@/features/workspaces";
+import { CreateBoardDialog } from "@/features/workspaces";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 
 function BoardsSkeleton() {

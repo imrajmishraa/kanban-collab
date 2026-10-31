@@ -13,13 +13,10 @@ import {
 
 import { ShareBoardDialog } from "@/components/sidebar/ShareBoardDialog";
 
-import {
-  DeleteBoardDialog,
-  EditBoardDialog,
-} from "@/features/workspaces/components/board-dialogs";
+import { DeleteBoardDialog, EditBoardDialog } from "@/features/workspaces";
 
 import { ui } from "@/features/boards/board.helpers";
-import { usePinnedBoards } from "@/features/dashboard/stores/pinnedBoards";
+import { usePinnedBoards } from "@/features/dashboard";
 import { toastSuccess } from "@/lib/toast";
 
 interface BoardHeaderProps {

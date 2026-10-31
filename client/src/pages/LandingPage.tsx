@@ -1,6 +1,6 @@
 import { lazy } from "react";
 
-import HeroSection from "@/features/marketing/components/landing/HeroSection";
+import { HeroSection } from "@/features/marketing";
 const WhyKanbanSection = lazy(
   () => import("@/features/marketing/components/landing/WhyKanbanSection"),
 );

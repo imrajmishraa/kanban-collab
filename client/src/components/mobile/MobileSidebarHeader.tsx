@@ -2,7 +2,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { Cancel01Icon, Search01Icon } from "@hugeicons/core-free-icons";
 import { useNavigate } from "react-router-dom";
 import logo from "@/assets/logo.svg?inline";
-import { useSearchStore } from "@/features/search/stores/searchStore";
+import { useSearchStore } from "@/features/search";
 
 interface MobileSidebarHeaderProps {
   onClose: () => void;

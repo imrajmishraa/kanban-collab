@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 import { Avatar } from "@/components/board/BoardAvatar";
 
-import { avatarColor, initials } from "@/features/boards/board.helpers";
+import { avatarColor, initials } from "@/features/boards";
 import { useAuth } from "@/hooks/useAuth";
 import { useWorkspaces } from "@/hooks/useWorkspaces";
 import { getWorkspaceColor, alpha } from "@/utils/workspaceColor";

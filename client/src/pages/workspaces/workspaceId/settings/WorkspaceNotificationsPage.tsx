@@ -1,4 +1,4 @@
-import NotificationPreferences from "@/features/dashboard/components/NotificationPreferences";
+import { NotificationPreferences } from "@/features/dashboard";
 
 /**
  * Workspace notifications: the channels for this workspace's activity. The

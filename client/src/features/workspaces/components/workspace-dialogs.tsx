@@ -6,8 +6,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Cancel01Icon, Loading03Icon } from "@hugeicons/core-free-icons";
 
-import { attachmentsApi } from "@/features/boards/api/attachmentsApi";
-import { boardApi } from "@/features/boards/api/boardApi";
+import { attachmentsApi } from "@/features/boards";
+import { boardApi } from "@/features/boards";
 import { workspaceApi } from "@/features/workspaces/api/workspaceApi";
 import { boardKeys } from "@/hooks/useBoards";
 import { workspaceKeys } from "@/hooks/useWorkspaces";

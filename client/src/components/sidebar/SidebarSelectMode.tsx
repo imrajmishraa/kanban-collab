@@ -8,7 +8,7 @@ import {
 } from "@hugeicons/core-free-icons";
 
 import { BoardActionsMenu } from "./BoardActionsMenu";
-import { groupBoardsByTime } from "@/features/boards/utils/boardGrouping";
+import { groupBoardsByTime } from "@/features/boards";
 
 import type { Board } from "@/types/board";
 import { Tooltip } from "@/components/Tooltips/ToolTip";

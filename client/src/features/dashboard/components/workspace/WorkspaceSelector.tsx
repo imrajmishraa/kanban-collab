@@ -13,7 +13,7 @@ import { Tooltip } from "@/components/Tooltips/ToolTip";
 
 import { useWorkspaces } from "@/hooks/useWorkspaces";
 import { useNewWorkspaceDialog } from "@/components/dashboard/workspace/create/newWorkspaceDialog.context";
-import { useWorkspaceSwitcher } from "@/features/workspaces/stores/workspaceSwitcher";
+import { useWorkspaceSwitcher } from "@/features/workspaces";
 
 const SEARCH_DEBOUNCE_MS = 300;
 

@@ -17,7 +17,7 @@ import {
 } from "@/features/workspaces/components/board-dialogs";
 import { ShareBoardDialog } from "@/components/sidebar/ShareBoardDialog";
 
-import { usePinnedBoards } from "@/features/dashboard/stores/pinnedBoards";
+import { usePinnedBoards } from "@/features/dashboard";
 import { toastSuccess } from "@/lib/toast";
 
 import type { Board, BoardDetails } from "@/types/board";

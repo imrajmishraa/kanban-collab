@@ -10,10 +10,7 @@ import BoardToolbar from "./BoardToolbar";
 import CardPalette from "@/features/boards/components/cards/CardPalette";
 import BoardActivityPanel from "./BoardActivityPanel";
 import ConfirmDialog from "@/components/dialog/ConfirmDialog";
-import {
-  AddColumnDialog,
-  EditColumnDialog,
-} from "@/features/workspaces/components/board-dialogs";
+import { AddColumnDialog, EditColumnDialog } from "@/features/workspaces";
 
 import {
   buildCollaborationWsUrl,

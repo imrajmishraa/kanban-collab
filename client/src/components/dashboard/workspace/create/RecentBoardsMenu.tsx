@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowDown01Icon, KanbanIcon } from "@hugeicons/core-free-icons";
 
-import { useBoardsStore } from "@/features/boards/stores/boards";
+import { useBoardsStore } from "@/features/boards";
 
 function relativeTime(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();

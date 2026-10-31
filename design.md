@@ -10,23 +10,23 @@ colors:
   bg-root: 'rgb(0, 0, 0)'
   bg-surface: 'rgb(20, 20, 21)'
   bg-card: 'rgb(26, 26, 28)'
-  bg-elevated: 'rgb(36, 36, 38)'
-  bg-hover: 'rgba(255, 255, 255, 0.05)'
-  bg-active: 'rgba(255, 255, 255, 0.08)'
-  tint-2: 'rgba(255, 255, 255, 0.02)'
-  tint-3: 'rgba(255, 255, 255, 0.03)'
-  tint-4: 'rgba(255, 255, 255, 0.04)'
-  tint-5: 'rgba(255, 255, 255, 0.05)'
-  tint-6: 'rgba(255, 255, 255, 0.06)'
-  tint-8: 'rgba(255, 255, 255, 0.08)'
-  tint-10: 'rgba(255, 255, 255, 0.1)'
-  tint-15: 'rgba(255, 255, 255, 0.15)'
+  bg-elevated: 'rgb(40, 40, 42)'
+  bg-hover: 'rgba(255, 255, 255, 0.1)'
+  bg-active: 'rgba(255, 255, 255, 0.15)'
+  tint-2: 'rgba(255, 255, 255, 0.03)'
+  tint-3: 'rgba(255, 255, 255, 0.04)'
+  tint-4: 'rgba(255, 255, 255, 0.05)'
+  tint-5: 'rgba(255, 255, 255, 0.06)'
+  tint-6: 'rgba(255, 255, 255, 0.07)'
+  tint-8: 'rgba(255, 255, 255, 0.09)'
+  tint-10: 'rgba(255, 255, 255, 0.11)'
+  tint-15: 'rgba(255, 255, 255, 0.16)'
   border: 'rgba(255, 255, 255, 0.1)'
-  border-strong: 'rgba(255, 255, 255, 0.16)'
+  border-strong: 'rgba(255, 255, 255, 0.18)'
   border-subtle: 'rgba(255, 255, 255, 0.06)'
-  hairline: 'rgba(255, 245, 235, 0.1)'
+  hairline: 'rgba(255, 245, 235, 0.12)'
   hairline-strong: 'rgba(255, 245, 235, 0.18)'
-  accent: 'rgb(255, 224, 178)'
+  accent: 'rgb(255, 228, 180)'
   accent-soft: 'rgba(255, 224, 178, 0.14)'
   accent-fill: 'rgba(124, 45, 18, 0.4)'
   brand: '#ff6b35'
@@ -35,12 +35,12 @@ colors:
   brand-muted: 'rgba(255, 107, 53, 0.1)'
   brand-border: 'rgba(255, 107, 53, 0.3)'
   text-primary: 'rgb(245, 245, 245)'
-  text-soft: 'rgb(204, 204, 204)'
-  text-secondary: 'rgb(163, 163, 163)'
-  text-muted: 'rgb(120, 120, 120)'
-  text-subtle: 'rgb(72, 72, 72)'
+  text-soft: 'rgb(210, 204, 204)'
+  text-secondary: 'rgb(175, 175, 175)'
+  text-muted: 'rgb(140, 140, 140)'
+  text-subtle: 'rgb(90, 90, 90)'
   solid-bg: 'rgb(255, 255, 255)'
-  solid-bg-hover: 'rgb(229, 229, 229)'
+  solid-bg-hover: 'rgb(220, 220, 220)'
   solid-text: 'rgb(10, 10, 10)'
   on-color: 'rgb(10, 10, 10)'
   inverse-bg: 'rgb(245, 245, 245)'
@@ -59,16 +59,16 @@ light:
   bg-surface: 'rgb(255, 255, 255)'
   bg-card: 'rgb(255, 255, 255)'
   bg-elevated: 'rgb(255, 255, 255)'
-  bg-hover: 'rgba(0, 0, 0, 0.04)'
-  bg-active: 'rgba(0, 0, 0, 0.06)'
-  tint-2: 'rgba(0, 0, 0, 0.02)'
-  tint-3: 'rgba(0, 0, 0, 0.025)'
-  tint-4: 'rgba(0, 0, 0, 0.03)'
-  tint-5: 'rgba(0, 0, 0, 0.035)'
-  tint-6: 'rgba(0, 0, 0, 0.045)'
-  tint-8: 'rgba(0, 0, 0, 0.06)'
-  tint-10: 'rgba(0, 0, 0, 0.08)'
-  tint-15: 'rgba(0, 0, 0, 0.12)'
+  bg-hover: 'rgba(0, 0, 0, 0.1)'
+  bg-active: 'rgba(0, 0, 0, 0.15)'
+  tint-2: 'rgba(0, 0, 0, 0.03)'
+  tint-3: 'rgba(0, 0, 0, 0.04)'
+  tint-4: 'rgba(0, 0, 0, 0.05)'
+  tint-5: 'rgba(0, 0, 0, 0.06)'
+  tint-6: 'rgba(0, 0, 0, 0.07)'
+  tint-8: 'rgba(0, 0, 0, 0.09)'
+  tint-10: 'rgba(0, 0, 0, 0.11)'
+  tint-15: 'rgba(0, 0, 0, 0.16)'
   border: 'rgba(0, 0, 0, 0.1)'
   border-strong: 'rgba(0, 0, 0, 0.18)'
   border-subtle: 'rgba(0, 0, 0, 0.06)'
@@ -82,7 +82,7 @@ light:
   brand-active: '#7c2d12'
   brand-muted: 'rgba(194, 65, 12, 0.1)'
   brand-border: 'rgba(194, 65, 12, 0.32)'
-  text-primary: 'rgb(17, 17, 17)'
+  text-primary: 'rgb(26, 26, 26)'
   text-soft: 'rgb(56, 56, 56)'
   text-secondary: 'rgb(90, 90, 90)'
   text-muted: 'rgb(120, 120, 120)'
@@ -104,9 +104,9 @@ light:
   danger: '#be123c'
 typography:
   font-ui:
-    fontFamily: "'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif"
+    fontFamily: "\"Plus Jakarta Sans Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif"
   font-mono:
-    fontFamily: "'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace"
+    fontFamily: "\"JetBrains Mono Variable\", ui-monospace, SFMono-Regular, Menlo, monospace"
   display-lg:
     fontFamily: '{typography.font-ui.fontFamily}'
     fontSize: 26px
@@ -361,7 +361,7 @@ Two axes, and they never mix.
 
 **Surfaces** are a ladder: `--bg-root` is the page and also every floating surface, then `--bg-surface`, `--bg-card`, `--bg-elevated` for panels that must lift. In dark the ladder climbs from pure black; in light the top three collapse to white and separation is carried entirely by hairlines. That is why no component may assume a background differs from its parent — the edge is the guarantee, not the fill.
 
-**Washes** are one scale, `--tint-2` through `--tint-15`, defined as white in dark and black in light. A component asks for a strength (`hover` is `--tint-4`, a pressed state `--tint-6`, a selected row `--tint-10`) and the theme decides the direction. This is the mechanism that makes one class string work in both themes.
+**Washes** are white in dark and black in light, and they come in two strengths for two jobs. **Interaction** uses `--bg-hover` (10%) and `--bg-active` (15%) — deliberately louder than the scale, because a hover that has to be hunted for is not feedback. **Static** washes use the `--tint-N` scale (3% to 16%), where a component asks for a strength and the theme decides the direction: `--tint-4` is the workhorse at 303 call sites, `--tint-3` and `--tint-2` carry most of the rest. One class string works in both themes either way.
 
 Two colours escape the system by design, and each has a written reason. The **hairline** is warm (`rgba(255,245,235,…)`) rather than neutral, so panels read as paper edges rather than as grid lines; it is not a brand colour, which is why it has its own token and its own value per theme. The **inverse** family exists for the tooltip, which flips: a light capsule on a dark page, a dark one on a light page, with `--inverse-accent` for the highlighted phrase so it does not vanish into the capsule.
 
@@ -419,14 +419,15 @@ Measured against the page they sit on, in each theme:
 
 | Token | Dark on black | Light on 250 | Use |
 |---|---|---|---|
-| `--text-primary` | 19.3:1 | 18.1:1 | Body and headings |
-| `--text-soft` | 8.3:1 | 6.6:1 | Secondary body |
-| `--text-muted` | 4.76:1 | **4.23:1** | Meta text only — see below |
-| `--text-subtle` | 2.30:1 | 2.36:1 | Placeholders and disabled only |
-| `--accent` | 16.6:1 | 6.8:1 | Highlight phrase |
-| `--brand` | — | 2.72:1 | Never text in light; the token swaps to `#c2410c` at 4.96:1 |
+| `--text-primary` | 19.3:1 | 16.7:1 | Body and headings |
+| `--text-soft` | 13.3:1 | 11.2:1 | Secondary body |
+| `--text-secondary` | 9.6:1 | 6.6:1 | Supporting text |
+| `--text-muted` | 6.3:1 | **4.23:1** | Meta text only in light — see below |
+| `--text-subtle` | 3.0:1 | 2.4:1 | Placeholders and disabled only |
+| `--accent` | 17.0:1 | 6.8:1 | Highlight phrase |
+| `--brand` | 7.4:1 | 2.7:1 | Never text in light; the token swaps to `#c2410c` at 4.96:1 |
 
-One known gap, stated plainly rather than glossed: **`--text-muted` misses AA in light at 4.23:1** (it passes in dark at 4.76:1). It is therefore safe for timestamps, counts and labels beside a stronger element, and not safe for a sentence a user has to read. Closing it means `rgb(115)` in the light block — 4.54:1 — which is a token change, not a component change, and the only reason it is still open is that it shifts the light theme's quiet grey a shade darker everywhere at once.
+One known gap, stated plainly rather than glossed: **`--text-muted` misses AA in light at 4.23:1**, having been lifted to a comfortable 6.3:1 in dark. It is therefore safe for timestamps, counts and labels beside a stronger element, and not safe for a sentence a user has to read. Closing it means `rgb(115)` in the light block — 4.54:1 — which is a token change, not a component change, and the only reason it is still open is that it shifts the light theme's quiet grey a shade darker everywhere at once.
 
 Focus is visible on every interactive element through a global `:focus-visible` ring, except fields, which use the border change described above. Dialogs trap focus, close on Escape and on a backdrop press, and restore focus to the trigger. Live regions announce board changes; the activity feed is a `log`, not a list.
 

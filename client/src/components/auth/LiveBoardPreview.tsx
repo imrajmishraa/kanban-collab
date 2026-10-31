@@ -1,4 +1,4 @@
-import { PreviewCard } from "@/features/auth/components/PreviewCard";
+import { PreviewCard } from "@/features/auth";
 
 export function LiveBoardPreview() {
   const columns = [

@@ -1,7 +1,7 @@
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Search01Icon } from "@hugeicons/core-free-icons";
 
-import { useSearchStore } from "@/features/search/stores/searchStore";
+import { useSearchStore } from "@/features/search";
 
 /**
  * Trigger for the command palette, scoped to boards.

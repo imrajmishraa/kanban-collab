@@ -2,10 +2,10 @@ import { useState } from "react";
 
 import { useMutation } from "@tanstack/react-query";
 
-import { workspaceApi } from "@/features/workspaces/api/workspaceApi";
+import { workspaceApi } from "@/features/workspaces";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { useAuth } from "@/hooks/useAuth";
-import NotificationPreferences from "@/features/dashboard/components/NotificationPreferences";
+import { NotificationPreferences } from "@/features/dashboard";
 
 function SettingsPage() {
   const { user } = useAuth();

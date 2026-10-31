@@ -5,7 +5,7 @@ import {
   logoutRequest,
   refreshRequest,
   registerRequest,
-} from "@/features/auth/api/authApi";
+} from "@/features/auth";
 
 import type { AuthStatus, AuthUser } from "@/types/auth";
 

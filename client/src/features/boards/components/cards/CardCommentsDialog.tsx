@@ -1,4 +1,4 @@
-import { DialogShell } from "@/features/workspaces/components/workspace-dialogs";
+import { DialogShell } from "@/features/workspaces";
 
 import CardComments from "./CardComments";
 

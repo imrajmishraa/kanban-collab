@@ -9,8 +9,8 @@ import {
   createWorkspaceSchema,
   slugify,
   type CreateWorkspaceInput,
-} from "@/features/workspaces/validations/workspace.validator";
-import { workspaceApi } from "@/features/workspaces/api/workspaceApi";
+} from "@/features/workspaces";
+import { workspaceApi } from "@/features/workspaces";
 import { ApiClientError } from "@/services/client";
 import { toastSuccess, toastError } from "@/lib/toast";
 import { Tooltip } from "@/components/Tooltips/ToolTip";

@@ -15,14 +15,11 @@ import {
 
 import { useAuth } from "@/hooks/useAuth";
 import { ApiClientError } from "@/services/client";
-import {
-  registerSchema,
-  type RegisterFormData,
-} from "@/features/auth/validations/auth.validator";
-import { OAuthButton } from "@/features/auth/components/OAuthButton";
+import { registerSchema, type RegisterFormData } from "@/features/auth";
+import { OAuthButton } from "@/features/auth";
 import { LiveBoardPreview } from "@/components/auth/LiveBoardPreview";
 import { StatBlock } from "@components/auth/StatBlock";
-import { useUnifiedOAuth } from "@/features/auth/hooks/useUnifiedOAuth";
+import { useUnifiedOAuth } from "@/features/auth";
 
 interface RegisterLocationState {
   from?: { pathname?: string; search?: string; hash?: string };

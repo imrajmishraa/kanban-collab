@@ -8,7 +8,7 @@ import {
   setAccessToken,
   clearAuthSession,
 } from "@/stores/authTokenAccessor";
-import { refreshRequest } from "@/features/auth/api/authApi";
+import { refreshRequest } from "@/features/auth";
 
 import type { ApiErrorResponse } from "./apiError";
 

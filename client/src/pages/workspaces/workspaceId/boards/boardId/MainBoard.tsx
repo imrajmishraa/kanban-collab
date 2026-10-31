@@ -2,15 +2,12 @@ import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 
 import BoardError from "@/components/board/BoardError";
-import BoardSkeleton from "@/features/boards/components/BoardSkeleton";
+import { BoardSkeleton } from "@/features/boards";
 
-import BoardView from "@/features/boards/components/BoardView";
-import {
-  BoardMessage,
-  BoardShell,
-} from "@/features/boards/components/BoardStates";
-import { useBoardForPage } from "@/features/boards/hooks/useBoardForPage";
-import { useBoardsStore } from "@/features/boards/stores/boards";
+import { BoardView } from "@/features/boards";
+import { BoardMessage, BoardShell } from "@/features/boards";
+import { useBoardForPage } from "@/features/boards";
+import { useBoardsStore } from "@/features/boards";
 
 export default function MainBoard() {
   const { boardId } = useParams<{ boardId: string }>();

@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState, type ReactNode } from "react";
 
 import { NewWorkspaceDialogContext } from "./newWorkspaceDialog.context";
-import NewWorkspaceDialog from "@/features/dashboard/components/workspace/NewWorkspaceDialog";
+import { NewWorkspaceDialog } from "@/features/dashboard";
 
 export function NewWorkspaceDialogProvider({
   children,

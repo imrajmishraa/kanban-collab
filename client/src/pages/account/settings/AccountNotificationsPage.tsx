@@ -1,4 +1,4 @@
-import NotificationPreferences from "@/features/dashboard/components/NotificationPreferences";
+import { NotificationPreferences } from "@/features/dashboard";
 
 /**
  * Account notifications: what reaches the person, regardless of which

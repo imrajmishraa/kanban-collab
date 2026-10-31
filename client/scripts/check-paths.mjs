@@ -1,20 +1,24 @@
 #!/usr/bin/env node
 /**
- * Fails when a component lives somewhere other than next to the code that uses
- * it. The rule is in docs/file-structure.md; this file is the mechanical half
- * of it.
+ * Fails when a file sits somewhere the structure says it should not, or when an
+ * import crosses a boundary the structure says is closed.
+ *
+ * The model is docs/file-structure.md: pages mirror the routes, features own
+ * their internals and expose a public `index.ts`, and the shared buckets hold
+ * what two or more areas genuinely need.
  *
  * What it checks:
- *   proximity  a component with exactly one importer sits in another folder
- *   shared     a component under features/ is imported by two different features
- *   naming     a .tsx file whose basename is not PascalCase
- *   multi      a .tsx file exporting more than one component
- *   depth      a component file more than DEPTH folders under src/
- *   orphan     a component nothing imports
+ *   orphan          nothing imports it
+ *   boundary        an import reaches past a feature's `index.ts`
+ *   shared-in-feature  a file inside a feature is imported from another area
+ *   multi           a .tsx exports more than one component
+ *   naming          a .tsx file is not PascalCase
+ *   depth           a file sits more than DEPTH folders under src/
  *
  * Run: node scripts/check-paths.mjs
  *      node scripts/check-paths.mjs --strict           exit 1 on new findings
  *      node scripts/check-paths.mjs --write-baseline   record today's findings
+ *      node scripts/check-paths.mjs --graph            dump the import graph
  * Wired as: npm run lint:paths
  */
 import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
@@ -25,8 +29,20 @@ const BASELINE_FILE = resolve(
   new URL("./paths-baseline.json", import.meta.url).pathname,
 );
 
-/** A component file may be at most this many folders under src/. */
+/** A file may be at most this many folders under src/ — except pages, where the
+ *  URL decides the depth. */
 const DEPTH = 4;
+
+/* Buckets that are mounted or consumed from outside, never owned by a feature.
+   A file here is exempt from the orphan rule and never "in the wrong feature". */
+const LAYERS = [
+  "app/",
+  "layouts/",
+  "pages/",
+  "services/",
+  "lib/",
+  "validations/",
+];
 
 const ALIASES = [
   ["@components/", "components/"],
@@ -39,6 +55,7 @@ const ALIASES = [
 
 const strict = process.argv.includes("--strict");
 const writeBaseline = process.argv.includes("--write-baseline");
+const dumpGraph = process.argv.includes("--graph");
 
 /* ── collect files ─────────────────────────────────────────────────────── */
 
@@ -81,51 +98,44 @@ function resolveSpec(spec, from) {
   return null;
 }
 
-const SPEC = /(?:from\s*|import\s*\(\s*|require\s*\(\s*)["']([^"']+)["']/g;
+const STATIC = /(?:from\s*)["']([^"']+)["']/g;
+const DYNAMIC = /import\s*\(\s*["']([^"']+)["']\s*\)/g;
 
 const importers = new Map(); // file -> Set(importers)
 for (const file of files) {
   const source = readFileSync(file, "utf8");
-  for (const match of source.matchAll(SPEC)) {
-    const target = resolveSpec(match[1], file);
-    if (!target || target === file) continue;
-    if (!importers.has(target)) importers.set(target, new Set());
-    importers.get(target).add(file);
+  /* Both forms count as an importer: a lazily loaded section is still used, and
+     leaving it out made 19 live marketing components look dead. */
+  for (const pattern of [STATIC, DYNAMIC]) {
+    for (const match of source.matchAll(pattern)) {
+      const target = resolveSpec(match[1], file);
+      if (!target || target === file) continue;
+      if (!importers.has(target)) importers.set(target, new Set());
+      importers.get(target).add(file);
+    }
   }
 }
 
-/* ── which files are checked, and which are a layer ────────────────────── */
+/* ── areas ─────────────────────────────────────────────────────────────── */
 
-/* These prefixes encode a cross-cutting contract — the backend surface, its
-   DTOs, the shared validation, the app shell. Scattering them per feature would
-   mean N copies of the same contract, so they are a layer, not a feature, and
-   proximity does not apply to them. See R8 in docs/file-structure.md. */
-const LAYERS = [
-  "api/",
-  "types/api/",
-  "validations/",
-  "lib/",
-  "app/",
-  "collaboration/",
-];
-const isLayer = (p) => LAYERS.some((l) => rel(p).startsWith(l));
-
-const isComponentPath = (p) => {
+const featureOf = (p) => {
   const r = rel(p);
-  return r.startsWith("components/") || r.includes("/components/");
+  return r.startsWith("features/") ? r.split("/")[1] : null;
 };
-const isPage = (p) => /\/pages\/[^/]+\.tsx$/.test(rel(p));
-const isSupport = (p) => /^(hooks|types|utils|stores)\//.test(rel(p));
-/* A store is state, not markup: one current importer does not make it local, so
-   proximity is a judgement call there and the checker only reports orphans. */
-const isStore = (p) => rel(p).startsWith("stores/");
-/* The app layer mounts things — routes, layouts, providers. It does not own the
-   content it mounts, so it never counts as a file's parent. */
-const isAppLayer = (p) => rel(p).startsWith("app/");
+/** Mount points. They may import from any feature (through its barrel); that
+ *  does not make the feature's files shared. */
+const SHELL = new Set(["app", "pages", "layouts"]);
 
-const checked = files.filter(
-  (f) => !isLayer(f) && (isComponentPath(f) || isPage(f) || isSupport(f)),
-);
+/** Which area a file belongs to: a feature name, or the bucket it lives in. */
+function areaOf(p) {
+  const feature = featureOf(p);
+  if (feature) return feature;
+  const bucket = rel(p).split("/")[0];
+  return SHELL.has(bucket) ? "shell" : bucket;
+}
+const isLayer = (p) => LAYERS.some((l) => rel(p).startsWith(l));
+const isBarrel = (p) => rel(p).endsWith("/index.ts") && featureOf(p) !== null;
+const isPage = (p) => rel(p).startsWith("pages/");
 
 /* ── rules ─────────────────────────────────────────────────────────────── */
 
@@ -133,34 +143,18 @@ const findings = [];
 const add = (rule, file, detail, hint) =>
   findings.push({ rule, file: rel(file), detail, hint });
 
-const featureOf = (p) => {
-  const m = /^features\/([^/]+)\//.exec(rel(p));
-  return m ? m[1] : null;
-};
-
-/**
- * Where a file should live, given the one file that imports it.
- *
- * Normally that is simply the importer's folder. When the importer is a page,
- * though, its folder is `pages/` — and pages hold screens, not the parts they
- * are built from. The parts belong in the feature's `components/`, or `hooks/`
- * for a hook.
- */
-function targetHome(file, importer) {
-  const importerDir = dirname(importer);
-  if (!rel(importerDir).endsWith("/pages")) return importerDir;
-
-  const featureRoot = rel(importerDir).replace(/\/pages$/, "");
-  const isHook = /^use[A-Z]/.test(rel(file).split("/").pop());
-  return join(ROOT, featureRoot, isHook ? "hooks" : "components");
-}
-
-for (const file of checked) {
+for (const file of files) {
   const users = [...(importers.get(file) ?? [])];
   const name = rel(file).split("/").pop();
+  const feature = featureOf(file);
 
-  /* naming */
-  if (file.endsWith(".tsx") && !/^[A-Z][A-Za-z0-9]*\.tsx$/.test(name)) {
+  const source = file.endsWith(".tsx") ? readFileSync(file, "utf8") : "";
+  const declaresComponent =
+    file.endsWith(".tsx") &&
+    /export\s+(default\s+)?(function|const)\s+[A-Z]/.test(source);
+
+  /* naming — only files that declare a component are named after it */
+  if (declaresComponent && !/^[A-Z][A-Za-z0-9]*\.tsx$/.test(name)) {
     add(
       "naming",
       file,
@@ -173,7 +167,6 @@ for (const file of checked) {
 
   /* multi */
   if (file.endsWith(".tsx")) {
-    const source = readFileSync(file, "utf8");
     const exported = new Set();
     for (const m of source.matchAll(
       /export\s+(?:default\s+)?(?:function|const)\s+([A-Z][A-Za-z0-9]*)/g,
@@ -189,55 +182,81 @@ for (const file of checked) {
     }
   }
 
-  /* orphan — pages are mounted by the router, so they are allowed no importer */
-  if (users.length === 0 && !isPage(file) && !isLayer(file)) {
+  /* depth — pages are exempt, the URL decides their depth */
+  if (!isPage(file)) {
+    const depth = rel(file).split("/").length - 1;
+    if (depth > DEPTH) {
+      add("depth", file, `${depth} folders under src/`, `limit is ${DEPTH}`);
+    }
+  }
+
+  /* orphan — layers, pages, barrels and tests have no importer by design */
+  const isTest = /\.test\.tsx?$/.test(name);
+  const isEntry = rel(file) === "main.tsx"; // mounted by index.html
+  if (
+    users.length === 0 &&
+    !isLayer(file) &&
+    !isBarrel(file) &&
+    !isTest &&
+    !isEntry
+  ) {
     add("orphan", file, "nothing imports it", "delete it or give it an owner");
   }
 
-  /* proximity — a page is mounted by the router, and chrome is mounted by a
-     layout, so neither is told to move into the app layer */
-  let moving = false;
-  if (
-    users.length === 1 &&
-    !isPage(file) &&
-    !isStore(file) &&
-    !isAppLayer(users[0])
-  ) {
-    const home = dirname(file);
-    const userHome = targetHome(file, users[0]);
-    if (home !== userHome) {
-      moving = true;
-      add(
-        "proximity",
-        file,
-        `only ${rel(users[0])} imports it`,
-        `move next to it, into ${rel(userHome)}/`,
-      );
-    }
-  }
-
-  /* depth — reported only when no move is already queued for this file, since
-     the move is what changes its depth */
-  const depth = rel(file).split("/").length - 1;
-  if (depth > DEPTH && !moving) {
-    add("depth", file, `${depth} folders under src/`, `limit is ${DEPTH}`);
-  }
-
-  /* shared — a component under features/ used by another feature */
-  const ownFeature = featureOf(file);
-  if (ownFeature) {
-    const others = new Set(
-      users.map(featureOf).filter((f) => f && f !== ownFeature),
+  /* shared-in-feature — used from another area, so it is not that feature's.
+     A barrel is the exception: being imported from outside is its whole job. */
+  if (feature && !isBarrel(file)) {
+    const foreign = new Set(
+      users.map(areaOf).filter((a) => a !== feature && a !== "shell"),
     );
-    if (others.size > 0) {
+    if (foreign.size > 0) {
       add(
-        "shared",
+        "shared-in-feature",
         file,
-        `used by ${[...others].join(", ")} but lives in ${ownFeature}`,
-        "move to components/<domain>/",
+        `imported from ${[...foreign].join(", ")} but lives in ${feature}`,
+        "move it to a shared bucket, or keep it internal",
       );
     }
   }
+}
+
+/* boundary — static imports from outside a feature must go through its index.ts.
+   Dynamic imports are exempt: a lazily loaded section keeps its own chunk, and
+   routing it through the barrel would pull the whole feature in. */
+for (const file of files) {
+  const source = readFileSync(file, "utf8");
+  const own = featureOf(file);
+  for (const match of source.matchAll(STATIC)) {
+    const spec = match[1];
+    const deep = /^@\/features\/([^/]+)\/./.exec(spec);
+    if (!deep) continue;
+    if (deep[1] === own) continue; // internal
+    add(
+      "boundary",
+      file,
+      `reaches into features/${deep[1]} past its index.ts`,
+      `import from "@/features/${deep[1]}" instead`,
+    );
+  }
+}
+
+/* ── optional: dump the resolved graph for other tooling ───────────────── */
+
+if (dumpGraph) {
+  const out = {
+    files: files.map(rel).sort(),
+    users: Object.fromEntries(
+      [...importers].map(([f, u]) => [rel(f), [...u].map(rel).sort()]),
+    ),
+  };
+  writeFileSync(
+    "/scratch/work/graph.json",
+    `${JSON.stringify(out, null, 1)}\n`,
+  );
+  console.log(
+    `graph: ${out.files.length} files, ${Object.keys(out.users).length} with importers`,
+  );
+  process.exit(0);
 }
 
 /* ── report ────────────────────────────────────────────────────────────── */
@@ -256,7 +275,14 @@ if (writeBaseline) {
   process.exit(0);
 }
 
-const ORDER = ["proximity", "shared", "multi", "naming", "depth", "orphan"];
+const ORDER = [
+  "boundary",
+  "shared-in-feature",
+  "multi",
+  "naming",
+  "depth",
+  "orphan",
+];
 findings.sort(
   (a, b) =>
     ORDER.indexOf(a.rule) - ORDER.indexOf(b.rule) ||
@@ -274,8 +300,8 @@ if (findings.length === 0) {
 
 for (const f of findings) {
   const tag = baseline.has(key(f)) ? " (baselined)" : "";
-  console.log(`${f.rule.padEnd(10)} ${f.file}${tag}`);
-  console.log(`${" ".repeat(11)}${f.detail} — ${f.hint}`);
+  console.log(`${f.rule.padEnd(17)} ${f.file}${tag}`);
+  console.log(`${" ".repeat(18)}${f.detail} — ${f.hint}`);
 }
 
 console.log(

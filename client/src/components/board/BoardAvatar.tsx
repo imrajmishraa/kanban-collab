@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
 
-import { useActiveWorkspaceMembers } from "@/features/boards/hooks/useActiveWorkspaceMembers";
+import { useActiveWorkspaceMembers } from "@/features/boards";
 
-import { avatarColor, initials } from "@/features/boards/board.helpers";
+import { avatarColor, initials } from "@/features/boards";
 
-import type { BoardMember } from "@/features/boards/board.helpers";
+import type { BoardMember } from "@/features/boards";
 
 interface AvatarProps {
   member: BoardMember;

@@ -6,7 +6,7 @@ import {
   Search01Icon,
 } from "@hugeicons/core-free-icons";
 
-import { useSearchStore } from "@/features/search/stores/searchStore";
+import { useSearchStore } from "@/features/search";
 import { Tooltip } from "@/components/Tooltips/ToolTip";
 
 const isMac =

@@ -10,12 +10,9 @@ import {
 } from "@hugeicons/core-free-icons";
 
 import { WorkspaceCard } from "@/features/dashboard/components/workspace/WorkspaceCard";
-import {
-  AddMemberDialog,
-  EditWorkspaceDialog,
-} from "@/features/workspaces/components/workspace-dialogs";
-import { useStarredWorkspaces } from "@/features/workspaces/stores/starredWorkspaces";
-import { useWorkspaceSwitcher } from "@/features/workspaces/stores/workspaceSwitcher";
+import { AddMemberDialog, EditWorkspaceDialog } from "@/features/workspaces";
+import { useStarredWorkspaces } from "@/features/workspaces";
+import { useWorkspaceSwitcher } from "@/features/workspaces";
 import { toastSuccess } from "@/lib/toast";
 
 import type { DashboardWorkspace } from "@/types/dashboard";

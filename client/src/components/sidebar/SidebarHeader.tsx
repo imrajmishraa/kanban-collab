@@ -8,10 +8,7 @@ import { useNavigate } from "react-router-dom";
 import logo from "@/assets/logo.svg?inline";
 import { Tooltip } from "@/components/Tooltips/ToolTip";
 
-import {
-  useSidebarState,
-  type SidebarMode,
-} from "@/features/dashboard/stores/sidebarState";
+import { useSidebarState, type SidebarMode } from "@/features/dashboard";
 
 interface SidebarHeaderProps {
   collapsed: boolean;

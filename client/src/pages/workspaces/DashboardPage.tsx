@@ -1,11 +1,11 @@
-import ActivitySection from "@/features/dashboard/components/main/ActivitySection";
-import DashboardError from "@/features/dashboard/components/main/DashboardError";
-import DashboardHeader from "@/features/dashboard/components/main/DashboardHeader";
-import DashboardOverview from "@/features/dashboard/components/main/DashboardOverview";
-import WorkspaceSection from "@/features/dashboard/components/main/WorkspaceSection";
-import DashboardSkeleton from "@/features/dashboard/components/skeletons/DashboardSkeleton";
+import { ActivitySection } from "@/features/dashboard";
+import { DashboardError } from "@/features/dashboard";
+import { DashboardHeader } from "@/features/dashboard";
+import { DashboardOverview } from "@/features/dashboard";
+import { WorkspaceSection } from "@/features/dashboard";
+import { DashboardSkeleton } from "@/features/dashboard";
 
-import { useDashboard } from "@/features/dashboard/hooks/useDashboard";
+import { useDashboard } from "@/features/dashboard";
 
 /**
  * Overview.

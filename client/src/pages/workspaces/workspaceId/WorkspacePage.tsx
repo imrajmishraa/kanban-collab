@@ -18,20 +18,17 @@ import {
   CreateBoardDialog,
   EditWorkspaceDialog,
   WorkspaceAvatarDialog,
-} from "@/features/workspaces/components/workspace-dialogs";
+} from "@/features/workspaces";
 
-import {
-  BoardMessage,
-  BoardShell,
-} from "@/features/boards/components/BoardStates";
-import { BoardCard } from "@/features/workspaces/components/BoardCard";
-import { BoardSearch } from "@/features/workspaces/components/BoardSearch";
-import WorkspaceOverview from "@/features/boards/components/WorkspaceOverview";
-import { useActiveWorkspaceMembers } from "@/features/boards/hooks/useActiveWorkspaceMembers";
-import { useWorkspaceBoards } from "@/features/boards/hooks/useWorkspaceBoards";
+import { BoardMessage, BoardShell } from "@/features/boards";
+import { BoardCard } from "@/features/workspaces";
+import { BoardSearch } from "@/features/workspaces";
+import { WorkspaceOverview } from "@/features/boards";
+import { useActiveWorkspaceMembers } from "@/features/boards";
+import { useWorkspaceBoards } from "@/features/boards";
 import { useWorkspaces } from "@/hooks/useWorkspaces";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
-import { useStarredWorkspaces } from "@/features/workspaces/stores/starredWorkspaces";
+import { useStarredWorkspaces } from "@/features/workspaces";
 import { toastSuccess } from "@/lib/toast";
 
 type Dialog = "board" | "member" | "rename" | "avatar" | null;

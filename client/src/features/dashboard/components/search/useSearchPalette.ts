@@ -4,9 +4,9 @@ import { useQuery } from "@tanstack/react-query";
 
 import { DashboardSquare02Icon, Note01Icon } from "@hugeicons/core-free-icons";
 
-import { searchApi } from "@/features/search/api/searchApi";
-import { useBoardsStore } from "@/features/boards/stores/boards";
-import { useSearchStore } from "@/features/search/stores/searchStore";
+import { searchApi } from "@/features/search";
+import { useBoardsStore } from "@/features/boards";
+import { useSearchStore } from "@/features/search";
 
 import { formatDay } from "./formatDay";
 import type { PaletteRow, Scope } from "./types";

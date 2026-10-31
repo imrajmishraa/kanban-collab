@@ -1,7 +1,7 @@
 import { lazy } from "react";
 
-import HowItWorksHero from "@/features/marketing/components/howItWorks/HowItWorksHero";
-import DeferredSection from "@/features/marketing/components/DeferredSection";
+import { HowItWorksHero } from "@/features/marketing";
+import { DeferredSection } from "@/features/marketing";
 
 const WorkflowOverviewSection = lazy(
   () =>

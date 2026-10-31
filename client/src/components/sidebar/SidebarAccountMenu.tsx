@@ -21,7 +21,7 @@ import {
 
 import { Tooltip } from "@/components/Tooltips/ToolTip";
 
-import { useSidebarState } from "@/features/dashboard/stores/sidebarState";
+import { useSidebarState } from "@/features/dashboard";
 import { useThemeStore, type ThemeMode } from "@/stores/theme";
 
 import SidebarModeMenu from "./SidebarModeMenu";

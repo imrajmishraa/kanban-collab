@@ -3,12 +3,12 @@ import { createPortal } from "react-dom";
 
 import { useNavigate } from "react-router-dom";
 
-import { useSearchStore } from "@/features/search/stores/searchStore";
+import { useSearchStore } from "@/features/search";
 
-import { SearchInputRow } from "@/features/dashboard/components/search/SearchInputRow";
-import { SearchPreview } from "@/features/dashboard/components/search/SearchPreview";
-import { SearchResults } from "@/features/dashboard/components/search/SearchResults";
-import { useSearchPalette } from "@/features/dashboard/components/search/useSearchPalette";
+import { SearchInputRow } from "@/features/dashboard";
+import { SearchPreview } from "@/features/dashboard";
+import { SearchResults } from "@/features/dashboard";
+import { useSearchPalette } from "@/features/dashboard";
 
 /**
  * Search palette.

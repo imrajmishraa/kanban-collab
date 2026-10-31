@@ -3,7 +3,7 @@ import { useState } from "react";
 import {
   useNotificationPreferences,
   useUpdateNotificationPreferences,
-} from "@/features/settings/hooks/useNotificationPreferences";
+} from "@/features/settings";
 
 import {
   NOTIFICATION_CHANNELS,

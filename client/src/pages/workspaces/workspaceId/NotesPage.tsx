@@ -3,7 +3,7 @@ import type { FormEvent } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { notesApi } from "@/features/notes/api/notesApi";
+import { notesApi } from "@/features/notes";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 
 import type { Note } from "@/types/note";

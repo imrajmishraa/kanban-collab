@@ -6,10 +6,10 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowRight01Icon, KanbanIcon } from "@hugeicons/core-free-icons";
 
 import BoardColumns from "@/components/board/BoardColumns";
-import { EditColumnDialog } from "@/features/workspaces/components/board-dialogs";
+import { EditColumnDialog } from "@/features/workspaces";
 
-import { ui } from "@/features/boards/board.helpers";
-import { useBoardMutations } from "@/features/boards/hooks/useBoardMutations";
+import { ui } from "@/features/boards";
+import { useBoardMutations } from "@/features/boards";
 
 import type { BoardCard, BoardDetails } from "@/types/board";
 

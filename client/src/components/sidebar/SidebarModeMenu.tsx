@@ -5,7 +5,7 @@ import {
   PanelLeftOpenIcon,
 } from "@hugeicons/core-free-icons";
 
-import type { SidebarMode } from "@/features/dashboard/stores/sidebarState";
+import type { SidebarMode } from "@/features/dashboard";
 
 interface SidebarModeMenuProps {
   mode: SidebarMode;

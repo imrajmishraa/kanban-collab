@@ -7,10 +7,10 @@ import {
   DashboardSquare02Icon,
 } from "@hugeicons/core-free-icons";
 
-import SidebarItem from "@/features/dashboard/components/SidebarItem";
+import { SidebarItem } from "@/features/dashboard";
 import { Avatar } from "@/components/board/BoardAvatar";
 
-import { avatarColor } from "@/features/boards/board.helpers";
+import { avatarColor } from "@/features/boards";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { useWorkspaces } from "@/hooks/useWorkspaces";
 

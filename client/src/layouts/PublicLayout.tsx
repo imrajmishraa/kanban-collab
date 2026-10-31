@@ -6,7 +6,7 @@ import { ArrowUp01Icon } from "@hugeicons/core-free-icons";
 
 import Footer from "@/components/marketing/landing/Footer";
 import Navbar from "@/components/marketing/landing/Navbar";
-import { LandingBackground } from "@/features/marketing/components/LandingBackground";
+import { LandingBackground } from "@/features/marketing";
 
 function ScrollCorner() {
   const { scrollYProgress } = useScroll();

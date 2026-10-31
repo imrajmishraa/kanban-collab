@@ -2,7 +2,7 @@ import { useEffect } from "react";
 
 import { useBoards } from "./useBoards";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
-import { useBoardsStore } from "@/features/boards/stores/boards";
+import { useBoardsStore } from "@/features/boards";
 
 /**
  * Grabs the active workspace's boards and keeps them in the persisted

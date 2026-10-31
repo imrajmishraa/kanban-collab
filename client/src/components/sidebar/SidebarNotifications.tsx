@@ -14,8 +14,8 @@ import {
 
 import { Tooltip } from "@/components/Tooltips/ToolTip";
 
-import { notificationsApi } from "@/features/dashboard/api/notificationsApi";
-import { notificationKeys } from "@/features/dashboard/components/notifications";
+import { notificationsApi } from "@/features/dashboard";
+import { notificationKeys } from "@/features/dashboard";
 import { toastError } from "@/lib/toast";
 
 import type { AppNotification } from "@/types/notification";

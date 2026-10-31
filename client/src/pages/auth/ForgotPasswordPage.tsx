@@ -25,7 +25,7 @@ import {
 import {
   forgotPasswordSchema,
   type ForgotPasswordFormData,
-} from "@/features/auth/validations/auth.validator";
+} from "@/features/auth";
 
 type Step = "email" | "code" | "sent";
 

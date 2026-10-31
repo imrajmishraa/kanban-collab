@@ -2,9 +2,9 @@ import { useEffect } from "react";
 
 import MobileSidebarHeader from "./MobileSidebarHeader";
 
-import { WorkspaceSelector } from "@/features/dashboard/components/workspace/WorkspaceSelector";
+import { WorkspaceSelector } from "@/features/dashboard";
 import SidebarNavigation from "@/components/sidebar/SidebarNavigation";
-import SidebarNewProject from "@/features/dashboard/components/workspace/SidebarNewProject";
+import { SidebarNewProject } from "@/features/dashboard";
 import SidebarSearch from "@/components/sidebar/SidebarSearch";
 import SidebarBoards from "@/components/sidebar/SidebarBoards";
 import SidebarFooter from "@/components/sidebar/SidebarFooter";

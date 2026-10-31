@@ -5,8 +5,8 @@ import DashboardSidebar from "@/components/sidebar/DashboardSidebar";
 import DashboardNavbar from "@/components/sidebar/DashboardNavbar";
 import { NewWorkspaceDialogProvider } from "@/components/dashboard/workspace/create/NewWorkspaceDialogProvider";
 
-import { useSidebarState } from "@/features/dashboard/stores/sidebarState";
-import { useSearchStore } from "@/features/search/stores/searchStore";
+import { useSidebarState } from "@/features/dashboard";
+import { useSearchStore } from "@/features/search";
 import { useEnsureActiveWorkspace } from "@/hooks/useEnsureActiveWorkspace";
 import { useSyncSavedBoards } from "@/hooks/useSyncSavedBoards";
 

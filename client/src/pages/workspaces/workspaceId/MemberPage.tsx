@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { workspaceApi } from "@/features/workspaces/api/workspaceApi";
+import { workspaceApi } from "@/features/workspaces";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { useAuth } from "@/hooks/useAuth";
 
 import { Avatar } from "@/components/board/BoardAvatar";
 import ConfirmDialog from "@/components/dialog/ConfirmDialog";
 
-import { avatarColor } from "@/features/boards/board.helpers";
+import { avatarColor } from "@/features/boards";
 
 const ROLE_LABEL: Record<string, string> = {
   owner: "Owner",
