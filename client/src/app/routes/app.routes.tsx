@@ -1,7 +1,7 @@
 import type { RouteObject } from "react-router-dom";
 
 import ProtectedRoute from "../ProtectedRoute";
-import AppLayout from "../layouts/AppLayout";
+import AppLayout from "@/layouts/AppLayout";
 
 import { workspaceOverviewRoutes } from "./workspaceOverview.routes";
 import { workspaceScopedRoutes } from "./workspaceScoped.routes";

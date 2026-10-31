@@ -1,4 +1,4 @@
-import type { BoardCard, BoardColumn } from "@/types/api/dashboard/board";
+import type { BoardCard, BoardColumn } from "@/types/board";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */

@@ -1,7 +1,7 @@
 import { Navigate, Outlet } from "react-router-dom";
 
 import AuthLoadingScreen from "@/components/feedback/LoadingScreen";
-import { useAuth } from "@/hooks/auth/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function GuestRoute() {
   const { isAuthenticated, isLoading } = useAuth();

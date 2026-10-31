@@ -5,9 +5,9 @@ import {
   logoutRequest,
   refreshRequest,
   registerRequest,
-} from "@/api/authApi";
+} from "@/features/auth/api/authApi";
 
-import type { AuthStatus, AuthUser } from "@/types/api/auth/auth";
+import type { AuthStatus, AuthUser } from "@/types/auth";
 
 interface AuthState {
   status: AuthStatus;

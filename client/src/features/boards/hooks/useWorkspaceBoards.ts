@@ -2,11 +2,11 @@ import { useMemo } from "react";
 
 import { useInfiniteQuery } from "@tanstack/react-query";
 
-import { boardApi } from "@/api/dashboard/boardApi";
-import { boardKeys } from "@/hooks/dashboard/useBoards";
+import { boardApi } from "@/features/boards/api/boardApi";
+import { boardKeys } from "@/hooks/useBoards";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 
-import type { Board, BoardDetails } from "@/types/api/dashboard/board";
+import type { Board, BoardDetails } from "@/types/board";
 
 /** Page size for the overview. Kept separate from the sidebar's light list. */
 export const BOARDS_OVERVIEW_LIMIT = 10;

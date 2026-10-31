@@ -1,6 +1,6 @@
 import type { RouteObject } from "react-router-dom";
 
-import PublicLayout from "../layouts/PublicLayout";
+import PublicLayout from "@/layouts/PublicLayout";
 import { FeaturesPage, HowItWorksPage, LandingPage } from "./pages";
 
 /** Marketing surfaces. Public, no auth, their own layout. */

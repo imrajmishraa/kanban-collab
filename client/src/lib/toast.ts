@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import { ApiClientError } from "@/api/client";
+import { ApiClientError } from "@/services/client";
 
 export function toastSuccess(message: string, description?: string) {
   return toast.success(message, { description });

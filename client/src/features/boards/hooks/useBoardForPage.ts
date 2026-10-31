@@ -1,6 +1,6 @@
-import { useBoardDetails } from "@/hooks/dashboard/useBoards";
+import { useBoardDetails } from "@/hooks/useBoards";
 
-import type { BoardDetails } from "@/types/api/dashboard/board";
+import type { BoardDetails } from "@/types/board";
 
 export interface UseBoardForPageResult {
   /** The real board from the API — undefined until it loads. */

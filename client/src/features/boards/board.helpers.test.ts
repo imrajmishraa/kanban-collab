@@ -12,7 +12,7 @@ import {
   uid,
 } from "./board.helpers";
 
-import type { BoardCard, BoardColumn } from "@/types/api/dashboard/board";
+import type { BoardCard, BoardColumn } from "@/types/board";
 
 const makeCard = (id: string, orderIndex: number) =>
   ({ id, orderIndex }) as unknown as BoardCard;

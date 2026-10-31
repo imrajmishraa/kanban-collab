@@ -1,7 +1,7 @@
 import { Navigate, type RouteObject } from "react-router-dom";
 
 import GuestRoute from "../GuestRoute";
-import AuthLayout from "../layouts/AuthLayout";
+import AuthLayout from "@/layouts/AuthLayout";
 import {
   ForgotPasswordPage,
   LoginPage,

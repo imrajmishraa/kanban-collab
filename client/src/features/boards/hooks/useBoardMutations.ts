@@ -1,9 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { boardKeys } from "@/hooks/dashboard/useBoards";
-import type { BoardCardChecklistItem } from "@/types/api/dashboard/board";
-import { cardApi } from "@/api/dashboard/cardApi";
-import { columnApi } from "@/api/dashboard/columnAPI";
+import { boardKeys } from "@/hooks/useBoards";
+import type { BoardCardChecklistItem } from "@/types/board";
+import { cardApi } from "@/features/boards/api/cardApi";
+import { columnApi } from "@/features/boards/api/columnAPI";
 
 /**
  * Server-backed mutations for the kanban board view.

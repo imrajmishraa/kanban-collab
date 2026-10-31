@@ -60,7 +60,27 @@ let lastTap = Number.NEGATIVE_INFINITY;
 
 function clearDirectionClasses(): void {
   const root = document.documentElement;
-  root.classList.remove("vt-collapse", "vt-grow", "vt-running");
+  root.classList.remove("vt-collapse", "vt-grow"); // vt-running removed from here
+}
+
+let lockTimer: ReturnType<typeof setTimeout> | null = null;
+
+function lockControl(ms: number): void {
+  const root = document.documentElement;
+  root.classList.add("vt-running");
+  if (lockTimer !== null) clearTimeout(lockTimer);
+  lockTimer = setTimeout(() => {
+    lockTimer = null;
+    root.classList.remove("vt-running");
+  }, ms);
+}
+
+function unlockControl(): void {
+  if (lockTimer !== null) {
+    clearTimeout(lockTimer);
+    lockTimer = null;
+  }
+  document.documentElement.classList.remove("vt-running");
 }
 
 /**
@@ -111,12 +131,14 @@ export function applyThemeWithReveal(
      sit on top of the theme that is about to be applied. */
   if (!start || prefersReducedMotion() || repeat) {
     abortCurrent();
+    unlockControl();
     clearDirectionClasses();
     apply();
     return;
   }
 
   abortCurrent();
+  unlockControl();
   clearDirectionClasses();
 
   const root = document.documentElement;
@@ -151,6 +173,10 @@ export function applyThemeWithReveal(
   root.style.setProperty("--vt-x", `${x}px`);
   root.style.setProperty("--vt-y", `${y}px`);
 
+  lockControl(
+    (goingDark ? REVEAL_MS_COLLAPSE : REVEAL_MS_GROW) + COALESCE_MS + 600,
+  );
+
   const run: RevealRun = { transition: null, reveal: null, alive: true };
   current = run;
 
@@ -159,6 +185,7 @@ export function applyThemeWithReveal(
     run.alive = false;
     if (current === run) current = null;
     clearDirectionClasses();
+    unlockControl();
   };
 
   const transition = start(apply);

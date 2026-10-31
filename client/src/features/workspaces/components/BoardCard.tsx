@@ -15,12 +15,12 @@ import {
   DeleteBoardDialog,
   EditBoardDialog,
 } from "@/features/workspaces/components/board-dialogs";
-import { ShareBoardDialog } from "@/components/layout/dashboard/sidebar/ShareBoardDialog";
+import { ShareBoardDialog } from "@/components/sidebar/ShareBoardDialog";
 
-import { usePinnedBoards } from "@/stores/pinnedBoards";
+import { usePinnedBoards } from "@/features/dashboard/stores/pinnedBoards";
 import { toastSuccess } from "@/lib/toast";
 
-import type { Board, BoardDetails } from "@/types/api/dashboard/board";
+import type { Board, BoardDetails } from "@/types/board";
 
 function relativeTime(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();

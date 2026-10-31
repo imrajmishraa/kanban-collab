@@ -13,11 +13,11 @@ import {
   UserGroupIcon,
 } from "@hugeicons/core-free-icons";
 
-import { Avatar } from "@components/layout/board/BoardAvatar";
+import { Avatar } from "@/components/board/BoardAvatar";
 
-import { useNewWorkspaceDialog } from "@/components/layout/dashboard/workspace/create/newWorkspaceDialog.context";
+import { useNewWorkspaceDialog } from "@/components/dashboard/workspace/create/newWorkspaceDialog.context";
 import { avatarColor } from "@/features/boards/board.helpers";
-import { useWorkspaces } from "@/hooks/dashboard/useWorkspaces";
+import { useWorkspaces } from "@/hooks/useWorkspaces";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 
 /** What the blocked page is called, and the glyph that represents it. */

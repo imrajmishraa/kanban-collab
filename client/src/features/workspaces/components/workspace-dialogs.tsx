@@ -6,14 +6,14 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Cancel01Icon, Loading03Icon } from "@hugeicons/core-free-icons";
 
-import { attachmentsApi } from "@/api/dashboard/attachmentsApi";
-import { boardApi } from "@/api/dashboard/boardApi";
-import { workspaceApi } from "@/api/dashboard/workspaceApi";
-import { boardKeys } from "@/hooks/dashboard/useBoards";
-import { workspaceKeys } from "@/hooks/dashboard/useWorkspaces";
+import { attachmentsApi } from "@/features/boards/api/attachmentsApi";
+import { boardApi } from "@/features/boards/api/boardApi";
+import { workspaceApi } from "@/features/workspaces/api/workspaceApi";
+import { boardKeys } from "@/hooks/useBoards";
+import { workspaceKeys } from "@/hooks/useWorkspaces";
 import { toastSuccess, toastError } from "@/lib/toast";
 
-import type { AddWorkspaceMemberPayload } from "@/types/api/dashboard/workspace";
+import type { AddWorkspaceMemberPayload } from "@/types/workspace";
 
 /** The server's own union, so a new role can never be invented here. */
 type MemberRole = NonNullable<AddWorkspaceMemberPayload["role"]>;

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { apiClient } from "@/api/client";
+import { apiClient } from "@/services/client";
 
 declare global {
   interface Window {

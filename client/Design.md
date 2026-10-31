@@ -1,591 +1,437 @@
-# Design
-
-How the kanban app looks, moves and is built. This is the reference for anyone adding a screen, a component or a route: the tokens, the rules, the component recipes, and the conventions the code already follows.
-
-The visual language is **ChaiUI**, the chaicode.com design system, applied with the project's own tokens. Section 17 records the mapping rule by rule, so a future reader can tell a decision from a mistake.
-
-The app ships **two themes**, dark and light, plus a `system` mode that follows the OS. Dark is the default and the `:root` palette, so first paint is correct without JavaScript. Every surface, border and text colour below is a token with a value in each theme.
-
+---
+version: alpha
+name: Kanban Collab
+description: A dense, two-theme work surface for real-time collaborative Kanban boards. Colour is information, never decoration; depth comes from a hairline; one accent, spent carefully.
+themes:
+  default: dark
+  alternate: light
+  switch: '.light on <html>'
+colors:
+  bg-root: 'rgb(0, 0, 0)'
+  bg-surface: 'rgb(20, 20, 21)'
+  bg-card: 'rgb(26, 26, 28)'
+  bg-elevated: 'rgb(36, 36, 38)'
+  bg-hover: 'rgba(255, 255, 255, 0.05)'
+  bg-active: 'rgba(255, 255, 255, 0.08)'
+  tint-2: 'rgba(255, 255, 255, 0.02)'
+  tint-3: 'rgba(255, 255, 255, 0.03)'
+  tint-4: 'rgba(255, 255, 255, 0.04)'
+  tint-5: 'rgba(255, 255, 255, 0.05)'
+  tint-6: 'rgba(255, 255, 255, 0.06)'
+  tint-8: 'rgba(255, 255, 255, 0.08)'
+  tint-10: 'rgba(255, 255, 255, 0.1)'
+  tint-15: 'rgba(255, 255, 255, 0.15)'
+  border: 'rgba(255, 255, 255, 0.1)'
+  border-strong: 'rgba(255, 255, 255, 0.16)'
+  border-subtle: 'rgba(255, 255, 255, 0.06)'
+  hairline: 'rgba(255, 245, 235, 0.1)'
+  hairline-strong: 'rgba(255, 245, 235, 0.18)'
+  accent: 'rgb(255, 224, 178)'
+  accent-soft: 'rgba(255, 224, 178, 0.14)'
+  accent-fill: 'rgba(124, 45, 18, 0.4)'
+  brand: '#ff6b35'
+  brand-hover: '#ff814f'
+  brand-active: '#e95725'
+  brand-muted: 'rgba(255, 107, 53, 0.1)'
+  brand-border: 'rgba(255, 107, 53, 0.3)'
+  text-primary: 'rgb(245, 245, 245)'
+  text-soft: 'rgb(204, 204, 204)'
+  text-secondary: 'rgb(163, 163, 163)'
+  text-muted: 'rgb(120, 120, 120)'
+  text-subtle: 'rgb(72, 72, 72)'
+  solid-bg: 'rgb(255, 255, 255)'
+  solid-bg-hover: 'rgb(229, 229, 229)'
+  solid-text: 'rgb(10, 10, 10)'
+  on-color: 'rgb(10, 10, 10)'
+  inverse-bg: 'rgb(245, 245, 245)'
+  inverse-text: 'rgb(10, 10, 10)'
+  inverse-border: 'rgba(0, 0, 0, 0.12)'
+  inverse-accent: 'rgb(146, 64, 14)'
+  glass: 'rgba(13, 13, 13, 0.72)'
+  scrim: 'rgba(0, 0, 0, 0.55)'
+  scrollbar-thumb: '#292929'
+  scrollbar-thumb-hover: '#3a3a3a'
+  success: '#35d399'
+  warning: '#f5b84b'
+  danger: '#f16b7a'
+light:
+  bg-root: 'rgb(250, 250, 250)'
+  bg-surface: 'rgb(255, 255, 255)'
+  bg-card: 'rgb(255, 255, 255)'
+  bg-elevated: 'rgb(255, 255, 255)'
+  bg-hover: 'rgba(0, 0, 0, 0.04)'
+  bg-active: 'rgba(0, 0, 0, 0.06)'
+  tint-2: 'rgba(0, 0, 0, 0.02)'
+  tint-3: 'rgba(0, 0, 0, 0.025)'
+  tint-4: 'rgba(0, 0, 0, 0.03)'
+  tint-5: 'rgba(0, 0, 0, 0.035)'
+  tint-6: 'rgba(0, 0, 0, 0.045)'
+  tint-8: 'rgba(0, 0, 0, 0.06)'
+  tint-10: 'rgba(0, 0, 0, 0.08)'
+  tint-15: 'rgba(0, 0, 0, 0.12)'
+  border: 'rgba(0, 0, 0, 0.1)'
+  border-strong: 'rgba(0, 0, 0, 0.18)'
+  border-subtle: 'rgba(0, 0, 0, 0.06)'
+  hairline: 'rgba(60, 30, 10, 0.12)'
+  hairline-strong: 'rgba(60, 30, 10, 0.22)'
+  accent: 'rgb(146, 64, 14)'
+  accent-soft: 'rgba(146, 64, 14, 0.1)'
+  accent-fill: 'rgba(146, 64, 14, 0.16)'
+  brand: '#c2410c'
+  brand-hover: '#9a3412'
+  brand-active: '#7c2d12'
+  brand-muted: 'rgba(194, 65, 12, 0.1)'
+  brand-border: 'rgba(194, 65, 12, 0.32)'
+  text-primary: 'rgb(17, 17, 17)'
+  text-soft: 'rgb(56, 56, 56)'
+  text-secondary: 'rgb(90, 90, 90)'
+  text-muted: 'rgb(120, 120, 120)'
+  text-subtle: 'rgb(165, 165, 165)'
+  solid-bg: 'rgb(10, 10, 10)'
+  solid-bg-hover: 'rgb(38, 38, 38)'
+  solid-text: 'rgb(250, 250, 250)'
+  inverse-bg: 'rgb(17, 17, 17)'
+  inverse-text: 'rgb(250, 250, 250)'
+  inverse-border: 'rgba(255, 255, 255, 0.14)'
+  inverse-accent: 'rgb(255, 224, 178)'
+  glass: 'rgba(255, 255, 255, 0.72)'
+  scrim: 'rgba(0, 0, 0, 0.35)'
+  on-color: 'rgb(10, 10, 10)'
+  scrollbar-thumb: '#d4d4d4'
+  scrollbar-thumb-hover: '#b4b4b4'
+  success: '#047857'
+  warning: '#a16207'
+  danger: '#be123c'
+typography:
+  font-ui:
+    fontFamily: "'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif"
+  font-mono:
+    fontFamily: "'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace"
+  display-lg:
+    fontFamily: '{typography.font-ui.fontFamily}'
+    fontSize: 26px
+    fontWeight: '700'
+    lineHeight: 32px
+    letterSpacing: '-0.02em'
+  headline-lg:
+    fontFamily: '{typography.font-ui.fontFamily}'
+    fontSize: 22px
+    fontWeight: '700'
+    lineHeight: 28px
+    letterSpacing: '-0.02em'
+  headline-md:
+    fontFamily: '{typography.font-ui.fontFamily}'
+    fontSize: 19px
+    fontWeight: '600'
+    lineHeight: 26px
+    letterSpacing: '-0.01em'
+  title-lg:
+    fontFamily: '{typography.font-ui.fontFamily}'
+    fontSize: 14px
+    fontWeight: '600'
+    lineHeight: 22px
+  title-md:
+    fontFamily: '{typography.font-ui.fontFamily}'
+    fontSize: 13px
+    fontWeight: '600'
+    lineHeight: 20px
+  body-lg:
+    fontFamily: '{typography.font-ui.fontFamily}'
+    fontSize: 14px
+    fontWeight: '400'
+    lineHeight: 22px
+  body-md:
+    fontFamily: '{typography.font-ui.fontFamily}'
+    fontSize: 13px
+    fontWeight: '400'
+    lineHeight: 20px
+  body-sm:
+    fontFamily: '{typography.font-ui.fontFamily}'
+    fontSize: 12.5px
+    fontWeight: '400'
+    lineHeight: 18px
+  label-mono:
+    fontFamily: '{typography.font-mono.fontFamily}'
+    fontSize: 9px
+    fontWeight: '500'
+    lineHeight: 14px
+    letterSpacing: '0.14em'
+    textTransform: uppercase
+rounded:
+  none: 0px
+  sm: 4px
+  md: 6px
+  lg: 8px
+  xl: 12px
+  2xl: 16px
+  full: 9999px
+spacing:
+  unit: 4px
+  xs: 4px
+  sm: 8px
+  md: 12px
+  lg: 16px
+  xl: 24px
+  2xl: 32px
+  control-height: 36px
+  row-height: 32px
+  icon-button: 32px
+  rail-width: 256px
+  rail-collapsed: 72px
+  navbar-height: 56px
+motion:
+  duration-fast: 150ms
+  duration-base: 200ms
+  duration-slow: 300ms
+  ease-standard: ease
+  ease-out: ease-out
+  reveal-grow: 1200ms
+  reveal-collapse: 900ms
+  reveal-curve-grow: 'cubic-bezier(0.22, 1, 0.36, 1)'
+  reveal-curve-collapse: 'cubic-bezier(0.6, 0, 0.4, 1)'
+components:
+  button-solid:
+    backgroundColor: '{colors.solid-bg}'
+    textColor: '{colors.solid-text}'
+    typography: '{typography.body-lg}'
+    rounded: '0px 8px 0px 8px'
+    height: 36px
+    padding: 0 16px
+  button-solid-hover:
+    backgroundColor: '{colors.solid-bg-hover}'
+  button-outline:
+    backgroundColor: transparent
+    textColor: '{colors.text-soft}'
+    typography: '{typography.body-lg}'
+    rounded: '8px 0px 8px 0px'
+    height: 36px
+    padding: 0 16px
+    borderColor: '{colors.hairline-strong}'
+  button-ghost:
+    backgroundColor: transparent
+    textColor: '{colors.text-secondary}'
+    typography: '{typography.body-md}'
+    rounded: '{rounded.lg}'
+    height: 32px
+    padding: 0 10px
+  button-ghost-hover:
+    backgroundColor: '{colors.tint-4}'
+    textColor: '{colors.text-primary}'
+  button-danger:
+    backgroundColor: transparent
+    textColor: '{colors.danger}'
+    typography: '{typography.body-lg}'
+    rounded: '{rounded.lg}'
+    height: 36px
+    padding: 0 16px
+    borderColor: '{colors.danger}'
+  icon-button:
+    backgroundColor: transparent
+    textColor: '{colors.text-muted}'
+    rounded: '{rounded.lg}'
+    width: 32px
+    height: 32px
+  icon-button-hover:
+    backgroundColor: '{colors.tint-4}'
+    textColor: '{colors.text-primary}'
+  theme-swatch-active:
+    backgroundColor: '{colors.tint-10}'
+    textColor: '{colors.accent}'
+    rounded: '{rounded.full}'
+    width: 24px
+    height: 24px
+  segmented-control:
+    backgroundColor: '{colors.tint-3}'
+    textColor: '{colors.text-secondary}'
+    rounded: '{rounded.full}'
+    borderColor: '{colors.hairline}'
+    padding: 2px
+  segmented-active:
+    backgroundColor: '{colors.accent-fill}'
+    textColor: '{colors.accent}'
+    typography: '{typography.body-sm}'
+  chip:
+    backgroundColor: '{colors.tint-4}'
+    textColor: '{colors.text-soft}'
+    typography: '{typography.label-mono}'
+    rounded: '{rounded.full}'
+    borderColor: '{colors.hairline}'
+    padding: 2px 10px
+  input-field:
+    backgroundColor: transparent
+    textColor: '{colors.text-primary}'
+    typography: '{typography.body-lg}'
+    rounded: '{rounded.lg}'
+    height: 36px
+    padding: 0 12px
+    borderColor: '{colors.hairline}'
+  input-field-focus:
+    borderColor: '{colors.hairline-strong}'
+  input-placeholder:
+    textColor: '{colors.text-subtle}'
+  card:
+    backgroundColor: '{colors.bg-card}'
+    textColor: '{colors.text-primary}'
+    rounded: '{rounded.lg}'
+    padding: 12px
+    borderColor: '{colors.hairline}'
+  popover:
+    backgroundColor: '{colors.bg-root}'
+    textColor: '{colors.text-soft}'
+    rounded: '{rounded.xl}'
+    padding: 4px
+    borderColor: '{colors.hairline-strong}'
+  menu-item:
+    backgroundColor: transparent
+    textColor: '{colors.text-soft}'
+    typography: '{typography.body-sm}'
+    rounded: '{rounded.md}'
+    height: 32px
+    padding: 0 10px
+  menu-item-hover:
+    backgroundColor: '{colors.tint-4}'
+    textColor: '{colors.text-primary}'
+  dialog:
+    backgroundColor: '{colors.bg-root}'
+    textColor: '{colors.text-primary}'
+    rounded: '{rounded.2xl}'
+    padding: 24px
+    borderColor: '{colors.hairline}'
+    width: 448px
+  dialog-backdrop:
+    backgroundColor: '{colors.scrim}'
+    blur: 4px
+  tooltip:
+    backgroundColor: '{colors.inverse-bg}'
+    textColor: '{colors.inverse-text}'
+    typography: '{typography.body-sm}'
+    rounded: '{rounded.md}'
+    borderColor: '{colors.inverse-border}'
+    padding: 4px 8px
+  avatar:
+    backgroundColor: '{colors.tint-8}'
+    textColor: '{colors.on-color}'
+    rounded: '{rounded.full}'
+    size: 24px
+  navbar:
+    backgroundColor: '{colors.glass}'
+    textColor: '{colors.text-primary}'
+    height: 56px
+    blur: 12px
+  rail:
+    backgroundColor: '{colors.bg-root}'
+    textColor: '{colors.text-soft}'
+    width: 256px
+    borderColor: '{colors.hairline}'
+  toast:
+    backgroundColor: '{colors.bg-root}'
+    textColor: '{colors.text-primary}'
+    typography: '{typography.body-sm}'
+    rounded: '{rounded.xl}'
+    padding: 12px 16px
+    borderColor: '{colors.hairline-strong}'
+  skeleton:
+    backgroundColor: '{colors.tint-6}'
+    rounded: '{rounded.md}'
 ---
 
-## 1. Stack
+## Overview
 
-| Layer | Choice |
-|---|---|
-| UI | React 19.2, TypeScript, Vite |
-| Styling | Tailwind CSS v4 (CSS-first, no `tailwind.config`) |
-| Routing | react-router-dom 7 |
-| Server state | TanStack Query 5 |
-| Client state | Zustand 5 |
-| Realtime | Yjs 13 over `y-websocket` |
-| Icons | Hugeicons (`@hugeicons/core-free-icons`) |
-| Forms | react-hook-form + zod 4 |
-| API | Express 4, Mongoose 8, Redis |
+This document describes the visual language of the Kanban Collab client: a dense, two-theme work surface for boards that several people edit at the same time. It follows the shape of the [Ant Design DESIGN.md](https://github.com/ant-design/ant-design/blob/master/DESIGN.md) — tokens first, in machine-readable front matter, then the reasoning behind them — because a token list without the rules that govern it is a palette, not a system.
 
-Tailwind v4 means there is no config file. Theme values live in `client/src/index.css` as plain CSS custom properties, and components consume them with the arbitrary-property syntax:
+The product is an operational tool, not a marketing site. A user lives in it for hours: columns of cards, a rail of boards, a panel of live activity, cursors moving in real time. That context sets the whole visual language. Every decision below favours density, calm and legibility over expressiveness, and the two themes are first-class — a team can switch mid-session without the interface losing its meaning.
 
-```tsx
-className="bg-(--bg-root) text-(--text-primary)"
-```
+Dark is the default and lives on `:root`; light overrides it under `.light`. There is no `.dark` block, so each token has exactly one definition per theme. `npm run lint:colors` fails the build if a component hardcodes a colour instead of asking for a token.
 
-Never hardcode a colour in a component. `npm run lint:colors` fails the build if you do.
+## Values
 
----
+Four values generate the rest of this document. When a case is not covered below, resolve it with these.
 
-## 2. Tokens
+**Quiet surfaces.** The page is the page. Black in dark, paper in light, and nothing in between that is decorative. A panel, a row, a chip or a bar is a surface or a wash — never a colour. Meaning travels in ink, not in fills, so a board's identity colour appears as text and a hairline edge rather than a coloured block. A screen full of tinted panels reads as noise; a screen of hairlines reads as structure.
 
-Defined once in `client/src/index.css`: `:root` holds dark, `.light` overrides it. There is no `.dark` block, so there is exactly one source per theme.
+**One accent, spent carefully.** Orange is the brand, and it is 2.72:1 on the light page, so it cannot carry text there. It therefore exists as a *fill* for identity discs and as `--brand` text only where the contrast allows — and in light the token swaps to a deep amber that can. The cream accent (`--accent`) is the one highlight that works on black; in light it becomes the same deep amber. Nothing else in the system is allowed to be a colour.
 
-### Surfaces
+**Depth is a hairline.** No shadows on cards, panels, popovers or menus. Separation comes from a one-pixel warm edge (`--hairline`) and, at most, one step of lightness. A shadow on a black page reads as grime, and a stack of soft shadows reads as a mockup rather than an application.
 
-| Token | Dark | Light | Use |
+**Small type, tight tracking.** Interface text runs 12.5–14px at 400–500 weight, headings 19–26px at 600–700 with negative tracking. Numbers, keycaps and micro-labels use the mono face at 9–10px, uppercase, widely tracked. This is a deliberate density choice: it fits a column of cards and a rail of boards on one screen without scrolling, which is the whole point of a board view.
+
+## Colour
+
+Two axes, and they never mix.
+
+**Surfaces** are a ladder: `--bg-root` is the page and also every floating surface, then `--bg-surface`, `--bg-card`, `--bg-elevated` for panels that must lift. In dark the ladder climbs from pure black; in light the top three collapse to white and separation is carried entirely by hairlines. That is why no component may assume a background differs from its parent — the edge is the guarantee, not the fill.
+
+**Washes** are one scale, `--tint-2` through `--tint-15`, defined as white in dark and black in light. A component asks for a strength (`hover` is `--tint-4`, a pressed state `--tint-6`, a selected row `--tint-10`) and the theme decides the direction. This is the mechanism that makes one class string work in both themes.
+
+Two colours escape the system by design, and each has a written reason. The **hairline** is warm (`rgba(255,245,235,…)`) rather than neutral, so panels read as paper edges rather than as grid lines; it is not a brand colour, which is why it has its own token and its own value per theme. The **inverse** family exists for the tooltip, which flips: a light capsule on a dark page, a dark one on a light page, with `--inverse-accent` for the highlighted phrase so it does not vanish into the capsule.
+
+Status colour (`--success`, `--warning`, `--danger`) is text and border only. A failed field is a `--danger` edge and a `--danger` message underneath — never a red-filled input.
+
+## Typography
+
+Plus Jakarta Sans carries the interface; JetBrains Mono is reserved for numbers, keys, timestamps and micro-labels where alignment matters. Both ship as dependencies (`@fontsource-variable/*`, imported in `main.tsx`) and are bound to `font-sans` and `font-mono` by the `@theme` block in `index.css` — so no font is fetched from a CDN, and a component that writes `font-mono` gets the mono face rather than the browser's default. Body copy never uses the mono face. Numeric columns get `tabular-nums` so a live counter does not shuffle sideways as it counts.
+
+The scale is deliberately short — five UI sizes and one mono size. A screen that needs a sixth is usually a screen that needs fewer things on it. Headings are tight (`-0.01em` to `-0.02em`) because at 19–26px the default spacing looks loose beside 12.5px body text.
+
+## Shape
+
+Radius encodes what a thing is, not how big it is:
+
+- Controls, rows, fields, cards: `rounded-lg` (8px).
+- Panels, popovers, menus, toasts: `rounded-xl` (12px).
+- Dialogs: `rounded-2xl` (16px).
+- Avatars, dots, chips, segmented controls: full circle.
+- Primary and secondary buttons: an asymmetric cut — `rounded-none rounded-tr-lg rounded-bl-lg`, mirrored for the outline variant. It is the one decorative gesture in the system, and it appears exactly twice.
+
+## Motion
+
+Motion answers a question or it does not ship. Colour, hover and focus transitions run 150ms on `ease`; layout shifts and widths 200ms on `ease-out`; menus and popovers 150–200ms as opacity plus a 2px translate. Nothing scales on entry — scaled text reads as a zoom bug.
+
+Animate `transform`, `opacity`, `width`, `max-height` and `clip-path`. Never animate `box-shadow`. Every transition carries `motion-reduce:transition-none`, and the whole system degrades to instant under `prefers-reduced-motion`.
+
+The one piece of choreography is the **theme reveal**: the class flip is wrapped in a View Transition and the snapshot is clipped to a circle centred on the control that was pressed. Going light, the new frame opens out of the button over 1200ms on `cubic-bezier(0.22, 1, 0.36, 1)`; going dark, the old frame closes back into it over 900ms on `cubic-bezier(0.6, 0, 0.4, 1)`. Both start and end at the button's own radius, so the two directions mirror each other. Two rules keep it honest: the origin is published as `--vt-x`, `--vt-y` and `--vt-seed` *before* the transition starts, so the incoming frame is already clipped on its first paint and the page never flashes whole; and a reveal that is still running is torn down rather than stacked, so a second press never leaves two irises fighting over the same snapshot. With no View Transitions support, or reduced motion, the theme changes with no animation at all.
+
+## Layout
+
+A fixed rail on the left (256px, or 72px collapsed), a 56px navbar that blurs as content scrolls beneath it, and one scrolling content column. The rail is the page colour, separated by a hairline — it is not a panel. Below `md` the rail becomes a sheet and the navbar keeps the menu affordance; nothing else in the layout changes.
+
+Content max-widths are per-route rather than global: a board is as wide as the viewport because columns are the unit of work, while settings and marketing pages cap at a reading width.
+
+## Components
+
+The recipes in the front matter are the contract. A few rules sit behind them.
+
+**One solid button per screen.** The solid variant is the primary action and nothing else; beside it sits an outline, and everything else is ghost. A toolbar of three solid buttons has no primary action.
+
+**Every icon-only control carries `aria-label` plus a tooltip with the same string.** The tooltip is not decoration; it is the label made visible.
+
+**Floating surfaces are the page colour.** Popovers, menus, dialogs and toasts sit on `--bg-root` and are separated by a hairline. `--bg-elevated` exists but is not used for them: a grey panel on a black page reads as a different material rather than a layer.
+
+**Fields do not glow.** Focus firms the hairline from `--hairline` to `--hairline-strong` and nothing else — no orange halo, no ring. A label sits above at `text-sm font-medium`, a hint below at 11px muted, and an error replaces the hint in `--danger` with a `--danger` edge on the field.
+
+**The active segment is the only filled control.** In a segmented control the selected option takes `--accent-fill` with `--accent` text — dark brown with cream, never orange.
+
+**Chips keep their colour as text.** A label chip is a neutral `--tint-4` fill, a hairline edge, mono uppercase text. The card's identity colour is the text colour, not the background.
+
+## Accessibility
+
+Measured against the page they sit on, in each theme:
+
+| Token | Dark on black | Light on 250 | Use |
 |---|---|---|---|
-| `--bg-root` | `rgb(0,0,0)` | `rgb(250,250,250)` | The page. Also the rail, and every popover, menu and dialog |
-| `--bg-surface` | `rgb(20,20,21)` | `rgb(255,255,255)` | Reserved for a panel that must lift off the page |
-| `--bg-card` | `rgb(26,26,28)` | `rgb(255,255,255)` | Cards and list rows |
-| `--bg-elevated` | `rgb(36,36,38)` | `rgb(255,255,255)` | Reserved. Floating surfaces use `--bg-root` instead |
-| `--bg-hover` | `rgba(255,255,255,.05)` | `rgba(0,0,0,.04)` | Hover fills |
-| `--bg-active` | `rgba(255,255,255,.08)` | `rgba(0,0,0,.06)` | Pressed fills |
+| `--text-primary` | 19.3:1 | 18.1:1 | Body and headings |
+| `--text-soft` | 8.3:1 | 6.6:1 | Secondary body |
+| `--text-muted` | 4.76:1 | **4.23:1** | Meta text only — see below |
+| `--text-subtle` | 2.30:1 | 2.36:1 | Placeholders and disabled only |
+| `--accent` | 16.6:1 | 6.8:1 | Highlight phrase |
+| `--brand` | — | 2.72:1 | Never text in light; the token swaps to `#c2410c` at 4.96:1 |
 
-Two rules govern surfaces.
+One known gap, stated plainly rather than glossed: **`--text-muted` misses AA in light at 4.23:1** (it passes in dark at 4.76:1). It is therefore safe for timestamps, counts and labels beside a stronger element, and not safe for a sentence a user has to read. Closing it means `rgb(115)` in the light block — 4.54:1 — which is a token change, not a component change, and the only reason it is still open is that it shifts the light theme's quiet grey a shade darker everywhere at once.
 
-**A background is a surface or a tint. Never a colour.** A panel, row, chip or bar takes `--bg-root`, one of the surface steps, a `--tint-*`, or `transparent`. Status meaning travels in the text colour, not in a coloured fill.
+Focus is visible on every interactive element through a global `:focus-visible` ring, except fields, which use the border change described above. Dialogs trap focus, close on Escape and on a backdrop press, and restore focus to the trigger. Live regions announce board changes; the activity feed is a `log`, not a list.
 
-**A floating surface is the page colour.** Popovers, menus, dialogs and sheets sit on `bg-(--bg-root)` and are separated by a hairline. `--bg-elevated` exists but is not used for them: a grey panel on a black page reads as a different material, not as a layer.
+## Adding to the system
 
-### Washes
+A new component is added by writing its recipe into the front matter of this file first, then the component. If a value cannot be expressed with an existing token, the answer is a new token in `index.css` with a value in both themes — not a colour literal in a `className`. `npm run lint:colors` enforces the last part; the rest is review.
 
-One scale, so a component asks for a strength and the theme decides whether that strength is white or black.
-
-| Token | Dark | Light |
-|---|---|---|
-| `--tint-2` | `rgba(255,255,255,.02)` | `rgba(0,0,0,.02)` |
-| `--tint-3` | `.03` | `.025` |
-| `--tint-4` | `.04` | `.03` |
-| `--tint-5` | `.05` | `.035` |
-| `--tint-6` | `.06` | `.045` |
-| `--tint-8` | `.08` | `.06` |
-| `--tint-10` | `.10` | `.08` |
-| `--tint-15` | `.15` | `.12` |
-
-Use `--tint-4` for a hover on a row that already has a background, `--tint-6` for a selected row, `--tint-8` for an open menu trigger, `--tint-3` for a field or a quiet panel.
-
-### Edges
-
-| Token | Dark | Light | Use |
-|---|---|---|---|
-| `--hairline` | `rgba(255,245,235,.1)` | `rgba(60,30,10,.12)` | Every panel edge, divider and row separator |
-| `--hairline-strong` | `rgba(255,245,235,.18)` | `rgba(60,30,10,.22)` | Floating panels, focused fields, open triggers |
-| `--border` | `rgba(255,255,255,.1)` | `rgba(0,0,0,.1)` | Neutral edges where the warm tone would be wrong |
-| `--border-strong` | `rgba(255,255,255,.16)` | `rgba(0,0,0,.18)` | |
-| `--border-subtle` | `rgba(255,255,255,.06)` | `rgba(0,0,0,.06)` | |
-
-The warm hairline is the default edge in this system. `--border` is the exception, used inside dense data surfaces where a warm line would tint the content.
-
-### Text
-
-| Token | Dark | Light | Use |
-|---|---|---|---|
-| `--text-primary` | `rgb(245,245,245)` | `rgb(17,17,17)` | Headings, active rows, values |
-| `--text-soft` | `rgb(204,204,204)` | `rgb(56,56,56)` | Row labels at rest |
-| `--text-secondary` | `rgb(163,163,163)` | `rgb(90,90,90)` | Body copy, meta |
-| `--text-muted` | `rgb(120,120,120)` | `rgb(120,120,120)` | Icons at rest, placeholders, timestamps |
-| `--text-subtle` | `rgb(72,72,72)` | `rgb(165,165,165)` | Inert text, disabled labels |
-
-### Accent and brand
-
-| Token | Dark | Light | Use |
-|---|---|---|---|
-| `--accent` | `rgb(255,224,178)` cream | `rgb(146,64,14)` amber | The one highlight. Active icons, a highlighted phrase, an active segment |
-| `--accent-soft` | cream at `.14` | amber at `.1` | The wash behind an accent chip or a hint |
-| `--accent-fill` | `rgba(124,45,18,.4)` | amber at `.16` | The active fill of a segmented control |
-| `--brand` | `#ff6b35` | `#c2410c` | The logo, a link on hover, the focus ring |
-| `--brand-hover` / `--brand-active` | `#ff814f` / `#e95725` | `#9a3412` / `#7c2d12` | |
-| `--brand-muted` / `--brand-border` | brand at `.1` / `.3` | brand at `.1` / `.32` | |
-
-Cream only works on black, so the accent flips to deep amber in light. `#ff6b35` is about 2.6:1 on `rgb(250,250,250)` and cannot carry text, which is why the light brand is `#c2410c`.
-
-### Actions
-
-| Token | Dark | Light | Use |
-|---|---|---|---|
-| `--solid-bg` | `rgb(255,255,255)` | `rgb(10,10,10)` | The one solid button on a screen |
-| `--solid-bg-hover` | `rgb(229,229,229)` | `rgb(38,38,38)` | |
-| `--solid-text` | `rgb(10,10,10)` | `rgb(250,250,250)` | The text on it |
-
-The solid button inverts with the theme: white on black in dark, near-black on white in light.
-
-### Special purpose
-
-| Token | Dark | Light | Use |
-|---|---|---|---|
-| `--on-color` | `rgb(10,10,10)` | `rgb(10,10,10)` | Ink on a coloured disc: avatar initials, presence dots. Does not flip, because the identity palette does not |
-| `--inverse-bg` | `rgb(245,245,245)` | `rgb(17,17,17)` | The tooltip capsule, which turns its back on the theme |
-| `--inverse-text` | `rgb(10,10,10)` | `rgb(250,250,250)` | |
-| `--inverse-border` | `rgba(0,0,0,.12)` | `rgba(255,255,255,.14)` | |
-| `--inverse-accent` | `rgb(146,64,14)` | `rgb(255,224,178)` | The highlighted phrase inside an inverted capsule |
-| `--glass` | `rgba(13,13,13,.72)` | `rgba(255,255,255,.72)` | `.glass-surface` |
-| `--scrim` | `rgba(0,0,0,.55)` | `rgba(0,0,0,.35)` | Behind a dialog |
-| `--scrollbar-thumb` / `-hover` | `#292929` / `#3a3a3a` | `#d4d4d4` / `#b4b4b4` | |
-| `--success` / `--warning` / `--danger` | `#35d399` / `#f5b84b` / `#f16b7a` | `#047857` / `#a16207` / `#be123c` | Text and 1px edges only |
-
----
-
-## 3. Orange is never a fill
-
-The strictest rule in the system. Orange carries meaning, so it must not become decoration.
-
-Allowed:
-
-- The logo.
-- `text-(--brand)` on a link or an icon that is being hovered.
-- The focus ring, which is a 2px outline.
-- A 1.5px dot for unread, and the badge glint.
-- The active fill of a segmented control, in dark brown (`--accent-fill`) with cream text, not orange.
-- `text-(--accent)` on an active row's icon. That is a text colour.
-
-Not allowed: orange buttons, orange status pills, orange card borders, orange progress bars, orange section headers, and any orange wash behind a panel.
-
-A primary action is **the solid button**, one per screen:
-
-```tsx
-className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-none rounded-tr-lg rounded-bl-lg bg-(--solid-bg) px-4 text-sm font-medium text-(--solid-text) transition-colors duration-200 hover:bg-(--solid-bg-hover) motion-reduce:transition-none"
-```
-
-Secondary is the outline with mirrored corners:
-
-```tsx
-className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-none rounded-tl-lg rounded-br-lg border border-(--hairline-strong) bg-transparent px-4 text-sm font-medium text-(--text-soft) transition-colors duration-200 hover:bg-(--tint-4) hover:text-(--text-primary) motion-reduce:transition-none"
-```
-
-Danger is red text on a neutral fill, and only inside a confirm dialog.
-
----
-
-## 4. Type
-
-| Role | Family | Size and weight |
-|---|---|---|
-| UI text | Plus Jakarta Sans | 12.5px to 14px, 400 to 500 |
-| Headings | Plus Jakarta Sans | 19px to 26px, 600 to 700, `tracking-tight` |
-| Data labels, keys, timestamps | JetBrains Mono | 9px to 10px, uppercase, `tracking-[0.14em]` |
-
-Both are loaded from Google Fonts in `client/index.html`. Body copy never uses the mono face; mono is reserved for numbers, keycaps and small labels where alignment matters. Numbers in columns get `tabular-nums`.
-
----
-
-## 5. Shape and depth
-
-- Controls and rows: `rounded-lg`.
-- Panels and popovers: `rounded-xl`.
-- Dialogs: `rounded-2xl`.
-- Avatars and dots: full circle.
-- Buttons: `rounded-none rounded-tr-lg rounded-bl-lg`, mirrored for secondary.
-
-**No shadows on cards, panels or popovers.** Depth comes from a hairline and, where needed, one step of lightness. A shadow on a black page reads as grime.
-
----
-
-## 6. Motion
-
-| What | Duration | Curve |
-|---|---|---|
-| Colour, hover, focus | 150ms | `ease` |
-| Layout shifts, width, accordion | 200ms | `ease-out` |
-| Menus and popovers | 150ms to 200ms | opacity plus a 2px translate |
-| The theme reveal | 2000ms | see below |
-
-Rules:
-
-- Animate `transform`, `opacity`, `width`, `max-height`, `clip-path`. Never `box-shadow`.
-- Every transition carries `motion-reduce:transition-none`.
-- Menus appear by opacity and a small translate, never by scale: scaling text looks like a zoom bug.
-
-### The theme reveal
-
-`lib/themeReveal.ts` wraps the class flip in a View Transition and clips the snapshot to a circle centred on the control that was pressed.
-
-- **Dark to light**: the new frame opens out of the button, `cubic-bezier(0.22, 1, 0.36, 1)`.
-- **Light to dark**: the old frame closes back into it, `cubic-bezier(0.64, 0, 0.78, 0)`, which is the same curve reversed in time.
-- Both start and end at the button's own radius, so the two directions are exact mirrors.
-- `fill: "both"` holds the first and last frames, or the clip is released early and the page flashes.
-- The origin is published as `--vt-x`, `--vt-y`, `--vt-seed` before the transition starts, so the incoming frame is already clipped on its first paint.
-- `.vt-grow` and `.vt-collapse` in `index.css` do the pre-clip and the layer swap.
-- No View Transitions, or reduced motion, and the theme changes with no animation at all.
-
----
-
-## 7. Layout
-
-```
-+--------------+------------------------------------------+
-|              |  navbar 56px, fixed, blurred on scroll   |
-|  sidebar     +------------------------------------------+
-|  256px       |                                          |
-|  (72px       |  page content                            |
-|   collapsed) |  max-w-7xl, px-5 sm:px-6 lg:px-8, py-6   |
-|              |                                          |
-+--------------+------------------------------------------+
-```
-
-- Rail: `w-64` expanded, `w-18` collapsed, `transition-[width] duration-200`.
-- Navbar: `h-14`, `fixed top-0 right-0`, offset `left-64` or `left-18` to match the rail, `z-50`.
-- Main: `ml-64` or `ml-18`, `h-screen`, `overflow-y-auto`.
-- Rail z-index: `z-40`, and `z-60` while it floats open over the page in hover mode, so it wins against the navbar it covers.
-- Page frame: `BoardShell` gives every in-app page the same width and padding.
-
-Stacking order, low to high: rail 40, navbar 50, floating rail 60, popover and menu 80, dialog 100, tooltip 999.
-
-Mobile is a separate composition: the rail becomes a drawer (`MobileSidebar`, `w-72`), the navbar is replaced by a compact header, and the page keeps its own scroll.
-
----
-
-## 8. Shell anatomy
-
-### Rail
-
-Top to bottom: brand, **Find** (`F`), primary navigation, then the account footer.
-
-- Collapsed controls are one step larger than they look: header button `size-10` with the mark at `h-9 w-9`, search `size-9`, footer avatar `size-10` with a 28px avatar, nav rows `h-10 w-10` with a `size-6` icon box.
-- Every control centres on the rail's midpoint. Nothing offsets.
-- Three modes, set from the account menu's Sidebar row: `open`, `collapsed`, `hover`. In `hover` the rail opens on pointer enter and the collapse control is replaced by a pin.
-- Navigation: `Overview`, `Boards`, `Notes`, `Members`, a hairline, then `Activity` and `Settings`.
-
-### Footer
-
-Avatar, name, and a three-dots affordance. The whole row is one button that toggles the account menu; the dots are decoration, not a second control. In hover mode the pointer opens the menu and a click closes it.
-
-### Navbar
-
-Left: grid icon, workspace switcher, and on board routes a second chevron with the board switcher. Centre: the page title, `pointer-events-none`. Right: search, notifications.
-
-With no workspace selected the switcher collapses to an "All Workspaces" pill on every route, not just the overview.
-
----
-
-## 9. Routes
-
-| Path | Screen | Gate |
-|---|---|---|
-| `/`, `/features`, `/how-it-works` | Marketing | public |
-| `/auth/login`, `/auth/register`, `/auth/forgot-password` | Auth | guest only |
-| `/auth/callback` | OAuth return | public |
-| `/workspaces` | Workspace overview | authenticated |
-| `/workspaces/:workspaceId` | One workspace | authenticated |
-| `/workspaces/:workspaceId/boards` | Board list | `RequireWorkspace` |
-| `/workspaces/:workspaceId/boards/:boardId` | Board canvas | authenticated |
-| `/workspaces/:workspaceId/{notes,members,activity}` | Workspace pages | `RequireWorkspace` |
-| `/account/settings/{profile,notifications}` | Account | authenticated |
-| `/workspaces/~/settings/{general,notifications}` | Workspace settings | `RequireWorkspace` |
-
-`RequireWorkspace` renders a picker in place when nothing is selected: the destination's name, a search field, the workspace list, and a create button. It does not redirect.
-
----
-
-## 10. Component recipes
-
-Copy these. Every one is on tokens, on the hairline, and free of shadow.
-
-### Buttons
-
-| Variant | Classes | When |
-|---|---|---|
-| Solid | `h-9 rounded-none rounded-tr-lg rounded-bl-lg bg-(--solid-bg) px-4 text-sm font-medium text-(--solid-text) hover:bg-(--solid-bg-hover)` | One per screen, the primary action |
-| Outline | `h-9 rounded-none rounded-tl-lg rounded-br-lg border border-(--hairline-strong) px-4 text-sm font-medium text-(--text-soft) hover:bg-(--tint-4) hover:text-(--text-primary)` | Beside the solid one |
-| Ghost | `h-8 rounded-lg px-2.5 text-(--text-secondary) hover:bg-(--tint-4) hover:text-(--text-primary)` | Rows, toolbars, icon-free actions |
-| Danger | `h-9 rounded-lg border border-(--danger)/30 px-4 text-(--danger) hover:bg-(--tint-4)` | Inside a confirm dialog only |
-
-Every button carries `cursor-pointer transition-colors duration-200 motion-reduce:transition-none` and `disabled:cursor-not-allowed disabled:opacity-40`.
-
-### Icon button
-
-```tsx
-className="flex size-8 cursor-pointer items-center justify-center rounded-lg text-(--text-muted) transition-colors duration-200 hover:bg-(--tint-4) hover:text-(--text-primary) motion-reduce:transition-none"
-```
-
-Icon-only means `aria-label` plus a tooltip whose label matches it.
-
-### Theme controls
-
-Three-mode segmented control, for System, Light and Dark:
-
-```tsx
-<div role="group" aria-label="Theme" className="flex shrink-0 items-center gap-0.5 rounded-full border border-(--hairline) bg-(--tint-3) p-0.5">
-  {THEMES.map((entry) => (
-    <button
-      type="button"
-      role="menuitemradio"
-      aria-checked={entry.mode === mode}
-      aria-label={entry.label}
-      onClick={(event) => setThemeMode(entry.mode, event.currentTarget)}
-      className={[
-        "flex size-6 cursor-pointer items-center justify-center rounded-full",
-        "transition-colors duration-150 motion-reduce:transition-none",
-        entry.mode === mode
-          ? "bg-(--tint-10) text-(--accent)"
-          : "text-(--text-muted) hover:text-(--text-primary)",
-      ].join(" ")}
-    >
-      <HugeiconsIcon icon={entry.icon} size={12} strokeWidth={1.7} />
-    </button>
-  ))}
-</div>
-```
-
-Two details matter. `role="menuitemradio"` with `aria-checked`, because it is a choice inside a menu, and `event.currentTarget` passed to `setThemeMode`, because that is the origin the reveal starts from.
-
-A single toggle button, where one control flips between two themes:
-
-```tsx
-<button
-  type="button"
-  aria-label={theme === "dark" ? "Switch to light" : "Switch to dark"}
-  onClick={(event) => setThemeMode(theme === "dark" ? "light" : "dark", event.currentTarget)}
-  className="flex size-9 cursor-pointer items-center justify-center rounded-lg text-(--text-muted) transition-colors duration-200 hover:bg-(--tint-4) hover:text-(--text-primary) motion-reduce:transition-none"
->
-  <HugeiconsIcon icon={theme === "dark" ? SunIcon : MoonIcon} size={16} strokeWidth={1.7} />
-</button>
-```
-
-The icon shows the destination, not the current state.
-
-### Segmented control
-
-For two or three mutually exclusive options in a row, such as the feedback category:
-
-```tsx
-<div role="group" className="flex overflow-hidden rounded-md border border-(--hairline)">
-  <button className="h-8 flex-1 px-2 text-[12px] font-medium bg-(--accent-fill) text-(--accent)">Something broke</button>
-  <button className="h-8 flex-1 border-l border-(--hairline) px-2 text-[12px] font-medium text-(--text-secondary) hover:text-(--text-primary)">An idea</button>
-</div>
-```
-
-The active segment is the one place a fill is allowed to be a colour, and it is dark brown with cream text, never orange.
-
-### Chips and tags
-
-```tsx
-className="inline-flex items-center rounded-full border border-(--hairline) bg-(--tint-4) px-2.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-(--text-soft)"
-```
-
-A card label keeps its identity colour as **text**, with a neutral fill and a hairline edge. Never fill a chip with its own colour.
-
-### Fields
-
-```tsx
-<input className="h-9 w-full rounded-lg border border-(--hairline) bg-transparent px-3 text-sm text-(--text-primary) placeholder:text-(--text-subtle) outline-hidden transition-colors duration-200 focus:border-(--hairline-strong) motion-reduce:transition-none" />
-```
-
-- No orange focus halo. The border firms up, and the global `:focus-visible` ring is suppressed for fields in `index.css`.
-- A label above at `text-sm font-medium text-(--text-soft)`, a hint below at `text-[11px] text-(--text-muted)`.
-- An error state is `border-(--danger)/50` with `text-(--danger)` under it, never a filled red field.
-
-### Popover and menu
-
-```tsx
-className="absolute z-80 overflow-hidden rounded-xl border border-(--hairline-strong) bg-(--bg-root) p-1"
-```
-
-Rows inside are `h-8 rounded-md px-2.5 text-[12.5px] text-(--text-soft) hover:bg-(--tint-4) hover:text-(--text-primary)`, with the icon at `text-(--text-muted)` lifting on `group-hover`.
-
-### Dialog
-
-```tsx
-<div className="fixed inset-0 z-100 flex items-center justify-center bg-(--scrim) p-4 backdrop-blur-sm">
-  <div role="dialog" aria-modal="true" aria-labelledby={titleId} className="w-full max-w-md rounded-2xl border border-(--hairline) bg-(--bg-root) p-6">
-```
-
-Escape closes it, a pointerdown on the backdrop closes it, and focus moves to the first thing worth typing in.
-
-### Tooltip
-
-The capsule **inverts**: light on a dark page, dark on a light one.
-
-```tsx
-className="border border-(--inverse-border) bg-(--inverse-bg) text-(--inverse-text)"
-```
-
-The arrow matches, and the optional highlight phrase uses `text-(--inverse-accent)` on an inverted shape and `text-(--accent)` on the shapes that keep page colours (`glass`, `neon`, `gradient`, `badge`, `outline`, `ink`, `terminal`).
-
-### Avatars
-
-```tsx
-className="inline-flex items-center justify-center rounded-full font-mono text-[9px] font-semibold text-(--on-color)"
-style={{ background: identityColor(id) }}
-```
-
-The identity palette is the same in both themes, so the ink on it is `--on-color`, which does not flip. Initials are the fallback for a missing image, never an empty circle.
-
-### Toasts, skeletons, empty states
-
-- Toast: `rounded-xl border border-(--hairline) bg-(--bg-root) px-3.5 py-2.5 text-[12.5px]`, with a 1px semantic edge and the message in `--text-soft`.
-- Skeleton: `animate-pulse rounded bg-(--tint-6)`, shaped like the content it replaces, never a spinner in an empty box.
-- Empty state: an icon in a hairline circle, one sentence, and an action if there is an obvious one.
-
----
-
-## 11. Keyboard
-
-| Key | Action | Scope |
-|---|---|---|
-| `F` | Open Find | Anywhere outside a text field |
-| `N` | Open notifications | Anywhere outside a text field |
-| `⌘K` / `Ctrl+K` | Search palette | Everywhere except board routes |
-| `⌘I` or `⌘K` | Card palette | Board routes |
-| `⌘⇧K` | New project | Rail |
-| `Enter` / `Shift+Enter` | Submit / newline | Text fields |
-| `Esc` | Close the top overlay | Overlays |
-
-Every global handler ignores events while the caret is in an `input`, `textarea`, `select` or contentEditable element, and ignores modified keys. Guard `event.key` with `?? ""`, because not every keydown that reaches the window carries one.
-
----
-
-## 12. States
-
-Every data surface answers four questions.
-
-1. **Loading.** Skeletons shaped like the real content.
-2. **Empty.** An icon in a hairline circle, one sentence, an action if there is one. "Nothing has happened yet", not "No data".
-3. **Error.** What failed, in plain words, and a retry.
-4. **Partial.** Infinite lists show a "Loading more" row, and "End of activity" when the cursor runs out.
-
-Realtime surfaces also show who is present, and reconcile after a reconnect rather than silently diverging.
-
----
-
-## 13. Copy
-
-- **No em dashes anywhere.** Use a comma, colon, full stop or brackets.
-- Sentence case for labels, headings and buttons: "Create workspace", not "Create Workspace".
-- All caps only for data labels, and always with `tracking-[0.14em]`.
-- Second person, active voice, no exclamation marks.
-- Name the thing, not the mechanism: "Back to project view", not "Clear active workspace".
-- Empty states and errors are sentences, not fragments.
-- Times are relative under a week ("3h ago") and absolute beyond it.
-
----
-
-## 14. Accessibility
-
-- Icon-only controls carry `aria-label`, and their tooltip matches it.
-- Toggle state uses `aria-expanded`, `aria-pressed` or `aria-checked`, never colour alone.
-- Hidden but mounted panels get `inert` and `aria-hidden`, so nothing offscreen is tabbable.
-- The global ring is `outline: 2px solid var(--brand)`. It is suppressed for text fields and for `[tabindex="-1"]` containers focused only to catch arrow keys.
-- Decorative icons and dividers are `aria-hidden="true"`.
-- Body text targets 4.5:1 in both themes. `--text-muted` is for meta only, never a control label.
-- A theme change is a preference, not a mode: the control reflects `mode`, which can be `system`.
-
----
-
-## 15. Code conventions
-
-```
-client/src/
-  app/          router, layouts, providers, route guards
-  features/     one folder per domain: boards, workspaces, notes, activity, settings
-  components/   layout/ (composition), ui/ (primitives), Tooltips/
-  hooks/        dashboard and auth hooks
-  lib/          themeReveal and small helpers
-  stores/       Zustand stores: theme, sidebarState, activeWorkspace
-  api/          one module per resource, typed
-  types/        API and domain types
-  validations/  zod schemas shared with the server
-```
-
-- Aliases: `@/` for `src`, `@components/` for `src/components`.
-- API modules return unwrapped payloads, so callers never touch the envelope.
-- One query key object per resource, invalidated after mutations.
-- Stores hold what survives a navigation; the query cache holds what the server owns.
-- Tailwind only. Inline `style` is for computed values: a width from a measurement, an identity colour from an id.
-- `npm run lint:colors` fails on a raw palette utility, a hardcoded hex, a raw white or black wash, and the malformed `bg-(var(--x))` shorthand.
-
-### React Compiler rules this codebase has been bitten by
-
-These pass `tsc`, so the compiler is the gate:
-
-- **No mutation during render.** Derive, do not accumulate.
-- **Declare state above the callbacks that use it.**
-- **No `window` reads during render.** Use `useLocation()`.
-- **Effects that write state must not fight the URL.** Guard with a "synced this route" key.
-- **A reset effect is usually the wrong shape.** Derive from a key, or let the component unmount.
-
----
-
-## 16. Do and don't
-
-| Do | Don't |
-|---|---|
-| Backgrounds from surfaces and tints | A coloured fill behind a panel, chip or bar |
-| Hairline borders for separation | Shadows on panels |
-| Floating surfaces on `bg-(--bg-root)` | A grey popover on a black page |
-| One solid button per screen | Orange filled buttons |
-| `--on-color` ink on an avatar disc | `--solid-text` on a coloured disc |
-| Inverted tooltip capsule | A page-coloured tooltip on a page |
-| `motion-reduce:transition-none` on every transition | Unconditional animation |
-| `aria-label` on icon buttons, tooltip to match | Tooltip on a control that already has text |
-| Sentence case, no em dash | Title Case, em dash |
-| Skeleton shaped like the content | Spinner in an empty box |
-| Guard `event.key` with `?? ""` | `event.key.toLowerCase()` on an unguarded event |
-
----
-
-## 17. ChaiUI alignment
-
-The design language is ChaiUI, the chaicode.com look: neutral near-black, white type, one quiet cream accent, warm hairlines, and orange almost nowhere. Premium comes from restraint.
-
-Sources, in priority order:
-
-1. `https://ui.chaicode.com/.well-known/skills/chaiui/SKILL.md` for the rules.
-2. `https://ui.chaicode.com/.well-known/skills/chaiui/references/components.md` and `recipes.md` for exact class strings.
-3. The live docs, which show every component in both themes.
-
-This project hand-builds from the recipes on Tailwind v4. There is no shadcn and no `components.json`, so `npx shadcn add @chaiui/...` does not apply.
-
-### Adopted without change
-
-| ChaiUI rule | Where it shows up |
-|---|---|
-| Orange is never a fill, with the same allow-list | Section 3 |
-| Cream as the accent, one highlighted phrase per paragraph | `text-(--accent)`, the tooltip highlight |
-| Warm hairlines, no shadow on cards or panels | Every surface |
-| Solid button corners `rounded-none rounded-tr-lg rounded-bl-lg`, one per screen | Section 10 |
-| Outline button with mirrored corners | Section 10 |
-| Sticky, transparent header that blurs after scroll | Navbar |
-| Meaning as text colour or a thin outline, never a filled status pill | Activity, notifications, members |
-| Motion 200 to 300ms, always respecting reduced motion | Section 6 |
-| No em dashes, sentence case, caps for data labels only | Section 13 |
-| Destructive actions in a confirm dialog that states what happens | Workspace, board and card deletion |
-| Dark and light, with a theme switcher | `stores/theme.ts`, the account menu |
-
-### Deliberate deviations
-
-| ChaiUI | This app | Why |
-|---|---|---|
-| Background `#0a0a0a` | `rgb(0,0,0)` | A board is a large dark field with cards on it. A deeper base keeps columns and cards distinguishable without lifting every card. |
-| Manrope everywhere, Montserrat for titles | Plus Jakarta Sans, JetBrains Mono for data | This UI works at 12 to 13px, where Jakarta holds its shape. Mono is needed for timestamps, counts and keycaps. |
-| Theme switcher as a two-way toggle | Three modes, System, Light, Dark | The OS preference is a real choice, and a two-way toggle cannot express "follow it". |
-| Instant theme change | A 2000ms iris out of the pressed control | The reveal is the one piece of theatre in an otherwise quiet product, and it is skipped entirely under reduced motion. |
-| The chaicode background SVG behind the page | Not used | It is a marketing surface. Inside an app shell it competes with the content. |
-| `max-w-6xl` with `p-6 sm:p-12` | `max-w-7xl` in the app, `max-w-6xl` on marketing | Board columns need the width. |
-| `framer-motion` for hovers and reveals | CSS transitions and the View Transitions API | No animation library in the bundle. |
-| shadcn `bg-primary` buttons on cards | Hairline outline buttons | Cards are dense. A grey fill reads as disabled next to them. |
-
-### The check before shipping
-
-- `npm run lint:colors` must be clean.
-- Search the diff for em dashes and for saturated orange fills.
-- Confirm no new filled status pill and no coloured card border.
-- Confirm every new transition carries `motion-reduce:transition-none`.
-- Look at the screen in both themes, at 1280 and at 375.
-- If the ChaiUI docs already ship the component, compare before hand-rolling.
-
----
-
-## 18. Known gaps
-
-- CI does not run `npm run verify` or `npm test`, so type and lint errors reach review rather than blocking a push.
-- `client` install cannot complete in a constrained sandbox, so `tsc -b`, `eslint` and `knip` are only run locally.
-- Dead files remain with no importers: `CardDetailModal`, `CardAttachmentsDialog`, `CardCommentsDialog`, `DashboardBoardEmbed`, `RecentBoardsSection`, `RecentBoardsMenu`, `WorkspaceBoardCard`, `SidebarNewWorkspace`, `SidebarSelectMode`, `stores/useBoardStore.ts`, `types/models.ts`, `types/websocket.ts`.
-- `--bg-surface`, `--bg-card` and `--bg-elevated` are still stepped values, so a panel that uses one reads as grey rather than black. Everything floating is on `--bg-root`; the steps are kept for cards and may be flattened.
-- Arbitrary `shadow-[...]` utilities remain in marketing, and two are brand-tinted glows. They are the next cleanup, and they are deliberately outside `lint:colors`.
-- `MobileSidebar` still carries two stale token classes.
+When this document and the code disagree, the code is right and this file is a bug worth a PR. `client/Design.md` remains the long-form reference: component-by-component recipes, the keyboard map, the copy rules and the ChaiUI alignment notes. This file is the summary a new contributor reads first, and the token list a tool can read.

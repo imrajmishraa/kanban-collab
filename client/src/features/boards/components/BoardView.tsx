@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { DragEvent } from "react";
 
-import BoardColumns from "@components/layout/board/BoardColumns";
-import BoardHeader from "@components/layout/board/BoardHeader";
-import BoardListView from "@components/layout/board/BoardListView";
-import BoardOverview from "@components/layout/board/BoardOverview";
-import BoardPresence from "@components/layout/board/BoardPresence";
-import BoardToolbar from "@components/layout/board/BoardToolbar";
-import CardPalette from "@components/layout/board/cards/CardPalette";
-import BoardActivityPanel from "@components/layout/board/BoardActivityPanel";
-import ConfirmDialog from "@components/ui/dialog/ConfirmDialog";
+import BoardColumns from "@/components/board/BoardColumns";
+import BoardHeader from "./BoardHeader";
+import BoardListView from "./BoardListView";
+import BoardOverview from "./BoardOverview";
+import BoardPresence from "./BoardPresence";
+import BoardToolbar from "./BoardToolbar";
+import CardPalette from "@/features/boards/components/cards/CardPalette";
+import BoardActivityPanel from "./BoardActivityPanel";
+import ConfirmDialog from "@/components/dialog/ConfirmDialog";
 import {
   AddColumnDialog,
   EditColumnDialog,
@@ -20,7 +20,7 @@ import {
   useBoardDoc,
   useCollaboration,
   useCursors,
-} from "@/collaboration";
+} from "@/services/collaboration";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { useAuthStore } from "@/stores/useAuthStore";
 
@@ -28,7 +28,7 @@ import { isOverdue } from "@/features/boards/board.helpers";
 import { useActiveWorkspaceMembers } from "@/features/boards/hooks/useActiveWorkspaceMembers";
 import { useBoardMutations } from "@/features/boards/hooks/useBoardMutations";
 
-import type { BoardCard, BoardDetails } from "@/types/api/dashboard/board";
+import type { BoardCard, BoardDetails } from "@/types/board";
 import type { SortKey, ViewMode } from "@/features/boards/board.helpers";
 
 interface BoardViewProps {

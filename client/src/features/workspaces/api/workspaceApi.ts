@@ -1,0 +1,125 @@
+import { apiClient } from "@/services/client";
+
+import type { ApiResponse } from "@/types/api";
+import type {
+  AddWorkspaceMemberPayload,
+  CreateWorkspacePayload,
+  UpdateWorkspacePayload,
+  Workspace,
+  WorkspaceDeletionResponse,
+  WorkspaceMemberDetail,
+  WorkspacePagination,
+  ListWorkspacesParams,
+} from "@/types/workspace";
+
+interface WorkspaceApiDocument extends Omit<Workspace, "id"> {
+  _id: string;
+}
+
+interface ListWorkspacesResponse {
+  workspaces: WorkspaceApiDocument[];
+  pagination: WorkspacePagination;
+}
+
+const normalize = (doc: WorkspaceApiDocument): Workspace => ({
+  ...doc,
+  id: doc._id,
+});
+
+export const workspaceApi = {
+  async listWorkspaces(
+    params: ListWorkspacesParams = {},
+  ): Promise<{ workspaces: Workspace[]; pagination: WorkspacePagination }> {
+    const response = await apiClient.get<ApiResponse<ListWorkspacesResponse>>(
+      "/workspaces",
+      { params },
+    );
+
+    return {
+      workspaces: response.data.data.workspaces.map(normalize),
+      pagination: response.data.data.pagination,
+    };
+  },
+
+  async createWorkspace(payload: CreateWorkspacePayload): Promise<Workspace> {
+    const response = await apiClient.post<ApiResponse<WorkspaceApiDocument>>(
+      "/workspaces",
+      payload,
+    );
+
+    return normalize(response.data.data);
+  },
+
+  async updateWorkspace(
+    workspaceId: string,
+    payload: UpdateWorkspacePayload,
+  ): Promise<Workspace> {
+    const response = await apiClient.patch<ApiResponse<WorkspaceApiDocument>>(
+      `/workspaces/${workspaceId}`,
+      payload,
+    );
+
+    return normalize(response.data.data);
+  },
+
+  async deleteWorkspace(
+    workspaceId: string,
+  ): Promise<WorkspaceDeletionResponse> {
+    const response = await apiClient.delete<
+      ApiResponse<WorkspaceDeletionResponse>
+    >(`/workspaces/${workspaceId}`);
+
+    return response.data.data;
+  },
+
+  async addWorkspaceMember(
+    workspaceId: string,
+    payload: AddWorkspaceMemberPayload,
+  ): Promise<null> {
+    const response = await apiClient.post<ApiResponse<null>>(
+      `/workspaces/${workspaceId}/members`,
+      payload,
+    );
+
+    return response.data.data;
+  },
+
+  async listMembers(workspaceId: string): Promise<WorkspaceMemberDetail[]> {
+    const response = await apiClient.get<
+      ApiResponse<{ members: WorkspaceMemberDetail[] }>
+    >(`/workspaces/${workspaceId}/members`);
+
+    return response.data.data.members;
+  },
+
+  async updateMemberRole(
+    workspaceId: string,
+    memberId: string,
+    role: "owner" | "admin" | "member" | "guest",
+  ): Promise<{ userId: string; role: string }> {
+    const response = await apiClient.patch<
+      ApiResponse<{ member: { userId: string; role: string } }>
+    >(`/workspaces/${workspaceId}/members/${memberId}`, { role });
+
+    return response.data.data.member;
+  },
+
+  async removeMember(
+    workspaceId: string,
+    memberId: string,
+  ): Promise<{ userId: string }> {
+    const response = await apiClient.delete<
+      ApiResponse<{ member: { userId: string } }>
+    >(`/workspaces/${workspaceId}/members/${memberId}`);
+
+    return response.data.data.member;
+  },
+
+  async leaveWorkspace(workspaceId: string): Promise<null> {
+    const response = await apiClient.post<ApiResponse<null>>(
+      `/workspaces/${workspaceId}/leave`,
+    );
+
+    return response.data.data;
+  },
+};

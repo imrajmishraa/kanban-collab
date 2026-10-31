@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Navigate, Outlet, useParams } from "react-router-dom";
 
-import { useWorkspaces } from "@/hooks/dashboard/useWorkspaces";
+import { useWorkspaces } from "@/hooks/useWorkspaces";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 
 export function WorkspaceScope() {

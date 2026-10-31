@@ -12,7 +12,7 @@ import {
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/cn";
 
 type Side = "top" | "bottom" | "left" | "right";
 type Align = "left" | "center" | "right";

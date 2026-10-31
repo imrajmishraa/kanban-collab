@@ -2,7 +2,7 @@ import { useMemo } from "react";
 
 import { useQuery } from "@tanstack/react-query";
 
-import { workspaceApi } from "@/api/dashboard/workspaceApi";
+import { workspaceApi } from "@/features/workspaces/api/workspaceApi";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { useAuthStore } from "@/stores/useAuthStore";
 

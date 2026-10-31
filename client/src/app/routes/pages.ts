@@ -11,64 +11,59 @@ import { lazy } from "react";
  */
 
 /* Public */
-export const LandingPage = lazy(() => import("@/features/landing/LandingPage"));
-export const FeaturesPage = lazy(
-  () => import("@/features/marketing/pages/FeaturesPage"),
-);
-export const HowItWorksPage = lazy(
-  () => import("@/features/marketing/pages/HowItWorksPage"),
-);
+export const LandingPage = lazy(() => import("@/pages/LandingPage"));
+export const FeaturesPage = lazy(() => import("@/pages/FeaturesPage"));
+export const HowItWorksPage = lazy(() => import("@/pages/HowItWorksPage"));
 
 /* Auth */
-export const LoginPage = lazy(() => import("@/features/auth/pages/LoginPage"));
-export const RegisterPage = lazy(
-  () => import("@/features/auth/pages/RegisterPage"),
-);
+export const LoginPage = lazy(() => import("@/pages/auth/LoginPage"));
+export const RegisterPage = lazy(() => import("@/pages/auth/RegisterPage"));
 export const ForgotPasswordPage = lazy(
-  () => import("@/features/auth/pages/ForgotPasswordPage"),
+  () => import("@/pages/auth/ForgotPasswordPage"),
 );
-export const OAuthCallback = lazy(
-  () => import("@/features/auth/OAuthCallback"),
-);
+export const OAuthCallback = lazy(() => import("@/pages/auth/OAuthCallback"));
 
 /* Workspaces */
 export const DashboardPage = lazy(
-  () => import("@/features/dashboard/pages/DashboardPage"),
+  () => import("@/pages/workspaces/DashboardPage"),
 );
 export const WorkspacePage = lazy(() =>
-  import("@/features/workspaces/pages/WorkspacePage").then((m) => ({
+  import("@/pages/workspaces/workspaceId/WorkspacePage").then((m) => ({
     default: m.WorkspacePage,
   })),
 );
 export const BoardPage = lazy(() =>
-  import("@/features/boards/pages/BoardPage").then((m) => ({
+  import("@/pages/workspaces/workspaceId/boards/BoardPage").then((m) => ({
     default: m.BoardPage,
   })),
 );
 export const MainBoard = lazy(
-  () => import("@/features/boards/pages/MainBoard"),
+  () => import("@/pages/workspaces/workspaceId/boards/boardId/MainBoard"),
 );
-export const NotesPage = lazy(() => import("@/features/notes/pages/NotesPage"));
+export const NotesPage = lazy(
+  () => import("@/pages/workspaces/workspaceId/NotesPage"),
+);
 export const MemberPage = lazy(
-  () => import("@components/layout/dashboard/members/MemberPage"),
+  () => import("@/pages/workspaces/workspaceId/MemberPage"),
 );
 export const ActivityLogsPage = lazy(
-  () => import("@/features/activity/pages/ActivityLogsPage"),
+  () => import("@/pages/workspaces/workspaceId/ActivityLogsPage"),
 );
 
 /* Settings */
 export const SettingsPage = lazy(
-  () => import("@/features/settings/pages/SettingsPage"),
+  () => import("@/pages/workspaces/workspaceId/settings/SettingsPage"),
 );
 export const WorkspaceNotificationsPage = lazy(
-  () => import("@/features/settings/pages/WorkspaceNotificationsPage"),
+  () =>
+    import("@/pages/workspaces/workspaceId/settings/WorkspaceNotificationsPage"),
 );
 export const AccountNotificationsPage = lazy(
-  () => import("@/features/settings/pages/AccountNotificationsPage"),
+  () => import("@/pages/account/settings/AccountNotificationsPage"),
 );
-export const ProfilePage = lazy(() => import("@/features/user/ProfilePage"));
+export const ProfilePage = lazy(
+  () => import("@/pages/account/settings/ProfilePage"),
+);
 
 /* 404 */
-export const NotFoundPage = lazy(
-  () => import("@/components/feedback/NotFoundPage"),
-);
+export const NotFoundPage = lazy(() => import("@/pages/NotFoundPage"));

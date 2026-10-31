@@ -7,8 +7,8 @@ import { Loading03Icon } from "@hugeicons/core-free-icons";
 
 import { DialogShell } from "@/features/workspaces/components/workspace-dialogs";
 
-import { boardApi } from "@/api/dashboard/boardApi";
-import { boardKeys } from "@/hooks/dashboard/useBoards";
+import { boardApi } from "@/features/boards/api/boardApi";
+import { boardKeys } from "@/hooks/useBoards";
 import { toastSuccess, toastError } from "@/lib/toast";
 
 const inputClass =
