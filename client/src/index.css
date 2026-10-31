@@ -423,3 +423,9 @@ textarea::placeholder {
     animation: none !important;
   }
 }
+
+/* no theme change can start while one is still revealing. */
+.vt-running [data-theme-swatch] {
+  pointer-events: none;
+  opacity: 0.55;
+}

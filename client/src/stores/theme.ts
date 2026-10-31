@@ -63,15 +63,21 @@ interface ThemeState {
 
 export const useThemeStore = create<ThemeState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       mode: "system",
       theme: resolveTheme("system"),
 
       setMode: (mode, origin) => {
         const theme = resolveTheme(mode);
-        /* A deliberate choice is revealed; the OS changing under us is not,
+        /* Re-picking what is already on screen (the active swatch, or "system"
+           when the OS agrees) must not start a reveal: nothing would change
+           under it, yet the transition would hold both snapshot layers for the
+           full 1.5-2s and the next real click would land on top of it.
+           A deliberate choice is revealed; the OS changing under us is not,
            because there is no control to start the circle from. */
-        applyThemeWithReveal(() => applyTheme(theme), origin);
+        if (get().theme !== theme) {
+          applyThemeWithReveal(() => applyTheme(theme), origin);
+        }
 
         if (mode === "system") {
           watchSystemTheme((next) => {
