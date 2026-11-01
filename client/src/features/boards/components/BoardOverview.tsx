@@ -2,7 +2,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Alert02Icon,
   CheckListIcon,
-  KanbanIcon,
+  LayersIcon,
   Layout01Icon,
 } from "@hugeicons/core-free-icons";
 
@@ -25,7 +25,7 @@ export default function BoardOverview({
 }: BoardOverviewProps) {
   const stats = [
     { label: "Columns", value: columnCount, icon: Layout01Icon, danger: false },
-    { label: "Cards", value: cardCount, icon: KanbanIcon, danger: false },
+    { label: "Cards", value: cardCount, icon: LayersIcon, danger: false },
     { label: "Done", value: doneCount, icon: CheckListIcon, danger: false },
     { label: "Overdue", value: overdueCount, icon: Alert02Icon, danger: true },
   ];

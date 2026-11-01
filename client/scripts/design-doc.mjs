@@ -20,7 +20,7 @@ import { resolve } from "node:path";
 
 const CLIENT = resolve(new URL("..", import.meta.url).pathname);
 const CSS = resolve(CLIENT, "src/index.css");
-const DOC = resolve(CLIENT, "..", "/client/Design.md");
+const DOC = resolve(CLIENT, "..", "design.md");
 
 const check = process.argv.includes("--check");
 const dryRun = process.argv.includes("--dry-run");

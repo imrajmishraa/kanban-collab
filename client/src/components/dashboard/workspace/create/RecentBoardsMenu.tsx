@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { HugeiconsIcon } from "@hugeicons/react";
-import { ArrowDown01Icon, KanbanIcon } from "@hugeicons/core-free-icons";
+import { ArrowDown01Icon, LayersIcon } from "@hugeicons/core-free-icons";
 
 import { useBoardsStore } from "@/features/boards";
 
@@ -95,7 +95,7 @@ export function RecentBoardsMenu() {
         ].join(" ")}
       >
         <HugeiconsIcon
-          icon={KanbanIcon}
+          icon={LayersIcon}
           size={14}
           strokeWidth={1.6}
           className={[
@@ -165,7 +165,7 @@ export function RecentBoardsMenu() {
                     ].join(" ")}
                   >
                     <HugeiconsIcon
-                      icon={KanbanIcon}
+                      icon={LayersIcon}
                       size={13}
                       strokeWidth={1.5}
                       className={[

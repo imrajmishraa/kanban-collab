@@ -9,81 +9,81 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
+  ArrowDown01Icon,
   ArrowRight02Icon,
   Cancel01Icon,
-  Menu01Icon,
-  GithubIcon,
-  UserIcon,
-  Logout03Icon,
+  Menu03Icon,
 } from "@hugeicons/core-free-icons";
 
 import { useAuth } from "@/hooks/useAuth";
 import logo from "@/assets/logo.svg?inline";
 
+import NavbarSearch from "./NavbarSearch";
+import { MOBILE_LINKS, NAV, NAV_LINKS, SOLUTIONS } from "./navConfig";
+
 const cn = (...classes: Array<string | false | null | undefined>) =>
   classes.filter(Boolean).join(" ");
 
-export interface NavigationSection {
-  title: string;
-  href: string;
-  external?: boolean;
-}
+/** The `md` breakpoint the nav already switches on. */
+function useIsDesktop() {
+  const [isDesktop, setIsDesktop] = useState(() =>
+    typeof window === "undefined"
+      ? false
+      : window.matchMedia("(min-width: 768px)").matches,
+  );
 
-const navigationData: NavigationSection[] = [
-  { title: "Features", href: "/features" },
-  { title: "How it Works", href: "/how-it-works" },
-];
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px)");
+    const onChange = (event: MediaQueryListEvent) =>
+      setIsDesktop(event.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+
+  return isDesktop;
+}
 
 interface NavbarProps {
   onNavigate?: (href: string) => void;
   activeHref?: string;
-  /** Force a palette; defaults to dark (matches the app's dark theme). */
+  /**
+   * Kept so existing callers keep compiling. The header no longer switches
+   * palette, so this has no effect.
+   */
   dark?: boolean;
 }
 
-export default function Navbar({
-  onNavigate,
-  activeHref = "",
-  dark = true,
-}: NavbarProps) {
+export default function Navbar({ onNavigate, activeHref = "" }: NavbarProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated } = useAuth();
 
   const currentPath = activeHref || location.pathname;
+  const isActive = (href: string) => currentPath === href;
 
-  const isActive = (item: NavigationSection) => {
-    if (item.external) return false;
-    return currentPath === item.href;
-  };
-
-  const [isSigningOut, setIsSigningOut] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const mobilePanelRef = useRef<HTMLDivElement>(null);
+  const mobileTriggerRef = useRef<HTMLButtonElement>(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [menuPath, setMenuPath] = useState(location.pathname);
+
+  /* Solutions remembers the route it was opened on, so a navigation closes it
+     by derivation instead of by an effect that resets state after render. */
+  const [solutionsAt, setSolutionsAt] = useState<string | null>(null);
+  const solutionsOpen = solutionsAt === currentPath;
 
   if (location.pathname !== menuPath) {
     setMenuPath(location.pathname);
     setMobileOpen(false);
     setUserMenuOpen(false);
+    setSolutionsAt(null);
   }
-
-  /* ── Frosted glass appears on scroll ─────────────────────────── */
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   const handleNavClick = (
     event: MouseEvent<HTMLAnchorElement>,
     href: string,
   ) => {
-    const isExternal = href.startsWith("http");
-    if (isExternal) {
+    if (href.startsWith("http")) {
       setMobileOpen(false);
       return;
     }
@@ -91,41 +91,88 @@ export default function Navbar({
     if (onNavigate) onNavigate(href);
     else navigate(href);
     setMobileOpen(false);
+    setSolutionsAt(null);
   };
 
-  const handleSignOut = async () => {
-    if (!isAuthenticated || isSigningOut) return;
-    setIsSigningOut(true);
-    try {
-      await logout();
-      setUserMenuOpen(false);
-      navigate("/auth/login", { replace: true });
-    } catch (err) {
-      console.error("Sign out failed:", err);
-    } finally {
-      setIsSigningOut(false);
+  /* ── Solutions: hover open, hover-away close, click toggle ─────── */
+  const solutionsRef = useRef<HTMLDivElement>(null);
+  const solutionsTriggerRef = useRef<HTMLButtonElement>(null);
+  const solutionsTimer = useRef<number | null>(null);
+
+  const solutionsActive =
+    currentPath === "/solutions" || currentPath.startsWith("/solutions/");
+
+  const clearSolutionsTimer = useCallback(() => {
+    if (solutionsTimer.current !== null) {
+      window.clearTimeout(solutionsTimer.current);
+      solutionsTimer.current = null;
     }
-  };
+  }, []);
 
-  /* ── User dropdown: hover open / delayed close ─────────────────── */
+  const openSolutions = useCallback(() => {
+    clearSolutionsTimer();
+    setSolutionsAt(currentPath);
+  }, [clearSolutionsTimer, currentPath]);
+
+  /* A short grace period, so moving from the trigger to the panel — a few
+     pixels of gap — does not close it on the way. */
+  const scheduleSolutionsClose = useCallback(() => {
+    clearSolutionsTimer();
+    solutionsTimer.current = window.setTimeout(() => {
+      setSolutionsAt(null);
+      solutionsTimer.current = null;
+    }, 160);
+  }, [clearSolutionsTimer]);
+
+  useEffect(() => clearSolutionsTimer, [clearSolutionsTimer]);
+
+  useEffect(() => {
+    if (!solutionsOpen) return;
+    const onDown = (event: Event) => {
+      if (!solutionsRef.current?.contains(event.target as Node)) {
+        setSolutionsAt(null);
+      }
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setSolutionsAt(null);
+      solutionsTriggerRef.current?.focus();
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [solutionsOpen]);
+
+  /* ── Phone menu: outside tap and Escape close it ──────────────────
+     It already closes when a link is followed or the route changes; without
+     this it stayed open behind whatever the visitor tapped next. */
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const onDown = (event: Event) => {
+      const target = event.target as Node;
+      if (mobilePanelRef.current?.contains(target)) return;
+      if (mobileTriggerRef.current?.contains(target)) return;
+      setMobileOpen(false);
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setMobileOpen(false);
+      mobileTriggerRef.current?.focus();
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [mobileOpen]);
+
+  /* ── Account dropdown: hover open / delayed close ──────────────── */
   const triggerRef = useRef<HTMLButtonElement>(null);
   const closeTimer = useRef<number | null>(null);
-
-  const openMenu = useCallback(() => {
-    if (closeTimer.current !== null) {
-      window.clearTimeout(closeTimer.current);
-      closeTimer.current = null;
-    }
-    setUserMenuOpen(true);
-  }, []);
-
-  const scheduleClose = useCallback(() => {
-    if (closeTimer.current !== null) window.clearTimeout(closeTimer.current);
-    closeTimer.current = window.setTimeout(() => {
-      setUserMenuOpen(false);
-      closeTimer.current = null;
-    }, 160);
-  }, []);
 
   useEffect(
     () => () => {
@@ -134,7 +181,6 @@ export default function Navbar({
     [],
   );
 
-  /* ── Escape closes dropdown ────────────────────────────────────── */
   useEffect(() => {
     if (!userMenuOpen) return;
     const onKey = (e: KeyboardEvent) => {
@@ -147,111 +193,78 @@ export default function Navbar({
     return () => document.removeEventListener("keydown", onKey);
   }, [userMenuOpen]);
 
-  const initials = (user?.email ?? "?").charAt(0).toUpperCase();
+  const isDesktop = useIsDesktop();
 
-  /* ── Palette: hardcoded dark / hardcoded light ─────────────────── */
-  const isDarkNav = dark;
-
-  const ink = isDarkNav
-    ? "text-[var(--text-primary)]"
-    : "text-[var(--text-primary)]";
-  const inkSecondary = isDarkNav
-    ? "text-[var(--text-secondary)]"
-    : "text-[var(--text-secondary)]";
-  const accent = isDarkNav ? "text-[var(--success)]" : "text-[var(--success)]";
-  const accentBar = isDarkNav ? "bg-(--success)" : "bg-(--success)";
-  const dividerBg = isDarkNav ? "bg-[var(--hairline)]" : "bg-[var(--hairline)]";
-  const surface = isDarkNav
-    ? "bg-(--bg-root) border-[var(--hairline)] hover:border-[var(--hairline-strong)] hover:bg-(--bg-root) hover:text-[var(--text-primary)]"
-    : "bg-(--solid-bg) border-[var(--hairline)] hover:border-[var(--hairline-strong)] hover:bg-(--text-primary) hover:text-[var(--text-primary)]";
-  const focusRing = isDarkNav
-    ? "focus-visible:ring-[var(--success)]/40"
-    : "focus-visible:ring-[var(--success)]/40";
-  const ctaFill =
-    "bg-(--success) text-(--text-secondary) hover:bg-[var(--success)]";
-
-  const btn = cn(
-    "flex size-8 shrink-0 items-center justify-center rounded-md border",
-    isDarkNav
-      ? "border-[var(--hairline)] bg-(--bg-root) text-[var(--text-secondary)]"
-      : "border-[var(--hairline)] bg-(--solid-bg) text-[var(--text-secondary)]",
-    "transition-colors duration-150",
-    surface,
+  const focusRing = cn(
     "focus-visible:outline-hidden focus-visible:ring-2",
+    NAV.focus,
+  );
+
+  const iconBtn = cn(
+    "flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-lg",
+    "transition-colors duration-150",
+    NAV.icon,
+    NAV.iconHover,
     focusRing,
   );
 
-  /* Shared class recipe for one nav link (desktop) */
+  /* One recipe for every top-level item — the plain links and the Solutions
+     trigger alike. Colour and hover are identical across them; the only thing
+     that changes with state is the weight, bold when active and normal
+     otherwise, so nothing shifts sideways on hover. */
   const desktopLink = (active: boolean) =>
     cn(
-      "group relative rounded-md px-3 py-1.5",
-      "text-[13px] font-medium",
-      "transition-colors duration-150",
-      "focus-visible:outline-hidden focus-visible:ring-2",
+      "group relative rounded-md px-3.5 py-2",
+      "text-[15px] transition-colors duration-150",
+      NAV.text,
+      "hover:text-[rgb(176,176,176)]",
+      active ? "font-bold" : "font-medium",
       focusRing,
-      active
-        ? accent
-        : cn(
-            inkSecondary,
-            isDarkNav
-              ? "hover:text-[var(--text-primary)]"
-              : "hover:text-[var(--text-primary)]",
-          ),
     );
 
-  const underline = (active: boolean) =>
-    cn(
-      "absolute inset-x-3 bottom-0 h-0.5 rounded-full",
-      accentBar,
-      "origin-left transition-transform duration-300 ease-out",
-      active ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
-    );
+  /* The action, permanently white: an off-white chip with a dark green label,
+     the same in both themes. */
+  const ctaSoft = cn(
+    "rounded-lg border font-bold",
+    "bg-[rgb(252,253,252)] text-[rgb(45,84,52)]",
+    "border-[rgb(226,232,226)] hover:bg-[rgb(244,247,244)]",
+    "transition-colors duration-150 motion-reduce:transition-none",
+  );
+
+  const panelRow = cn(
+    "flex items-center gap-3 rounded-lg px-3 py-3",
+    "text-[16px]",
+    "transition-colors duration-150",
+    NAV.text,
+    NAV.hover,
+    "hover:text-[rgb(176,176,176)]",
+  );
 
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 w-full",
-        "transition-[background-color,border-color] duration-300",
-        isDarkNav
-          ? scrolled
-            ? "bg-(--bg-root)/30 backdrop-blur-xl backdrop-saturate-150"
-            : "bg-transparent"
-          : scrolled
-            ? "bg-(--tint-15) backdrop-blur-xl backdrop-saturate-150"
-            : "bg-transparent",
+        "sticky top-0 z-40 h-17 w-full",
+        NAV.surface,
+        /* The bar is white in both themes, so it has to set its own ink. Without
+           this, any child that does not declare a colour inherits `body`'s,
+           which is near-white in dark mode — white text on a white bar. */
+        NAV.ink,
+        "border-b",
+        NAV.edge,
       )}
     >
-      {/* Ambient glow */}
-      <div
-        aria-hidden
-        className={cn(
-          "pointer-events-none absolute inset-x-0 -top-24 h-24",
-          isDarkNav
-            ? "bg-[radial-gradient(ellipse_at_top,rgba(77,227,82,0.08),transparent_70%)]"
-            : "bg-[radial-gradient(ellipse_at_top,rgba(217,146,42,0.10),transparent_70%)]",
-        )}
-      />
-
-      <div className="relative mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 px-4 sm:h-15 sm:gap-4 sm:px-6">
+      <div className="relative mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:h-15 sm:gap-6 sm:px-6">
         {/* ── LEFT: brand ─────────────────────────────────────────── */}
-        <Link
-          to="/"
-          aria-label="Home"
-          className="focus-visible:outline-hidden focus-visible:ring-2"
-        >
+        <Link to="/" aria-label="Home" className={focusRing}>
           <button
             type="button"
             onClick={() => setMobileOpen(false)}
             className={cn(
-              "flex min-w-0 shrink items-center gap-3 rounded-full",
+              "flex min-w-0 mt-1.5 shrink items-center gap-3 rounded-full",
               focusRing,
             )}
           >
-            <span
-              className={cn(
-                "flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-md",
-              )}
-            >
+            <span className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-md">
               <img
                 src={logo}
                 alt=""
@@ -263,8 +276,9 @@ export default function Navbar({
             </span>
             <span
               className={cn(
-                "font-display text-[17px] font-bold leading-none tracking-tight transition-colors duration-300",
-                ink,
+                "font-display text-[16px] font-bold leading-none tracking-tight",
+                "transition-colors duration-150",
+                NAV.ink,
               )}
             >
               Kanban
@@ -273,90 +287,125 @@ export default function Navbar({
         </Link>
 
         {/* ── RIGHT: nav links + controls ─────────────────────────── */}
-        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-          {/* Nav links — desktop only */}
-          <nav className="hidden items-center gap-1 md:flex">
-            {navigationData.map((item) => {
-              const active = isActive(item);
+        <div className="flex shrink-0 items-center mt-px gap-3.5 sm:gap-4">
+          {/* Desktop nav */}
+          <nav className="hidden items-center mt-1.5 gap-1.5 md:flex">
+            {isDesktop ? <NavbarSearch onNavigate={onNavigate} /> : null}
 
-              if (item.external) {
-                return (
-                  <a
-                    key={item.title}
-                    href={item.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={cn(
-                      desktopLink(false),
-                      "flex items-center gap-1.5",
-                      inkSecondary,
-                      isDarkNav
-                        ? "hover:text-[var(--text-primary)]"
-                        : "hover:text-[var(--text-primary)]",
-                    )}
-                  >
-                    <HugeiconsIcon
-                      icon={GithubIcon}
-                      size={13}
-                      strokeWidth={2.2}
-                    />
-                    {item.title}
-                    <span aria-hidden className={underline(false)} />
-                  </a>
-                );
-              }
+            <a
+              href="/use-cases"
+              onClick={(event) => handleNavClick(event, "/use-cases")}
+              aria-current={isActive("/use-cases") ? "page" : undefined}
+              className={desktopLink(isActive("/use-cases"))}
+            >
+              Examples
+            </a>
 
-              return (
-                <a
-                  key={item.title}
-                  href={item.href}
-                  onClick={(event) => handleNavClick(event, item.href)}
-                  className={desktopLink(active)}
-                >
-                  {item.title}
-                  <span aria-hidden className={underline(active)} />
-                </a>
-              );
-            })}
-
-            {!isAuthenticated && (
-              <a
-                href="/auth/login"
-                onClick={(event) => handleNavClick(event, "/auth/login")}
+            {/* ── Solutions: opens on hover and on click ──────────── */}
+            <div
+              ref={solutionsRef}
+              className="relative"
+              onMouseEnter={openSolutions}
+              onMouseLeave={scheduleSolutionsClose}
+            >
+              <button
+                ref={solutionsTriggerRef}
+                type="button"
+                onClick={() =>
+                  setSolutionsAt((value) =>
+                    value === currentPath ? null : currentPath,
+                  )
+                }
+                aria-expanded={solutionsOpen}
+                aria-controls="navbar-solutions"
+                aria-haspopup="true"
                 className={cn(
-                  desktopLink(currentPath === "/auth/login"),
-                  "flex items-center gap-1.5",
+                  desktopLink(solutionsActive),
+                  "flex cursor-pointer items-center gap-1.5",
                 )}
               >
-                <HugeiconsIcon icon={UserIcon} size={13} strokeWidth={2.2} />
-                Login
-                <span
-                  aria-hidden
-                  className={underline(currentPath === "/auth/login")}
+                Solutions
+                <HugeiconsIcon
+                  icon={ArrowDown01Icon}
+                  size={14}
+                  strokeWidth={2}
+                  aria-hidden="true"
+                  className={cn(
+                    "shrink-0 transition-transform duration-200 motion-reduce:transition-none",
+                    solutionsOpen && "rotate-180",
+                  )}
                 />
-              </a>
+              </button>
+
+              {solutionsOpen ? (
+                <div
+                  id="navbar-solutions"
+                  className={cn(
+                    "absolute left-0 top-full z-50 mt-2 w-60 rounded-xl border p-2",
+                    "origin-top animate-in fade-in zoom-in-95 duration-150 ease-out",
+                    "motion-reduce:animate-none",
+                    NAV.surface,
+                    NAV.edge,
+                    NAV.panel,
+                  )}
+                >
+                  <ul>
+                    {SOLUTIONS.map((item) => (
+                      <li key={item.title}>
+                        <a
+                          href={item.href}
+                          onClick={(event) => handleNavClick(event, item.href)}
+                          className={panelRow}
+                        >
+                          <HugeiconsIcon
+                            icon={item.icon}
+                            size={20}
+                            strokeWidth={1.6}
+                            aria-hidden="true"
+                            className={cn("shrink-0", NAV.icon)}
+                          />
+                          <span>{item.title}</span>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+            </div>
+
+            {NAV_LINKS.filter((item) => item.title !== "Examples").map(
+              (item) => (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  onClick={(event) => handleNavClick(event, item.href)}
+                  aria-current={isActive(item.href) ? "page" : undefined}
+                  className={desktopLink(isActive(item.href))}
+                >
+                  {item.title}
+                </a>
+              ),
             )}
           </nav>
 
-          {/* Divider between links and controls */}
+          {/* Divider */}
           <span
             aria-hidden
-            className={cn("mx-1 hidden h-4 w-px md:block", dividerBg)}
+            className={cn("mx-1 hidden h-5 w-px md:block", NAV.divider)}
           />
 
           {/* Auth */}
           {isAuthenticated && user ? (
             <button
               type="button"
-              onClick={() => navigate("/auth/register")}
+              onClick={() => navigate("/workspaces")}
               className={cn(
-                "group hidden items-center justify-center gap-1.5 rounded-md px-3.5 py-1.5",
-                "text-[13px] font-semibold",
-                ctaFill,
+                "group hidden items-center justify-center gap-1.5 px-4 py-2",
+                "text-[13px]",
+                ctaSoft,
                 "transition-[background-color,transform] duration-150 ease-out",
                 "hover:scale-105",
                 "active:scale-[0.97]",
-                "focus-visible:outline-hidden focus-visible:ring-2",
                 focusRing,
                 "md:inline-flex cursor-pointer",
               )}
@@ -366,25 +415,20 @@ export default function Navbar({
                 icon={ArrowRight02Icon}
                 size={13}
                 strokeWidth={2.2}
-                className={cn(
-                  "shrink-0",
-                  "transition-transform duration-200 ease-out",
-                  "group-hover:-rotate-45",
-                )}
+                className="shrink-0 transition-transform duration-200 ease-out group-hover:-rotate-45"
               />
             </button>
           ) : (
             <button
               type="button"
-              onClick={() => navigate("/auth/register")}
+              onClick={() => navigate("/auth/login")}
               className={cn(
-                "group hidden items-center justify-center gap-1.5 rounded-md px-3.5 py-1.5",
-                "text-[13px] font-semibold",
-                ctaFill,
+                "group hidden items-center justify-center gap-1.5 px-4 py-2",
+                "text-[13px]",
+                ctaSoft,
                 "transition-[background-color,transform] duration-150 ease-out",
                 "hover:scale-105",
                 "active:scale-[0.97]",
-                "focus-visible:outline-hidden focus-visible:ring-2",
                 focusRing,
                 "md:inline-flex cursor-pointer",
               )}
@@ -394,29 +438,30 @@ export default function Navbar({
                 icon={ArrowRight02Icon}
                 size={13}
                 strokeWidth={2.2}
-                className={cn(
-                  "shrink-0",
-                  "transition-transform duration-200 ease-out",
-                  "group-hover:-rotate-45",
-                )}
+                className="shrink-0 transition-transform duration-200 ease-out group-hover:-rotate-45"
               />
             </button>
           )}
 
-          {/* Mobile menu toggle */}
+          {/* Search — phone only, and only mounted on this side of the
+              breakpoint, so there is never a second copy listening. */}
+          {isDesktop ? null : (
+            <NavbarSearch onNavigate={onNavigate} variant="mobile" />
+          )}
+
+          {/* Menu: the phone's only way to the nav links, so it is there
+              whether or not anyone is signed in. */}
           <button
+            ref={mobileTriggerRef}
             type="button"
             onClick={() => setMobileOpen((p) => !p)}
             aria-expanded={mobileOpen}
-            aria-controls="navbar-mobile-nav"
-            aria-label="Toggle menu"
-            className={cn(
-              btn,
-              "md:hidden cursor-pointer border-none transparent-none",
-            )}
+            aria-controls="navbar-mobile-menu"
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            className={cn(iconBtn, "md:hidden")}
           >
             <HugeiconsIcon
-              icon={mobileOpen ? Cancel01Icon : Menu01Icon}
+              icon={mobileOpen ? Cancel01Icon : Menu03Icon}
               size={18}
               strokeWidth={2}
             />
@@ -424,203 +469,74 @@ export default function Navbar({
         </div>
       </div>
 
-      {/* ── Mobile drawer ─────────────────────────────────────────── */}
-      {mobileOpen && (
+      {/* ── Phone menu: the Solutions card shape, with search on top ─ */}
+      {mobileOpen ? (
         <div
-          id="navbar-mobile-nav"
+          ref={mobilePanelRef}
+          id="navbar-mobile-menu"
           className={cn(
-            "border-t backdrop-blur-xl backdrop-saturate-150 md:hidden",
-            isDarkNav
-              ? "border-[var(--hairline)]/95 bg-(--bg-root)/95"
-              : "border-[var(--hairline)] bg-(--bg-root)/95",
+            "absolute right-4 top-full z-50 w-60 rounded-xl border p-2 md:hidden",
+            "origin-top animate-in fade-in zoom-in-95 duration-150 ease-out",
+            "motion-reduce:animate-none",
+            NAV.surface,
+            NAV.edge,
+            NAV.panel,
           )}
         >
-          <nav className="mx-auto flex max-w-7xl flex-col gap-0.5 px-4 py-3">
-            {navigationData.map((item) => {
-              const active = isActive(item);
-              const cls = cn(
-                "flex items-center gap-2 rounded-md px-3 py-2.5 text-sm font-medium",
-                "transition-colors duration-150",
-                active
-                  ? isDarkNav
-                    ? "bg-(--success)/10 text-[var(--success)]"
-                    : "bg-(--success)/10 text-[var(--success)]"
-                  : cn(
-                      inkSecondary,
-                      isDarkNav
-                        ? "hover:bg-(--bg-root) hover:text-[var(--text-primary)]"
-                        : "hover:bg-(--text-primary) hover:text-[var(--text-primary)]",
-                    ),
-              );
-
-              if (item.external) {
-                return (
-                  <a
-                    key={item.title}
-                    href={item.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={cls}
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    <HugeiconsIcon
-                      icon={GithubIcon}
-                      size={14}
-                      strokeWidth={2.2}
-                    />
-                    {item.title}
-                  </a>
-                );
-              }
-
-              return (
+          <ul>
+            {MOBILE_LINKS.map((item) => (
+              <li key={item.title}>
                 <a
-                  key={item.title}
                   href={item.href}
                   onClick={(event) => handleNavClick(event, item.href)}
-                  className={cls}
-                >
-                  {item.title}
-                </a>
-              );
-            })}
-
-            {!isAuthenticated && (
-              <a
-                href="/auth/login"
-                onClick={(event) => handleNavClick(event, "/auth/login")}
-                className={cn(
-                  "flex items-center gap-2 rounded-md px-3 py-2.5 text-sm font-medium",
-                  "transition-colors duration-150",
-                  currentPath === "/auth/login"
-                    ? isDarkNav
-                      ? "bg-(--success)/10 text-[var(--success)]"
-                      : "bg-(--success)/10 text-[var(--success)]"
-                    : cn(
-                        inkSecondary,
-                        isDarkNav
-                          ? "hover:bg-(--bg-root) hover:text-[var(--text-primary)]"
-                          : "hover:bg-(--text-primary) hover:text-[var(--text-primary)]",
-                      ),
-                )}
-              >
-                <HugeiconsIcon icon={UserIcon} size={14} strokeWidth={2.2} />
-                Login
-              </a>
-            )}
-
-            {!isAuthenticated && (
-              <div
-                className={cn(
-                  "mt-1 border-t pt-3",
-                  isDarkNav
-                    ? "border-[var(--hairline)]"
-                    : "border-[var(--hairline)]",
-                )}
-              >
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMobileOpen(false);
-                    navigate("/auth/register");
-                  }}
+                  aria-current={isActive(item.href) ? "page" : undefined}
                   className={cn(
-                    "group relative flex items-center justify-center rounded-md px-3 py-2.5",
-                    "text-sm font-semibold",
-                    ctaFill,
-                    "transition-[background-color,transform] duration-150 ease-out",
-                    "active:scale-[0.98]",
-                    "focus-visible:outline-hidden focus-visible:ring-2",
-                    focusRing,
-                    "w-full cursor-pointer",
+                    panelRow,
+                    isActive(item.href) && cn("font-bold", NAV.accent),
                   )}
                 >
-                  <span className="pr-5">Get Started</span>
                   <HugeiconsIcon
-                    icon={ArrowRight02Icon}
-                    size={14}
-                    strokeWidth={2.2}
-                    className={cn(
-                      "absolute right-3",
-                      "transition-transform duration-200 ease-out",
-                      "group-hover:-rotate-45",
-                    )}
+                    icon={item.icon ?? Menu03Icon}
+                    size={20}
+                    strokeWidth={1.6}
+                    aria-hidden="true"
+                    className={cn("shrink-0", NAV.icon)}
                   />
-                </button>
-              </div>
-            )}
-          </nav>
-        </div>
-      )}
+                  {item.title}
+                </a>
+              </li>
+            ))}
+          </ul>
 
-      {/* ── User dropdown ─────────────────────────────────────────── */}
-      {isAuthenticated && user && userMenuOpen && (
-        <div
-          id="navbar-user-menu"
-          onMouseEnter={openMenu}
-          onMouseLeave={scheduleClose}
-          className={cn(
-            "absolute right-3 top-full z-50 mt-1",
-            "before:absolute before:inset-x-0 before:-top-2 before:h-2 before:content-['']",
-            "sm:right-6",
-          )}
-        >
-          <div
-            className={cn(
-              "w-64 overflow-hidden rounded-xl border shadow-lg",
-              isDarkNav
-                ? "border-[var(--hairline)] bg-(--bg-root) shadow-[0_12px_40px_rgba(0,0,0,0.45)]"
-                : "border-[var(--hairline)] bg-(--solid-bg) shadow-[0_12px_40px_rgba(0,0,0,0.12)]",
-            )}
-          >
-            <div
-              className={cn(
-                "flex items-center gap-3 border-b px-4 py-3",
-                isDarkNav
-                  ? "border-[var(--hairline)]"
-                  : "border-[var(--hairline)]",
-              )}
-            >
-              <span className="flex size-8 items-center justify-center rounded-full bg-(--success) text-xs font-bold text-(--text-secondary)">
-                {initials}
-              </span>
-              <span
-                className={cn(
-                  "truncate text-[13px] font-medium",
-                  isDarkNav
-                    ? "text-[var(--text-primary)]"
-                    : "text-[var(--text-primary)]",
-                )}
-              >
-                {user.email}
-              </span>
-            </div>
-
-            <div className="p-1.5">
+          {!isAuthenticated && (
+            <div className={cn("mt-1 border-t p-1.5 pt-3", NAV.edge)}>
               <button
                 type="button"
-                onClick={handleSignOut}
-                disabled={isSigningOut}
+                onClick={() => {
+                  setMobileOpen(false);
+                  navigate("/auth/login");
+                }}
                 className={cn(
-                  "flex w-full items-center gap-2 rounded-md px-3 py-2 text-[13px] font-medium",
-                  "transition-colors duration-150 cursor-pointer",
-                  "disabled:cursor-not-allowed disabled:opacity-50",
-                  isDarkNav
-                    ? "text-[var(--text-secondary)] hover:bg-(--bg-root) hover:text-[var(--text-primary)]"
-                    : "text-[var(--text-secondary)] hover:bg-(--text-primary) hover:text-[var(--text-primary)]",
+                  "group relative flex w-full cursor-pointer items-center justify-center px-3 py-2.5",
+                  "text-sm",
+                  ctaSoft,
+                  "transition-[background-color,transform] duration-150 ease-out",
+                  "active:scale-[0.98]",
+                  focusRing,
                 )}
               >
+                <span className="pr-5">Get Started</span>
                 <HugeiconsIcon
-                  icon={Logout03Icon}
-                  size={15}
+                  icon={ArrowRight02Icon}
+                  size={14}
                   strokeWidth={2.2}
+                  className="absolute right-3 transition-transform duration-200 ease-out group-hover:-rotate-45"
                 />
-                {isSigningOut ? "Leaving..." : "Sign Out"}
               </button>
             </div>
-          </div>
+          )}
         </div>
-      )}
+      ) : null}
     </header>
   );
 }

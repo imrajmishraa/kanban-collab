@@ -1,7 +1,7 @@
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   DashboardSquare01Icon,
-  KanbanIcon,
+  LayersIcon,
   Layout01Icon,
   UserGroupIcon,
 } from "@hugeicons/core-free-icons";
@@ -44,7 +44,7 @@ export default function WorkspaceOverview({
       icon: Layout01Icon,
       partial: isPartial,
     },
-    { label: "Cards", value: cardCount, icon: KanbanIcon, partial: isPartial },
+    { label: "Cards", value: cardCount, icon: LayersIcon, partial: isPartial },
     {
       label: "Members",
       value: memberCount,

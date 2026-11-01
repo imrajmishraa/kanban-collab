@@ -5,7 +5,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ArrowDown01Icon,
   ArrowRight01Icon,
-  KanbanIcon,
+  LayersIcon,
   Search01Icon,
 } from "@hugeicons/core-free-icons";
 
@@ -80,7 +80,7 @@ export default function WorkspaceSection({
     meta: (
       <div className="flex items-center gap-2">
         <HugeiconsIcon
-          icon={KanbanIcon}
+          icon={LayersIcon}
           size={13}
           strokeWidth={1.6}
           className="shrink-0 text-(--text-subtle)"

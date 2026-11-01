@@ -4,7 +4,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Add01Icon,
   FilterIcon,
-  KanbanIcon,
+  LayersIcon,
   Layout01Icon,
   Search01Icon,
   SlidersHorizontalIcon,
@@ -167,9 +167,9 @@ export default function BoardToolbar({
           <div className="flex h-9 items-center gap-0.5 rounded-lg border border-(--hairline) bg-(--tint-3) p-0.5">
             {(
               [
-                ["board", KanbanIcon, "Board view"],
+                ["board", LayersIcon, "Board view"],
                 ["list", Layout01Icon, "List view"],
-              ] as Array<[ViewMode, typeof KanbanIcon, string]>
+              ] as Array<[ViewMode, typeof LayersIcon, string]>
             ).map(([mode, icon, label]) => (
               <button
                 key={mode}

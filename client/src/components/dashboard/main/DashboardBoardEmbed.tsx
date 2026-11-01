@@ -3,7 +3,7 @@ import type { DragEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { HugeiconsIcon } from "@hugeicons/react";
-import { ArrowRight01Icon, KanbanIcon } from "@hugeicons/core-free-icons";
+import { ArrowRight01Icon, LayersIcon } from "@hugeicons/core-free-icons";
 
 import BoardColumns from "@/components/board/BoardColumns";
 import { EditColumnDialog } from "@/features/workspaces";
@@ -159,7 +159,7 @@ export default function DashboardBoardEmbed({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">
           <HugeiconsIcon
-            icon={KanbanIcon}
+            icon={LayersIcon}
             size={15}
             strokeWidth={1.6}
             className="shrink-0 text-(--brand)"

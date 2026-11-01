@@ -3,7 +3,7 @@ import { NavLink } from "react-router-dom";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ArrowRight01Icon,
-  KanbanIcon,
+  LayersIcon,
   ListChecksIcon,
 } from "@hugeicons/core-free-icons";
 
@@ -188,7 +188,7 @@ const SidebarBoards = ({
           }
         >
           <HugeiconsIcon
-            icon={KanbanIcon}
+            icon={LayersIcon}
             size={15}
             strokeWidth={1.5}
             className="
@@ -372,7 +372,7 @@ const SidebarBoards = ({
                   "
               >
                 <HugeiconsIcon
-                  icon={KanbanIcon}
+                  icon={LayersIcon}
                   size={15}
                   strokeWidth={1.5}
                   className="

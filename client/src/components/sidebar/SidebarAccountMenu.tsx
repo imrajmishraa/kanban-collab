@@ -15,7 +15,7 @@ import {
   UserIcon,
   SmilePlusIcon,
   MessageQuestionIcon,
-  KanbanIcon,
+  LayersIcon,
   BellRingIcon,
 } from "@hugeicons/core-free-icons";
 
@@ -251,7 +251,7 @@ export function SidebarAccountMenu({
               >
                 <SidebarModeMenu
                   mode={sidebarMode}
-                  icon={KanbanIcon}
+                  icon={LayersIcon}
                   onSelect={(next) => {
                     setSidebarMode(next);
                     setAnchor(null);

@@ -5,7 +5,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ArrowRight01Icon,
   DashboardSquare02Icon,
-  KanbanIcon,
+  LayersIcon,
   Note01Icon,
   Search01Icon,
   Settings01Icon,
@@ -24,7 +24,7 @@ interface SidebarSearchProps {
 interface FindEntry {
   label: string;
   href: string;
-  icon: typeof KanbanIcon;
+  icon: typeof LayersIcon;
   /** Second line: what the entry belongs to. */
   context: string;
 }
@@ -61,7 +61,7 @@ export default function SidebarSearch({ collapsed }: SidebarSearchProps) {
 
     return [
       primary,
-      { label: "Boards", href: "/boards", icon: KanbanIcon, context: scope },
+      { label: "Boards", href: "/boards", icon: LayersIcon, context: scope },
       {
         label: "Members",
         href: "/members",

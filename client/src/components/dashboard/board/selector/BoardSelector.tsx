@@ -5,7 +5,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ChevronsLeftRightIcon,
   DashboardSquare02Icon,
-  KanbanIcon,
+  LayersIcon,
   Search01Icon,
   Tick02Icon,
 } from "@hugeicons/core-free-icons";
@@ -263,7 +263,7 @@ export function BoardSelector({
               className="flex h-8 w-full cursor-pointer items-center gap-2.5 rounded-md px-2 text-left text-[12.5px] tracking-tight text-(--text-soft) transition-colors duration-200 hover:bg-(--bg-hover) hover:text-(--text-primary)"
             >
               <HugeiconsIcon
-                icon={KanbanIcon}
+                icon={LayersIcon}
                 size={14}
                 strokeWidth={1.6}
                 className="shrink-0 text-(--text-muted)"

@@ -1,6 +1,6 @@
 import {
   DashboardSquare02Icon,
-  KanbanIcon,
+  LayersIcon,
   LogsIcon,
   Message01Icon,
   Note01Icon,
@@ -10,7 +10,7 @@ import {
 } from "@hugeicons/core-free-icons";
 
 /** The icon component type Hugeicons exposes, narrowed to one icon. */
-export type NavIcon = typeof KanbanIcon;
+export type NavIcon = typeof LayersIcon;
 
 export type NavPlacement = "primary" | "secondary";
 
@@ -87,14 +87,14 @@ export function buildNavigation({
       key: "boards",
       label: "Boards",
       href: at("/boards"),
-      icon: KanbanIcon,
+      icon: LayersIcon,
       placement: "primary",
       children: [
         {
           key: "boards.all",
           label: "All boards",
           href: at("/boards"),
-          icon: KanbanIcon,
+          icon: LayersIcon,
           section: "Library",
           children: [
             {
@@ -121,7 +121,7 @@ export function buildNavigation({
           key: "boards.pinned",
           label: "Pinned",
           href: at("/boards?filter=pinned"),
-          icon: KanbanIcon,
+          icon: LayersIcon,
         },
         {
           key: "boards.archived",
@@ -171,7 +171,7 @@ export function buildNavigation({
               key: "activity.comments.cards",
               label: "On cards",
               href: at("/activity?type=comments&on=cards"),
-              icon: KanbanIcon,
+              icon: LayersIcon,
             },
             {
               key: "activity.comments.boards",
@@ -185,25 +185,25 @@ export function buildNavigation({
           key: "activity.cards",
           label: "Cards",
           href: at("/activity?type=cards"),
-          icon: KanbanIcon,
+          icon: LayersIcon,
           children: [
             {
               key: "activity.cards.created",
               label: "Created",
               href: at("/activity?type=cards&action=created"),
-              icon: KanbanIcon,
+              icon: LayersIcon,
             },
             {
               key: "activity.cards.moved",
               label: "Moved",
               href: at("/activity?type=cards&action=moved"),
-              icon: KanbanIcon,
+              icon: LayersIcon,
             },
             {
               key: "activity.cards.deleted",
               label: "Deleted",
               href: at("/activity?type=cards&action=deleted"),
-              icon: KanbanIcon,
+              icon: LayersIcon,
             },
           ],
         },

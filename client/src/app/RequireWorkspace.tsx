@@ -6,7 +6,7 @@ import {
   Add01Icon,
   ArrowRight01Icon,
   Folder01Icon,
-  KanbanIcon,
+  LayersIcon,
   LogsIcon,
   Note01Icon,
   Search01Icon,
@@ -21,9 +21,9 @@ import { useWorkspaces } from "@/hooks/useWorkspaces";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 
 /** What the blocked page is called, and the glyph that represents it. */
-const DESTINATIONS: Record<string, { label: string; icon: typeof KanbanIcon }> =
+const DESTINATIONS: Record<string, { label: string; icon: typeof LayersIcon }> =
   {
-    boards: { label: "Boards", icon: KanbanIcon },
+    boards: { label: "Boards", icon: LayersIcon },
     members: { label: "Members", icon: UserGroupIcon },
     notes: { label: "Notes", icon: Note01Icon },
     activity: { label: "Activity", icon: LogsIcon },
