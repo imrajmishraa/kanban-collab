@@ -6,13 +6,13 @@ import { Add01Icon } from "@hugeicons/core-free-icons";
 
 import BoardError from "@/components/board/BoardError";
 
-import { BoardMessage, BoardShell } from "@/features/boards";
-import { WorkspaceOverview } from "@/features/boards";
-import { useActiveWorkspaceMembers } from "@/features/boards";
-import { useWorkspaceBoards } from "@/features/boards";
+import { BoardMessage, BoardShell } from "@/features/boards/index";
+import { WorkspaceOverview } from "@/features/boards/index";
+import { useActiveWorkspaceMembers } from "@/features/boards/index";
+import { useWorkspaceBoards } from "@/features/boards/index";
 
-import { BoardCard } from "@/features/workspaces";
-import { BoardSearch } from "@/features/workspaces";
+import { BoardCard } from "@/features/workspaces/index";
+import { BoardSearch } from "@/features/workspaces/index";
 import { CreateBoardDialog } from "@/features/workspaces";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 
