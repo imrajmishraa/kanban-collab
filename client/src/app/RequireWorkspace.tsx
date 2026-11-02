@@ -5,7 +5,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Add01Icon,
   ArrowRight01Icon,
-  Folder01Icon,
+  SlackIcon,
   LayersIcon,
   LogsIcon,
   Note01Icon,
@@ -16,7 +16,7 @@ import {
 import { Avatar } from "@/components/board/BoardAvatar";
 
 import { useNewWorkspaceDialog } from "@/components/dashboard/workspace/create/newWorkspaceDialog.context";
-import { avatarColor } from "@/features/boards";
+import { avatarColor } from "@/features/boards/index";
 import { useWorkspaces } from "@/hooks/useWorkspaces";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 
@@ -64,7 +64,7 @@ export function RequireWorkspace({ to }: { to: string }) {
   const head = to.split("?")[0]?.split("/")[1] ?? "";
   const destination = DESTINATIONS[head] ?? {
     label: "Continue",
-    icon: Folder01Icon,
+    icon: SlackIcon,
   };
 
   const choose = (workspaceId: string, name: string) => {
@@ -157,7 +157,7 @@ export function RequireWorkspace({ to }: { to: string }) {
                     ) : (
                       <span className="flex size-6 shrink-0 items-center justify-center rounded-md border border-(--hairline) text-(--text-muted) transition-colors duration-200 group-hover/row:text-(--text-soft)">
                         <HugeiconsIcon
-                          icon={Folder01Icon}
+                          icon={SlackIcon}
                           size={12}
                           strokeWidth={1.7}
                         />

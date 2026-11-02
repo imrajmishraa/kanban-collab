@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { useRoutes, type RouteObject } from "react-router-dom";
+import { Navigate, useRoutes, type RouteObject } from "react-router-dom";
 
 import LoadingScreen from "@components/feedback/LoadingScreen";
 
@@ -18,6 +18,10 @@ const routes: RouteObject[] = [
   ...publicRoutes,
   ...authRoutes,
   ...appRoutes,
+  {
+    path: "/",
+    element: <Navigate to="/home" replace />,
+  },
   { path: "*", element: <NotFoundPage /> },
 ];
 

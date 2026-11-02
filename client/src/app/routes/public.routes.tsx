@@ -8,7 +8,7 @@ export const publicRoutes: RouteObject[] = [
   {
     element: <PublicLayout />,
     children: [
-      { path: "/", element: <LandingPage /> },
+      { path: "/home", element: <LandingPage /> },
       { path: "/features", element: <FeaturesPage /> },
       { path: "/how-it-works", element: <HowItWorksPage /> },
     ],
