@@ -196,6 +196,76 @@
   z-index: 1;
 }
 
+/* CTA MARK
+   The hover mark behind the closing banner. Three animations run at once, and
+   they can only do that because each drives a DIFFERENT property:
+
+     cta-rock    the individual `rotate` property
+     cta-swell   the individual `scale` property
+     cta-shade   `color` and `opacity`
+
+   Animating `transform` in two of them would not work: the second would
+   overwrite the first on every frame. The individual properties exist for
+   exactly this case. */
+
+/* Forward, hold, back, hold. A full turn reads as a machine part; an
+   oscillation reads as the mark turning to look at something and turning back,
+   which is what makes it feel alive rather than looped. */
+@keyframes cta-rock {
+  0% {
+    rotate: 0deg;
+  }
+  50% {
+    rotate: 50deg;
+  }
+  100% {
+    rotate: 0deg;
+  }
+}
+
+@keyframes cta-swell {
+  0%,
+  100% {
+    scale: 1.3;
+  }
+  50% {
+    scale: 1.8;
+  }
+}
+
+/* Colour only, and between two text tokens rather than a text token and the
+   page. `--bg-root` was the end of this ramp, which meant the mark reached the
+   exact colour of the surface it sits on and vanished at the peak in dark mode.
+   `--text-subtle` is the darkest ink that still reads as ink, so the mark goes
+   quiet twice a cycle and never goes away. */
+@keyframes cta-shade {
+  0%,
+  100% {
+    color: var(--text-muted);
+  }
+  50% {
+    color: var(--text-subtle);
+  }
+}
+
+.cta-mark {
+  animation:
+    cta-rock 6s ease-in-out infinite,
+    cta-swell 10s ease-in-out infinite,
+    cta-shade 3s ease-in-out infinite;
+}
+
+/* The rock is 5s with no holds: two and a half seconds turning out, two and a
+   half turning back, straight into the next cycle. The swell and the shade stay
+   on 10 and 6, so the small motion is quick while the light behind it breathes
+   slowly, and the three only realign once every half minute. */
+
+@media (prefers-reduced-motion: reduce) {
+  .cta-mark {
+    animation: none;
+  }
+}
+
 /* BASE */
 
 html {

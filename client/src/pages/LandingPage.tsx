@@ -20,6 +20,15 @@ const FaqSection = lazy(
 const CtaSection = lazy(
   () => import("@/features/marketing/components/landing/CtaSection"),
 );
+const PricingSection = lazy(
+  () => import("@/features/marketing/components/landing/PricingSection"),
+);
+const SupportedBySection = lazy(
+  () => import("@/features/marketing/components/landing/SupportedBySection"),
+);
+const ContactSection = lazy(
+  () => import("@/features/marketing/components/landing/ContactSection"),
+);
 
 /* NOTE: <LandingBackground /> moved into PublicLayout so every public
    route shares the same depth field. Remove any local import of it. */
@@ -71,11 +80,23 @@ export default function LandingPage() {
         </Suspense>
 
         <Suspense fallback={<SectionFallback />}>
-          <FaqSection />
+          <FaqSection themeLock="light" />
         </Suspense>
 
         <Suspense fallback={<SectionFallback />}>
-          <CtaSection />
+          <ContactSection />
+        </Suspense>
+
+        <Suspense fallback={<SectionFallback />}>
+          <PricingSection themeLock="light" />
+        </Suspense>
+
+        <Suspense fallback={<SectionFallback />}>
+          <SupportedBySection themeLock="dark" />
+        </Suspense>
+
+        <Suspense fallback={<SectionFallback />}>
+          <CtaSection themeLock="light" />
         </Suspense>
       </main>
     </div>

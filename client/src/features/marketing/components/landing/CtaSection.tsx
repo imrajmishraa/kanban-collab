@@ -1,237 +1,106 @@
-import { Link } from "react-router-dom";
 import { HugeiconsIcon } from "@hugeicons/react";
-import {
-  ArrowRight02Icon,
-  GithubIcon,
-  Tick02Icon,
-} from "@hugeicons/core-free-icons";
+import { ArrowUpRight01Icon, LayersIcon } from "@hugeicons/core-free-icons";
 
-import { Reveal, TiltCard } from "./Tilt";
+interface CtaSectionProps {
+  /**
+   * Which theme this band is staged in. Defaults to `dark`, because a banner is
+   * a poster: it should look the same for every visitor rather than inheriting
+   * whatever the app is doing. Pass `light` or `inherit` to change that.
+   */
+  themeLock?: "dark" | "light" | "inherit";
+}
 
-const GITHUB_URL = "https://github.com/imrajmishraa/kanban-collab";
+/**
+ * The closing banner: one sentence, one line under it, one link.
+ *
+ * The whole card is the link, not a card with a link inside it, so the target is
+ * the largest thing on screen. The arrow moves on hover and on keyboard focus,
+ * which is the only affordance saying the surface is clickable.
+ *
+ * The mark and the shine are a reward for pointing at the card: both are parked
+ * at rest and start when the pointer arrives. They are decorative in the strict
+ * sense, so they are `aria-hidden` and carry nothing the copy does not.
+ */
+export default function CtaSection({ themeLock = "dark" }: CtaSectionProps) {
+  const scope =
+    themeLock === "dark" ? "theme-dark" : themeLock === "light" ? "light" : "";
 
-const trustPoints = ["Free forever", "No credit card", "Cancel anytime"];
-
-const team = [
-  { initials: "RM", color: "bg-(--brand)" },
-  { initials: "AK", color: "bg-(--tint-4)" },
-  { initials: "SP", color: "bg-(--tint-4)" },
-  { initials: "NV", color: "bg-(--tint-4)" },
-];
-
-export default function CtaSection() {
   return (
-    <section className="relative overflow-hidden">
-      {/* Cool counter-glow for depth */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 top-70 h-95 w-205 -translate-x-1/2 rounded-[50%] bg-(--tint-2) blur-[130px]"
-      />
-
-      <div className="relative mx-auto max-w-7xl px-4 py-28 sm:px-6 sm:py-32 lg:px-8 lg:py-40">
-        {/* ── Glass card wrapper ───────────────────────────────── */}
-        <div className="relative mx-auto max-w-3xl">
-          {/* Ambient bloom under the card */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-x-8 -bottom-6 top-8 rounded-[40%] bg-(--brand)/10 blur-[100px]"
-          />
-
-          {/* The card — wrapped in the 3D tilt box */}
-          <Reveal>
-            <TiltCard intensity={4} restX={3}>
+    <section
+      className={["scroll-mt-16", scope, "bg-(--bg-root) text-(--text-primary)"]
+        .filter(Boolean)
+        .join(" ")}
+    >
+      <div className="mx-auto w-full max-w-384">
+        <div>
+          <a
+            href="/auth/register"
+            className="group relative block overflow-hidden border-r border-l border-(--hairline) bg-(--bg-root) transition-colors duration-200 hover:border-(--hairline-strong) motion-reduce:transition-none"
+          >
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-x-8 -bottom-6 top-8 rounded-[40%] hover:bg-transparent bg-(--brand)/10 blur-[100px]"
+            />
+            {/* Everything that animates lives in here, and the whole layer is
+                hidden until the card is pointed at. The animations themselves
+                are also parked while hidden (see `.cta-mark` and `.cta-shine` in
+                index.css), so nothing is running behind a hidden layer. */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100 motion-reduce:transition-none"
+            >
               <div
-                className="
-                  group/cta relative overflow-hidden rounded-3xl
-                  border border-(--border)
-                  bg-(--tint-2)
-                  px-8 py-16 text-center
-                  shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_30px_80px_-30px_rgba(0,0,0,0.7)]
-                  backdrop-blur-xl backdrop-saturate-150
-                  sm:px-14 sm:py-20
-                "
-              >
-                {/* Top sheen */}
-                <div
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.24)_50%,transparent)]"
-                />
-
-                {/* Warm bloom — top-center of the card */}
-                <div
-                  aria-hidden="true"
-                  className="pointer-events-none absolute left-1/2 -top-24 h-48 w-96 -translate-x-1/2 rounded-full bg-(--brand)/18 blur-[80px]"
-                />
-
-                {/* Corner brackets — technical drawing marks */}
-                <span
-                  aria-hidden="true"
-                  className="pointer-events-none absolute left-4 top-4 h-3.5 w-3.5 border-l border-t border-(--border) transition-colors duration-500 group-hover/cta:border-(--brand)/50"
-                />
-                <span
-                  aria-hidden="true"
-                  className="pointer-events-none absolute right-4 top-4 h-3.5 w-3.5 border-r border-t border-(--border) transition-colors duration-500 group-hover/cta:border-(--brand)/50"
-                />
-                <span
-                  aria-hidden="true"
-                  className="pointer-events-none absolute bottom-4 left-4 h-3.5 w-3.5 border-b border-l border-(--border) transition-colors duration-500 group-hover/cta:border-(--brand)/50"
-                />
-                <span
-                  aria-hidden="true"
-                  className="pointer-events-none absolute bottom-4 right-4 h-3.5 w-3.5 border-b border-r border-(--border) transition-colors duration-500 group-hover/cta:border-(--brand)/50"
-                />
-
-                {/* ── Kicker — orbiting pill matching hero + why ──── */}
-                <div className="relative z-2 mb-8 inline-flex items-center">
-                  <div
-                    className="
-                      eyebrow-orbit
-                      inline-flex items-center gap-2.5
-                      rounded-full
-                      bg-(--bg-root)/70
-                      px-4 py-2
-                      font-mono text-[10px] uppercase tracking-[0.22em]
-                      text-(--text-secondary)
-                      shadow-[0_4px_20px_-8px_rgba(0,0,0,0.6)]
-                      backdrop-blur-xl backdrop-saturate-150
-                    "
-                  >
-                    <span className="eyebrow-ring" aria-hidden="true" />
-
-                    <span className="relative z-2 flex items-center gap-2.5">
-                      <span className="relative flex h-1.5 w-1.5">
-                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-(--brand) opacity-70" />
-                        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-(--brand)" />
-                      </span>
-                      <span>Built for teams</span>
-                    </span>
-                  </div>
-                </div>
-
-                {/* ── Headline ───────────────────────────────────── */}
-                <h2 className="relative z-2 font-mono text-3xl font-medium leading-[1.1] tracking-[-0.04em] text-(--text-primary) sm:text-4xl md:text-5xl">
-                  Turn ideas into{" "}
-                  <span className="from-(--brand-hover) via-(--brand) text-(--text-primary)">
-                    progress.
-                  </span>
-                </h2>
-
-                {/* ── Description ────────────────────────────────── */}
-                <p className="relative z-2 mx-auto mt-6 max-w-md font-mono text-sm leading-[1.9] text-(--text-secondary) sm:text-[15px]">
-                  Start with a board. Bring your team in. Build something
-                  together — in real time.
-                </p>
-
-                {/* ── Actions — same glass pills as the hero ─────── */}
-                <div className="relative z-2 mt-11 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                  <Link
-                    to="/workspaces"
-                    className="
-                      group/btn relative inline-flex min-w-44 items-center justify-center gap-2
-                      overflow-hidden rounded-full
-                      border border-(--brand)/45
-                      bg-(--brand)/12
-                      px-6 py-3
-                      font-mono text-sm text-(--brand-hover)
-                      shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]
-                      backdrop-blur-xl backdrop-saturate-150
-                      transition-all duration-300
-                      hover:border-(--brand)/80
-                      hover:bg-(--brand)/20
-                      hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]
-                      active:scale-[0.98]
-                    "
-                  >
-                    <span className="pointer-events-none absolute inset-0 -translate-x-full bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.18),transparent)] transition-transform duration-700 group-hover/btn:translate-x-full" />
-                    <HugeiconsIcon
-                      icon={ArrowRight02Icon}
-                      size={14}
-                      className="relative"
-                    />
-                    <span className="relative">Get Started</span>
-                  </Link>
-
-                  <a
-                    href={GITHUB_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="
-                      inline-flex min-w-44 items-center justify-center gap-2
-                      rounded-full
-                      border border-(--border)
-                      bg-(--tint-3)
-                      px-6 py-3
-                      font-mono text-sm text-(--text-secondary)
-                      shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]
-                      backdrop-blur-xl backdrop-saturate-150
-                      transition-all duration-300
-                      hover:border-(--border-strong)
-                      hover:bg-(--bg-hover)
-                      hover:text-(--text-primary)
-                      active:scale-[0.98]
-                    "
-                  >
-                    <HugeiconsIcon
-                      icon={GithubIcon}
-                      size={14}
-                      className="relative"
-                    />
-                    <span>Star on GitHub</span>
-                  </a>
-                </div>
-
-                {/* ── Trust row — small checkmarks below CTAs ────── */}
-                <div className="relative z-2 mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
-                  {trustPoints.map((point) => (
-                    <span
-                      key={point}
-                      className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-(--text-secondary)/65"
-                    >
-                      <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full border border-(--brand)/30 bg-(--brand)/10 text-(--brand)">
-                        <HugeiconsIcon icon={Tick02Icon} size={8} />
-                      </span>
-                      {point}
-                    </span>
-                  ))}
-                </div>
-
-                {/* ── Divider + team avatars ─────────────────────── */}
-                <div className="relative z-2 mt-12">
-                  <div
-                    aria-hidden="true"
-                    className="mx-auto h-px w-2/3 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.10)_50%,transparent)]"
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-x-8 -bottom-6 top-8 rounded-[40%] bg-(--brand)/15 blur-[100px]"
+              />
+              <div className="absolute inset-0 mask-[linear-gradient(to_right,transparent_0%,transparent_30%,black_58%,black_100%)]">
+                {/* Held at 45% from the left. The wrapper owns the position and
+                    the vertical centring, so the icon is free to own the
+                    transform: an animation on `transform` would overwrite any
+                    translate the same element was using to place itself. */}
+                <div className="absolute inset-y-0 left-[45%] flex items-center">
+                  <HugeiconsIcon
+                    icon={LayersIcon}
+                    size={440}
+                    strokeWidth={1.8}
+                    className="cta-mark rotate-45 text-(--text-solid)"
                   />
-
-                  <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-                    {/* Avatar stack */}
-                    <div className="flex items-center -space-x-2">
-                      {team.map((person) => (
-                        <span
-                          key={person.initials}
-                          className={`
-                            flex h-8 w-8 items-center justify-center rounded-full
-                            border-2 border-(--hairline) font-mono text-[10px] font-medium text-(--text-primary)
-                            shadow-[0_2px_8px_rgba(0,0,0,0.5)]
-                            ${person.color}
-                          `}
-                        >
-                          {person.initials}
-                        </span>
-                      ))}
-                      <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-(--hairline) bg-(--tint-6) font-mono text-[10px] text-(--text-primary) backdrop-blur-sm">
-                        +9k
-                      </span>
-                    </div>
-
-                    {/* Text next to avatars */}
-                    <span className="font-mono text-[11px] tracking-wider text-(--text-primary)/70">
-                      Trusted by teams shipping together
-                    </span>
-                  </div>
                 </div>
               </div>
-            </TiltCard>
-          </Reveal>
+
+              {/* The shine: a soft band that crosses left to right, once per
+                  cycle, then waits off the edge. */}
+              <div className="absolute inset-0 overflow-hidden">
+                <div className="cta-shine absolute inset-y-0 left-0 w-1/3 bg-linear-to-r from-transparent via-(--brand)/20 to-transparent blur-2xl" />
+              </div>
+
+              {/* The wash that keeps the copy legible under it. */}
+              <div className="absolute inset-0 bg-linear-to-r from-(--bg-root) via-(--bg-root)/85 to-transparent" />
+              <div className="absolute inset-x-0 top-0 h-px bg-(--hairline)" />
+            </div>
+
+            <div className="relative z-10 px-4 py-10 sm:px-8 sm:py-12 md:px-12 md:py-16 lg:px-16 lg:py-20">
+              <h2 className="max-w-3xl text-3xl font-bold tracking-tight text-(--text-primary) md:text-4xl">
+                Let us handle the board
+              </h2>
+              <p className="mt-6 max-w-2xl text-xl font-light leading-relaxed text-(--text-secondary)">
+                Every card, column and comment synced the moment anyone moves
+                something. Start with one board and invite the rest of the team
+                when it earns its place.
+              </p>
+
+              <span className="mt-8 inline-flex items-center gap-2 text-sm font-medium text-(--text-primary)">
+                <span>Start a board</span>
+                <HugeiconsIcon
+                  icon={ArrowUpRight01Icon}
+                  size={16}
+                  strokeWidth={2}
+                  aria-hidden="true"
+                  className="transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-focus-visible:translate-x-0.5 group-focus-visible:-translate-y-0.5 motion-reduce:transition-none"
+                />
+              </span>
+            </div>
+          </a>
         </div>
       </div>
     </section>

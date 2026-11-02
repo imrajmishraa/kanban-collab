@@ -1,0 +1,120 @@
+/* CTA MARK
+   Everything the closing banner animates, in one place. Three animations on the
+   mark, each driving a DIFFERENT property, plus one on the shine:
+
+     cta-rock    the individual `rotate` property
+     cta-swell   the individual `scale` property
+     cta-shade   `color`
+     cta-shine   the shine band's `transform`
+
+   Two animations cannot share `transform`: whichever is declared later wins on
+   every frame. The individual `rotate` and `scale` properties exist for exactly
+   this case.
+
+   All of them are PAUSED until the card is hovered or focused, which is the last
+   block here. Nothing runs while nobody is looking. */
+
+/* Out for four seconds, back for four, then a two second rest before the next
+   cycle. The rest is written as a hold at 80 to 100 percent rather than a delay,
+   because a delay would restart the swell and the shade along with it. */
+@keyframes cta-rock {
+  0% {
+    rotate: 0deg;
+  }
+  40% {
+    rotate: 30deg;
+  }
+  80% {
+    rotate: 0deg;
+  }
+  100% {
+    rotate: 0deg;
+  }
+}
+
+@keyframes cta-swell {
+  0%,
+  100% {
+    scale: 1;
+  }
+  50% {
+    scale: 1.4;
+  }
+}
+
+/* Colour only, between two text tokens rather than a text token and the page.
+   `--bg-root` would put the ink at the exact colour of the surface it sits on,
+   so the mark would vanish at the peak in dark mode. `--text-subtle` is the
+   darkest ink that still reads as ink. One and a half seconds down, one and a
+   half back, then a two second rest. */
+@keyframes cta-shade {
+  0% {
+    color: var(--text-muted);
+  }
+  30% {
+    color: var(--text-subtle);
+  }
+  60% {
+    color: var(--text-muted);
+  }
+  100% {
+    color: var(--text-muted);
+  }
+}
+
+/* A band of light that crosses the card from left to right, then waits off the
+   right edge until the cycle comes round again. */
+@keyframes cta-shine {
+  0% {
+    transform: translateX(-160%) skewX(-14deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  52% {
+    transform: translateX(320%) skewX(-14deg);
+    opacity: 1;
+  }
+  60% {
+    transform: translateX(320%) skewX(-14deg);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(320%) skewX(-14deg);
+    opacity: 0;
+  }
+}
+
+.cta-mark {
+  animation:
+    cta-rock 10s ease-in-out infinite,
+    cta-swell 13s ease-in-out infinite,
+    cta-shade 5s ease-in-out infinite;
+}
+
+.cta-shine {
+  animation: cta-shine 5s ease-in-out infinite;
+}
+
+/* Parked until the card is pointed at or focused. `animation-play-state` rather
+   than mounting and unmounting, so the moment the pointer arrives the animation
+   continues from where it paused instead of starting over. */
+.cta-mark,
+.cta-shine {
+  animation-play-state: paused;
+}
+
+.group:hover .cta-mark,
+.group:hover .cta-shine,
+.group:focus-visible .cta-mark,
+.group:focus-visible .cta-shine {
+  animation-play-state: running;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta-mark,
+  .cta-shine {
+    animation: none;
+  }
+}

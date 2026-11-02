@@ -1,448 +1,169 @@
+import { Suspense, lazy } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import { Link } from "react-router-dom";
 import { HugeiconsIcon } from "@hugeicons/react";
-import {
-  Tick02Icon,
-  Message01Icon,
-  PencilEdit02Icon,
-  CheckmarkCircle02Icon,
-  Add01Icon,
-} from "@hugeicons/core-free-icons";
+import { Cursor01Icon } from "@hugeicons/core-free-icons";
 
-type ActivityType = "moved" | "created" | "completed" | "commented";
+import DesktopFrame from "./DesktopFrame";
+import { Reveal } from "./Tilt";
 
-interface ActivityItem {
-  name: string;
-  initials: string;
-  color: string;
-  action: string;
-  task: string;
-  time: string;
-  type: ActivityType;
-  isYou?: boolean;
+const DashboardDemoPage = lazy(() => import("./DashboardDemoPage"));
+
+/* ── Content ────────────────────────────────────────────────────────── */
+
+const REPO_URL = "https://github.com/imrajmishraa/kanban-collab";
+
+/* Two people on the same card. The dot carries the identity, not a fill,
+   which is what keeps this inside the palette. */
+const PEERS = [
+  {
+    name: "Aarav",
+    at: "left-[14%] top-[34%]",
+    dot: "bg-(--success)",
+    delay: 0,
+  },
+  {
+    name: "Meera",
+    at: "right-[16%] top-[52%]",
+    dot: "bg-(--warning)",
+    delay: 0.8,
+  },
+];
+
+function FrameSkeleton() {
+  return (
+    <div
+      aria-hidden="true"
+      className="aspect-4/3 w-full animate-pulse rounded-xl bg-(--tint-3) motion-reduce:animate-none"
+    />
+  );
 }
 
-const activities: ActivityItem[] = [
-  {
-    name: "Maya",
-    initials: "MA",
-    color: "bg-(--brand)",
-    action: "moved",
-    task: "Design landing page",
-    time: "just now",
-    type: "moved",
-  },
-  {
-    name: "Rio",
-    initials: "RI",
-    color: "bg-(--tint-4)",
-    action: "commented on",
-    task: "WebSocket sync",
-    time: "2m ago",
-    type: "commented",
-  },
-  {
-    name: "Sam",
-    initials: "SA",
-    color: "bg-(--tint-4)",
-    action: "created",
-    task: "API integration",
-    time: "5m ago",
-    type: "created",
-  },
-  {
-    name: "You",
-    initials: "YU",
-    color: "bg-(--tint-4)",
-    action: "completed",
-    task: "Authentication",
-    time: "12m ago",
-    type: "completed",
-    isYou: true,
-  },
-];
-
-const activityIcons: Record<ActivityType, typeof Tick02Icon> = {
-  moved: PencilEdit02Icon,
-  created: Add01Icon,
-  completed: CheckmarkCircle02Icon,
-  commented: Message01Icon,
-};
-
-const activityColors: Record<ActivityType, string> = {
-  moved: "text-(--brand) border-(--brand)/30 bg-(--brand)/10",
-  created: "text-(--text-secondary) border-(--hairline) bg-(--tint-4)",
-  completed: "text-(--success) border-(--success)/30 bg-(--tint-4)",
-  commented: "text-(--text-secondary) border-(--hairline) bg-(--tint-4)",
-};
-
-const presence = [
-  { initials: "MA", color: "bg-(--brand)" },
-  { initials: "RI", color: "bg-(--tint-4)" },
-  { initials: "SA", color: "bg-(--tint-4)" },
-];
+/* ── Section ────────────────────────────────────────────────────────── */
 
 export default function CollaborationSection() {
+  const reduce = useReducedMotion();
+
   return (
-    <section className="relative overflow-hidden">
-      {/* ═══════════════════════════════════════════════════════════
-          AMBIENT BACKGROUND
-          ═══════════════════════════════════════════════════════════ */}
-
-      {/* Warm glow anchored above — bleeds into the previous section */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 -top-80 h-150 w-300 -translate-x-1/2 rounded-[50%] bg-(--brand)/8 blur-[150px]"
-      />
-
-      {/* Cool counter-glow, offset right */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -right-40 top-70 h-125 w-175 rounded-[50%] bg-(--tint-2) blur-[130px]"
-      />
-
-      {/* ═══════════════════════════════════════════════════════════
-          STARFIELD — four dot layers
-          ═══════════════════════════════════════════════════════════ */}
-
-      {/* Layer 1 — tiny dots, dense */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-70"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle, rgba(255,255,255,0.35) 0.6px, transparent 0.6px)",
-          backgroundSize: "28px 28px",
-          maskImage:
-            "radial-gradient(ellipse 75% 60% at 50% 40%, #000 0%, transparent 85%)",
-          WebkitMaskImage:
-            "radial-gradient(ellipse 75% 60% at 50% 40%, #000 0%, transparent 85%)",
-        }}
-      />
-
-      {/* Layer 2 — small dots, offset grid */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-50"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle, rgba(255,255,255,0.5) 0.8px, transparent 0.8px)",
-          backgroundSize: "44px 44px",
-          backgroundPosition: "12px 18px",
-          maskImage:
-            "radial-gradient(ellipse 70% 55% at 48% 42%, #000 0%, transparent 82%)",
-          WebkitMaskImage:
-            "radial-gradient(ellipse 70% 55% at 48% 42%, #000 0%, transparent 82%)",
-        }}
-      />
-
-      {/* Layer 3 — sparse brand-colored stars */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-40"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle, var(--brand) 1px, transparent 1px)",
-          backgroundSize: "110px 110px",
-          backgroundPosition: "30px 40px",
-          maskImage:
-            "radial-gradient(ellipse 65% 50% at 50% 40%, #000 0%, transparent 80%)",
-          WebkitMaskImage:
-            "radial-gradient(ellipse 65% 50% at 50% 40%, #000 0%, transparent 80%)",
-        }}
-      />
-
-      {/* Layer 4 — bright accent stars, sparse */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-60"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle, rgba(255,255,255,0.7) 1.2px, transparent 1.2px)",
-          backgroundSize: "180px 180px",
-          backgroundPosition: "60px 90px",
-          maskImage:
-            "radial-gradient(ellipse 60% 45% at 50% 40%, #000 0%, transparent 75%)",
-          WebkitMaskImage:
-            "radial-gradient(ellipse 60% 45% at 50% 40%, #000 0%, transparent 75%)",
-        }}
-      />
-
-      {/* ═══════════════════════════════════════════════════════════
-          CONTENT
-          ═══════════════════════════════════════════════════════════ */}
-      <div className="relative mx-auto grid max-w-7xl gap-14 px-4 py-28 sm:px-6 sm:py-32 lg:grid-cols-2 lg:items-center lg:gap-20 lg:px-8 lg:py-40">
-        {/* ── Left: Copy ────────────────────────────────────────── */}
-        <div>
-          {/* Kicker — orbiting pill matching the rest of the page */}
-          <div
-            className="
-              eyebrow-orbit
-              inline-flex items-center gap-2.5
-              rounded-full
-              bg-(--bg-root)/70
-              px-4 py-2
-              font-mono text-[10px] uppercase tracking-[0.22em]
-              text-(--text-secondary)
-              shadow-[0_4px_20px_-8px_rgba(0,0,0,0.6)]
-              backdrop-blur-xl backdrop-saturate-150
-            "
-          >
-            <span className="eyebrow-ring" aria-hidden="true" />
-
-            <span className="relative z-2 flex items-center gap-2.5">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-(--brand) opacity-70" />
-                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-(--brand)" />
+    <section className="relative">
+      <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-28 lg:px-8">
+        <div className="flex w-full flex-col items-center justify-center text-center">
+          <div className="flex max-w-3xl flex-col items-center gap-6">
+            {/* Badge */}
+            <Reveal>
+              <span className="inline-flex min-h-8 items-center rounded-xl bg-(--accent-soft) px-3.5 py-0.5 text-sm font-medium text-(--accent)">
+                Real-time by default
               </span>
-              <span>Real-time collaboration</span>
-            </span>
-          </div>
+            </Reveal>
 
-          {/* Headline */}
-          <h2 className="mt-8 max-w-lg font-mono text-3xl font-medium leading-[1.1] tracking-[-0.04em] text-(--text-primary) sm:text-4xl lg:text-5xl">
-            Everyone sees the{" "}
-            <span className="from-(--brand-hover) via-(--brand) text-(--text-primary)">
-              same board.
-            </span>
-          </h2>
+            {/* Headline */}
+            <Reveal delay={0.06}>
+              <h2 className="max-w-md text-[40px] font-semibold leading-[1.1] tracking-tight text-balance text-(--text-primary) md:max-w-none md:text-[52px] lg:text-[56px]">
+                Build together, at scale, everywhere
+              </h2>
+            </Reveal>
 
-          {/* Description */}
-          <p className="mt-6 max-w-lg font-mono text-sm leading-[1.9] text-(--text-secondary) sm:text-[15px]">
-            Changes propagate in milliseconds. No refreshing, no merge
-            conflicts, no "who has the latest?" — everyone's view is the source
-            of truth.
-          </p>
+            {/* Standfirst */}
+            <Reveal delay={0.12}>
+              <p className="max-w-[50ch] text-base font-medium text-balance text-(--text-secondary) md:text-[22px]">
+                Two people cannot drag the same card into two different columns.
+                Every change converges, cursors and all, and nobody waits for a
+                refresh to see it.
+              </p>
+            </Reveal>
 
-          {/* Feature chips */}
-          <div className="mt-10 flex flex-wrap gap-2.5">
-            {[
-              "Instant updates",
-              "Multi-user presence",
-              "Conflict-free sync",
-            ].map((label) => (
-              <span
-                key={label}
-                className="
-                  inline-flex items-center gap-2 rounded-full
-                  border border-(--border)
-                  bg-(--tint-3)
-                  px-3.5 py-1.5
-                  font-mono text-[11px]
-                  text-(--text-secondary)
-                  backdrop-blur-xl backdrop-saturate-150
-                  transition-all duration-300
-                  hover:border-(--brand)/40
-                  hover:bg-(--brand)/8
-                  hover:text-(--text-primary)
-                "
-              >
-                <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full border border-(--brand)/30 bg-(--brand)/10 text-(--brand)">
-                  <HugeiconsIcon icon={Tick02Icon} size={8} />
-                </span>
-                {label}
-              </span>
-            ))}
-          </div>
+            {/* Actions */}
+            <Reveal delay={0.18}>
+              <div className="flex flex-row flex-wrap justify-center gap-2">
+                <Link
+                  to="/workspaces"
+                  className="
+                    inline-flex h-12 items-center justify-center rounded-full
+                    bg-(--solid-bg) px-6 text-base font-medium text-(--solid-text)
+                    transition-colors duration-200 motion-reduce:transition-none
+                    hover:bg-(--solid-bg-hover)
+                    focus-visible:ring-2 focus-visible:ring-(--brand) focus-visible:outline-none
+                  "
+                >
+                  Start a board
+                </Link>
 
-          {/* Latency stat */}
-          <div className="mt-10 flex items-center gap-4 border-t border-(--border-subtle) pt-6">
-            <div className="flex items-baseline gap-2">
-              <span className="font-mono text-xl font-medium tracking-tight text-(--text-primary)">
-                &lt;50ms
-              </span>
-              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-(--text-secondary)/60">
-                Sync latency
-              </span>
-            </div>
-            <span aria-hidden="true" className="h-6 w-px bg-(--tint-8)" />
-            <div className="flex items-baseline gap-2">
-              <span className="font-mono text-xl font-medium tracking-tight text-(--text-primary)">
-                ∞
-              </span>
-              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-(--text-secondary)/60">
-                Concurrent editors
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Right: Live activity window ───────────────────────── */}
-        <div className="relative">
-          {/* Ambient glow behind the window */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-x-8 -bottom-6 top-8 rounded-[40%] bg-(--brand)/10 blur-[100px]"
-          />
-
-          {/* Glass window frame */}
-          <div
-            className="
-              group/frame relative overflow-hidden rounded-2xl
-              border border-(--border)
-              bg-(--tint-2)
-              p-2
-              shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_30px_80px_-30px_rgba(0,0,0,0.7)]
-              backdrop-blur-xl backdrop-saturate-150
-              transition-all duration-500
-              hover:border-white/[0.14]
-              hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.10),0_40px_100px_-30px_rgba(0,0,0,0.8)]
-            "
-          >
-            {/* Top sheen */}
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-x-0 top-0 z-10 h-px bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.24)_50%,transparent)]"
-            />
-
-            {/* Inner window */}
-            <div className="relative overflow-hidden rounded-xl border border-(--border-subtle) bg-(--bg-root)">
-              {/* Window header */}
-              <div className="flex items-center justify-between border-b border-(--border-subtle) px-4 py-3">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-1.5">
-                    <span className="h-2 w-2 rounded-full border border-(--danger)/30 bg-(--tint-4)" />
-                    <span className="h-2 w-2 rounded-full border border-(--warning)/30 bg-(--tint-4)" />
-                    <span className="h-2 w-2 rounded-full border border-(--success)/30 bg-(--tint-4)" />
-                  </div>
-
-                  <span className="font-mono text-[11px] tracking-wider text-(--text-secondary)">
-                    team.workspace
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center -space-x-1.5">
-                    {presence.map((person) => (
-                      <span
-                        key={person.initials}
-                        className={`
-                          flex h-5 w-5 items-center justify-center rounded-full
-                          border border-(--hairline) font-mono text-[8px] font-medium text-(--text-primary)
-                          ${person.color}
-                        `}
-                      >
-                        {person.initials}
-                      </span>
-                    ))}
-                  </div>
-
-                  <span className="flex items-center gap-1.5 rounded-full border border-(--success)/30 bg-(--tint-4) px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.15em] text-(--success)">
-                    <span className="relative flex h-1.5 w-1.5">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-(--tint-4) opacity-60" />
-                      <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-(--tint-4)" />
-                    </span>
-                    Live
-                  </span>
-                </div>
+                <a
+                  href={REPO_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="
+                    inline-flex h-12 items-center justify-center rounded-full
+                    border border-(--hairline-strong) bg-(--tint-3) px-6
+                    text-base font-medium text-(--text-primary)
+                    transition-colors duration-200 motion-reduce:transition-none
+                    hover:bg-(--tint-6)
+                    focus-visible:ring-2 focus-visible:ring-(--brand) focus-visible:outline-none
+                  "
+                >
+                  Read the source
+                </a>
               </div>
+            </Reveal>
+          </div>
 
-              {/* Activity feed */}
-              <div className="divide-y divide-(--border)">
-                {activities.map((activity, index) => {
-                  const Icon = activityIcons[activity.type];
-                  const colorClass = activityColors[activity.type];
+          {/* ── The board, with people on it ── */}
+          <Reveal delay={0.24} className="w-full">
+            <div className="relative mx-auto mt-14 w-full max-w-5xl">
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute -inset-x-8 -top-10 bottom-0 rounded-[40%] bg-(--accent-soft) blur-[110px]"
+              />
 
-                  return (
-                    <div
-                      key={`${activity.name}-${index}`}
-                      className={`
-                        group/row relative flex items-center gap-3.5 px-4 py-3.5
-                        transition-colors duration-300
-                        hover:bg-(--tint-2)
-                        ${activity.isYou ? "bg-(--tint-2).5" : ""}
-                      `}
-                    >
-                      <span
-                        aria-hidden="true"
-                        className="pointer-events-none absolute left-0 top-0 h-full w-px scale-y-0 bg-(--brand)/60 transition-transform duration-300 group-hover/row:scale-y-100"
+              <div className="relative">
+                <DesktopFrame
+                  title="Kanban Collab"
+                  url="kanban.app"
+                  screenAspect="aspect-16/10"
+                >
+                  <Suspense fallback={<FrameSkeleton />}>
+                    <DashboardDemoPage />
+                  </Suspense>
+                </DesktopFrame>
+
+                {/* Presence cursors */}
+                {PEERS.map((peer) => (
+                  <motion.div
+                    key={peer.name}
+                    aria-hidden="true"
+                    className={`pointer-events-none absolute z-20 ${peer.at}`}
+                    animate={reduce ? undefined : { y: [0, -7, 0] }}
+                    transition={{
+                      duration: 5.5,
+                      delay: peer.delay,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  >
+                    <div className="flex items-center gap-1.5 rounded-full rounded-tl-sm border border-(--hairline-strong) bg-(--bg-root) px-2.5 py-1 text-[11px] font-medium text-(--text-primary) backdrop-blur-md">
+                      <HugeiconsIcon
+                        icon={Cursor01Icon}
+                        size={12}
+                        strokeWidth={2}
+                        className="text-(--text-secondary)"
                       />
-
-                      <span
-                        className={`
-                          relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full
-                          font-mono text-[10px] font-medium text-(--text-primary)
-                          border border-(--border)
-                          ${activity.color}
-                        `}
-                      >
-                        {activity.initials}
-
-                        {activity.isYou && (
-                          <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full border-2 border-(--hairline) bg-(--tint-4)" />
-                        )}
-                      </span>
-
-                      <div className="flex-1 min-w-0">
-                        <p className="truncate font-mono text-[12px] leading-5 text-(--text-secondary)">
-                          <span
-                            className={`font-medium ${
-                              activity.isYou
-                                ? "text-(--success)"
-                                : "text-(--text-primary)"
-                            }`}
-                          >
-                            {activity.name}
-                          </span>{" "}
-                          <span className="text-(--text-secondary)/80">
-                            {activity.action}
-                          </span>{" "}
-                          <span className="text-(--text-primary)/85">
-                            {activity.task}
-                          </span>
-                        </p>
-                        <p className="mt-0.5 font-mono text-[10px] text-(--text-secondary)/45">
-                          {activity.time}
-                        </p>
-                      </div>
-
-                      <span
-                        className={`
-                          flex h-6 w-6 shrink-0 items-center justify-center rounded-md
-                          border
-                          ${colorClass}
-                        `}
-                      >
-                        <HugeiconsIcon icon={Icon} size={11} />
-                      </span>
+                      <span className={`size-1.5 rounded-full ${peer.dot}`} />
+                      {peer.name}
                     </div>
-                  );
-                })}
-              </div>
+                  </motion.div>
+                ))}
 
-              {/* Window footer */}
-              <div className="flex items-center justify-between border-t border-(--border-subtle) px-4 py-2.5">
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-[10px] tracking-widest text-(--text-secondary)/55">
-                    Maya is typing
+                {/* Who is here */}
+                <div className="pointer-events-none absolute bottom-4 right-4 z-20 inline-flex items-center gap-2 rounded-full border border-(--hairline-strong) bg-(--bg-root) px-3 py-1.5 text-[12px] font-medium text-(--text-secondary) backdrop-blur-md">
+                  <span className="relative flex size-1.5">
+                    <span className="absolute inline-flex size-full animate-ping rounded-full bg-(--success) opacity-70 motion-reduce:animate-none" />
+                    <span className="relative inline-flex size-1.5 rounded-full bg-(--success)" />
                   </span>
-                  <span className="flex items-center gap-0.5">
-                    <span className="h-1 w-1 animate-pulse rounded-full bg-(--text-secondary)/60 [animation-delay:0ms]" />
-                    <span className="h-1 w-1 animate-pulse rounded-full bg-(--text-secondary)/60 [animation-delay:150ms]" />
-                    <span className="h-1 w-1 animate-pulse rounded-full bg-(--text-secondary)/60 [animation-delay:300ms]" />
-                  </span>
+                  3 online
                 </div>
-
-                <span className="font-mono text-[10px] tracking-widest text-(--text-secondary)/45">
-                  4 events
-                </span>
               </div>
             </div>
-          </div>
-
-          {/* Under-frame reflection */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none mx-auto mt-3 h-6 w-4/5 rounded-[50%] bg-(--tint-2) blur-2xl"
-          />
-
-          {/* Floating corner accents */}
-          <span
-            aria-hidden="true"
-            className="pointer-events-none absolute -left-3 top-12 hidden h-3 w-3 rounded-full border border-white/[0.14] bg-(--tint-6) backdrop-blur-md sm:block"
-          />
-          <span
-            aria-hidden="true"
-            className="pointer-events-none absolute -right-3 bottom-16 hidden h-3 w-3 rounded-full border border-white/[0.14] bg-(--tint-6) backdrop-blur-md sm:block"
-          />
+          </Reveal>
         </div>
       </div>
     </section>

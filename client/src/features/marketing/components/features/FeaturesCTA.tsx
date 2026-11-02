@@ -16,7 +16,7 @@ export default function FeaturesCTA() {
           <div
             className="
               group/panel relative overflow-hidden rounded-[28px]
-              border border-white/[0.12]
+              border border-white/12
               bg-(--tint-3)
               px-6 py-16 text-center
               shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_40px_100px_-30px_rgba(0,0,0,0.8),0_0_0_1px_rgba(255,255,255,0.02)]
@@ -35,7 +35,7 @@ export default function FeaturesCTA() {
               aria-hidden="true"
               className="pointer-events-none absolute inset-0 overflow-hidden rounded-[28px]"
             >
-              <div className="absolute -inset-x-1/4 -top-1/2 h-[200%] rotate-[18deg] bg-[linear-gradient(90deg,transparent_45%,rgba(255,255,255,0.05)_50%,transparent_55%)]" />
+              <div className="absolute -inset-x-1/4 -top-1/2 h-[200%] rotate-18 bg-[linear-gradient(90deg,transparent_45%,rgba(255,255,255,0.05)_50%,transparent_55%)]" />
             </div>
 
             {/* ── Kicker — orbiting glass pill matching hero ──── */}
@@ -106,7 +106,7 @@ export default function FeaturesCTA() {
               <Link
                 to="/auth/register"
                 className="
-                  group/cta relative inline-flex min-w-[180px] items-center justify-center gap-2
+                  group/cta relative inline-flex min-w-45 items-center justify-center gap-2
                   overflow-hidden rounded-full
                   border border-(--brand)/45
                   bg-(--brand)/[0.14]
@@ -116,7 +116,7 @@ export default function FeaturesCTA() {
                   backdrop-blur-xl backdrop-saturate-150
                   transition-all duration-300
                   hover:border-(--brand)/80
-                  hover:bg-(--brand)/[0.22]
+                  hover:bg-(--brand)/0.22
                   hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.20),0_14px_48px_-10px_var(--brand)]
                   active:scale-[0.98]
                 "
@@ -133,16 +133,16 @@ export default function FeaturesCTA() {
               <Link
                 to="/"
                 className="
-                  inline-flex min-w-[180px] items-center justify-center gap-2
+                  inline-flex min-w-45 items-center justify-center gap-2
                   rounded-full
-                  border border-white/[0.10]
+                  border border-white/10
                   bg-(--tint-3)
                   px-6 py-3
                   font-mono text-sm text-(--text-secondary)
                   shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]
                   backdrop-blur-xl backdrop-saturate-150
                   transition-all duration-300
-                  hover:border-white/[0.20]
+                  hover:border-white/20
                   hover:bg-(--tint-6)
                   hover:text-(--text-primary)
                   active:scale-[0.98]
@@ -173,8 +173,8 @@ export default function FeaturesCTA() {
             aria-hidden="true"
             className="pointer-events-none absolute inset-x-16 -bottom-24 top-32 -z-10"
           >
-            <div className="absolute inset-0 rounded-[40%] bg-(--brand)/[0.18] blur-[100px]" />
-            <div className="absolute inset-x-12 top-12 bottom-0 rounded-[50%] bg-(--tint-4)/[0.06] blur-[90px]" />
+            <div className="absolute inset-0 rounded-[40%] bg-(--brand)/18 blur-[100px]" />
+            <div className="absolute inset-x-12 top-12 bottom-0 rounded-[50%] bg-(--tint-4)/6 blur-[90px]" />
           </div>
         </div>
       </div>
@@ -182,7 +182,7 @@ export default function FeaturesCTA() {
       {/* ═══════════════════════════════════════════════════════════
           BOTTOM — quiet status bar as closing bookend
           ═══════════════════════════════════════════════════════════ */}
-      <div className="relative border-t border-white/[0.04]">
+      <div className="relative border-t border-white/4">
         <div className="mx-auto flex max-w-7xl flex-col items-center gap-2 px-4 py-4 sm:flex-row sm:justify-between sm:px-6 lg:px-8">
           <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-(--text-secondary)/45">
             Your workspace starts here.

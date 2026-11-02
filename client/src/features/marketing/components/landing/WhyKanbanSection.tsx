@@ -1,188 +1,244 @@
-import { useEffect, useRef } from "react";
-import {
-  animate,
-  motion,
-  useInView,
-  useMotionValue,
-  useTransform,
-  type Variants,
-} from "framer-motion";
-import {
-  DashboardSquare01Icon,
-  UserGroupIcon,
-  Rocket01Icon,
-} from "@hugeicons/core-free-icons";
+import { Suspense, lazy, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Tick02Icon } from "@hugeicons/core-free-icons";
 
-import WhyCard from "./WhyCard";
+import { cn } from "@/utils/cn";
+import DesktopFrame from "./DesktopFrame";
 import { Reveal } from "./Tilt";
 
-const features = [
+const DashboardDemoPage = lazy(() => import("./DashboardDemoPage"));
+
+/* ── Content ────────────────────────────────────────────────────────── */
+
+interface Item {
+  id: string;
+  title: string;
+  body: string;
+  points: [string, string];
+  cta: string;
+  href: string;
+  /** Sits on the stage while this item is the open one. */
+  caption: string;
+}
+
+const ITEMS: Item[] = [
   {
-    number: "01",
-    icon: DashboardSquare01Icon,
+    id: "organize",
     title: "Organize",
-    description: "Structure that stays out of the way.",
-    visual: "board" as const,
+    body: "Structure that stays out of the way. Columns, labels and priorities are yours to shape in seconds, not an afternoon.",
+    points: ["Columns & labels", "Saved views"],
+    cta: "Open a board",
+    href: "/workspaces",
+    caption: "Board view, live",
   },
   {
-    number: "02",
-    icon: UserGroupIcon,
+    id: "collaborate",
     title: "Collaborate",
-    description: "Everyone sees the same board, live.",
-    visual: "cursors" as const,
+    body: "Everyone sees the same board at the same moment. Cursors, cards and comments arrive without a refresh.",
+    points: ["Live cursors", "Instant sync"],
+    cta: "Open a board",
+    href: "/workspaces",
+    caption: "Two people, one card",
   },
   {
-    number: "03",
-    icon: Rocket01Icon,
-    title: "Move Faster",
-    description: "Spot blockers before they cost you.",
-    visual: "velocity" as const,
+    id: "move-faster",
+    title: "Move faster",
+    body: "Spot the blocker before it costs you a week. Cards tell you where work stalls, and the insights tab turns that into numbers.",
+    points: ["Flow at a glance", "Insights"],
+    cta: "Open a board",
+    href: "/workspaces",
+    caption: "Where work stalls",
+  },
+  {
+    id: "own-your-data",
+    title: "Own your data",
+    body: "Self-host the whole stack, export everything, or delete it. Nothing is held hostage behind an account.",
+    points: ["Docker setup", "JSON export"],
+    cta: "Read the source",
+    href: "https://github.com/imrajmishraa/kanban-collab",
+    caption: "Your box, your data",
   },
 ];
 
-const stats = [
-  { value: "< 50ms", label: "Sync latency" },
-  { value: "∞", label: "Boards" },
-  { value: "100%", label: "Open source" },
-];
+const panelId = (id: string) => `why-panel-${id}`;
 
-/* ── Stat value that counts up when scrolled into view ─────────── */
+/* ── Stage: the product shot that sits beside the list ──────────────── */
 
-function StatValue({ value }: { value: string }) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-40px" });
-
-  /* "< 50ms" → prefix "< ", number 50, suffix "ms". "∞" stays static. */
-  const match = value.match(/^([^\d]*)(\d+)(.*)$/);
-
-  const count = useMotionValue(0);
-  const text = useTransform(
-    count,
-    (v) => `${match?.[1] ?? ""}${Math.round(v)}${match?.[3] ?? ""}`,
-  );
-
-  useEffect(() => {
-    if (!inView || !match) return;
-    const controls = animate(count, Number(match[2]), {
-      duration: 1.4,
-      ease: [0.21, 0.47, 0.32, 0.98],
-    });
-    return () => controls.stop();
-  }, [inView, count, match]);
-
-  if (!match) {
-    return (
-      <motion.span
-        initial={{ opacity: 0, y: 8 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6 }}
-        className="block"
-        ref={ref}
-      >
-        {value}
-      </motion.span>
-    );
-  }
-
+function StageSkeleton() {
   return (
-    <motion.span ref={ref} className="block">
-      {text}
-    </motion.span>
+    <div
+      aria-hidden="true"
+      className="aspect-643/386 w-full animate-pulse rounded-lg bg-(--tint-3) motion-reduce:animate-none"
+    />
   );
 }
 
-/* ── Bento cards flip up in 3D, staggered ───────────────────────── */
-
-const cardVariants: Variants = {
-  hidden: { opacity: 0, y: 56, rotateX: 14 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    rotateX: 0,
-    transition: { duration: 0.9, ease: [0.21, 0.47, 0.32, 0.98] },
-  },
-};
+/* ── Section ────────────────────────────────────────────────────────── */
 
 export default function WhyKanbanSection() {
-  /* Glow drifts as the section scrolls past */
-  const sectionRef = useRef<HTMLElement>(null);
+  const [activeId, setActiveId] = useState(ITEMS[0].id);
+  const active = ITEMS.find((item) => item.id === activeId) ?? ITEMS[0];
 
   return (
-    <section
-      ref={sectionRef}
-      className="relative overflow-hidden border-b border-(--border)"
-    >
-      <div className="relative mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-28 lg:px-8 lg:py-32">
-        {/* ── Kicker ────────────────────────────────────────────── */}
+    <section className="relative">
+      <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-28 lg:px-8">
+        {/* ── Heading ── */}
         <Reveal>
-          <div className="flex items-center gap-3">
-            <span className="inline-flex items-center gap-2 rounded-full border border-(--border) bg-(--tint-3) px-3.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.22em] text-(--text-secondary) backdrop-blur-xl backdrop-saturate-150">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-(--brand) opacity-60" />
-                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-(--brand)" />
-              </span>
-              <span>Why Kanban</span>
-            </span>
-          </div>
+          <h2 className="font-sans text-[32px] font-bold tracking-[-1px] text-(--text-primary) sm:text-[36px] md:text-[40px] md:tracking-[-1.4px]">
+            Design where <span className="text-(--text-muted)">you are.</span>
+          </h2>
         </Reveal>
 
-        {/* ── Heading + stats on one row ────────────────────────── */}
-        <div className="mt-8 flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between">
-          <Reveal delay={0.08} className="max-w-2xl">
-            <h2 className="font-mono text-3xl font-medium leading-[1.08] tracking-[-0.04em] text-(--text-primary) sm:text-4xl lg:text-5xl">
-              Work should move{" "}
-              <span className="from-(--brand-hover) via-(--brand) text-(--text-primary)">
-                forward.
-              </span>
-            </h2>
-          </Reveal>
+        <Reveal delay={0.08}>
+          <p className="mt-3 text-[18px] tracking-[-0.3px] text-(--text-secondary) sm:text-[20px] md:text-[22px] md:tracking-[-0.5px]">
+            Four things a board has to get right. Pick one and it shows up on
+            the right.
+          </p>
+        </Reveal>
 
-          {/* Stats — right-aligned horizontal strip, values count up */}
-          <Reveal delay={0.16}>
-            <div className="flex items-stretch gap-6 border-l border-(--border-subtle) pl-6 lg:gap-8 lg:pl-8">
-              {stats.map((stat, i) => (
-                <div
-                  key={stat.label}
-                  className={`flex flex-col ${
-                    i !== 0
-                      ? "border-l border-(--border-subtle) pl-6 lg:pl-8"
-                      : ""
-                  }`}
-                >
-                  <span className="font-mono text-lg font-medium tracking-tight text-(--text-primary) sm:text-xl">
-                    <StatValue value={stat.value} />
-                  </span>
-                  <span className="mt-1 font-mono text-[10px] uppercase tracking-[0.18em] text-(--text-secondary)/60">
-                    {stat.label}
-                  </span>
+        <div className="mt-10 grid gap-10 md:mt-14 md:grid-cols-[minmax(320px,448.5px)_1fr] md:gap-16 lg:gap-24">
+          {/* ── List ── */}
+          <div className="space-y-4 sm:space-y-5">
+            {ITEMS.map((item) => {
+              const isOpen = item.id === activeId;
+
+              return (
+                <div key={item.id} className="grid grid-cols-[6px_1fr] gap-4">
+                  {/* Rail: the sanctioned active segment, not a colour fill */}
+                  <div
+                    aria-hidden="true"
+                    className={cn(
+                      "h-full w-1.5 rounded-lg border transition-colors duration-300 motion-reduce:transition-none",
+                      isOpen
+                        ? "border-(--accent) bg-(--accent-fill)"
+                        : "border-(--border) bg-(--border)",
+                    )}
+                  />
+
+                  <div className={isOpen ? "py-3" : "pt-1"}>
+                    {/* The button wraps the title only: the panel below holds
+                        links, and an anchor cannot live inside a button. */}
+                    <button
+                      type="button"
+                      onClick={() => setActiveId(item.id)}
+                      aria-expanded={isOpen}
+                      aria-controls={panelId(item.id)}
+                      className="w-full cursor-pointer text-left"
+                    >
+                      <h3
+                        className={cn(
+                          "text-[20px] font-medium transition-colors duration-300 motion-reduce:transition-none sm:text-2xl",
+                          isOpen
+                            ? "text-(--text-primary)"
+                            : "text-(--text-secondary)",
+                        )}
+                      >
+                        {item.title}
+                      </h3>
+                    </button>
+
+                    {/* Answer stays mounted; the grid row carries the height */}
+                    <div
+                      id={panelId(item.id)}
+                      aria-hidden={!isOpen}
+                      className={cn(
+                        "grid transition-all duration-300 ease-in-out motion-reduce:transition-none",
+                        isOpen
+                          ? "mt-2 grid-rows-[1fr] opacity-100"
+                          : "grid-rows-[0fr] opacity-0",
+                      )}
+                    >
+                      <div className="overflow-hidden">
+                        <p className="text-[16px] leading-5.5 text-(--text-secondary) sm:text-[18px] sm:leading-6">
+                          {item.body}
+                        </p>
+
+                        <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-[16px] font-medium text-(--text-primary) sm:gap-x-8 sm:text-[18px]">
+                          {item.points.map((point) => (
+                            <span
+                              key={point}
+                              className="flex items-center gap-2"
+                            >
+                              <HugeiconsIcon
+                                icon={Tick02Icon}
+                                size={18}
+                                strokeWidth={2}
+                                aria-hidden="true"
+                                className="text-(--accent)"
+                              />
+                              {point}
+                            </span>
+                          ))}
+                        </div>
+
+                        <div className="mt-6 flex flex-wrap gap-3">
+                          <a
+                            href={item.href}
+                            target={
+                              item.href.startsWith("http")
+                                ? "_blank"
+                                : undefined
+                            }
+                            rel={
+                              item.href.startsWith("http")
+                                ? "noopener noreferrer"
+                                : undefined
+                            }
+                            className="
+                              inline-flex h-12.5 items-center justify-center rounded-lg
+                              border border-(--hairline-strong) bg-(--tint-3) px-4
+                              text-[16px] font-bold text-(--text-primary)
+                              transition-colors duration-200 motion-reduce:transition-none
+                              hover:bg-(--tint-6)
+                              focus-visible:ring-2 focus-visible:ring-(--brand) focus-visible:outline-none
+                            "
+                          >
+                            {item.cta}
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              ))}
-            </div>
-          </Reveal>
-        </div>
+              );
+            })}
+          </div>
 
-        {/* ── Bento cards — flip up in 3D, one after another ─────── */}
-        <div className="mt-16 perspective-distant">
-          <motion.div
-            className="grid gap-5 md:grid-cols-3"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-80px" }}
-            variants={{
-              visible: { transition: { staggerChildren: 0.15 } },
-            }}
-          >
-            {features.map((feature) => (
-              <motion.div
-                key={feature.number}
-                variants={cardVariants}
-                className="h-full"
+          {/* ── Stage ── */}
+          <div className="w-full max-w-160.75">
+            <div className="relative overflow-hidden rounded-xl border border-(--hairline) bg-[linear-gradient(160deg,var(--tint-6),var(--tint-2))] p-2.5">
+              <DesktopFrame
+                title="Kanban Collab"
+                url="kanban.app"
+                screenAspect="aspect-[643/386]"
               >
-                <WhyCard {...feature} />
-              </motion.div>
-            ))}
-          </motion.div>
+                <Suspense fallback={<StageSkeleton />}>
+                  <DashboardDemoPage />
+                </Suspense>
+              </DesktopFrame>
+
+              <div className="pointer-events-none absolute bottom-5 left-5 z-20">
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.span
+                    key={active.id}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.25 }}
+                    className="
+                      inline-flex items-center rounded-full border border-(--accent)
+                      bg-(--accent-soft) px-3 py-1.5
+                      text-[12px] font-medium text-(--accent)
+                      backdrop-blur-md
+                    "
+                  >
+                    {active.caption}
+                  </motion.span>
+                </AnimatePresence>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
