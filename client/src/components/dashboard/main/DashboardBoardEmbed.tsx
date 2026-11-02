@@ -8,8 +8,8 @@ import { ArrowRight01Icon, LayersIcon } from "@hugeicons/core-free-icons";
 import BoardColumns from "@/components/board/BoardColumns";
 import { EditColumnDialog } from "@/features/workspaces";
 
-import { ui } from "@/features/boards";
-import { useBoardMutations } from "@/features/boards";
+import { ui } from "@/features/boards/index";
+import { useBoardMutations } from "@/features/boards/hooks/useBoardMutations";
 
 import type { BoardCard, BoardDetails } from "@/types/board";
 

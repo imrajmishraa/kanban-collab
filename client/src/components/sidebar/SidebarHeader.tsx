@@ -5,7 +5,8 @@ import {
 } from "@hugeicons/core-free-icons";
 import { useNavigate } from "react-router-dom";
 
-import logo from "@/assets/logo.svg?inline";
+import { KanbanIcon } from "@/assets/KanbanIcon";
+
 import { Tooltip } from "@/components/Tooltips/ToolTip";
 
 import { useSidebarState, type SidebarMode } from "@/features/dashboard";
@@ -50,18 +51,10 @@ const SidebarHeader = ({
           "
           >
             {/* Logo, visible normally, hidden on hover */}
-            <img
-              src={logo}
-              alt=""
-              width={16}
-              height={16}
-              draggable={false}
-              className="
-              h-7 w-7 rounded-full
-              transition-all duration-150
-              group-hover:scale-75
-              group-hover:opacity-0
-            "
+            <KanbanIcon
+              size={22}
+              variant="upper"
+              className="transition-all duration-150 group-hover:opacity-0"
             />
 
             {/* Hover hint, hidden normally, visible on hover: a pointer when
@@ -95,15 +88,14 @@ const SidebarHeader = ({
         aria-label="Go to homepage"
         className="group ml-1 flex cursor-pointer items-center gap-2.5 rounded-md px-1.5 py-1 transition-colors"
       >
-        <img
-          src={logo}
-          alt=""
-          width={16}
-          height={16}
-          draggable={false}
-          className="h-6 w-6 rounded-full transition-all duration-300"
+        {/* Logo, visible normally, hidden on hover */}
+        <KanbanIcon
+          size={22}
+          variant="upper"
+          className="transition-all duration-150 group-hover:scale-110"
         />
-        <span className="text-[14px] font-semibold tracking-tight text-(--text-primary)">
+
+        <span className="text-[15px] font-semibold tracking-tight text-(--text-primary)">
           Kanban
         </span>
       </button>

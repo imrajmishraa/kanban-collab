@@ -168,7 +168,7 @@ export default function DashboardNavbar() {
         {/* Centred page title: the workspace name inside a workspace, and a
             plain label everywhere else. */}
         {pageTitle && (
-          <span className="pointer-events-none absolute left-1/2 max-w-[40%] -translate-x-1/2 truncate text-[12.5px] font-medium tracking-tight text-(--text-soft)">
+          <span className="pointer-events-none absolute left-1/2 max-w-[40%] -translate-x-1/2 truncate text-[13px] font-bold tracking-tight text-(--text-soft)">
             {pageTitle}
           </span>
         )}

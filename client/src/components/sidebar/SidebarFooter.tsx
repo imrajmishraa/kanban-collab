@@ -9,7 +9,7 @@ import { Tooltip } from "@/components/Tooltips/ToolTip";
 import SidebarAccountMenu from "./SidebarAccountMenu";
 import FeedbackDialog from "./FeedbackDialog";
 
-import { avatarColor } from "@/features/boards";
+import { avatarColor } from "@/features/boards/index";
 
 import type { AuthUser } from "@/types/auth";
 

@@ -9,18 +9,17 @@ import {
   Message01Icon,
 } from "@hugeicons/core-free-icons";
 
-import { CardAttachmentsDialog } from "@/features/boards";
-import { CardCommentsDialog } from "@/features/boards";
-import { CardEditorContent } from "@/features/boards";
-import { CardEditorMeta } from "@/features/boards";
+import {
+  CardAttachmentsDialog,
+  CardCommentsDialog,
+  CardEditorContent,
+  CardEditorMeta,
+  avatarColor,
+  type BoardMember,
+} from "@/features/boards/index";
 
 import { Tooltip } from "@/components/Tooltips/ToolTip";
-
 import { Avatar } from "@/components/board/BoardAvatar";
-
-import { avatarColor } from "@/features/boards";
-
-import type { BoardMember } from "@/features/boards";
 import type { BoardCard } from "@/types/board";
 
 interface CardDetailModalProps {

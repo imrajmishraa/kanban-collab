@@ -16,10 +16,10 @@ import {
 } from "@hugeicons/core-free-icons";
 
 import { useAuth } from "@/hooks/useAuth";
-import logo from "@/assets/logo.svg?inline";
 
 import NavbarSearch from "./NavbarSearch";
 import { MOBILE_LINKS, NAV, NAV_LINKS, SOLUTIONS } from "./navConfig";
+import KanbanIcon from "@/assets/KanbanIcon";
 
 const cn = (...classes: Array<string | false | null | undefined>) =>
   classes.filter(Boolean).join(" ");
@@ -215,9 +215,8 @@ export default function Navbar({ onNavigate, activeHref = "" }: NavbarProps) {
   const desktopLink = (active: boolean) =>
     cn(
       "group relative rounded-md px-3.5 py-2",
-      "text-[15px] transition-colors duration-150",
+      "text-[15.5px] transition-colors duration-150",
       NAV.text,
-      "hover:text-[rgb(176,176,176)]",
       active ? "font-bold" : "font-medium",
       focusRing,
     );
@@ -233,7 +232,7 @@ export default function Navbar({ onNavigate, activeHref = "" }: NavbarProps) {
 
   const panelRow = cn(
     "flex items-center gap-3 rounded-lg px-3 py-3",
-    "text-[16px]",
+    "text-[13px]",
     "transition-colors duration-150",
     NAV.text,
     NAV.hover,
@@ -255,23 +254,22 @@ export default function Navbar({ onNavigate, activeHref = "" }: NavbarProps) {
     >
       <div className="relative mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:h-15 sm:gap-6 sm:px-6">
         {/* ── LEFT: brand ─────────────────────────────────────────── */}
-        <Link to="/" aria-label="Home" className={focusRing}>
+        <Link to="/home" aria-label="Home" className={focusRing}>
           <button
             type="button"
             onClick={() => setMobileOpen(false)}
             className={cn(
-              "flex min-w-0 mt-1.5 shrink items-center gap-3 rounded-full",
+              "flex group/logo min-w-0 mt-1.5 shrink items-center gap-3 rounded-full",
               focusRing,
             )}
           >
-            <span className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-md">
-              <img
-                src={logo}
-                alt=""
-                width={28}
-                height={28}
-                draggable={false}
-                className="size-full object-cover rounded-full"
+            <span className="flex shrink-0 items-center justify-center">
+              {/* Logo, visible normally, hidden on hover */}
+              <KanbanIcon
+                size={24}
+                variant="upper"
+                theme="light"
+                className="transition-transform duration-150 group-hover/logo:scale-110"
               />
             </span>
             <span

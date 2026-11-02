@@ -16,7 +16,7 @@ import {
 } from "@hugeicons/core-free-icons";
 
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
-import { Tooltip } from "#components/Tooltips/ToolTip";
+import { Tooltip } from "@/components/Tooltips/ToolTip";
 import { cn } from "@/utils/cn";
 
 import {
@@ -204,7 +204,7 @@ export default function NavbarSearch({
         }}
         aria-current={index === activeIndex ? "true" : undefined}
         className={cn(
-          "group flex items-center gap-3 mt-px rounded-lg px-2.5 py-2",
+          "group flex items-center gap-3 mt-0.5 rounded-lg px-2.5 py-2",
           "transition-colors duration-150",
           NAV.hover,
           index === activeIndex && "bg-[rgb(243,243,243)]",
@@ -212,7 +212,7 @@ export default function NavbarSearch({
       >
         <span
           className={cn(
-            "flex size-9 shrink-0 items-center justify-center rounded-lg border",
+            "flex size-7 shrink-0 items-center justify-center rounded-lg border",
             NAV.edge,
           )}
         >
@@ -226,11 +226,11 @@ export default function NavbarSearch({
         </span>
 
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-[15px] font-semibold text-[rgb(55,55,55)]">
+          <span className="block truncate text-[13px] font-medium text-[rgb(55,55,55)]">
             {item.title}
           </span>
           {parentFor(item) ? (
-            <span className="mt-0.5 block truncate text-[12.5px] text-[rgb(140,140,140)]">
+            <span className="block truncate text-[11px] font-normal text-[rgb(140,140,140)]">
               {parentFor(item)}
             </span>
           ) : null}
@@ -335,7 +335,7 @@ export default function NavbarSearch({
              collapsing into the icon. */
             "transition-[width] duration-200 ease-out motion-reduce:transition-none",
             open
-              ? "w-65 gap-2 rounded-full border border-[rgb(198,198,198)] pr-1 pl-3"
+              ? "w-70 gap-2 rounded-full border border-[rgb(198,198,198)] pr-1 pl-3"
               : "w-9 justify-center rounded-lg",
           )}
         >
@@ -418,6 +418,7 @@ export default function NavbarSearch({
               highlight="F"
               side="bottom"
               size="md"
+              theme="dark"
             >
               <button
                 type="button"
@@ -456,7 +457,7 @@ export default function NavbarSearch({
                corner once the trigger was a 36px icon. */
             "fixed top-17 left-1/2 z-50  flex h-90 -translate-x-1/2 flex-col",
             "rounded-xl border p-2",
-            isMobile ? "w-[calc(100vw-24px)] max-w-110" : "w-105",
+            isMobile ? "w-[calc(100vw-24px)] max-w-110" : "w-90",
             "origin-top animate-in fade-in zoom-in-95 duration-150 ease-out",
             "motion-reduce:animate-none",
             NAV.surface,

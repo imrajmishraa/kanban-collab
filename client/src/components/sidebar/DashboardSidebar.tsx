@@ -1,19 +1,23 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import SidebarHeader from "./SidebarHeader";
-import SidebarNavigation from "./SidebarNavigation";
-import SidebarSearch from "./SidebarSearch";
-import SidebarFooter from "./SidebarFooter";
 
-import MobileSidebar from "@/components/mobile/MobileSidebar";
+export const SidebarNavigation = lazy(() => import("./SidebarNavigation"));
+export const SidebarSearch = lazy(() => import("./SidebarSearch"));
+export const SidebarFooter = lazy(() => import("./SidebarFooter"));
+
+export const MobileSidebar = lazy(
+  () => import("@/components/mobile/MobileSidebar"),
+);
+
 import SidebarMobileHeader from "@/components/mobile/SidebarMobileHeader";
 
 import { useWorkspaces } from "@/hooks/useWorkspaces";
 import { useBoards, boardKeys, BOARDS_LIST_LIMIT } from "@/hooks/useBoards";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
-import { useSidebarState } from "@/features/dashboard";
+import { useSidebarState } from "@/features/dashboard/stores/sidebarState";
 import { useAuth } from "@/hooks/useAuth";
-import { boardApi } from "@/features/boards";
+import { boardApi } from "@/features/boards/api/boardApi";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { ShareBoardDialog } from "./ShareBoardDialog";

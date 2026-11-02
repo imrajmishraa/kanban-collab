@@ -2,7 +2,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { Add01Icon } from "@hugeicons/core-free-icons";
 import type { DragEvent } from "react";
 
-import { BoardColumn } from "@/features/boards";
+import { BoardColumn } from "@/features/boards/index";
 
 import type { BoardCard, BoardColumn as BoardColumnType } from "@/types/board";
 

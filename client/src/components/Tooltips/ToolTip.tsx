@@ -179,6 +179,38 @@ const ARROW_TONE_CLASS: Record<TooltipTone, string> = {
   danger: "border-(--danger)/30",
 };
 
+/* ── Theme: serve the bubble dark or light, whatever the page is doing ──
+   "auto" keeps the old behaviour — the capsule inverts against the page, so it
+   is light on a dark page and dark on a light one. "dark" and "light" pin it to
+   fixed values instead, which is what a permanently white bar needs: a tooltip
+   that flips with the app theme would go dark on white chrome.
+
+   These are fixed colours on purpose. Every token in this system flips with the
+   theme, so none of them can express "always dark". Written as rgb() rather
+   than hex because `check-theme-colors` rejects hex and allows rgb. */
+
+export type TooltipTheme = "auto" | "dark" | "light";
+
+const THEME_CLASS: Record<TooltipTheme, string> = {
+  auto: "",
+  dark: "border-[rgb(58,58,62)] bg-[rgb(20,20,21)] text-[rgb(245,245,245)]",
+  light: "border-[rgb(226,226,226)] bg-[rgb(255,255,255)] text-[rgb(23,23,23)]",
+};
+
+const THEME_ARROW_CLASS: Record<TooltipTheme, string> = {
+  auto: "",
+  dark: "border-[rgb(58,58,62)] bg-[rgb(20,20,21)]",
+  light: "border-[rgb(226,226,226)] bg-[rgb(255,255,255)]",
+};
+
+/* The one accent phrase has to sit on whatever the capsule became: cream on
+   dark, deep amber on light. */
+const THEME_HIGHLIGHT_CLASS: Record<TooltipTheme, string> = {
+  auto: "",
+  dark: "text-[rgb(255,228,180)]",
+  light: "text-[rgb(146,64,14)]",
+};
+
 /* ── Typography scale, the bubble's voice, independent of shape. ── */
 
 export type TooltipSize = "sm" | "md" | "lg";
@@ -215,6 +247,11 @@ interface TooltipProps {
   shape?: TooltipShape;
   /** Semantic colour layer on top of the shape (default: 'neutral') */
   tone?: TooltipTone;
+  /**
+   * Which way the bubble is painted. "auto" (default) inverts against the page;
+   * "dark" and "light" pin it, for chrome that does not follow the theme.
+   */
+  theme?: TooltipTheme;
   /** Typography scale (default: 'md') */
   size?: TooltipSize;
   /** Show the arrow tail. 'none' hides it (default: 'auto') */
@@ -258,6 +295,7 @@ export function Tooltip({
   align = "left",
   shape = "default",
   tone = "neutral",
+  theme = "auto",
   size = "md",
   caret = "auto",
   highlight,
@@ -432,6 +470,15 @@ export function Tooltip({
   /* Hover handlers only on hover-capable devices, no ghost tooltips on phones */
   const hoverProps = canHover ? { onMouseEnter: show, onMouseLeave: hide } : {};
 
+  /* The accent phrase follows whatever the capsule became: a pinned theme wins,
+     otherwise the shape decides, otherwise the page theme. */
+  const highlightClass =
+    theme !== "auto"
+      ? THEME_HIGHLIGHT_CLASS[theme]
+      : INVERTED_SHAPES.has(shape)
+        ? "text-(--inverse-accent)"
+        : "text-(--accent)";
+
   return (
     <span
       ref={wrapRef}
@@ -505,10 +552,12 @@ export function Tooltip({
               align === "right" && "text-right",
               /* Shape classes come AFTER the base fill/text/shadow
                  so creative variants can override all of them;
-                 tone and size then layer on top of shape. */
+                 tone, theme and size then layer on top of shape. */
               SHAPE_CLASS[shape],
               TONE_CLASS[tone],
               SIZE_CLASS[size],
+              /* Last, so a pinned theme beats the shape's own colours. */
+              THEME_CLASS[theme],
               /* 200ms sits inside ChaiUI's 200 to 300ms band. */
               "transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]",
               "motion-reduce:transition-none",
@@ -521,12 +570,7 @@ export function Tooltip({
             {label}
             {highlight ? (
               <span
-                className={cn(
-                  "ml-1 font-medium capitalize",
-                  INVERTED_SHAPES.has(shape)
-                    ? "text-(--inverse-accent)"
-                    : "text-(--accent)",
-                )}
+                className={cn("ml-1 font-medium capitalize", highlightClass)}
               >
                 {highlight}
               </span>
@@ -539,6 +583,7 @@ export function Tooltip({
                   "absolute size-2 rotate-45 rounded-[3px]",
                   ARROW_CLASS[shape],
                   ARROW_TONE_CLASS[tone],
+                  THEME_ARROW_CLASS[theme],
                   pos?.side === "bottom" && "border-t border-l",
                   pos?.side === "top" && "border-r border-b",
                   pos?.side === "right" && "border-b border-l",

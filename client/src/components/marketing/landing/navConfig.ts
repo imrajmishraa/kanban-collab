@@ -19,6 +19,14 @@ import {
   SmilePlusIcon,
   Home03Icon,
   BellRingIcon,
+  ApiIcon,
+  House02Icon,
+  CloudServerIcon,
+  NewTwitterIcon,
+  InstagramIcon,
+  YoutubeIcon,
+  Mail01Icon,
+  BiscuitIcon,
 } from "@hugeicons/core-free-icons";
 
 /**
@@ -125,6 +133,7 @@ export const MOBILE_LINKS: NavLink[] = [
 
 export const PUBLIC_PAGES: NavPage[] = [
   { title: "Home", href: "/home", icon: Home03Icon },
+  { title: "Cookies policy", href: "/cookies", icon: BiscuitIcon },
   { title: "Examples", href: "/use-cases", icon: LayersIcon },
   { title: "Features", href: "/features", icon: FileStarIcon },
   { title: "How it works", href: "/how-it-works", icon: Rocket01Icon },
@@ -132,8 +141,8 @@ export const PUBLIC_PAGES: NavPage[] = [
   { title: "Pricing", href: "/pricing", icon: Tag01Icon },
   { title: "Testimonials", href: "/testimonials", icon: StarIcon },
   { title: "Docs", href: "/docs", icon: BookOpen02Icon },
-  { title: "Terms", href: "/terms", icon: Agreement03Icon },
-  { title: "Privacy", href: "/privacy", icon: BiometricAccessIcon },
+  { title: "Terms of Service", href: "/terms", icon: Agreement03Icon },
+  { title: "Privacy policy", href: "/privacy", icon: BiometricAccessIcon },
   { title: "Help", href: "/help", icon: MessageQuestionIcon },
   { title: "Feedback", href: "/feedback", icon: SmilePlusIcon },
   { title: "Github Team", href: "/solutions#open-source", icon: GithubIcon },
@@ -257,3 +266,205 @@ export const PROTECTED_PAGES: NavPage[] = [
 export const DEFAULT_PROTECTED: NavPage[] = PROTECTED_PAGES.filter(
   (page) => !page.searchOnly,
 );
+
+/* ── Footer ───────────────────────────────────────────────────────── */
+
+export interface FooterLink {
+  title: string;
+  href: string;
+  /** Off-site, so it opens in a new tab and skips the router. */
+  external?: boolean;
+  /** A short bold note after the label, like "Free". */
+  badge?: string;
+  /** A live status dot after the label. */
+  dot?: boolean;
+}
+
+export interface FooterColumn {
+  title: string;
+  links: FooterLink[];
+}
+
+/**
+ * The "Ask AI" row: the same five tools the reference links to, pointed at this
+ * project instead. Each opens with the question already written, so a visitor
+ * lands on an answer rather than an empty box.
+ */
+const ASK = encodeURIComponent(
+  "Tell me about Kanban Collab (https://github.com/imrajmishraa/kanban-collab): what it does, how its realtime CRDT sync works, and how to self-host it with Docker.",
+);
+
+export type AiBrand = "chatgpt" | "claude" | "perplexity" | "grok" | "gemini";
+
+export interface AiLink {
+  title: string;
+  href: string;
+  brand: AiBrand;
+}
+
+export const FOOTER_AI: AiLink[] = [
+  {
+    title: "Ask ChatGPT about Kanban",
+    href: `https://chatgpt.com/?q=${ASK}`,
+    brand: "chatgpt",
+  },
+  {
+    title: "Ask Claude about Kanban",
+    href: `https://claude.ai/new?q=${ASK}`,
+    brand: "claude",
+  },
+  {
+    title: "Ask Perplexity about Kanban",
+    href: `https://www.perplexity.ai/search/new?q=${ASK}`,
+    brand: "perplexity",
+  },
+  {
+    title: "Ask Grok about Kanban",
+    href: `https://grok.com/?q=${ASK}`,
+    brand: "grok",
+  },
+  {
+    title: "Ask Gemini AI about Kanban",
+    href: `https://www.google.com/search?udm=50&q=${ASK}`,
+    brand: "gemini",
+  },
+];
+
+const REPO = "https://github.com/imrajmishraa/kanban-collab";
+const DOCS = `${REPO}/tree/main/docs`;
+
+export const FOOTER_COLUMNS: FooterColumn[] = [
+  {
+    title: "Product",
+    links: [
+      { title: "Examples", href: "/use-cases" },
+      { title: "Features", href: "/features" },
+      { title: "How it works", href: "/how-it-works" },
+      { title: "Solutions", href: "/solutions" },
+      { title: "Pricing", href: "/pricing", badge: "Free" },
+      { title: "Testimonials", href: "/testimonials" },
+    ],
+  },
+  {
+    title: "Build",
+    links: [
+      { title: "Documentation", href: DOCS, external: true },
+      {
+        title: "API reference",
+        href: `${REPO}/blob/main/docs/api-reference.md`,
+        external: true,
+      },
+      {
+        title: "Architecture",
+        href: `${REPO}/blob/main/docs/architecture.md`,
+        external: true,
+      },
+      {
+        title: "Self-hosting",
+        href: `${REPO}/blob/main/docs/deployment.md`,
+        external: true,
+      },
+      {
+        title: "Contributing",
+        href: `${REPO}/blob/main/docs/contributing.md`,
+        external: true,
+      },
+      { title: "Report an issue", href: `${REPO}/issues`, external: true },
+    ],
+  },
+  {
+    title: "Resources",
+    links: [
+      {
+        title: "Design tokens",
+        href: `${REPO}/blob/main/design.md`,
+        external: true,
+      },
+      {
+        title: "Realtime sync",
+        href: `${REPO}/blob/main/docs/realtime-collaboration.md`,
+        external: true,
+      },
+      {
+        title: "Activity log",
+        href: `${REPO}/blob/main/docs/activity-log.md`,
+        external: true,
+      },
+      {
+        title: "System status",
+        href: `${REPO}/actions`,
+        external: true,
+        dot: true,
+      },
+      { title: "FAQ", href: `${REPO}/blob/main/docs/faq.md`, external: true },
+    ],
+  },
+  {
+    title: "More",
+    links: [
+      { title: "Pricing", href: "/pricing" },
+      { title: "License", href: `${REPO}/blob/main/LICENSE`, external: true },
+      {
+        title: "Author",
+        href: "https://github.com/imrajmishraa",
+        external: true,
+      },
+      { title: "Open source", href: REPO, external: true },
+      { title: "Privacy policy", href: "/privacy" },
+      { title: "Cookie policy", href: "/cookies" },
+      { title: "Terms of service", href: "/terms" },
+    ],
+  },
+];
+
+/**
+ * The row of square buttons under the columns: the places a developer actually
+ * goes next. Brand marks for AI tools would have to be drawn by hand here, so
+ * these point at the project's own surfaces instead.
+ */
+export const FOOTER_TOOLS: NavPage[] = [
+  { title: "Documentation", href: DOCS, icon: BookOpen02Icon },
+  {
+    title: "API reference",
+    href: `${REPO}/blob/main/docs/api-reference.md`,
+    icon: ApiIcon,
+  },
+  {
+    title: "Architecture",
+    href: `${REPO}/blob/main/docs/architecture.md`,
+    icon: House02Icon,
+  },
+  {
+    title: "Self-hosting",
+    href: `${REPO}/blob/main/docs/deployment.md`,
+    icon: CloudServerIcon,
+  },
+  { title: "Repository", href: REPO, icon: GithubIcon },
+];
+
+/** Contact and legal, kept out of the columns so the base row stays short. */
+export const FOOTER_CONTACT = {
+  label: "Contact us",
+  href: `${REPO}/issues/new`,
+  external: true,
+} as const;
+
+export const FOOTER_LEGAL: FooterLink[] = [
+  { title: "Consent preferences", href: "/cookies" },
+];
+
+export const FOOTER_SOCIAL: NavPage[] = [
+  { title: "GitHub", href: REPO, icon: GithubIcon },
+  { title: "X", href: "http://x.com/imrajmishraa", icon: NewTwitterIcon },
+  {
+    title: "Instagram",
+    href: "http://instagram.com/imrajmishraa",
+    icon: InstagramIcon,
+  },
+  {
+    title: "Youtube",
+    href: "http://youtube.com/@imrajmishraa",
+    icon: YoutubeIcon,
+  },
+  { title: "Mail", href: "mailto:rajm56002@gmail.com", icon: Mail01Icon },
+];

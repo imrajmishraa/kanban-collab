@@ -10,7 +10,7 @@ import {
 import { SidebarItem } from "@/features/dashboard";
 import { Avatar } from "@/components/board/BoardAvatar";
 
-import { avatarColor } from "@/features/boards";
+import { avatarColor } from "@/features/boards/index";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { useWorkspaces } from "@/hooks/useWorkspaces";
 
