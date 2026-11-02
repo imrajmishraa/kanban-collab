@@ -1,9 +1,9 @@
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
-  Building02Icon,
-  CheckListIcon,
-  LayersIcon,
+  SlackIcon,
+  ClipboardClockIcon,
   UserGroupIcon,
+  LayersIcon,
 } from "@hugeicons/core-free-icons";
 
 interface DashboardOverviewProps {
@@ -33,9 +33,9 @@ export default function DashboardOverview({
   memberCount,
 }: DashboardOverviewProps) {
   const stats = [
-    { label: "Workspaces", value: workspaceCount, icon: Building02Icon },
+    { label: "Workspaces", value: workspaceCount, icon: SlackIcon },
     { label: "Boards", value: boardCount, icon: LayersIcon },
-    { label: "Active tasks", value: taskCount, icon: CheckListIcon },
+    { label: "Active tasks", value: taskCount, icon: ClipboardClockIcon },
     { label: "Members", value: memberCount, icon: UserGroupIcon },
   ];
 

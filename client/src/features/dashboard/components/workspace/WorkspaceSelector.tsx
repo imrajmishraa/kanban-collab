@@ -7,6 +7,7 @@ import {
   Cancel01Icon,
   Search01Icon,
   Tick02Icon,
+  SlackIcon,
 } from "@hugeicons/core-free-icons";
 
 import { Tooltip } from "@/components/Tooltips/ToolTip";
@@ -62,14 +63,18 @@ function WorkspaceAvatar({
   imageUrl?: string | null;
 }) {
   const [failed, setFailed] = useState(false);
-  const initial = name.trim().charAt(0).toUpperCase() || "W";
 
-  const className =
-    "flex size-5 shrink-0 items-center justify-center overflow-hidden rounded-md border border-(--hairline) bg-(--tint-6) text-[10px] font-semibold text-(--text-soft)";
+  const base =
+    "flex size-6 shrink-0 items-center justify-center overflow-hidden bg-(--tint-6) text-[10px] font-semibold text-(--text-soft)";
 
   if (imageUrl && !failed) {
     return (
-      <span className={className}>
+      <span
+        role="img"
+        aria-label={name}
+        title={name}
+        className={`${base} rounded-full`}
+      >
         <img
           src={imageUrl}
           alt=""
@@ -81,8 +86,13 @@ function WorkspaceAvatar({
   }
 
   return (
-    <span aria-hidden="true" className={className}>
-      {initial}
+    <span
+      role="img"
+      aria-label={name}
+      title={name}
+      className={`${base} rounded-md border border-(--hairline)`}
+    >
+      <HugeiconsIcon icon={SlackIcon} size={12} strokeWidth={1.8} />
     </span>
   );
 }
@@ -233,7 +243,7 @@ export function WorkspaceSelector({
           aria-haspopup="listbox"
           aria-expanded={isOpen}
           className={[
-            "flex h-7 cursor-pointer items-center gap-2 rounded-lg px-2.5",
+            "flex h-8 cursor-pointer items-center gap-2 rounded-lg px-3",
             "text-[11.5px] tracking-tight",
             "transition-colors duration-200",
             isOpen
@@ -291,7 +301,7 @@ export function WorkspaceSelector({
               }
             />
 
-            <span className="max-w-32 truncate">
+            <span className="min-w-0 max-w-32 truncate md:max-w-48 lg:max-w-64">
               {resolvedActiveName ?? "Select workspace"}
             </span>
           </button>
@@ -303,17 +313,17 @@ export function WorkspaceSelector({
             aria-expanded={isOpen}
             aria-label="Switch workspace"
             className={[
-              "flex size-6 cursor-pointer items-center justify-center rounded-md",
+              "flex size-7 mr-0.5 cursor-pointer items-center justify-center rounded-md",
               "transition-colors duration-200",
               isOpen
                 ? "bg-(--tint-10) text-(--text-primary)"
-                : "bg-(--tint-5) text-(--text-secondary) hover:bg-(--tint-8) hover:text-(--text-primary)",
+                : "text-(--text-secondary) hover:bg-(--tint-8) hover:text-(--text-primary)",
             ].join(" ")}
           >
             <HugeiconsIcon
               icon={ChevronsLeftRightIcon}
-              size={11}
-              strokeWidth={2}
+              size={13}
+              strokeWidth={2.5}
               className={[
                 "shrink-0 transition-transform rotate-90 duration-200",
                 isOpen && "",
@@ -341,12 +351,12 @@ export function WorkspaceSelector({
                   type="button"
                   onClick={onClose}
                   aria-label="Back to project view"
-                  className="flex size-6 cursor-pointer items-center justify-center rounded-md text-(--text-muted) transition-colors duration-200 hover:bg-(--bg-hover) hover:text-(--text-primary)"
+                  className="flex ml-0.5 size-7 cursor-pointer items-center justify-center rounded-md text-(--text-muted) transition-colors duration-200 hover:bg-(--bg-hover) hover:text-(--text-primary)"
                 >
                   <HugeiconsIcon
                     icon={Cancel01Icon}
-                    size={12}
-                    strokeWidth={2}
+                    size={13}
+                    strokeWidth={2.5}
                   />
                 </button>
               </Tooltip>
@@ -363,7 +373,7 @@ export function WorkspaceSelector({
             "absolute left-0 top-full z-50 mt-1.5 flex flex-col overflow-hidden rounded-xl",
             "border border-(--hairline) bg-(--bg-root)",
             "max-h-[min(360px,calc(100vh-8rem))]",
-            dropdownClassName ?? "w-72",
+            dropdownClassName ?? "w-80",
           ].join(" ")}
         >
           {/* Filter */}
