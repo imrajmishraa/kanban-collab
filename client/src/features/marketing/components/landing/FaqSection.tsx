@@ -1,7 +1,10 @@
 import { useState } from "react";
 
 import { HugeiconsIcon } from "@hugeicons/react";
-import { ArrowDown01Icon, ArrowDownDoubleIcon } from "@hugeicons/core-free-icons";
+import {
+  ArrowDown01Icon,
+  ArrowDownDoubleIcon,
+} from "@hugeicons/core-free-icons";
 
 interface Faq {
   q: string;
