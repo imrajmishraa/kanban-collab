@@ -6,7 +6,7 @@ import { ArrowUp01Icon } from "@hugeicons/core-free-icons";
 
 import Footer from "@/components/marketing/landing/Footer";
 import Navbar from "@/components/marketing/landing/Navbar";
-import { LandingBackground } from "@/features/marketing";
+// import { LandingBackground } from "@/features/marketing/components/LandingBackground";
 
 function ScrollCorner() {
   const { scrollYProgress } = useScroll();
@@ -78,7 +78,7 @@ export default function PublicLayout() {
   return (
     <div className="relative flex min-h-screen flex-col bg-(--bg-root) text-(--text-primary)">
       {/* 3D depth field behind every public page */}
-      <LandingBackground />
+      {/* <LandingBackground /> */}
 
       <Navbar />
 

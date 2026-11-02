@@ -1,12 +1,17 @@
 import { lazy, Suspense, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 
-import DashboardSidebar from "@/components/sidebar/DashboardSidebar";
-import DashboardNavbar from "@/components/sidebar/DashboardNavbar";
+const DashboardSidebar = lazy(
+  () => import("@components/sidebar/DashboardSidebar"),
+);
+const DashboardNavbar = lazy(
+  () => import("@components/sidebar/DashboardNavbar"),
+);
+
 import { NewWorkspaceDialogProvider } from "@/components/dashboard/workspace/create/NewWorkspaceDialogProvider";
 
-import { useSidebarState } from "@/features/dashboard";
-import { useSearchStore } from "@/features/search";
+import { useSidebarState } from "@/features/dashboard/stores/sidebarState";
+import { useSearchStore } from "@/features/search/stores/searchStore";
 import { useEnsureActiveWorkspace } from "@/hooks/useEnsureActiveWorkspace";
 import { useSyncSavedBoards } from "@/hooks/useSyncSavedBoards";
 
