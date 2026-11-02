@@ -6,12 +6,21 @@ import zlib from "node:zlib";
 import { compression, defineAlgorithm } from "vite-plugin-compression2";
 import svgr from "vite-plugin-svgr";
 import { analyzer } from "vite-bundle-analyzer";
+import { visualizer } from "rollup-plugin-visualizer";
 
 export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     svgr(),
     tailwindcss(),
+
+    visualizer({
+      filename: "dist/stats.html",
+      template: "treemap", // or "sunburst", "network"
+      gzipSize: true,
+      brotliSize: true,
+      open: true, // opens the report after each build
+    }),
 
     // ── Precompression ────────────────────────────────────────────────
     // Generates .gz (gzip level 9) and .br (brotli quality 11) files
@@ -46,6 +55,7 @@ export default defineConfig(({ mode }) => ({
   ],
 
   resolve: {
+    conditions: ["production", "browser", "import", "module", "default"],
     alias: {
       "@": path.resolve(import.meta.dirname, "src"),
       "@app": path.resolve(import.meta.dirname, "src/app"),
@@ -73,7 +83,7 @@ export default defineConfig(({ mode }) => ({
 
   build: {
     sourcemap: false,
-    chunkSizeWarningLimit: 350,
+    chunkSizeWarningLimit: 400,
 
     rolldownOptions: {
       onwarn(warning, defaultHandler) {
@@ -114,6 +124,11 @@ export default defineConfig(({ mode }) => ({
             {
               name: "icons-vendor",
               test: /node_modules\/(@hugeicons)/,
+              minSize: 20_000,
+            },
+            {
+              name: "collab-vendor",
+              test: /node_modules\/(yjs|lib0|y-protocols)/,
               minSize: 20_000,
             },
           ],
