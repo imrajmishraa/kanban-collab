@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform, type Variants } from "framer-motion";
 
-import HeroPreview from "./HeroPreview";
+import HeroPreview from "../landing/HeroPreview";
 
 /* ── Entrance choreography ──────────────────────────────────────────── */
 
