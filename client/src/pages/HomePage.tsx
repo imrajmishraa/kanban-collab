@@ -3,32 +3,32 @@ import { lazy, Suspense } from "react";
 import { HeroSection } from "@/features/marketing";
 
 const WhyKanbanSection = lazy(
-  () => import("@/features/marketing/components/landing/WhyKanbanSection"),
+  () => import("@/features/marketing/components/home/WhyKanbanSection"),
 );
 const HowItWorksSection = lazy(
-  () => import("@/features/marketing/components/landing/HowItWorksSection"),
+  () => import("@/features/marketing/components/home/HowItWorksSection"),
 );
 
 const OpenSourceSection = lazy(
-  () => import("@/features/marketing/components/landing/OpenSourceSection"),
+  () => import("@/features/marketing/components/home/OpenSourceSection"),
 );
 const FaqSection = lazy(
-  () => import("@/features/marketing/components/landing/FaqSection"),
+  () => import("@/features/marketing/components/home/FaqSection"),
 );
 const CtaSection = lazy(
-  () => import("@/features/marketing/components/landing/CtaSection"),
+  () => import("@/features/marketing/components/home/CtaSection"),
 );
 const PricingSection = lazy(
-  () => import("@/features/marketing/components/landing/PricingSection"),
+  () => import("@/features/marketing/components/home/PricingSection"),
 );
 const SupportedBySection = lazy(
-  () => import("@/features/marketing/components/landing/SupportedBySection"),
+  () => import("@/features/marketing/components/home/SupportedBySection"),
 );
 const ContactSection = lazy(
-  () => import("@/features/marketing/components/landing/ContactSection"),
+  () => import("@/features/marketing/components/home/ContactSection"),
 );
 
-/* NOTE: <LandingBackground /> moved into PublicLayout so every public
+/* NOTE: <homeBackground /> moved into PublicLayout so every public
    route shares the same depth field. Remove any local import of it. */
 
 /* ── Fallback: the same quiet skeleton FeaturesPage uses, so a loading
