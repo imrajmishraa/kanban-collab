@@ -22,13 +22,13 @@ export default function OpenSourceSection() {
   return (
     <section
       id="open-source"
-      className="light scroll-mt-16 bg-(--bg-root) text-(--text-primary)"
+      className="light bg-(--bg-root) text-(--text-primary)"
     >
-      <div className="mx-auto w-full max-w-7xl px-5 py-16 sm:px-6 sm:py-20 lg:px-8">
+      <div className="mx-auto w-full max-w-384 border-x border-(--hairline) py-16 sm:px-6 sm:py-20 lg:px-8">
         <Reveal>
           <div
             className="
-              relative overflow-hidden rounded-3xl px-6 py-16 sm:py-20
+              relative theme-dark max-w-6xl m-auto overflow-hidden rounded-3xl px-8 py-16 sm:py-20
               border border-[color-mix(in_srgb,var(--brand)_28%,white)]
             "
             style={{
@@ -39,7 +39,7 @@ export default function OpenSourceSection() {
             <div className="flex flex-col items-center gap-5">
               <h2 className="max-w-3xl text-balance text-center font-sans text-[32px] font-bold leading-[1.2] tracking-[-1px] text-(--text-primary) sm:text-[36px] md:text-[40px] md:tracking-[-1.4px]">
                 Open source,{" "}
-                <span className="text-(--text-muted)">all the way down.</span>
+                <span className="text-(--text-subtle)">all the way down.</span>
               </h2>
 
               <p className="max-w-146.75 text-center font-sans text-[18px] leading-relaxed tracking-[-0.3px] text-(--text-secondary) sm:text-[20px] md:text-[22px] md:tracking-[-0.5px]">

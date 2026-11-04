@@ -11,7 +11,7 @@ export default function ContactSection() {
     >
       <div className="mx-auto w-full max-w-384">
         <div
-          className="border-r border-b border-l border-t border-(--hairline)"
+          className="border-x border-b border-(--hairline)"
           style={{
             background:
               "radial-gradient(ellipse 70% 90% at 50% 0%, color-mix(in srgb, var(--brand) 10%, transparent) 0%, transparent 62%), var(--bg-surface)",
@@ -21,7 +21,7 @@ export default function ContactSection() {
             <Reveal>
               <h2 className="max-w-3xl text-balance text-center font-sans text-[32px] font-bold leading-[1.2] tracking-[-1px] text-(--text-primary) sm:text-[36px] md:text-[40px] md:tracking-[-1.4px]">
                 Still have questions?{" "}
-                <span className="text-(--text-muted)">We have answers.</span>
+                <span className="text-(--text-subtle)">We have answers.</span>
               </h2>
             </Reveal>
 

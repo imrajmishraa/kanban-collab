@@ -327,166 +327,172 @@ export default function HowItWorksSection() {
   };
 
   return (
-    <section className="relative">
-      <div className="mx-auto max-w-7xl mb-10 px-10 py-30 sm:px-6 sm:py-24 lg:px-8">
-        {/* ── Heading ── */}
-        <div className="mx-auto w-full max-w-245 text-center">
-          <Reveal>
-            <h2 className="font-sans text-[32px] font-bold leading-[1.2] tracking-[-1px] text-(--text-primary) md:text-[40px]">
-              Build the way{" "}
-              <span className="text-(--text-muted)">you need.</span>
-            </h2>
-          </Reveal>
+    <section className="light relative">
+      {/* The frame carries the rules, the content keeps its own width and
+          padding: borders sit at max-w-384 like the FAQ, while the copy and
+          cards stay on the max-w-7xl measure they had before. */}
+      <div className="mx-auto w-full max-w-384 border-x border-t border-(--hairline)">
+        <div className="mx-auto max-w-7xl mb-10 px-10 py-30 sm:px-6 sm:py-24 lg:px-8">
+          {/* ── Heading ── */}
+          <div className="mx-auto w-full max-w-245 text-center">
+            <Reveal>
+              <h2 className="font-sans text-[32px] font-bold leading-[1.2] tracking-[-1px] text-(--text-primary) md:text-[40px]">
+                Build the way{" "}
+                <span className="text-(--text-subtle)">you need.</span>
+              </h2>
+            </Reveal>
 
-          <Reveal delay={0.08}>
-            <p className="pt-4 text-center text-[18px] leading-7 text-(--text-secondary) antialiased sm:text-[20px] md:pt-2">
-              Fine-tuned for performance and supports many popular dev formats.
-            </p>
-          </Reveal>
-        </div>
+            <Reveal delay={0.08}>
+              <p className="pt-4 text-center text-[18px] leading-7 text-(--text-secondary) antialiased sm:text-[20px] md:pt-2">
+                Fine-tuned for performance and supports many popular dev
+                formats.
+              </p>
+            </Reveal>
+          </div>
 
-        {/* ── Cards ── */}
-        <div className="mt-20.25 flex w-full flex-col items-stretch justify-center gap-6 md:flex-row md:gap-8">
-          <Reveal className="flex flex-1">
-            <ExpandableCard
-              label="Popular frameworks"
-              title="Easy integrations"
-              glyphs={CARD_ONE_GLYPHS}
-              collapsed={<StackGrid />}
-              expanded={
-                <div className="flex h-full flex-col">
-                  <div className="w-full max-w-105 rounded-[10px] bg-(--tint-6) p-4">
-                    <StackGrid dense />
+          {/* ── Cards ── */}
+          <div className="mt-20.25 flex w-full flex-col items-stretch justify-center gap-6 md:flex-row md:gap-8">
+            <Reveal className="flex flex-1">
+              <ExpandableCard
+                label="Popular frameworks"
+                title="Easy integrations"
+                glyphs={CARD_ONE_GLYPHS}
+                collapsed={<StackGrid />}
+                expanded={
+                  <div className="flex h-full flex-col">
+                    <div className="w-full max-w-105 rounded-[10px] bg-(--tint-6) p-4">
+                      <StackGrid dense />
+                    </div>
+
+                    <p className="mt-6 max-w-105 text-[16px] leading-7 text-(--text-secondary) antialiased md:text-[20px]">
+                      Kanban Collab runs on React, TypeScript, Vite, Tailwind,
+                      TanStack Query, Zustand, Yjs, Express, MongoDB and Redis.
+                      Nothing exotic, nothing you have to learn twice.
+                    </p>
+
+                    <a
+                      href={REPO_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-6 inline-flex items-center gap-1.5 text-[18px] font-bold text-(--accent) hover:underline"
+                    >
+                      Read the source
+                      <HugeiconsIcon
+                        icon={ArrowUpRight01Icon}
+                        size={18}
+                        strokeWidth={1.8}
+                      />
+                    </a>
                   </div>
+                }
+              />
+            </Reveal>
 
-                  <p className="mt-6 max-w-105 text-[16px] leading-7 text-(--text-secondary) antialiased md:text-[20px]">
-                    Kanban Collab runs on React, TypeScript, Vite, Tailwind,
-                    TanStack Query, Zustand, Yjs, Express, MongoDB and Redis.
-                    Nothing exotic, nothing you have to learn twice.
-                  </p>
-
-                  <a
-                    href={REPO_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-6 inline-flex items-center gap-1.5 text-[18px] font-bold text-(--accent) hover:underline"
-                  >
-                    Read the source
-                    <HugeiconsIcon
-                      icon={ArrowUpRight01Icon}
-                      size={18}
-                      strokeWidth={1.8}
+            <Reveal delay={0.1} className="flex flex-1">
+              <ExpandableCard
+                label="Run it yourself"
+                title="Docker"
+                glyphs={CARD_TWO_GLYPHS}
+                collapsed={
+                  <div className="relative flex w-full items-center justify-center py-2">
+                    {/* Glow behind the lockup */}
+                    <div
+                      aria-hidden="true"
+                      className="pointer-events-none absolute size-56 rounded-full bg-(--accent-soft) blur-3xl"
                     />
-                  </a>
-                </div>
-              }
-            />
-          </Reveal>
 
-          <Reveal delay={0.1} className="flex flex-1">
-            <ExpandableCard
-              label="Run it yourself"
-              title="Docker"
-              glyphs={CARD_TWO_GLYPHS}
-              collapsed={
-                <div className="relative flex w-full items-center justify-center py-2">
-                  {/* Glow behind the lockup */}
-                  <div
-                    aria-hidden="true"
-                    className="pointer-events-none absolute size-56 rounded-full bg-(--accent-soft) blur-3xl"
-                  />
-
-                  <div className="relative flex size-28 items-center justify-center rounded-[20px] border border-(--hairline) bg-(--bg-surface)">
-                    <HugeiconsIcon
-                      icon={PackageIcon}
-                      size={52}
-                      strokeWidth={1.4}
-                      className="text-(--accent)"
-                    />
-                  </div>
-                </div>
-              }
-              expanded={
-                <div className="flex h-full flex-col">
-                  <p className="max-w-110.5 text-[16px] leading-7 text-(--text-secondary) antialiased md:text-[20px]">
-                    Bring the whole stack up on your own machine or your own
-                    box. One command, no accounts, no hosted dependency.
-                  </p>
-
-                  <div className="mt-6 w-full max-w-110">
-                    <div className="rounded-xl border-2 border-(--accent) bg-(--bg-root) p-1.5">
-                      <div className="flex items-center rounded-[10px] bg-(--tint-4) pl-4">
-                        <input
-                          readOnly
-                          value={DOCKER_CMD}
-                          aria-label="Docker compose command"
-                          className="h-12.5 flex-1 truncate bg-transparent font-mono text-[13px] text-(--text-secondary) outline-none sm:text-[15px]"
-                        />
-                        <button
-                          type="button"
-                          onClick={copyCommand}
-                          aria-label="Copy command"
-                          className="
-                            ml-2 flex h-12.5 items-center gap-2 rounded-[10px]
-                            border border-(--hairline-strong) bg-(--tint-6)
-                            px-3 text-[13px] font-bold text-(--text-primary)
-                            transition-colors duration-200 motion-reduce:transition-none
-                            hover:bg-(--tint-10)
-                            focus-visible:ring-2 focus-visible:ring-(--brand) focus-visible:outline-none
-                            sm:px-4 sm:text-[15px]
-                          "
-                        >
-                          <HugeiconsIcon
-                            icon={Copy01Icon}
-                            size={18}
-                            strokeWidth={1.8}
-                          />
-                          {copied ? "Copied" : "Copy"}
-                        </button>
-                      </div>
+                    <div className="relative flex size-28 items-center justify-center rounded-[20px] border border-(--hairline) bg-(--bg-surface)">
+                      <HugeiconsIcon
+                        icon={PackageIcon}
+                        size={52}
+                        strokeWidth={1.4}
+                        className="text-(--accent)"
+                      />
                     </div>
                   </div>
+                }
+                expanded={
+                  <div className="flex h-full flex-col">
+                    <p className="max-w-110.5 text-[16px] leading-7 text-(--text-secondary) antialiased md:text-[20px]">
+                      Bring the whole stack up on your own machine or your own
+                      box. One command, no accounts, no hosted dependency.
+                    </p>
 
-                  <a
-                    href={REPO_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-6 inline-flex items-center gap-1.5 text-[18px] font-bold text-(--accent) hover:underline"
-                  >
-                    Read the setup guide
-                    <HugeiconsIcon
-                      icon={ArrowUpRight01Icon}
-                      size={18}
-                      strokeWidth={1.8}
-                    />
-                  </a>
+                    <div className="mt-6 w-full max-w-110">
+                      <div className="rounded-xl border-2 border-(--accent) bg-(--bg-root) p-1.5">
+                        <div className="flex items-center rounded-[10px] bg-(--tint-4) pl-4">
+                          <input
+                            readOnly
+                            value={DOCKER_CMD}
+                            aria-label="Docker compose command"
+                            className="h-12.5 flex-1 truncate bg-transparent font-mono text-[13px] text-(--text-secondary) outline-none sm:text-[15px]"
+                          />
+                          <button
+                            type="button"
+                            onClick={copyCommand}
+                            aria-label="Copy command"
+                            className="
+                              ml-2 flex h-12.5 items-center gap-2 rounded-[10px]
+                              border border-(--hairline-strong) bg-(--tint-6)
+                              px-3 text-[13px] font-bold text-(--text-primary)
+                              transition-colors duration-200 motion-reduce:transition-none
+                              hover:bg-(--tint-10)
+                              focus-visible:ring-2 focus-visible:ring-(--brand) focus-visible:outline-none
+                              sm:px-4 sm:text-[15px]
+                            "
+                          >
+                            <HugeiconsIcon
+                              icon={Copy01Icon}
+                              size={18}
+                              strokeWidth={1.8}
+                            />
+                            {copied ? "Copied" : "Copy"}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <a
+                      href={REPO_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-6 inline-flex items-center gap-1.5 text-[18px] font-bold text-(--accent) hover:underline"
+                    >
+                      Read the setup guide
+                      <HugeiconsIcon
+                        icon={ArrowUpRight01Icon}
+                        size={18}
+                        strokeWidth={1.8}
+                      />
+                    </a>
+                  </div>
+                }
+              />
+            </Reveal>
+          </div>
+
+          {/* ── Assurance row ── */}
+          <Reveal delay={0.16} className="w-full">
+            <div className="mt-10 flex flex-col items-center justify-center gap-6 md:mt-12.5 md:flex-row md:gap-31 lg:mt-16">
+              {ASSURANCES.map(({ label, icon }) => (
+                <div
+                  key={label}
+                  className="flex w-full items-center gap-2 sm:w-auto"
+                >
+                  <HugeiconsIcon
+                    icon={icon}
+                    size={24}
+                    strokeWidth={1.6}
+                    className="shrink-0 text-(--accent)"
+                  />
+                  <h3 className="text-[20px] font-medium text-(--text-primary) antialiased">
+                    {label}
+                  </h3>
                 </div>
-              }
-            />
+              ))}
+            </div>
           </Reveal>
         </div>
-
-        {/* ── Assurance row ── */}
-        <Reveal delay={0.16} className="w-full">
-          <div className="mt-10 flex flex-col items-center justify-center gap-6 md:mt-12.5 md:flex-row md:gap-31 lg:mt-16">
-            {ASSURANCES.map(({ label, icon }) => (
-              <div
-                key={label}
-                className="flex w-full items-center gap-2 sm:w-auto"
-              >
-                <HugeiconsIcon
-                  icon={icon}
-                  size={24}
-                  strokeWidth={1.6}
-                  className="shrink-0 text-(--accent)"
-                />
-                <h3 className="text-[20px] font-medium text-(--text-primary) antialiased">
-                  {label}
-                </h3>
-              </div>
-            ))}
-          </div>
-        </Reveal>
       </div>
     </section>
   );

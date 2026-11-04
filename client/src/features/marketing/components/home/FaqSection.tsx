@@ -109,10 +109,10 @@ export default function FaqSection({ themeLock }: FaqSectionProps) {
         .filter(Boolean)
         .join(" ")}
     >
-      <div className="mx-auto w-full max-w-384">
+      <div className="mx-auto w-full max-w-384 border border-(--hairline)">
         {/* Bordered on all four sides, with the column rule inside it, so the
             block reads as one object rather than two loose halves. */}
-        <div className="overflow-hidden border-r border-l border-t border-(--hairline)">
+        <div className="overflow-hidden">
           <div className="grid lg:grid-cols-3 lg:divide-x lg:divide-(--hairline)">
             {/* Heading column: a third of the width, and it stays put while the
                 answers to the right grow and shrink. */}
@@ -120,7 +120,7 @@ export default function FaqSection({ themeLock }: FaqSectionProps) {
             <div className="px-4 py-10 sm:px-8 sm:py-12 md:px-12 md:py-14 lg:px-16 lg:py-16">
               <h2 className="mb-6 text-3xl font-bold tracking-tight text-(--text-primary) md:text-4xl">
                 Frequently Asked{" "}
-                <span className="text-(--text-muted)">Questions</span>
+                <span className="text-(--text-subtle)">Questions</span>
               </h2>
               <p className="max-w-2xl text-xl font-light leading-relaxed text-(--text-secondary)">
                 Everything people ask before their first board, from what it

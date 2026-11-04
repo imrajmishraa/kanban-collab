@@ -242,13 +242,13 @@ export default function Navbar({ onNavigate, activeHref = "" }: NavbarProps) {
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 h-17 w-full",
+        "sticky top-0 z-40 h-17 w-full mx-auto max-w-384",
         NAV.surface,
         /* The bar is white in both themes, so it has to set its own ink. Without
            this, any child that does not declare a colour inherits `body`'s,
            which is near-white in dark mode — white text on a white bar. */
         NAV.ink,
-        "border-b",
+        "border-x border-b ",
         NAV.edge,
       )}
     >

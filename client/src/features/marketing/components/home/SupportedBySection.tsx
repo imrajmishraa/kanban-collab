@@ -44,6 +44,12 @@ interface Supporter {
   mark: Mark;
   /** The brand's own colour, from Simple Icons. */
   hex: string;
+  /**
+   * Set when the brand colour is too dark to survive a dark surface. Express is
+   * #0A0A0A, which disappears on a near-black card, so it is drawn in the theme
+   * ink instead: white here, and still correct if this band ever goes light.
+   */
+  darkInk?: boolean;
 }
 
 const SUPPORTERS: Supporter[] = [
@@ -67,6 +73,7 @@ const SUPPORTERS: Supporter[] = [
     href: "https://expressjs.com",
     mark: "express",
     hex: "#0A0A0A",
+    darkInk: true,
   },
   {
     name: "Vite",
@@ -100,117 +107,121 @@ const GLYPHS: Glyph[] = [
   { icon: ChartBarLineIcon, at: "left-[10%] bottom-[4%]", size: 40 },
 ];
 
-interface SupportedBySectionProps {
-  /** Which theme this band is staged in. Defaults to `dark`. */
-  themeLock?: "dark" | "light" | "inherit";
-}
-
-/**
- * The credit row: four flip cards, a brand mark on the front, what they do on
- * the back.
- *
- * The flip is a `rotateX(180deg)` on a container with `preserve-3d`, and both
- * faces are `backface-visibility: hidden`. That is what makes it a card turning
- * over rather than two panels cross-fading, and it costs one transform.
- *
- * It flips on keyboard focus as well as hover, because a card that only responds
- * to a pointer is a card a keyboard user can reach but not read.
- */
-export default function SupportedBySection({
-  themeLock = "dark",
-}: SupportedBySectionProps) {
-  const scope =
-    themeLock === "dark" ? "light" : themeLock === "light" ? "theme-dark" : "";
-
+export default function SupportedBySection() {
   return (
-    <section
-      className={[
-        "relative scroll-mt-16 min-w-fit overflow-hidden",
-        scope,
-        "bg-(--bg-root) text-(--text-primary)",
-        "border-x border-(--hairline)",
-      ]
-        .filter(Boolean)
-        .join(" ")}
-    >
-      {/* Outlined marks, held behind everything */}
+    <section className="relative scroll-mt-16">
+      {/* The dark surface is the frame itself, not the full-bleed section, so
+          the black stops at the vertical rules instead of running edge to edge
+          across the page. `theme-dark` lives here too, which keeps every token
+          inside this box on the dark palette. */}
       <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-0"
+        className="
+          theme-dark relative mx-auto w-full max-w-384 overflow-hidden
+          border-x border-(--hairline) bg-(--bg-root) text-(--text-primary)
+        "
       >
-        {GLYPHS.map(({ icon, at, size }, index) => (
-          <HugeiconsIcon
-            key={index}
-            icon={icon}
-            size={size}
-            strokeWidth={1}
-            className={`absolute text-(--brand) opacity-20 ${at}`}
-          />
-        ))}
-      </div>
-
-      {/* Warm bloom in the corner, so the band is not flat */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -bottom-28 -right-24 z-0 size-72 rounded-full bg-(--accent-soft) blur-3xl"
-      />
-
-      <div className="relative z-10 mx-auto w-full max-w-384 px-4 py-10 sm:px-8 sm:py-12 md:px-12 md:py-14 lg:px-16">
-        <div className="mb-10 max-w-3xl sm:mb-12 md:mb-14">
-          <h2 className="mb-6 text-3xl font-bold tracking-tight text-(--text-primary) md:text-4xl">
-            Supported by
-          </h2>
-          <p className="max-w-2xl text-xl font-light leading-relaxed text-(--text-secondary)">
-            These projects do the parts this app would be worse at doing itself.
-          </p>
+        {/* Outlined marks, clipped to the frame */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 z-0"
+        >
+          {GLYPHS.map(({ icon, at, size }, index) => (
+            <HugeiconsIcon
+              key={index}
+              icon={icon}
+              size={size}
+              strokeWidth={1}
+              className={`absolute text-(--brand) opacity-15 ${at}`}
+            />
+          ))}
         </div>
 
-        <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
-          {SUPPORTERS.map((supporter) => (
-            <a
-              key={supporter.name}
-              href={supporter.href}
-              target="_blank"
-              rel="noopener sponsored"
-              aria-label={`${supporter.name}, visit website`}
-              className="group relative block h-32 perspective-[1000px]"
-            >
-              <div className="relative h-full w-full transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] transform-3d group-hover:transform-[rotateX(180deg)] group-focus-visible:transform-[rotateX(180deg)] motion-reduce:transition-none">
-                {/* Front: the lockup, mark and wordmark side by side on one
-                    baseline, the way a sponsor presents itself. */}
-                <div className="absolute inset-0 flex items-center justify-center gap-3 rounded-xl border border-(--hairline) bg-(--tint-2) px-6 backface-hidden">
-                  <svg
-                    role="img"
-                    aria-hidden="true"
-                    viewBox="0 0 24 24"
-                    fill={supporter.hex}
-                    className="size-10 shrink-0"
-                  >
-                    <path d={MARKS[supporter.mark]} />
-                  </svg>
-                  <span className="text-2xl font-medium tracking-tight text-(--text-primary)">
-                    {supporter.name}
-                  </span>
-                </div>
+        {/* The glow, built the way the closing banner builds its own: brand at
+            ten percent, a 100px blur and a 40 percent radius, so it reads as an
+            ellipse of light bleeding in from the edges rather than a circle
+            sitting in the corner. The frame's `overflow-hidden` keeps it inside
+            the box, so it lights this band and nothing outside it. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-8 -bottom-6 top-8 z-0 rounded-[40%] bg-(--inverse-accent)/10 blur-[100px]"
+        />
 
-                {/* Back: what they do, and the one link worth taking. */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2.5 rounded-xl border border-(--hairline) bg-(--bg-root) px-5 py-4 text-center backface-hidden transform-[rotateX(180deg)]">
-                  <p className="text-sm leading-snug text-(--text-secondary)">
-                    {supporter.description}
-                  </p>
-                  <span className="inline-flex items-center gap-1 text-sm font-medium text-(--text-primary)">
-                    Visit website
-                    <HugeiconsIcon
-                      icon={ArrowUpRight01Icon}
-                      size={16}
-                      strokeWidth={2}
+        <div className="relative z-10 px-4 py-10 sm:px-8 sm:py-12 md:px-12 md:py-14 lg:px-16">
+          <div className="mb-10 max-w-3xl sm:mb-12 md:mb-14">
+            <h2 className="mb-6 text-3xl font-bold tracking-tight text-(--text-primary) md:text-4xl">
+              Supported by
+            </h2>
+            <p className="max-w-2xl text-xl font-light leading-relaxed text-(--text-secondary)">
+              These projects do the parts this app would be worse at doing
+              itself.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
+            {SUPPORTERS.map((supporter) => (
+              <a
+                key={supporter.name}
+                href={supporter.href}
+                target="_blank"
+                rel="noopener sponsored"
+                aria-label={`${supporter.name}, visit website`}
+                className="group relative block h-32 perspective-[1000px]"
+              >
+                <div className="relative h-full w-full transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] transform-3d group-hover:transform-[rotateX(180deg)] group-focus-visible:transform-[rotateX(180deg)] motion-reduce:transition-none">
+                  {/* Front. Same surface as a How It Works card: a hairline and
+                      a translucent wash top to bottom, so the dark behind it
+                      shows through and it reads as glass rather than a panel. */}
+                  <div
+                    className="
+                      absolute inset-0 flex items-center justify-center gap-3 rounded-xl
+                      border border-(--hairline) px-6 backface-hidden
+                      bg-[linear-gradient(to_bottom,var(--tint-6),var(--tint-2))]
+                    "
+                  >
+                    <svg
+                      role="img"
                       aria-hidden="true"
-                    />
-                  </span>
+                      viewBox="0 0 24 24"
+                      fill={supporter.darkInk ? "currentColor" : supporter.hex}
+                      className={
+                        supporter.darkInk
+                          ? "size-10 shrink-0 text-(--text-primary)"
+                          : "size-10 shrink-0"
+                      }
+                    >
+                      <path d={MARKS[supporter.mark]} />
+                    </svg>
+                    <span className="text-2xl font-medium tracking-tight text-(--text-primary)">
+                      {supporter.name}
+                    </span>
+                  </div>
+
+                  {/* Back: the same glass, one step lighter so the flip reads */}
+                  <div
+                    className="
+                      absolute inset-0 flex flex-col items-center justify-center gap-2.5
+                      rounded-xl border border-(--hairline) px-5 py-4 text-center
+                      backface-hidden transform-[rotateX(180deg)]
+                      bg-[linear-gradient(to_bottom,var(--tint-5),var(--tint-2))]
+                    "
+                  >
+                    <p className="text-sm leading-snug text-(--text-secondary)">
+                      {supporter.description}
+                    </p>
+                    <span className="inline-flex items-center gap-1 text-sm font-medium text-(--text-primary)">
+                      Visit website
+                      <HugeiconsIcon
+                        icon={ArrowUpRight01Icon}
+                        size={16}
+                        strokeWidth={2}
+                        aria-hidden="true"
+                      />
+                    </span>
+                  </div>
                 </div>
-              </div>
-            </a>
-          ))}
+              </a>
+            ))}
+          </div>
         </div>
       </div>
     </section>

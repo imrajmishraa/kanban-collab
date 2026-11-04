@@ -195,13 +195,13 @@ export default function Footer() {
       className={cn(
         /* Above LandingBackground: it is `fixed inset-0 z-0`, so anything left
            at auto paints behind the depth field. */
-        "relative z-10 w-full border-t",
+        "relative z-10",
         NAV.surface,
         NAV.edge,
         NAV.ink,
       )}
     >
-      <div className="mx-auto w-full max-w-7xl px-4 pt-16 pb-8 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-384 px-4 pt-16 pb-8 sm:px-6 lg:px-8 border border-(--hairline)">
         {/* ── Columns ───────────────────────────────────────────── */}
         <div className="mt-5 ml-10 grid grid-cols-2 gap-x-10 gap-y-10 md:grid-cols-4">
           {FOOTER_COLUMNS.map((column) => (

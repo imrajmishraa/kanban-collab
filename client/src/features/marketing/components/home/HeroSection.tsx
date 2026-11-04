@@ -35,8 +35,8 @@ export default function HeroSection() {
     /* Locked to the light palette for the whole subtree: the headline, the CTA,
        the proof row, the preview box and its slides all resolve their tokens
        here, whatever the page or the app theme is doing. */
-    <section className="light min-h-full relative overflow-hidden bg-(--bg-root)">
-      <div className="relative mx-auto max-w-7xl px-5 pb-20 pt-14 sm:px-6 sm:pt-20 lg:px-8 lg:pb-16">
+    <section className="light relative flex items-center overflow-hidden bg-(--bg-root)">
+      <div className="relative mx-auto w-full max-w-384 border-x border-(--hairline) sm:px-4 pt-25 lg:px-8 lg:pb-30">
         <motion.div
           variants={container}
           initial="hidden"
@@ -44,13 +44,13 @@ export default function HeroSection() {
           className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[1fr_1.15fr] lg:gap-8 xl:gap-0"
         >
           {/* ── Left: the pitch ──────────────────────────────────── */}
-          <div className="mx-auto w-full max-w-125 lg:mx-0">
+          <div className="mx-auto pl-20 w-full max-w-150 lg:mx-0">
             <motion.h1
               variants={item}
               className="font-sans text-[34px] font-bold leading-[1.12] tracking-[-1px] text-(--text-primary) sm:text-[40px] md:text-[44px] md:tracking-[-1.4px]"
             >
               Kanban boards{" "}
-              <span className="text-(--text-muted)">
+              <span className="text-(--text-subtle)">
                 that keep your team moving.
               </span>
             </motion.h1>

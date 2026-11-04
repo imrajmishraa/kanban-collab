@@ -61,10 +61,8 @@ export default function HomePage() {
           <WhyKanbanSection />
         </Suspense>
 
-        <Suspense fallback={<SectionFallback />}>
-          <HowItWorksSection />
-        </Suspense>
-
+        <Suspense fallback={<SectionFallback />}></Suspense>
+        <HowItWorksSection />
         <Suspense fallback={<SectionFallback />}>
           <OpenSourceSection />
         </Suspense>
@@ -82,7 +80,7 @@ export default function HomePage() {
         </Suspense>
 
         <Suspense fallback={<SectionFallback />}>
-          <SupportedBySection themeLock="dark" />
+          <SupportedBySection />
         </Suspense>
 
         <Suspense fallback={<SectionFallback />}>

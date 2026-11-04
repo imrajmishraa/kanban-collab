@@ -199,111 +199,116 @@ export default function WhyKanbanSection() {
   const [activeId, setActiveId] = useState(ITEMS[0].id);
 
   return (
-    <section className="light my-25 border-y border-(--hairline) bg-(--bg-root)">
-      <div className="mx-auto mb-10 max-w-7xl px-10 py-30 sm:px-6 sm:py-24 lg:px-8">
-        {/* ── Heading ── */}
-        <Reveal>
-          <h2 className="font-sans text-[32px] font-bold leading-[1.15] tracking-[-1px] text-(--text-primary) sm:text-[36px] md:text-[40px] md:tracking-[-1.4px]">
-            Design where <span className="text-(--text-muted)">you are.</span>
-          </h2>
-        </Reveal>
+    <section className="light relative mx-auto w-full max-w-384 flex items-center overflow-hidden border-x border-t border-(--hairline)">
+      <div className="mx-auto relative ">
+        <div className="mt-20 px-10 py-30 sm:px-6 sm:py-24 lg:px-8">
+          {/* ── Heading ── */}
+          <Reveal>
+            <h2 className="font-sans text-[32px] font-bold leading-[1.15] tracking-[-1px] text-(--text-primary) sm:text-[36px] md:text-[40px] md:tracking-[-1.4px]">
+              Design where{" "}
+              <span className="text-(--text-subtle)">you are.</span>
+            </h2>
+          </Reveal>
 
-        <Reveal delay={0.08}>
-          <p className="mt-3 max-w-146 text-[18px] tracking-[-0.3px] text-(--text-secondary) sm:text-[20px] md:text-[22px] md:tracking-[-0.5px]">
-            Four things a board has to get right. The rest is noise, and we left
-            it out.
-          </p>
-        </Reveal>
+          <Reveal delay={0.08}>
+            <p className="mt-6 max-w-full text-[18px] tracking-[-0.3px] text-(--text-secondary) sm:text-[20px] md:text-[22px] md:tracking-[-0.5px]">
+              Four things a board has to get right. The rest is noise, and we
+              left it out.
+            </p>
+          </Reveal>
 
-        <div className="mt-10 grid gap-10 md:mt-14 md:grid-cols-[minmax(320px,448px)_1fr] md:gap-16 lg:gap-24">
-          {/* ── List ── */}
-          <div>
-            <div className="space-y-4 sm:space-y-5">
-              {ITEMS.map((item) => {
-                const isOpen = item.id === activeId;
+          <div className="mt-10 grid gap-10 md:mt-14 md:grid-cols-[minmax(320px,448px)_1fr] md:gap-16 lg:gap-24">
+            {/* ── List ── */}
+            <div>
+              <div className="space-y-4 sm:space-y-5">
+                {ITEMS.map((item) => {
+                  const isOpen = item.id === activeId;
 
-                return (
-                  <div key={item.id} className="grid grid-cols-[6px_1fr] gap-4">
-                    {/* Rail: brand when open, a plain rule when closed */}
+                  return (
                     <div
-                      aria-hidden="true"
-                      className={cn(
-                        "h-full w-1.5 rounded-lg border transition-colors duration-300 motion-reduce:transition-none",
-                        isOpen
-                          ? "border-(--brand) bg-(--brand)/50"
-                          : "border-(--border) bg-(--tint-8)",
-                      )}
-                    />
+                      key={item.id}
+                      className="grid grid-cols-[6px_1fr] gap-4"
+                    >
+                      {/* Rail: brand when open, a plain rule when closed */}
+                      <div
+                        aria-hidden="true"
+                        className={cn(
+                          "h-full w-1.5 rounded-lg border transition-colors duration-300 motion-reduce:transition-none",
+                          isOpen
+                            ? "border-(--brand) bg-(--brand)/50"
+                            : "border-(--border) bg-(--tint-8)",
+                        )}
+                      />
 
-                    <div className={isOpen ? "py-2" : "pt-1"}>
-                      {/* The button wraps the title only: the panel below holds
+                      <div className={isOpen ? "py-2" : "pt-1"}>
+                        {/* The button wraps the title only: the panel below holds
                           links, and an anchor cannot live inside a button. */}
-                      <button
-                        type="button"
-                        onClick={() => setActiveId(item.id)}
-                        aria-expanded={isOpen}
-                        aria-controls={panelId(item.id)}
-                        className="w-full cursor-pointer text-left"
-                      >
-                        <h3
+                        <button
+                          type="button"
+                          onClick={() => setActiveId(item.id)}
+                          aria-expanded={isOpen}
+                          aria-controls={panelId(item.id)}
+                          className="w-full cursor-pointer text-left"
+                        >
+                          <h3
+                            className={cn(
+                              "font-sans text-[20px] font-semibold tracking-tight transition-colors duration-300 motion-reduce:transition-none sm:text-2xl",
+                              isOpen
+                                ? "text-(--text-primary)"
+                                : "text-(--text-secondary)",
+                            )}
+                          >
+                            {item.title}
+                          </h3>
+                        </button>
+
+                        {/* Answer stays mounted; the grid row carries the height */}
+                        <div
+                          id={panelId(item.id)}
+                          aria-hidden={!isOpen}
                           className={cn(
-                            "font-sans text-[20px] font-semibold tracking-tight transition-colors duration-300 motion-reduce:transition-none sm:text-2xl",
+                            "grid transition-all duration-300 ease-in-out motion-reduce:transition-none",
                             isOpen
-                              ? "text-(--text-primary)"
-                              : "text-(--text-secondary)",
+                              ? "mt-2 grid-rows-[1fr] opacity-100"
+                              : "grid-rows-[0fr] opacity-0",
                           )}
                         >
-                          {item.title}
-                        </h3>
-                      </button>
+                          <div className="overflow-hidden">
+                            <p className="max-w-105 text-[15px] leading-relaxed text-(--text-secondary)">
+                              {item.body}
+                            </p>
 
-                      {/* Answer stays mounted; the grid row carries the height */}
-                      <div
-                        id={panelId(item.id)}
-                        aria-hidden={!isOpen}
-                        className={cn(
-                          "grid transition-all duration-300 ease-in-out motion-reduce:transition-none",
-                          isOpen
-                            ? "mt-2 grid-rows-[1fr] opacity-100"
-                            : "grid-rows-[0fr] opacity-0",
-                        )}
-                      >
-                        <div className="overflow-hidden">
-                          <p className="max-w-105 text-[15px] leading-relaxed text-(--text-secondary)">
-                            {item.body}
-                          </p>
-
-                          <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
-                            {item.points.map((point) => (
-                              <span
-                                key={point}
-                                className="flex items-center gap-1.5 font-sans text-[14px] font-medium text-(--text-primary)"
-                              >
-                                <HugeiconsIcon
-                                  icon={Tick02Icon}
-                                  size={12}
-                                  strokeWidth={2.6}
-                                  className="shrink-0 text-(--brand)"
-                                />
-                                {point}
-                              </span>
-                            ))}
+                            <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
+                              {item.points.map((point) => (
+                                <span
+                                  key={point}
+                                  className="flex items-center gap-1.5 font-sans text-[14px] font-medium text-(--text-primary)"
+                                >
+                                  <HugeiconsIcon
+                                    icon={Tick02Icon}
+                                    size={12}
+                                    strokeWidth={2.6}
+                                    className="shrink-0 text-(--brand)"
+                                  />
+                                  {point}
+                                </span>
+                              ))}
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
 
-            {/* ── Two actions, outline then solid ── */}
-            <div className="mt-8 flex flex-wrap gap-3 pl-5 sm:pl-6">
-              <a
-                href={REPO_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="
+              {/* ── Two actions, outline then solid ── */}
+              <div className="mt-8 flex flex-wrap gap-3 pl-5 sm:pl-6">
+                <a
+                  href={REPO_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="
                   inline-flex h-11 items-center justify-center gap-1.5 rounded-lg px-4
                   border border-[color-mix(in_srgb,var(--brand)_55%,white)]
                   bg-[color-mix(in_srgb,var(--brand)_7%,white)]
@@ -314,19 +319,19 @@ export default function WhyKanbanSection() {
                   hover:border-[color-mix(in_srgb,var(--brand)_72%,white)]
                   focus-visible:ring-2 focus-visible:ring-(--brand) focus-visible:ring-offset-2 focus-visible:ring-offset-(--bg-root) focus-visible:outline-none
                 "
-              >
-                Read the source
-                <HugeiconsIcon
-                  icon={ArrowUpRight01Icon}
-                  size={14}
-                  strokeWidth={2}
-                  className="shrink-0"
-                />
-              </a>
+                >
+                  Read the source
+                  <HugeiconsIcon
+                    icon={ArrowUpRight01Icon}
+                    size={14}
+                    strokeWidth={2}
+                    className="shrink-0"
+                  />
+                </a>
 
-              <Link
-                to="/workspaces"
-                className="
+                <Link
+                  to="/workspaces"
+                  className="
                   inline-flex h-11 items-center justify-center rounded-lg px-4
                   border border-(--brand) bg-(--brand)/80
                   font-sans text-[14px] font-bold text-(--solid-text)
@@ -334,15 +339,16 @@ export default function WhyKanbanSection() {
                   hover:border-(--brand-hover) hover:bg-(--brand)/85
                   focus-visible:ring-2 focus-visible:ring-(--brand) focus-visible:ring-offset-2 focus-visible:ring-offset-(--bg-root) focus-visible:outline-none
                 "
-              >
-                Open a board
-              </Link>
+                >
+                  Open a board
+                </Link>
+              </div>
             </div>
-          </div>
 
-          {/* ── Video ── */}
-          <div className="w-full max-w-160.75">
-            <VideoPlayer />
+            {/* ── Video ── */}
+            <div className="w-full max-w-160.75">
+              <VideoPlayer />
+            </div>
           </div>
         </div>
       </div>
