@@ -27,7 +27,7 @@ function applyTheme(theme: Theme) {
   const root = document.documentElement;
   /* Dark is the :root default, so `.light` is the override and `.dark` is kept
      for the pre-paint script and for anything that reads it. */
-  root.classList.toggle("light", theme === "light");
+  root.classList.toggle("light-theme", theme === "light");
   root.classList.toggle("dark", theme === "dark");
   root.style.colorScheme = theme;
 }

@@ -58,7 +58,7 @@ function block(source: string, selector: string): Map<string, string> {
 }
 
 const dark = block(css, ":root");
-const light = block(css, ".light");
+const light = block(css, ".light-theme");
 
 /* ── design.md ─────────────────────────────────────────────────────────── */
 

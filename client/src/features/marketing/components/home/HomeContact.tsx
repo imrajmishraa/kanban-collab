@@ -1,13 +1,13 @@
 import { HugeiconsIcon } from "@hugeicons/react";
 import { GithubIcon, Mail01Icon } from "@hugeicons/core-free-icons";
 
-import { Reveal } from "./Tilt";
+import { Reveal } from "./Reveal";
 
-export default function ContactSection() {
+export default function HeroContact() {
   return (
     <section
       id="contact"
-      className="light scroll-mt-16 bg-(--bg-root) text-(--text-primary)"
+      className="light-theme scroll-mt-16 bg-(--bg-root) text-(--text-primary)"
     >
       <div className="mx-auto w-full max-w-384">
         <div
@@ -41,17 +41,7 @@ export default function ContactSection() {
                   }
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="
-                    inline-flex h-11 items-center justify-center gap-1.5 rounded-lg px-4
-                    border border-[color-mix(in_srgb,var(--brand)_55%,white)]
-                    bg-[color-mix(in_srgb,var(--brand)_7%,white)]
-                    font-sans text-[14px] font-bold
-                    text-[color-mix(in_srgb,var(--brand)_32%,black)]
-                    transition-colors duration-200 motion-reduce:transition-none
-                    hover:bg-[color-mix(in_srgb,var(--brand)_13%,white)]
-                    hover:border-[color-mix(in_srgb,var(--brand)_72%,white)]
-                    focus-visible:ring-2 focus-visible:ring-(--brand) focus-visible:ring-offset-2 focus-visible:ring-offset-(--bg-surface) focus-visible:outline-none
-                  "
+                  className="m-btn-outline gap-1.5"
                 >
                   <HugeiconsIcon
                     icon={GithubIcon}
@@ -67,14 +57,7 @@ export default function ContactSection() {
                   href={"mailto:raj212558@gmail.com"}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="
-                    inline-flex h-11 items-center justify-center gap-1.5 rounded-lg px-4
-                    border border-(--brand) bg-(--brand)/80
-                    font-sans text-[14px] font-bold text-(--solid-text)
-                    transition-colors duration-200 motion-reduce:transition-none
-                    hover:border-(--brand-hover) hover:bg-(--brand)/85
-                    focus-visible:ring-2 focus-visible:ring-(--brand) focus-visible:ring-offset-2 focus-visible:ring-offset-(--bg-surface) focus-visible:outline-none
-                  "
+                  className="m-btn gap-1.5"
                 >
                   <HugeiconsIcon
                     icon={Mail01Icon}

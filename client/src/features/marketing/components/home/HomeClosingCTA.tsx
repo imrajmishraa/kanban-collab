@@ -1,7 +1,7 @@
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowUpRight01Icon, LayersIcon } from "@hugeicons/core-free-icons";
 
-interface CtaSectionProps {
+interface HomeClosingCTAProps {
   /**
    * Which theme this band is staged in. Defaults to `dark`, because a banner is
    * a poster: it should look the same for every visitor rather than inheriting
@@ -21,9 +21,15 @@ interface CtaSectionProps {
  * at rest and start when the pointer arrives. They are decorative in the strict
  * sense, so they are `aria-hidden` and carry nothing the copy does not.
  */
-export default function CtaSection({ themeLock = "dark" }: CtaSectionProps) {
+export default function HomeClosingCTA({
+  themeLock = "dark",
+}: HomeClosingCTAProps) {
   const scope =
-    themeLock === "dark" ? "theme-dark" : themeLock === "light" ? "light" : "";
+    themeLock === "dark"
+      ? "dark-theme"
+      : themeLock === "light"
+        ? "light-theme"
+        : "";
 
   return (
     <section

@@ -10,7 +10,6 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ArrowDown01Icon,
-  ArrowRight02Icon,
   Cancel01Icon,
   Menu03Icon,
 } from "@hugeicons/core-free-icons";
@@ -211,23 +210,35 @@ export default function Navbar({ onNavigate, activeHref = "" }: NavbarProps) {
   /* One recipe for every top-level item — the plain links and the Solutions
      trigger alike. Colour and hover are identical across them; the only thing
      that changes with state is the weight, bold when active and normal
-     otherwise, so nothing shifts sideways on hover. */
+     otherwise, so nothing shifts sideways on hover.
+
+     `h-10` rather than padding: every item in the bar is the same height, so
+     they share one baseline instead of each finding its own. */
   const desktopLink = (active: boolean) =>
     cn(
-      "group relative rounded-md px-3.5 py-2",
-      "text-[15.5px] transition-colors duration-150",
+      "group relative inline-flex h-12 items-center rounded-md px-5",
+      "text-[15px] transition-colors duration-150",
       NAV.text,
-      active ? "font-bold" : "font-medium",
+      active ? "font-bold" : "font-normal",
       focusRing,
     );
 
-  /* The action, permanently white: an off-white chip with a dark green label,
-     the same in both themes. */
+  /* The action. Same height as a nav link, so the row reads as one line. */
   const ctaSoft = cn(
     "rounded-lg border font-bold",
-    "bg-[rgb(252,253,252)] text-[rgb(45,84,52)]",
-    "border-[rgb(226,232,226)] hover:bg-[rgb(244,247,244)]",
+    "bg-(--text-subtle)/10",
+    "text-(--subtle)/30",
+    "border-(--text-subtle)/20 hover:border-(--text-subtle)/60",
     "transition-colors duration-150 motion-reduce:transition-none",
+  );
+
+  const ctaAction = cn(
+    "group hidden h-10 shrink-0 items-center justify-center gap-1.5 px-5",
+    "text-[13.5px]",
+    ctaSoft,
+    "transition-[background-color,transform] duration-150 ease-out",
+    focusRing,
+    "md:inline-flex cursor-pointer",
   );
 
   const panelRow = cn(
@@ -242,7 +253,10 @@ export default function Navbar({ onNavigate, activeHref = "" }: NavbarProps) {
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 h-17 w-full mx-auto max-w-384",
+        /* Pinned light: this sits in PublicLayout, outside the page's own
+           `light-theme` wrapper, so without it every token here would resolve
+           against the dark `:root` — a black bar on a white page. */
+        "light-theme marketing sticky top-0 z-40 h-18 w-full mx-auto max-w-384",
         NAV.surface,
         /* The bar is white in both themes, so it has to set its own ink. Without
            this, any child that does not declare a colour inherits `body`'s,
@@ -252,14 +266,14 @@ export default function Navbar({ onNavigate, activeHref = "" }: NavbarProps) {
         NAV.edge,
       )}
     >
-      <div className="relative mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:h-15 sm:gap-6 sm:px-6">
+      <div className="relative m-auto flex h-18 max-w-325 items-center justify-between gap-4 px-4 sm:h-16 pt-1.5 sm:gap-6 sm:px-7">
         {/* ── LEFT: brand ─────────────────────────────────────────── */}
         <Link to="/home" aria-label="Home" className={focusRing}>
           <button
             type="button"
             onClick={() => setMobileOpen(false)}
             className={cn(
-              "flex group/logo min-w-0 mt-1.5 shrink items-center gap-3 rounded-full",
+              "flex group/logo min-w-0 shrink items-center gap-3 rounded-full",
               focusRing,
             )}
           >
@@ -285,10 +299,19 @@ export default function Navbar({ onNavigate, activeHref = "" }: NavbarProps) {
         </Link>
 
         {/* ── RIGHT: nav links + controls ─────────────────────────── */}
-        <div className="flex shrink-0 items-center mt-px gap-3.5 sm:gap-4">
+        <div className="flex shrink-0 items-center gap-3.5 sm:gap-4">
           {/* Desktop nav */}
-          <nav className="hidden items-center mt-1.5 gap-1.5 md:flex">
+          <nav className="hidden items-center gap-1.5 md:flex">
             {isDesktop ? <NavbarSearch onNavigate={onNavigate} /> : null}
+
+            <a
+              href="/tour"
+              onClick={(event) => handleNavClick(event, "/tour")}
+              aria-current={isActive("/tour") ? "page" : undefined}
+              className={desktopLink(isActive("/tour"))}
+            >
+              Tour
+            </a>
 
             <a
               href="/use-cases"
@@ -296,7 +319,7 @@ export default function Navbar({ onNavigate, activeHref = "" }: NavbarProps) {
               aria-current={isActive("/use-cases") ? "page" : undefined}
               className={desktopLink(isActive("/use-cases"))}
             >
-              Examples
+              Example
             </a>
 
             {/* ── Solutions: opens on hover and on click ──────────── */}
@@ -319,7 +342,7 @@ export default function Navbar({ onNavigate, activeHref = "" }: NavbarProps) {
                 aria-haspopup="true"
                 className={cn(
                   desktopLink(solutionsActive),
-                  "flex cursor-pointer items-center gap-1.5",
+                  "cursor-pointer gap-1.5",
                 )}
               >
                 Solutions
@@ -371,25 +394,28 @@ export default function Navbar({ onNavigate, activeHref = "" }: NavbarProps) {
               ) : null}
             </div>
 
-            {NAV_LINKS.filter((item) => item.title !== "Examples").map(
-              (item) => (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  onClick={(event) => handleNavClick(event, item.href)}
-                  aria-current={isActive(item.href) ? "page" : undefined}
-                  className={desktopLink(isActive(item.href))}
-                >
-                  {item.title}
-                </a>
-              ),
-            )}
+            {NAV_LINKS.filter(
+              (item) => item.title !== "Examples" && item.title !== "Tour",
+            ).map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                onClick={(event) => handleNavClick(event, item.href)}
+                aria-current={isActive(item.href) ? "page" : undefined}
+                className={desktopLink(isActive(item.href))}
+              >
+                {item.title}
+              </a>
+            ))}
           </nav>
 
           {/* Divider */}
           <span
             aria-hidden
-            className={cn("mx-1 hidden h-5 w-px md:block", NAV.divider)}
+            className={cn(
+              "mx-1 hidden h-5 w-px opacity-0 md:block",
+              NAV.divider,
+            )}
           />
 
           {/* Auth */}
@@ -397,47 +423,17 @@ export default function Navbar({ onNavigate, activeHref = "" }: NavbarProps) {
             <button
               type="button"
               onClick={() => navigate("/workspaces")}
-              className={cn(
-                "group hidden items-center justify-center gap-1.5 px-4 py-2",
-                "text-[13px]",
-                ctaSoft,
-                "transition-[background-color,transform] duration-150 ease-out",
-                "hover:scale-105",
-                "active:scale-[0.97]",
-                focusRing,
-                "md:inline-flex cursor-pointer",
-              )}
+              className={ctaAction}
             >
               <span>Dashboard</span>
-              <HugeiconsIcon
-                icon={ArrowRight02Icon}
-                size={13}
-                strokeWidth={2.2}
-                className="shrink-0 transition-transform duration-200 ease-out group-hover:-rotate-45"
-              />
             </button>
           ) : (
             <button
               type="button"
               onClick={() => navigate("/auth/login")}
-              className={cn(
-                "group hidden items-center justify-center gap-1.5 px-4 py-2",
-                "text-[13px]",
-                ctaSoft,
-                "transition-[background-color,transform] duration-150 ease-out",
-                "hover:scale-105",
-                "active:scale-[0.97]",
-                focusRing,
-                "md:inline-flex cursor-pointer",
-              )}
+              className={ctaAction}
             >
-              <span>Get Started</span>
-              <HugeiconsIcon
-                icon={ArrowRight02Icon}
-                size={13}
-                strokeWidth={2.2}
-                className="shrink-0 transition-transform duration-200 ease-out group-hover:-rotate-45"
-              />
+              <span>Login</span>
             </button>
           )}
 
@@ -515,21 +511,13 @@ export default function Navbar({ onNavigate, activeHref = "" }: NavbarProps) {
                   navigate("/auth/login");
                 }}
                 className={cn(
-                  "group relative flex w-full cursor-pointer items-center justify-center px-3 py-2.5",
-                  "text-sm",
+                  "group relative flex h-11 w-full cursor-pointer items-center justify-center px-3",
+                  "text-sm ease-out",
                   ctaSoft,
-                  "transition-[background-color,transform] duration-150 ease-out",
-                  "active:scale-[0.98]",
                   focusRing,
                 )}
               >
-                <span className="pr-5">Get Started</span>
-                <HugeiconsIcon
-                  icon={ArrowRight02Icon}
-                  size={14}
-                  strokeWidth={2.2}
-                  className="absolute right-3 transition-transform duration-200 ease-out group-hover:-rotate-45"
-                />
+                <span className="pr-5">Login</span>
               </button>
             </div>
           )}

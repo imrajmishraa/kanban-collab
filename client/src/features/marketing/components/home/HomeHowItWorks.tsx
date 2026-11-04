@@ -20,7 +20,7 @@ import {
 } from "@hugeicons/core-free-icons";
 
 import { cn } from "@/utils/cn";
-import { Reveal } from "./Tilt";
+import { Reveal } from "./Reveal";
 
 /* ── Copy ───────────────────────────────────────────────────────────── */
 
@@ -313,7 +313,7 @@ function StackGrid({ dense = false }: { dense?: boolean }) {
 
 /* ── Section ────────────────────────────────────────────────────────── */
 
-export default function HowItWorksSection() {
+export default function HomeHowItWorks() {
   const [copied, setCopied] = useState(false);
 
   const copyCommand = async () => {
@@ -327,7 +327,7 @@ export default function HowItWorksSection() {
   };
 
   return (
-    <section className="light relative">
+    <section className="light-theme relative">
       {/* The frame carries the rules, the content keeps its own width and
           padding: borders sit at max-w-384 like the FAQ, while the copy and
           cards stay on the max-w-7xl measure they had before. */}

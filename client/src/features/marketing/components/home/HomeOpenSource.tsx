@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { GithubIcon } from "@hugeicons/core-free-icons";
 
-import { Reveal } from "./Tilt";
+import { Reveal } from "./Reveal";
 
 /**
  * The open source slab, on the marketing stage.
@@ -18,17 +18,17 @@ import { Reveal } from "./Tilt";
 
 const REPO_URL = "https://github.com/imrajmishraa/kanban-collab";
 
-export default function OpenSourceSection() {
+export default function HomeOpenSource() {
   return (
     <section
       id="open-source"
-      className="light bg-(--bg-root) text-(--text-primary)"
+      className="light-theme bg-(--bg-root) text-(--text-primary)"
     >
       <div className="mx-auto w-full max-w-384 border-x border-(--hairline) py-16 sm:px-6 sm:py-20 lg:px-8">
         <Reveal>
           <div
             className="
-              relative theme-dark max-w-6xl m-auto overflow-hidden rounded-3xl px-8 py-16 sm:py-20
+              relative dark-theme max-w-6xl m-auto overflow-hidden rounded-3xl px-8 py-16 sm:py-20
               border border-[color-mix(in_srgb,var(--brand)_28%,white)]
             "
             style={{
@@ -53,17 +53,7 @@ export default function OpenSourceSection() {
                   href={REPO_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="
-                    inline-flex h-11 items-center justify-center gap-1.5 rounded-lg px-4
-                    border border-[color-mix(in_srgb,var(--brand)_55%,white)]
-                    bg-[color-mix(in_srgb,var(--brand)_7%,white)]
-                    font-sans text-[14px] font-bold
-                    text-[color-mix(in_srgb,var(--brand)_32%,black)]
-                    transition-colors duration-200 motion-reduce:transition-none
-                    hover:bg-[color-mix(in_srgb,var(--brand)_13%,white)]
-                    hover:border-[color-mix(in_srgb,var(--brand)_72%,white)]
-                    focus-visible:ring-2 focus-visible:ring-(--brand) focus-visible:ring-offset-2 focus-visible:ring-offset-(--bg-surface) focus-visible:outline-none
-                  "
+                  className="m-btn-outline gap-1.5"
                 >
                   <HugeiconsIcon
                     icon={GithubIcon}
@@ -75,17 +65,7 @@ export default function OpenSourceSection() {
                   Read the source
                 </a>
 
-                <Link
-                  to="/workspaces"
-                  className="
-                    inline-flex h-11 items-center justify-center rounded-lg px-4
-                    border border-(--brand) bg-(--brand)/80
-                    font-sans text-[14px] font-bold text-(--solid-text)
-                    transition-colors duration-200 motion-reduce:transition-none
-                    hover:border-(--brand-hover) hover:bg-(--brand)/85
-                    focus-visible:ring-2 focus-visible:ring-(--brand) focus-visible:ring-offset-2 focus-visible:ring-offset-(--bg-surface) focus-visible:outline-none
-                  "
-                >
+                <Link to="/workspaces" className="m-btn">
                   Open a board
                 </Link>
               </div>

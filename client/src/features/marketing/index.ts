@@ -8,4 +8,4 @@
 export { default as DeferredSection } from "./components/DeferredSection";
 export { default as FeaturesHero } from "./components/features/FeaturesHero";
 export { default as HowItWorksHero } from "./components/howItWorks/HowItWorksHero";
-export { default as HeroSection } from "./components/home/HeroSection";
+export { default as HomeHero } from "./components/home/HomeHero";

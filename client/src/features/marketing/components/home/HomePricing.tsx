@@ -69,7 +69,7 @@ const PLANS: Plan[] = [
   },
 ];
 
-interface PricingSectionProps {
+interface HomePricingProps {
   /**
    * Which theme this band is staged in.
    *
@@ -84,15 +84,17 @@ interface PricingSectionProps {
 
 const price = (value: number) => (value === 0 ? "$0" : `$${value}`);
 
-export default function PricingSection({
-  themeLock = "dark",
-}: PricingSectionProps) {
+export default function HomePricing({ themeLock = "dark" }: HomePricingProps) {
   const [cycle, setCycle] = useState<Cycle>("yearly");
 
-  /* `.theme-dark` restates the dark palette as a scope, `.light` is the page
+  /* `.dark-theme` restates the dark palette as a scope, `.light` is the page
      override reused as one. Same lock the FAQ uses. */
   const scope =
-    themeLock === "dark" ? "theme-dark" : themeLock === "light" ? "light" : "";
+    themeLock === "dark"
+      ? "dark-theme"
+      : themeLock === "light"
+        ? "light-theme"
+        : "";
 
   return (
     <section
@@ -243,10 +245,10 @@ export default function PricingSection({
 
 /** The band staged dark, whatever the app theme is. */
 export function PricingSectionDark() {
-  return <PricingSection themeLock="dark" />;
+  return <HomePricing themeLock="dark" />;
 }
 
 /** The band staged light, for a page that runs dark. */
 export function PricingSectionLight() {
-  return <PricingSection themeLock="light" />;
+  return <HomePricing themeLock="light" />;
 }

@@ -46,7 +46,10 @@ import {
    in dark and light. Written as arbitrary rgb() rather than hex or palette
    utilities because `check-theme-colors` rejects those two and allows rgb. */
 export const NAV = {
-  surface: "bg-[rgb(255,255,255)]",
+  /* The page colour, not the surface: the bar and the footer are the same
+     plane as the marketing bands, so they read as one sheet rather than
+     a whiter strip across the top and bottom. */
+  surface: "bg-(--bg-root)",
   edge: "border-[rgb(234,234,234)]",
   /* Plain values here. A `hover:` class in `ink` would set nothing at rest and
      the bar would inherit body's ink again. */
@@ -95,6 +98,7 @@ export interface NavPage {
 
 /** Top-level links. Solutions renders as the dropdown, so it is not here. */
 export const NAV_LINKS: NavLink[] = [
+  { title: "Tour", href: "/tour" },
   { title: "Examples", href: "/use-cases" },
   { title: "Pricing", href: "/pricing" },
   { title: "Docs", href: "/docs" },
@@ -124,6 +128,7 @@ export const SOLUTIONS: NavPage[] = [
 /** What the phone menu shows: the short list, then the action. */
 export const MOBILE_LINKS: NavLink[] = [
   { title: "Examples", href: "/use-cases", icon: LayersIcon },
+  { title: "Tour", href: "/tour", icon: Rocket01Icon },
   { title: "Solutions", href: "/solutions", icon: PencilEdit02Icon },
   { title: "Pricing", href: "/pricing", icon: Tag01Icon },
   { title: "Docs", href: "/docs", icon: BookOpen02Icon },
@@ -136,7 +141,7 @@ export const PUBLIC_PAGES: NavPage[] = [
   { title: "Cookies policy", href: "/cookies", icon: BiscuitIcon },
   { title: "Examples", href: "/use-cases", icon: LayersIcon },
   { title: "Features", href: "/features", icon: FileStarIcon },
-  { title: "How it works", href: "/how-it-works", icon: Rocket01Icon },
+  { title: "Tour", href: "/tour", icon: Rocket01Icon },
   { title: "Solutions", href: "/solutions", icon: PencilEdit02Icon },
   { title: "Pricing", href: "/pricing", icon: Tag01Icon },
   { title: "Testimonials", href: "/testimonials", icon: StarIcon },
@@ -162,7 +167,7 @@ export const QUICK_PAGES: NavPage[] = PUBLIC_PAGES.filter(
       "/solutions",
       "/pricing",
       "/docs",
-      "/how-it-works",
+      "/tour",
       "/feedback",
       "/testimonials",
       "/solutions#open-source",
@@ -339,7 +344,7 @@ export const FOOTER_COLUMNS: FooterColumn[] = [
     links: [
       { title: "Examples", href: "/use-cases" },
       { title: "Features", href: "/features" },
-      { title: "How it works", href: "/how-it-works" },
+      { title: "Tour", href: "/tour" },
       { title: "Solutions", href: "/solutions" },
       { title: "Pricing", href: "/pricing", badge: "Free" },
       { title: "Testimonials", href: "/testimonials" },

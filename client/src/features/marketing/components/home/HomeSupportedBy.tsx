@@ -107,16 +107,16 @@ const GLYPHS: Glyph[] = [
   { icon: ChartBarLineIcon, at: "left-[10%] bottom-[4%]", size: 40 },
 ];
 
-export default function SupportedBySection() {
+export default function HomeSupportedBy() {
   return (
     <section className="relative scroll-mt-16">
       {/* The dark surface is the frame itself, not the full-bleed section, so
           the black stops at the vertical rules instead of running edge to edge
-          across the page. `theme-dark` lives here too, which keeps every token
+          across the page. `dark-theme` lives here too, which keeps every token
           inside this box on the dark palette. */}
       <div
         className="
-          theme-dark relative mx-auto w-full max-w-384 overflow-hidden
+          dark-theme relative mx-auto w-full max-w-384 overflow-hidden
           border-x border-(--hairline) bg-(--bg-root) text-(--text-primary)
         "
       >

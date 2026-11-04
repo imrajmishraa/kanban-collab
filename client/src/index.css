@@ -76,10 +76,31 @@
   --danger: #f16b7a;
 }
 
-/* Light is the override: :root stays dark so first paint is right without
-   JavaScript. Every value that means "lighter than the page" in dark means
-   "darker than the page" here, which is why the washes invert. */
-.light {
+/* ── THEME SCOPES ───────────────────────────────────────────────────────
+   Three blocks, one token list, same order everywhere:
+
+     :root         the default. Dark, so first paint is correct before any
+                   JavaScript runs and before a route has decided anything.
+     .light-theme  the light palette, applied to a subtree.
+     .dark-theme   the dark palette as an explicit scope, for a subtree that
+                   has to stay dark inside a light page.
+
+   Every token in `:root` exists in both scopes, and in the same order. That is
+   checked by `design/tokens.test.ts`, so adding a token means adding it three
+   times: once here, once to `.light-theme`, once to `.dark-theme`.
+
+   Order matters. `.dark-theme` is declared after `.light-theme`, so if both
+   classes ever land on one element the dark one wins rather than the result
+   depending on class order in the markup.
+
+   Nothing here is a gradient or a shadow: these are colours only, so a scope
+   can be applied to any element without changing its layout.
+   ─────────────────────────────────────────────────────────────────────── */
+
+/* The light palette. Every value that means "lighter than the page" in dark
+   means "darker than the page" here, which is why the washes invert: a tint is
+   white at 3 percent on dark, black at 3 percent on light. */
+.light-theme {
   color-scheme: light;
 
   --bg-root: rgb(250, 250, 250);
@@ -144,21 +165,17 @@
   --danger: #be123c;
 }
 
-/* THEME DARK
-   The dark palette as a scope, the mirror of `.light`.
+/* The dark palette as a scope, the mirror of `.light-theme`.
 
    `:root` already carries these values, so anything that inherits looks dark
-   by accident. That is not the same as asking for dark: a section nested
-   inside a `light` band comes out light unless it says otherwise. This class
-   makes the request explicit, so a marketing section can declare its own
-   palette and stop depending on what its ancestors are doing.
+   by accident. That is not the same as asking for dark: a section nested inside
+   a `light-theme` band comes out light unless it says otherwise. This class
+   makes the request explicit, so a section can declare its own palette and stop
+   depending on what its ancestors happen to be doing.
 
-   Declared after `.light`, so when both classes land on one element the dark
-   one wins. The values are copied from `:root` above; `design/tokens.test.ts`
-   reads only `:root` and `.light`, so the contract is unchanged, but keep the
-   two in step by hand. A token added to `:root` belongs here too.
-   */
-.theme-dark {
+   The values are copied from `:root`, and the test asserts the two carry the
+   same token set, so a token added above belongs here too. */
+.dark-theme {
   color-scheme: dark;
 
   /* Page and surfaces. The page is pure black; every step above it is a
@@ -656,17 +673,14 @@ textarea::placeholder {
    The free and marketing pages do not follow the app theme. They are always
    light, so a visitor never meets a dark page they did not ask for.
 
-   Paste this block into `client/src/index.css` directly after the `.light`
-   block, so the palette it reads from is already defined above it.
-
    Two classes, one job each:
 
-     light      the palette. Already in index.css, no changes needed.
-     marketing  the stage. Brand washes, type ramp and button shapes below.
+     light-theme  the palette. Defined above, next to `:root` and `.dark-theme`.
+     marketing    the stage. Brand washes, type ramp and button shapes below.
 
    Put both on the shell of any free page:
 
-     <div className="light marketing"> … </div>
+     <div className="light-theme marketing"> … </div>
 
    Every rule here is inside `@layer components`, so an ordinary Tailwind
    utility still wins when a section needs to nudge something. */
@@ -702,19 +716,22 @@ textarea::placeholder {
      on a 1px border, 16px inline padding, nothing that grows on hover. Three
      variants and one size step, and that is the whole set. */
 
+  /* One box for all three, at the size the marketing sections settled on:
+     44px tall, 16px inline padding, 14px bold. A section that needs the same
+     button should use these classes rather than repeating the ramp inline. */
   .m-btn,
   .m-btn-outline,
   .m-btn-ghost {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    height: 50px;
+    gap: 0.375rem;
+    height: 44px;
     padding-inline: 16px;
     border-radius: 8px;
     border: 1px solid transparent;
     font-family: var(--font-sans);
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 700;
     line-height: 1;
     letter-spacing: -0.2px;
@@ -727,36 +744,45 @@ textarea::placeholder {
       color 150ms ease;
   }
 
-  /* The one solid action on a screen: a light brand fill, a deeper brand
-     border, and brand mixed into black for the ink. Measured 11.5:1 on the
-     light palette and 10.4:1 on the dark one, because the fill is mixed into
-     white in both, so the button reads the same on either page. */
+  @media (prefers-reduced-motion: reduce) {
+    .m-btn,
+    .m-btn-outline,
+    .m-btn-ghost {
+      transition: none;
+    }
+  }
+
+  /* The primary action: solid brand at 80 percent, brand border, and the
+     near-white `--solid-text` for the label. This is the button the hero and
+     the closing banner were drawing by hand. */
   .m-btn {
-    background: var(--brand-fill);
-    border-color: var(--brand-line-strong);
-    color: var(--brand-ink);
+    background: color-mix(in srgb, var(--brand) 80%, transparent);
+    border-color: var(--brand);
+    color: var(--solid-text);
   }
 
   .m-btn:hover {
-    background: var(--brand-fill-hover);
-    border-color: var(--brand-line-hover);
+    background: color-mix(in srgb, var(--brand) 85%, transparent);
+    border-color: var(--brand-hover);
   }
 
   .m-btn:active {
-    background: var(--brand-fill-active);
-    border-color: var(--brand-line-hover);
+    background: color-mix(in srgb, var(--brand) 90%, transparent);
+    border-color: var(--brand-hover);
   }
 
-  /* Its mirror: the same ink, no fill until it is used. */
+  /* The secondary action: brand at 7 percent into white for the fill, 55 for
+     the border, and 32 into black for the ink, so the label reads on the pale
+     fill instead of fighting it. */
   .m-btn-outline {
-    background: transparent;
-    border-color: var(--brand-line-strong);
-    color: var(--brand-ink);
+    background: color-mix(in srgb, var(--brand) 7%, white);
+    border-color: color-mix(in srgb, var(--brand) 55%, white);
+    color: color-mix(in srgb, var(--brand) 32%, black);
   }
 
   .m-btn-outline:hover {
-    background: var(--brand-wash-strong);
-    border-color: var(--brand-line-hover);
+    background: color-mix(in srgb, var(--brand) 13%, white);
+    border-color: color-mix(in srgb, var(--brand) 72%, white);
   }
 
   /* For a third action, or one inside a card. No border until it is used. */
@@ -919,6 +945,28 @@ textarea::placeholder {
   .m-btn-outline,
   .m-btn-ghost,
   .m-link {
+    transition: none;
+  }
+}
+
+/* BRAND HOVER
+   One thing and one thing only: the background, and only under the pointer.
+   The button keeps its border, its label colour, its shadow and its size —
+   nothing else moves. The navbar and the footer CTAs use it so their resting
+   look stays exactly as it was.
+
+   Unlayered on purpose. Tailwind's `hover:bg-*` lives in the utilities layer,
+   which beats anything in `@layer components`, so a class that has to win
+   against a button's own hover rule has to sit outside every layer.
+
+   Declared after `--brand` is in scope on the element, which it is anywhere
+   inside `.light-theme` or `.marketing`. */
+.m-glass-hover:hover {
+  background: color-mix(in srgb, var(--brand) 12%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .m-glass-hover {
     transition: none;
   }
 }

@@ -3,7 +3,7 @@ import { ArrowRight01Icon, ReloadIcon } from "@hugeicons/core-free-icons";
 
 const PROGRESS = 68;
 
-export default function BoardPanel() {
+export default function HomeBoardPanel() {
   return (
     <div
       className="

@@ -69,7 +69,7 @@ const COLUMNS = [faqs.slice(0, HALF), faqs.slice(HALF)];
 
 const answerId = (index: number) => `faq-answer-${index}`;
 
-interface FaqSectionProps {
+interface HomeFAQProps {
   /**
    * Pin the section to one theme, whatever the page is doing. Use `dark` on a
    * light page, or `light` on a dark one, when a section needs a fixed stage.
@@ -78,7 +78,7 @@ interface FaqSectionProps {
   themeLock?: "dark" | "light";
 }
 
-export default function FaqSection({ themeLock }: FaqSectionProps) {
+export default function HomeFAQ({ themeLock }: HomeFAQProps) {
   /* A set rather than one index, so "Expand all" is expressible. The first
      answer is open on arrival, which shows the interaction without a click. */
   const [open, setOpen] = useState<Set<number>>(() => new Set([0]));
@@ -96,11 +96,15 @@ export default function FaqSection({ themeLock }: FaqSectionProps) {
   const toggleAll = () =>
     setOpen(allOpen ? new Set() : new Set(faqs.map((_, index) => index)));
 
-  /* `.theme-dark` restates the dark palette as a scope, `.light` is the page
+  /* `.dark-theme` restates the dark palette as a scope, `.light` is the page
      override reused as one. Both are in index.css, so the subtree gets its own
      tokens and nothing leaks in from the page. */
   const scope =
-    themeLock === "dark" ? "theme-dark" : themeLock === "light" ? "light" : "";
+    themeLock === "dark"
+      ? "dark-theme"
+      : themeLock === "light"
+        ? "light-theme"
+        : "";
 
   return (
     <section

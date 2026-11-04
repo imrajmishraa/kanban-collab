@@ -76,7 +76,7 @@ function ScrollCorner() {
 
 export default function PublicLayout() {
   return (
-    <div className="relative flex min-h-screen flex-col bg-(--bg-root) text-(--text-primary)">
+    <div className="relative flex min-h-screen flex-col bg-(--bg-root) text-(--text-primary) light-theme marketing">
       {/* 3D depth field behind every public page */}
       {/* <LandingBackground /> */}
 

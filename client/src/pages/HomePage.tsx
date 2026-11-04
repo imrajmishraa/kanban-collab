@@ -1,31 +1,31 @@
 import { lazy, Suspense } from "react";
 
-import { HeroSection } from "@/features/marketing";
+import { HomeHero } from "@/features/marketing";
 
-const WhyKanbanSection = lazy(
-  () => import("@/features/marketing/components/home/WhyKanbanSection"),
+const HomeWhyKanban = lazy(
+  () => import("@/features/marketing/components/home/HomeWhyKanban"),
 );
-const HowItWorksSection = lazy(
-  () => import("@/features/marketing/components/home/HowItWorksSection"),
+const HomeHowItWorks = lazy(
+  () => import("@/features/marketing/components/home/HomeHowItWorks"),
 );
 
-const OpenSourceSection = lazy(
-  () => import("@/features/marketing/components/home/OpenSourceSection"),
+const HomeOpenSource = lazy(
+  () => import("@/features/marketing/components/home/HomeOpenSource"),
 );
-const FaqSection = lazy(
-  () => import("@/features/marketing/components/home/FaqSection"),
+const HomeFAQ = lazy(
+  () => import("@/features/marketing/components/home/HomeFAQ"),
 );
-const CtaSection = lazy(
-  () => import("@/features/marketing/components/home/CtaSection"),
+const HomeClosingCTA = lazy(
+  () => import("@/features/marketing/components/home/HomeClosingCTA"),
 );
-const PricingSection = lazy(
-  () => import("@/features/marketing/components/home/PricingSection"),
+const HomePricing = lazy(
+  () => import("@/features/marketing/components/home/HomePricing"),
 );
-const SupportedBySection = lazy(
-  () => import("@/features/marketing/components/home/SupportedBySection"),
+const HomeSupportedBy = lazy(
+  () => import("@/features/marketing/components/home/HomeSupportedBy"),
 );
-const ContactSection = lazy(
-  () => import("@/features/marketing/components/home/ContactSection"),
+const HomeContact = lazy(
+  () => import("@/features/marketing/components/home/HomeContact"),
 );
 
 /* NOTE: <homeBackground /> moved into PublicLayout so every public
@@ -51,40 +51,40 @@ function SectionFallback() {
 
 export default function HomePage() {
   return (
-    <div className="relative min-h-screen text-(--text-primary)">
+    <div className="light-theme marketing relative min-h-screen bg-(--bg-root) text-(--text-primary)">
       <main className="relative z-0">
-        {/* HeroSection is eager: it is the first thing on the page, and a
+        {/* HomeHero is eager: it is the first thing on the page, and a
             skeleton there would be worse than no section at all. */}
-        <HeroSection />
+        <HomeHero />
 
         <Suspense fallback={<SectionFallback />}>
-          <WhyKanbanSection />
+          <HomeWhyKanban />
         </Suspense>
 
         <Suspense fallback={<SectionFallback />}></Suspense>
-        <HowItWorksSection />
+        <HomeHowItWorks />
         <Suspense fallback={<SectionFallback />}>
-          <OpenSourceSection />
+          <HomeOpenSource />
         </Suspense>
 
         <Suspense fallback={<SectionFallback />}>
-          <FaqSection themeLock="light" />
+          <HomeFAQ themeLock="light" />
         </Suspense>
 
         <Suspense fallback={<SectionFallback />}>
-          <ContactSection />
+          <HomeContact />
         </Suspense>
 
         <Suspense fallback={<SectionFallback />}>
-          <PricingSection themeLock="light" />
+          <HomePricing themeLock="light" />
         </Suspense>
 
         <Suspense fallback={<SectionFallback />}>
-          <SupportedBySection />
+          <HomeSupportedBy />
         </Suspense>
 
         <Suspense fallback={<SectionFallback />}>
-          <CtaSection themeLock="light" />
+          <HomeClosingCTA themeLock="light" />
         </Suspense>
       </main>
     </div>

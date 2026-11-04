@@ -8,7 +8,7 @@ import {
 } from "framer-motion";
 
 import { cn } from "@/utils/cn";
-import BoardPanel from "./BoardPanel";
+import HomeBoardPanel from "./HomeBoardPanel";
 
 /* ── Screenshots ────────────────────────────────────────────────────
    Four of the five slides are the real app, captured rather than rebuilt.
@@ -38,12 +38,12 @@ function Shot({ src, alt }: { src: string; alt: string }) {
 }
 
 /* ── 1. Board view ──────────────────────────────────────────────────
-   The panel from BoardPanel.tsx: the board capture, then the progress
+   The panel from HomeBoardPanel.tsx: the board capture, then the progress
    strip under it.
    ─────────────────────────────────────────────────────────────────── */
 
 function BoardSlide() {
-  return <BoardPanel />;
+  return <HomeBoardPanel />;
 }
 
 /* ── 2. Card detail ─────────────────────────────────────────────────── */
@@ -133,7 +133,7 @@ const HOLD_MS = 6000;
 
 /* ── The box ────────────────────────────────────────────────────────── */
 
-export default function HeroPreview() {
+export default function HomeHeroPreview() {
   const reduce = useReducedMotion();
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -163,7 +163,7 @@ export default function HeroPreview() {
   const trackPointer = (event: PointerEvent<HTMLDivElement>) => {
     const rect = boxRef.current?.getBoundingClientRect();
     if (!rect) return;
-    const halfBadge = 110;
+    const halfBadge = 0;
     rawX.set(
       Math.min(
         Math.max(event.clientX - rect.left, halfBadge),
@@ -237,7 +237,7 @@ export default function HeroPreview() {
             >
               <span
                 className="
-                  inline-block translate-x-5 -translate-y-12 whitespace-nowrap
+                  inline-block translate-x-5 translate-y-5 whitespace-nowrap
                   rounded-tl-[1px] rounded-tr-[14px] rounded-br-[14px] rounded-bl-[14px]
                   border-[1.2px] border-(--accent)
                   bg-[color-mix(in_srgb,var(--accent)_18%,var(--bg-surface))]
@@ -268,7 +268,7 @@ export default function HeroPreview() {
               "focus-visible:ring-2 focus-visible:ring-(--brand) focus-visible:outline-none motion-reduce:transition-none",
               itemIndex === index
                 ? "border-[color-mix(in_srgb,var(--brand)_55%,white)] bg-[color-mix(in_srgb,var(--brand)_22%,white)] text-[color-mix(in_srgb,var(--brand)_32%,black)]"
-                : "border-transparent bg-[color-mix(in_srgb,var(--brand)_6%,white)] text-(--text-secondary) hover:bg-[color-mix(in_srgb,var(--brand)_12%,white)] hover:text-(--text-primary)",
+                : "border-transparent text-(--text-secondary) bg-[color-mix(in_srgb,var(--brand)_12%,white)] hover:text-(--text-primary)",
             )}
           >
             {item.label}

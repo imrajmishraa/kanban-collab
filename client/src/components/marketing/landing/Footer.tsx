@@ -13,7 +13,7 @@ import {
   FOOTER_CONTACT,
   FOOTER_LEGAL,
   FOOTER_SOCIAL,
-  FOOTER_TOOLS,
+  // FOOTER_TOOLS,
   NAV,
   type AiBrand,
 } from "./navConfig";
@@ -30,16 +30,16 @@ import {
 const linkBase = cn(
   "inline-flex items-center gap-1.5 text-[15px]",
   "transition-colors duration-150",
-  "text-[rgb(90,90,90)] hover:text-[rgb(176,176,176)]",
+  "text-(--text-secondary) hover:text-(--text-subtle)",
 );
 
-const squareBtn = cn(
-  "flex items-center justify-center rounded-xl border",
-  "transition-colors duration-150",
-  "border-[rgb(234,234,234)] text-[rgb(128,128,128)]",
-  "hover:border-[rgb(214,214,214)] hover:text-[rgb(55,55,55)]",
-  "focus-visible:ring-2 focus-visible:ring-[rgb(52,92,58)] focus-visible:outline-hidden",
-);
+// const squareBtn = cn(
+//   "flex items-center justify-center rounded-xl border",
+//   "transition-colors duration-150",
+//   "border-(--hairline) text-(--text-subtle)",
+//   "hover:border-(--hairline-strong) hover:text-(--text-primary)",
+//   "focus-visible:ring-2 focus-visible:ring-(--brand) focus-visible:outline-hidden",
+// );
 
 /**
  * Simplified marks, drawn here rather than imported: the icon set has no brand
@@ -195,7 +195,7 @@ export default function Footer() {
       className={cn(
         /* Above LandingBackground: it is `fixed inset-0 z-0`, so anything left
            at auto paints behind the depth field. */
-        "relative z-10",
+        "light-theme marketing relative z-10",
         NAV.surface,
         NAV.edge,
         NAV.ink,
@@ -203,197 +203,175 @@ export default function Footer() {
     >
       <div className="mx-auto w-full max-w-384 px-4 pt-16 pb-8 sm:px-6 lg:px-8 border border-(--hairline)">
         {/* ── Columns ───────────────────────────────────────────── */}
-        <div className="mt-5 ml-10 grid grid-cols-2 gap-x-10 gap-y-10 md:grid-cols-4">
-          {FOOTER_COLUMNS.map((column) => (
-            <div key={column.title}>
-              <h2 className="text-[15px] font-semibold text-[rgb(23,23,23)]">
-                {column.title}
-              </h2>
-              <ul className="mt-6 flex flex-col gap-4">
-                {column.links.map((link) => (
-                  <li key={`${column.title}-${link.title}`}>
-                    {link.external ? (
+        <div className="mt-5 mx-auto px-10 max-w-7xl">
+          <div className=" grid grid-cols-2 gap-x-10 gap-y-10 md:grid-cols-4">
+            {FOOTER_COLUMNS.map((column) => (
+              <div key={column.title}>
+                <h2 className="text-[15px] font-semibold text-(--text-primary)">
+                  {column.title}
+                </h2>
+                <ul className="mt-6 flex flex-col gap-4">
+                  {column.links.map((link) => (
+                    <li key={`${column.title}-${link.title}`}>
+                      {link.external ? (
+                        <a
+                          href={link.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={linkBase}
+                        >
+                          {link.title}
+                          {link.badge ? (
+                            <span className="font-semibold text-(--text-primary)">
+                              {link.badge}
+                            </span>
+                          ) : null}
+                          {link.dot ? (
+                            <span
+                              aria-hidden="true"
+                              className="size-1.5 rounded-full bg-(--brand)"
+                            />
+                          ) : null}
+                        </a>
+                      ) : (
+                        <Link to={link.href} className={linkBase}>
+                          {link.title}
+                          {link.badge ? (
+                            <span className="font-semibold text-(--text-primary)">
+                              {link.badge}
+                            </span>
+                          ) : null}
+                          {link.dot ? (
+                            <span
+                              aria-hidden="true"
+                              className="size-1.5 rounded-full bg-(--brand)"
+                            />
+                          ) : null}
+                        </Link>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          {/* ── Ask AI (left) · documentation shortcuts (right) ───── */}
+          <div className="mt-20 flex flex-col gap-12 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="flex items-center gap-2 text-[15px] text-(--text-secondary)">
+                Ask AI
+                <span aria-hidden="true" className="text-[rgb(66,133,244)]">
+                  ✦
+                </span>
+                about Kanban Collab
+              </p>
+              <ul className="mt-4 flex flex-wrap items-center gap-3">
+                {FOOTER_AI.map((ai) => (
+                  <li key={ai.title}>
+                    <Tooltip label={ai.title} side="top" size="sm">
                       <a
-                        href={link.href}
+                        href={ai.href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={linkBase}
+                        aria-label={ai.title}
+                        style={{ color: AI_COLOR[ai.brand] }}
+                        className={cn(
+                          "flex items-center justify-center rounded-[14px] border",
+                          "border-(--hairline) bg-(--bg-root)",
+                          "transition-[background-color,transform] duration-150",
+                          "hover:-translate-y-px hover:bg-(--tint-4)",
+                          "focus-visible:ring-2 focus-visible:ring-(--brand) focus-visible:outline-hidden",
+                          "motion-reduce:transition-none motion-reduce:hover:translate-y-0",
+                          "size-13 hover:scale-110",
+                        )}
                       >
-                        {link.title}
-                        {link.badge ? (
-                          <span className="font-semibold text-[rgb(23,23,23)]">
-                            {link.badge}
-                          </span>
-                        ) : null}
-                        {link.dot ? (
-                          <span
-                            aria-hidden="true"
-                            className="size-1.5 rounded-full bg-[rgb(52,92,58)]"
-                          />
-                        ) : null}
+                        {AI_MARK[ai.brand]}
                       </a>
-                    ) : (
-                      <Link to={link.href} className={linkBase}>
-                        {link.title}
-                        {link.badge ? (
-                          <span className="font-semibold text-[rgb(23,23,23)]">
-                            {link.badge}
-                          </span>
-                        ) : null}
-                        {link.dot ? (
-                          <span
-                            aria-hidden="true"
-                            className="size-1.5 rounded-full bg-[rgb(52,92,58)]"
-                          />
-                        ) : null}
-                      </Link>
-                    )}
+                    </Tooltip>
                   </li>
                 ))}
               </ul>
             </div>
-          ))}
-        </div>
+          </div>
 
-        {/* ── Ask AI (left) · documentation shortcuts (right) ───── */}
-        <div className="mt-20 flex flex-col gap-12 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="flex items-center gap-2 text-[15px] text-[rgb(90,90,90)]">
-              Ask AI
-              <span aria-hidden="true" className="text-[rgb(66,133,244)]">
-                ✦
-              </span>
-              about Kanban Collab
+          {/* ── Base line ─────────────────────────────────────────── */}
+          <div
+            className={cn(
+              "mt-15 flex flex-col gap-4 border-t pt-8",
+              NAV.edge,
+              "text-[15px] md:flex-row md:items-center md:justify-between",
+            )}
+          >
+            <p className="text-(--text-primary)">
+              © {year} Kanban Collab. All rights reserved.
             </p>
-            <ul className="mt-4 flex flex-wrap items-center gap-3">
-              {FOOTER_AI.map((ai) => (
-                <li key={ai.title}>
-                  <Tooltip label={ai.title} side="top" size="sm">
-                    <a
-                      href={ai.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={ai.title}
-                      style={{ color: AI_COLOR[ai.brand] }}
-                      className={cn(
-                        "flex items-center justify-center rounded-[14px] border",
-                        "border-[rgb(234,234,234)] bg-[rgb(250,250,250)]",
-                        "transition-[background-color,transform] duration-150",
-                        "hover:-translate-y-px hover:bg-[rgb(244,244,244)]",
-                        "focus-visible:ring-2 focus-visible:ring-[rgb(52,92,58)] focus-visible:outline-hidden",
-                        "motion-reduce:transition-none motion-reduce:hover:translate-y-0",
-                        "size-13 hover:scale-110",
-                      )}
-                    >
-                      {AI_MARK[ai.brand]}
-                    </a>
-                  </Tooltip>
-                </li>
-              ))}
-            </ul>
-          </div>
 
-          <div className="md:text-right">
-            <p className="text-[15px] text-[rgb(90,90,90)]">Read the docs</p>
-            <ul className="mt-4 flex flex-wrap items-center gap-3 md:justify-end">
-              {FOOTER_TOOLS.map((tool) => (
-                <li key={tool.title}>
-                  <Tooltip label={tool.title} side="top" size="sm">
-                    <a
-                      href={tool.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={tool.title}
-                      className={cn(squareBtn, "size-11 hover:scale-110")}
-                    >
-                      <HugeiconsIcon
-                        icon={tool.icon}
-                        size={19}
-                        strokeWidth={1.6}
-                        aria-hidden="true"
-                      />
-                    </a>
-                  </Tooltip>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        {/* ── Base line ─────────────────────────────────────────── */}
-        <div
-          className={cn(
-            "mt-15 flex flex-col gap-4 border-t pt-8",
-            NAV.edge,
-            "text-[15px] md:flex-row md:items-center md:justify-between",
-          )}
-        >
-          <p className="text-[rgb(23,23,23)]">
-            © {year} Kanban Collab. All rights reserved.
-          </p>
-
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
-            <a
-              href={FOOTER_CONTACT.href}
-              target={FOOTER_CONTACT.external ? "_blank" : undefined}
-              rel={FOOTER_CONTACT.external ? "noopener noreferrer" : undefined}
-              className="group inline-flex items-center gap-1.5 text-[rgb(90,90,90)] transition-colors duration-150 hover:text-[rgb(55,55,55)]"
-            >
-              {FOOTER_CONTACT.label}
-              <HugeiconsIcon
-                icon={ArrowRight01Icon}
-                size={14}
-                strokeWidth={2}
-                aria-hidden="true"
-                className="transition-transform duration-200 ease-out group-hover:translate-x-0.5"
-              />
-              <span className="font-semibold text-[rgb(23,23,23)]">
-                open an issue
-              </span>
-            </a>
-
-            {FOOTER_LEGAL.map((link) => (
-              <span key={link.title} className="flex items-center gap-4">
-                <span
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+              <a
+                href={FOOTER_CONTACT.href}
+                target={FOOTER_CONTACT.external ? "_blank" : undefined}
+                rel={
+                  FOOTER_CONTACT.external ? "noopener noreferrer" : undefined
+                }
+                className="group inline-flex items-center gap-1.5 text-(--text-secondary) transition-colors duration-150 hover:text-(--text-primary)"
+              >
+                {FOOTER_CONTACT.label}
+                <HugeiconsIcon
+                  icon={ArrowRight01Icon}
+                  size={14}
+                  strokeWidth={2}
                   aria-hidden="true"
-                  className="hidden h-4 w-px bg-[rgb(228,228,228)] md:block"
+                  className="transition-transform duration-200 ease-out group-hover:translate-x-0.5"
                 />
-                <Link
-                  to={link.href}
-                  className="text-[rgb(90,90,90)] transition-colors duration-150 hover:text-[rgb(55,55,55)]"
-                >
-                  {link.title}
-                </Link>
-              </span>
-            ))}
+                <span className="font-semibold text-(--text-primary)">
+                  open an issue
+                </span>
+              </a>
 
-            <span
-              aria-hidden="true"
-              className="hidden h-4 w-px bg-[rgb(228,228,228)] md:block"
-            />
-
-            <ul className="flex items-center gap-4">
-              {FOOTER_SOCIAL.map((social) => (
-                <li key={social.title}>
-                  <Tooltip label={social.title} side="top" size="sm">
-                    <a
-                      href={social.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={social.title}
-                      className="flex items-center text-[rgb(90,90,90)] transition-colors duration-150 hover:scale-110 hover:text-[rgb(23,23,23)]"
-                    >
-                      <HugeiconsIcon
-                        icon={social.icon}
-                        size={19}
-                        strokeWidth={1.6}
-                        aria-hidden="true"
-                      />
-                    </a>
-                  </Tooltip>
-                </li>
+              {FOOTER_LEGAL.map((link) => (
+                <span key={link.title} className="flex items-center gap-4">
+                  <span
+                    aria-hidden="true"
+                    className="hidden h-4 w-px bg-(--hairline) md:block"
+                  />
+                  <Link
+                    to={link.href}
+                    className="text-(--text-secondary) transition-colors duration-150 hover:text-(--text-primary)"
+                  >
+                    {link.title}
+                  </Link>
+                </span>
               ))}
-            </ul>
+
+              <span
+                aria-hidden="true"
+                className="hidden h-4 w-px bg-(--hairline) md:block"
+              />
+
+              <ul className="flex items-center gap-4">
+                {FOOTER_SOCIAL.map((social) => (
+                  <li key={social.title}>
+                    <Tooltip label={social.title} side="top" size="sm">
+                      <a
+                        href={social.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={social.title}
+                        className="flex items-center text-(--text-secondary) transition-colors duration-150 hover:scale-110 hover:text-(--text-primary)"
+                      >
+                        <HugeiconsIcon
+                          icon={social.icon}
+                          size={19}
+                          strokeWidth={1.6}
+                          aria-hidden="true"
+                        />
+                      </a>
+                    </Tooltip>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
       </div>

@@ -9,7 +9,7 @@ import {
 } from "@hugeicons/core-free-icons";
 
 import { cn } from "@/utils/cn";
-import { Reveal } from "./Tilt";
+import { Reveal } from "./Reveal";
 
 /**
  * Why Kanban, on the marketing stage.
@@ -195,11 +195,11 @@ function VideoPlayer() {
 
 /* ── Section ────────────────────────────────────────────────────────── */
 
-export default function WhyKanbanSection() {
+export default function HomeWhyKanban() {
   const [activeId, setActiveId] = useState(ITEMS[0].id);
 
   return (
-    <section className="light relative mx-auto w-full max-w-384 flex items-center overflow-hidden border-x border-t border-(--hairline)">
+    <section className="light-theme relative mx-auto w-full max-w-384 flex items-center overflow-hidden border-x border-t border-(--hairline)">
       <div className="mx-auto relative ">
         <div className="mt-20 px-10 py-30 sm:px-6 sm:py-24 lg:px-8">
           {/* ── Heading ── */}
@@ -308,17 +308,7 @@ export default function WhyKanbanSection() {
                   href={REPO_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="
-                  inline-flex h-11 items-center justify-center gap-1.5 rounded-lg px-4
-                  border border-[color-mix(in_srgb,var(--brand)_55%,white)]
-                  bg-[color-mix(in_srgb,var(--brand)_7%,white)]
-                  font-sans text-[14px] font-bold
-                  text-[color-mix(in_srgb,var(--brand)_32%,black)]
-                  transition-colors duration-200 motion-reduce:transition-none
-                  hover:bg-[color-mix(in_srgb,var(--brand)_13%,white)]
-                  hover:border-[color-mix(in_srgb,var(--brand)_72%,white)]
-                  focus-visible:ring-2 focus-visible:ring-(--brand) focus-visible:ring-offset-2 focus-visible:ring-offset-(--bg-root) focus-visible:outline-none
-                "
+                  className="m-btn-outline gap-1.5"
                 >
                   Read the source
                   <HugeiconsIcon
@@ -329,17 +319,7 @@ export default function WhyKanbanSection() {
                   />
                 </a>
 
-                <Link
-                  to="/workspaces"
-                  className="
-                  inline-flex h-11 items-center justify-center rounded-lg px-4
-                  border border-(--brand) bg-(--brand)/80
-                  font-sans text-[14px] font-bold text-(--solid-text)
-                  transition-colors duration-200 motion-reduce:transition-none
-                  hover:border-(--brand-hover) hover:bg-(--brand)/85
-                  focus-visible:ring-2 focus-visible:ring-(--brand) focus-visible:ring-offset-2 focus-visible:ring-offset-(--bg-root) focus-visible:outline-none
-                "
-                >
+                <Link to="/workspaces" className="m-btn">
                   Open a board
                 </Link>
               </div>

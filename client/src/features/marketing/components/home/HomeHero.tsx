@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform, type Variants } from "framer-motion";
 
-import HeroPreview from "./HeroPreview";
+import HomeHeroPreview from "./HomeHeroPreview";
 
 /* ── Entrance choreography ──────────────────────────────────────────── */
 
@@ -26,7 +26,7 @@ const PROOF_MARKS = ["React", "TypeScript", "Yjs", "Tailwind", "MongoDB"];
 
 /* ── Hero ───────────────────────────────────────────────────────────── */
 
-export default function HeroSection() {
+export default function HomeHero() {
   /* Gentle drift only: the preview never fades out on scroll. */
   const { scrollY } = useScroll();
   const yCard = useTransform(scrollY, [0, 900], [0, -40]);
@@ -35,16 +35,16 @@ export default function HeroSection() {
     /* Locked to the light palette for the whole subtree: the headline, the CTA,
        the proof row, the preview box and its slides all resolve their tokens
        here, whatever the page or the app theme is doing. */
-    <section className="light relative flex items-center overflow-hidden bg-(--bg-root)">
+    <section className="light-theme relative flex items-center overflow-hidden bg-(--bg-root)">
       <div className="relative mx-auto w-full max-w-384 border-x border-(--hairline) sm:px-4 pt-25 lg:px-8 lg:pb-30">
         <motion.div
           variants={container}
           initial="hidden"
           animate="visible"
-          className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[1fr_1.15fr] lg:gap-8 xl:gap-0"
+          className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[1fr_1.15fr] lg:gap-8 xl:gap-0 mx-auto max-w-7xl"
         >
           {/* ── Left: the pitch ──────────────────────────────────── */}
-          <div className="mx-auto pl-20 w-full max-w-150 lg:mx-0">
+          <div className="mx-auto pl-15 w-full max-w-150 lg:mx-0">
             <motion.h1
               variants={item}
               className="font-sans text-[34px] font-bold leading-[1.12] tracking-[-1px] text-(--text-primary) sm:text-[40px] md:text-[44px] md:tracking-[-1.4px]"
@@ -64,17 +64,7 @@ export default function HeroSection() {
             </motion.p>
 
             <motion.div variants={item} className="mt-8">
-              <Link
-                to="/workspaces"
-                className="
-                  inline-flex h-11 items-center justify-center rounded-lg px-4
-                  border border-(--brand) bg-(--brand)/80
-                  font-sans text-[14px] font-bold text-(--solid-text)
-                  transition-colors duration-200 motion-reduce:transition-none
-                  hover:border-(--brand-hover) hover:bg-(--brand)/85
-                  focus-visible:ring-2 focus-visible:ring-(--brand) focus-visible:ring-offset-2 focus-visible:ring-offset-(--bg-root) focus-visible:outline-none
-                "
-              >
+              <Link to="/workspaces" className="m-btn">
                 Explore a live board
               </Link>
             </motion.div>
@@ -98,12 +88,12 @@ export default function HeroSection() {
           </div>
 
           {/* ── Right: the preview box ───────────────────────────── */}
-          <div id="demo" className="w-full lg:pl-5 xl:pl-12">
+          <div id="demo" className=" lg:pl-5 xl:pl-12">
             <motion.div variants={item}>
               {/* Drift lives on its own layer: a variant and a scroll
                   MotionValue cannot both drive `y`. */}
               <motion.div style={{ y: yCard }}>
-                <HeroPreview />
+                <HomeHeroPreview />
               </motion.div>
             </motion.div>
           </div>
