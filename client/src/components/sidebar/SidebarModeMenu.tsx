@@ -23,7 +23,7 @@ const MODES: Array<{
   { mode: "hover", label: "Hover", icon: Cursor02Icon },
 ];
 
-export function SidebarModeMenu({ mode, onSelect }: SidebarModeMenuProps) {
+function SidebarModeMenu({ mode, onSelect }: SidebarModeMenuProps) {
   return (
     <div
       role="group"

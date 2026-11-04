@@ -18,21 +18,7 @@ interface KibanaIconProps {
 const UPPER = "M2.625 0H21.375L2.625 21.591z";
 const WEDGE = "M13.489 12.47 3.477 24h17.522a18.755 18.755 0 0 0-7.51-11.53z";
 
-/**
- * The Kibana mark, lit the way the "Get Started" pill is lit.
- *
- * One half carries the brand orange as tinted glass with a white sheen over
- * it; the other half takes `currentColor`, so it is near-black on the light
- * page and white on the dark one without either being hard-coded here.
- *
- * Both gradients use `userSpaceOnUse`, so a lit area made of two paths shares
- * one continuous ramp instead of restarting at each path's own bounding box.
- *
- * The ink is the SVG `color` presentation attribute rather than a class: a
- * presentation attribute loses to any CSS, so a caller passing
- * `className="text-(--brand)"` still wins.
- */
-export function KanbanIcon({
+function KanbanIcon({
   size = 24,
   className,
   title,

@@ -197,16 +197,21 @@
 }
 
 /* CTA MARK
-   The hover mark behind the closing banner. Three animations run at once, and
-   they can only do that because each drives a DIFFERENT property:
+   The hover mark behind the closing banner, and the band of light that crosses
+   it. Four animations run at once, and they can only do that because each
+   drives a DIFFERENT property:
 
      cta-rock    the individual `rotate` property
      cta-swell   the individual `scale` property
-     cta-shade   `color` and `opacity`
+     cta-shade   `color`
+     cta-shine   the shine band's `transform`
 
    Animating `transform` in two of them would not work: the second would
    overwrite the first on every frame. The individual properties exist for
-   exactly this case. */
+   exactly this case.
+
+   All four are parked until the card is pointed at or focused, which is the
+   last rule here. Nothing runs while nobody is looking. */
 
 /* Forward, hold, back, hold. A full turn reads as a machine part; an
    oscillation reads as the mark turning to look at something and turning back,
@@ -248,6 +253,30 @@
   }
 }
 
+/* A band of light that crosses the card from left to right, then waits off the
+   right edge until the cycle comes round again. */
+@keyframes cta-shine {
+  0% {
+    transform: translateX(-160%) skewX(-14deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  52% {
+    transform: translateX(320%) skewX(-14deg);
+    opacity: 1;
+  }
+  60% {
+    transform: translateX(320%) skewX(-14deg);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(320%) skewX(-14deg);
+    opacity: 0;
+  }
+}
+
 .cta-mark {
   animation:
     cta-rock 6s ease-in-out infinite,
@@ -255,13 +284,33 @@
     cta-shade 3s ease-in-out infinite;
 }
 
-/* The rock is 5s with no holds: two and a half seconds turning out, two and a
-   half turning back, straight into the next cycle. The swell and the shade stay
-   on 10 and 6, so the small motion is quick while the light behind it breathes
-   slowly, and the three only realign once every half minute. */
+.cta-shine {
+  animation: cta-shine 5s ease-in-out infinite;
+}
+
+/* The rock is 6s with no holds: three seconds turning out, three turning back,
+   straight into the next cycle. The swell, the shade and the shine stay on 10,
+   3 and 5, so the small motion is quick while the light behind it breathes
+   slowly. Six, ten, three and five only realign once every half minute. */
+
+/* Parked until the card is pointed at or focused. `animation-play-state` rather
+   than mounting and unmounting, so the moment the pointer arrives the animation
+   continues from where it paused instead of starting over. */
+.cta-mark,
+.cta-shine {
+  animation-play-state: paused;
+}
+
+.group:hover .cta-mark,
+.group:hover .cta-shine,
+.group:focus-visible .cta-mark,
+.group:focus-visible .cta-shine {
+  animation-play-state: running;
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .cta-mark {
+  .cta-mark,
+  .cta-shine {
     animation: none;
   }
 }
@@ -512,4 +561,275 @@ textarea::placeholder {
 .vt-running [data-theme-swatch] {
   pointer-events: none;
   opacity: 0.55;
+}
+
+/* MARKETING STAGE
+   The free and marketing pages do not follow the app theme. They are always
+   light, so a visitor never meets a dark page they did not ask for.
+
+   Paste this block into `client/src/index.css` directly after the `.light`
+   block, so the palette it reads from is already defined above it.
+
+   Two classes, one job each:
+
+     light      the palette. Already in index.css, no changes needed.
+     marketing  the stage. Brand washes, type ramp and button shapes below.
+
+   Put both on the shell of any free page:
+
+     <div className="light marketing"> … </div>
+
+   Every rule here is inside `@layer components`, so an ordinary Tailwind
+   utility still wins when a section needs to nudge something. */
+
+.marketing {
+  color-scheme: light;
+
+  /* Brand, at the intensities marketing is allowed to use. A single --brand
+     asked to be a fill, a border and ink at once is why a brand button reads
+     as a warning stripe: the fill is too loud and the ink has to fight it.
+
+     So the button is built the way the reference site builds it. The fill is a
+     light tint of the brand, the border is the same tint a few steps deeper,
+     and the ink is the brand mixed into black. Hover moves the fill and the
+     border one step each. Everything derives from --brand, so retuning the
+     brand retunes the whole set. */
+  --brand-fill: color-mix(in srgb, var(--brand) 22%, white);
+  --brand-fill-hover: color-mix(in srgb, var(--brand) 32%, white);
+  --brand-fill-active: color-mix(in srgb, var(--brand) 40%, white);
+  --brand-line-strong: color-mix(in srgb, var(--brand) 55%, white);
+  --brand-line-hover: color-mix(in srgb, var(--brand) 72%, white);
+  --brand-ink: color-mix(in srgb, var(--brand) 32%, black);
+
+  /* Washes are for beds and cards, never for a button. */
+  --brand-wash: color-mix(in srgb, var(--brand) 7%, transparent);
+  --brand-wash-strong: color-mix(in srgb, var(--brand) 13%, transparent);
+  --brand-line: color-mix(in srgb, var(--brand) 30%, transparent);
+}
+
+@layer components {
+  /* BUTTONS
+     Shape and type follow the reference site: 8px radius, 50px tall, 16px bold
+     on a 1px border, 16px inline padding, nothing that grows on hover. Three
+     variants and one size step, and that is the whole set. */
+
+  .m-btn,
+  .m-btn-outline,
+  .m-btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    height: 50px;
+    padding-inline: 16px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    font-family: var(--font-sans);
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.2px;
+    white-space: nowrap;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      background-color 150ms ease,
+      border-color 150ms ease,
+      color 150ms ease;
+  }
+
+  /* The one solid action on a screen: a light brand fill, a deeper brand
+     border, and brand mixed into black for the ink. Measured 11.5:1 on the
+     light palette and 10.4:1 on the dark one, because the fill is mixed into
+     white in both, so the button reads the same on either page. */
+  .m-btn {
+    background: var(--brand-fill);
+    border-color: var(--brand-line-strong);
+    color: var(--brand-ink);
+  }
+
+  .m-btn:hover {
+    background: var(--brand-fill-hover);
+    border-color: var(--brand-line-hover);
+  }
+
+  .m-btn:active {
+    background: var(--brand-fill-active);
+    border-color: var(--brand-line-hover);
+  }
+
+  /* Its mirror: the same ink, no fill until it is used. */
+  .m-btn-outline {
+    background: transparent;
+    border-color: var(--brand-line-strong);
+    color: var(--brand-ink);
+  }
+
+  .m-btn-outline:hover {
+    background: var(--brand-wash-strong);
+    border-color: var(--brand-line-hover);
+  }
+
+  /* For a third action, or one inside a card. No border until it is used. */
+  .m-btn-ghost {
+    height: 40px;
+    padding-inline: 12px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .m-btn-ghost:hover {
+    background: var(--brand-wash);
+    color: var(--brand);
+  }
+
+  /* One step down, for a button inside a card rather than under a heading. */
+  .m-btn-sm {
+    height: 40px;
+    padding-inline: 12px;
+    font-size: 14px;
+  }
+
+  .m-btn:disabled,
+  .m-btn[aria-disabled="true"],
+  .m-btn-outline:disabled,
+  .m-btn-outline[aria-disabled="true"] {
+    background: var(--tint-10);
+    border-color: transparent;
+    color: var(--text-muted);
+    cursor: not-allowed;
+  }
+
+  .m-btn:focus-visible,
+  .m-btn-outline:focus-visible,
+  .m-btn-ghost:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+  }
+
+  /* TYPE
+     The reference's ramp, with the breakpoints folded into clamp() so a
+     heading is one class instead of three. Tracking is negative throughout:
+     at these sizes the default spacing reads loose. */
+
+  .m-display {
+    font-family: var(--font-sans);
+    font-size: clamp(2.125rem, 4.2vw, 2.75rem); /* 34 → 44 */
+    font-weight: 700;
+    line-height: 1.12;
+    letter-spacing: -1px;
+    color: var(--text-primary);
+    text-wrap: balance;
+  }
+
+  .m-h2 {
+    font-family: var(--font-sans);
+    font-size: clamp(2rem, 3.6vw, 2.5rem); /* 32 → 40 */
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -1px;
+    color: var(--text-primary);
+    text-wrap: balance;
+  }
+
+  .m-h3 {
+    font-family: var(--font-sans);
+    font-size: clamp(1.5rem, 2.6vw, 2.25rem); /* 24 → 36 */
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.6px;
+    color: var(--text-primary);
+    text-wrap: balance;
+  }
+
+  /* The standfirst under a heading. */
+  .m-lead {
+    font-family: var(--font-sans);
+    font-size: clamp(1.125rem, 1.6vw, 1.375rem); /* 18 → 22 */
+    line-height: 1.4;
+    letter-spacing: -0.3px;
+    color: var(--text-secondary);
+    text-wrap: pretty;
+  }
+
+  .m-body {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+  }
+
+  /* The label above a card title. Brand, at reading weight, never bold. */
+  .m-eyebrow {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.3;
+    letter-spacing: -0.2px;
+    color: var(--brand);
+  }
+
+  /* The second half of a two-tone heading: "Build the way <you need.>" */
+  .m-quiet {
+    color: var(--text-muted);
+  }
+
+  .m-link {
+    color: var(--brand);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .m-link:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  /* SURFACES
+     A card is a brand wash fading into the page, not a grey panel. That is what
+     keeps a light marketing page from reading as a settings screen. */
+
+  .m-card {
+    border: 1px solid var(--brand-line);
+    border-radius: 12px;
+    background: linear-gradient(to bottom, var(--brand-wash), transparent 70%);
+  }
+
+  /* A neutral panel, for anything that holds a screenshot or a table. */
+  .m-panel {
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    background: var(--bg-surface);
+  }
+
+  /* A small inline label: the "Real-time by default" pill. */
+  .m-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    height: 28px;
+    padding-inline: 10px;
+    border: 1px solid var(--brand-line);
+    border-radius: 999px;
+    background: var(--brand-wash);
+    color: var(--brand);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+  }
+}
+
+/* One reduced-motion rule for the whole set, rather than a utility on every
+   usage. Nothing here moves, so this only has to switch the transitions off. */
+@media (prefers-reduced-motion: reduce) {
+  .m-btn,
+  .m-btn-outline,
+  .m-btn-ghost,
+  .m-link {
+    transition: none;
+  }
 }

@@ -119,7 +119,8 @@ export default function FaqSection({ themeLock }: FaqSectionProps) {
 
             <div className="px-4 py-10 sm:px-8 sm:py-12 md:px-12 md:py-14 lg:px-16 lg:py-16">
               <h2 className="mb-6 text-3xl font-bold tracking-tight text-(--text-primary) md:text-4xl">
-                Frequently Asked Questions
+                Frequently Asked{" "}
+                <span className="text-(--text-muted)">Questions</span>
               </h2>
               <p className="max-w-2xl text-xl font-light leading-relaxed text-(--text-secondary)">
                 Everything people ask before their first board, from what it

@@ -16,7 +16,6 @@ import {
   Medal01Icon,
   PackageIcon,
   PlusSignIcon,
-  Rocket01Icon,
   ServerIcon,
 } from "@hugeicons/core-free-icons";
 
@@ -329,7 +328,7 @@ export default function HowItWorksSection() {
 
   return (
     <section className="relative">
-      <div className="mx-auto flex max-w-7xl flex-col items-center px-4 py-24 sm:px-6 sm:py-32 lg:px-8">
+      <div className="mx-auto max-w-7xl mb-10 px-10 py-30 sm:px-6 sm:py-24 lg:px-8">
         {/* ── Heading ── */}
         <div className="mx-auto w-full max-w-245 text-center">
           <Reveal>
@@ -403,14 +402,6 @@ export default function HowItWorksSection() {
                       size={52}
                       strokeWidth={1.4}
                       className="text-(--accent)"
-                    />
-                  </div>
-
-                  <div className="relative -ml-4 flex size-16 items-center justify-center rounded-full border border-(--accent) bg-(--bg-root) text-(--accent)">
-                    <HugeiconsIcon
-                      icon={Rocket01Icon}
-                      size={28}
-                      strokeWidth={1.5}
                     />
                   </div>
                 </div>

@@ -5,7 +5,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { useNavigate } from "react-router-dom";
 
-import { KanbanIcon } from "@/assets/KanbanIcon";
+import KanbanIcon from "@/assets/KanbanIcon";
 
 import { Tooltip } from "@/components/Tooltips/ToolTip";
 

@@ -8,9 +8,7 @@ const WhyKanbanSection = lazy(
 const HowItWorksSection = lazy(
   () => import("@/features/marketing/components/landing/HowItWorksSection"),
 );
-const CollaborationSection = lazy(
-  () => import("@/features/marketing/components/landing/CollaborationSection"),
-);
+
 const OpenSourceSection = lazy(
   () => import("@/features/marketing/components/landing/OpenSourceSection"),
 );
@@ -51,7 +49,7 @@ function SectionFallback() {
   );
 }
 
-export default function LandingPage() {
+export default function HomePage() {
   return (
     <div className="relative min-h-screen text-(--text-primary)">
       <main className="relative z-0">
@@ -59,20 +57,12 @@ export default function LandingPage() {
             skeleton there would be worse than no section at all. */}
         <HeroSection />
 
-        {/* Every section below the fold is lazy, so each one needs its own
-            boundary. Without one, React suspends the whole route and the page
-            renders empty — which is what hid the footer under a full-height
-            <main>. */}
         <Suspense fallback={<SectionFallback />}>
           <WhyKanbanSection />
         </Suspense>
 
         <Suspense fallback={<SectionFallback />}>
           <HowItWorksSection />
-        </Suspense>
-
-        <Suspense fallback={<SectionFallback />}>
-          <CollaborationSection />
         </Suspense>
 
         <Suspense fallback={<SectionFallback />}>

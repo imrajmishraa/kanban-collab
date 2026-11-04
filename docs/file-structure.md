@@ -24,7 +24,7 @@ Where a file lives in `client/src` is decided by **who owns it**, not by what ki
 
 ```
 pages/
-├── LandingPage.tsx                    /
+├── HomePage.tsx                    /
 ├── FeaturesPage.tsx                   /features
 ├── auth/LoginPage.tsx                 /auth/login
 ├── workspaces/
@@ -58,7 +58,7 @@ features/boards/
 
 **`index.ts` is the boundary.** Code outside a feature imports `@/features/boards`, never `@/features/boards/components/BoardHeader`. Nine features have a barrel; each re-exports exactly what outside code actually imports, nothing more. That is what lets a feature rearrange its insides without touching anything else.
 
-One deliberate exception: **lazily loaded sections stay on their deep path.** `pages/LandingPage.tsx` does `import("@/features/marketing/components/landing/WhyKanbanSection")` rather than the barrel, because routing it through `index.ts` would pull the whole marketing feature into one chunk and undo the code-splitting.
+One deliberate exception: **lazily loaded sections stay on their deep path.** `pages/HomePage.tsx` does `import("@/features/marketing/components/landing/WhyKanbanSection")` rather than the barrel, because routing it through `index.ts` would pull the whole marketing feature into one chunk and undo the code-splitting.
 
 ## Layers
 

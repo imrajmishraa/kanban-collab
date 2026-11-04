@@ -60,7 +60,7 @@ const PANEL_GAP = 8;
  * theme, how the rail behaves, then log out. Anchored bottom-left so it opens
  * upward over the nav.
  */
-export function SidebarAccountMenu({
+function SidebarAccountMenu({
   user,
   onLogout,
   onClose,

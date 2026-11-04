@@ -81,7 +81,8 @@ export default function CtaSection({ themeLock = "dark" }: CtaSectionProps) {
 
             <div className="relative z-10 px-4 py-10 sm:px-8 sm:py-12 md:px-12 md:py-16 lg:px-16 lg:py-20">
               <h2 className="max-w-3xl text-3xl font-bold tracking-tight text-(--text-primary) md:text-4xl">
-                Let us handle the board
+                Let us handle{" "}
+                <span className="text-(--text-muted)"> the board</span>
               </h2>
               <p className="mt-6 max-w-2xl text-xl font-light leading-relaxed text-(--text-secondary)">
                 Every card, column and comment synced the moment anyone moves

@@ -1,15 +1,29 @@
-import { HugeiconsIcon } from "@hugeicons/react";
-import { ArrowUpRight01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
+import {
+  ArrowUpRight01Icon,
+  ChartBarLineIcon,
+  CodeIcon,
+  CommandIcon,
+  CubeIcon,
+  GlobeIcon,
+  Layers01Icon,
+  Rocket01Icon,
+  ServerIcon,
+} from "@hugeicons/core-free-icons";
 
 /**
  * Brand marks, drawn as inline paths rather than loaded from a CDN.
  *
  * The path data is from Simple Icons (simpleicons.org), which publishes every
- * mark as a single 24x24 path in CC0. Inlining them keeps the section working
- * offline, keeps four logos out of the network waterfall, and means the marks
- * take `currentColor` like every other icon in this app instead of arriving
- * with their own brand colours, which the design system does not allow as a
- * fill.
+ * mark as a single 24x24 path in CC0, alongside the brand colour it is meant to
+ * be drawn in. Inlining them keeps the section working offline and keeps four
+ * logos out of the network waterfall.
+ *
+ * These four are the one place in the app where a mark is drawn in its own
+ * colour rather than in `currentColor`: a credit row of grey logos says nothing,
+ * and these are third-party identities rather than UI. The colour rides on the
+ * `fill` attribute of each path, not on a class, so it is outside the token
+ * system on purpose.
  */
 const MARKS = {
   mongodb:
@@ -28,6 +42,8 @@ interface Supporter {
   description: string;
   href: string;
   mark: Mark;
+  /** The brand's own colour, from Simple Icons. */
+  hex: string;
 }
 
 const SUPPORTERS: Supporter[] = [
@@ -36,25 +52,52 @@ const SUPPORTERS: Supporter[] = [
     description: "Where boards, cards, comments and members are stored.",
     href: "https://www.mongodb.com",
     mark: "mongodb",
+    hex: "#47A248",
   },
   {
     name: "Redis",
     description: "Sessions, presence and the queues behind real-time updates.",
     href: "https://redis.io",
     mark: "redis",
+    hex: "#FF4438",
   },
   {
     name: "Express",
     description: "The HTTP layer every request in this app passes through.",
     href: "https://expressjs.com",
     mark: "express",
+    hex: "#0A0A0A",
   },
   {
     name: "Vite",
     description: "Builds the client you are reading this in.",
     href: "https://vite.dev",
     mark: "vite",
+    hex: "#9135FF",
   },
+];
+
+/* ── Backdrop ───────────────────────────────────────────────────────
+   The same treatment the How It Works cards use: outlined Hugeicons held
+   behind the content in brand at low opacity, so the band has texture without
+   anything competing with the logos in front of it.
+   ─────────────────────────────────────────────────────────────────── */
+
+interface Glyph {
+  icon: IconSvgElement;
+  at: string;
+  size: number;
+}
+
+const GLYPHS: Glyph[] = [
+  { icon: ServerIcon, at: "right-[32%] top-[30%]", size: 54 },
+  { icon: CodeIcon, at: "left-[38%] top-[12%]", size: 44 },
+  { icon: Layers01Icon, at: "left-[-2%] top-[4%]", size: 62 },
+  { icon: Rocket01Icon, at: "right-[12%] top-[10%]", size: 58 },
+  { icon: CubeIcon, at: "right-[-2%] bottom-[24%]", size: 78 },
+  { icon: CommandIcon, at: "left-[52%] bottom-[3%]", size: 35 },
+  { icon: GlobeIcon, at: "right-[46%] top-[6%]", size: 38 },
+  { icon: ChartBarLineIcon, at: "left-[10%] bottom-[4%]", size: 40 },
 ];
 
 interface SupportedBySectionProps {
@@ -81,11 +124,38 @@ export default function SupportedBySection({
 
   return (
     <section
-      className={["scroll-mt-16", scope, "bg-(--bg-root) text-(--text-primary)"]
+      className={[
+        "relative scroll-mt-16 min-w-fit overflow-hidden",
+        scope,
+        "bg-(--bg-root) text-(--text-primary)",
+        "border-x border-(--hairline)",
+      ]
         .filter(Boolean)
         .join(" ")}
     >
-      <div className="mx-auto w-full max-w-384 px-4 py-10 sm:px-8 sm:py-12 md:px-12 md:py-14 lg:px-16">
+      {/* Outlined marks, held behind everything */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 z-0"
+      >
+        {GLYPHS.map(({ icon, at, size }, index) => (
+          <HugeiconsIcon
+            key={index}
+            icon={icon}
+            size={size}
+            strokeWidth={1}
+            className={`absolute text-(--brand) opacity-20 ${at}`}
+          />
+        ))}
+      </div>
+
+      {/* Warm bloom in the corner, so the band is not flat */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -bottom-28 -right-24 z-0 size-72 rounded-full bg-(--accent-soft) blur-3xl"
+      />
+
+      <div className="relative z-10 mx-auto w-full max-w-384 px-4 py-10 sm:px-8 sm:py-12 md:px-12 md:py-14 lg:px-16">
         <div className="mb-10 max-w-3xl sm:mb-12 md:mb-14">
           <h2 className="mb-6 text-3xl font-bold tracking-tight text-(--text-primary) md:text-4xl">
             Supported by
@@ -113,8 +183,8 @@ export default function SupportedBySection({
                     role="img"
                     aria-hidden="true"
                     viewBox="0 0 24 24"
-                    fill="currentColor"
-                    className="size-10 shrink-0 text-(--text-primary)"
+                    fill={supporter.hex}
+                    className="size-10 shrink-0"
                   >
                     <path d={MARKS[supporter.mark]} />
                   </svg>

@@ -108,7 +108,8 @@ export default function PricingSection({
           <div className="border-b border-(--hairline) px-4 py-10 sm:px-8 sm:py-12 md:px-12 md:py-14 lg:px-16 lg:py-16">
             <div className="max-w-5xl">
               <h2 className="text-3xl font-bold tracking-tight text-(--text-primary) md:text-4xl">
-                It all comes together
+                It all comes{" "}
+                <span className="text-(--text-muted)">together</span>
               </h2>
               <p className="mt-4 max-w-4xl text-xl font-light leading-relaxed text-(--text-secondary)">
                 Start on your own server for nothing, or let us host it. Either
