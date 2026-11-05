@@ -201,7 +201,7 @@ export default function HomeWhyKanban() {
   return (
     <section className="light-theme relative mx-auto w-full max-w-384 flex items-center overflow-hidden border-x border-t border-(--hairline)">
       <div className="mx-auto relative ">
-        <div className="mt-20 px-10 py-30 sm:px-6 sm:py-24 lg:px-8">
+        <div className="mt-20 px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
           {/* ── Heading ── */}
           <Reveal>
             <h2 className="font-sans text-[32px] font-bold leading-[1.15] tracking-[-1px] text-(--text-primary) sm:text-[36px] md:text-[40px] md:tracking-[-1.4px]">

@@ -7,10 +7,14 @@ import { Reveal } from "./Reveal";
 /**
  * The open source slab, on the marketing stage.
  *
- * Same shape as before, a wide rounded panel with everything centred, but lit
- * rather than dark: the panel is pinned light, carries a warm wash that starts
- * at the top edge and falls away, and its border is brand at 28 percent into
- * white rather than a grey hairline.
+ * Same shape as before, a wide rounded panel with everything centred, pinned
+ * dark so it reads as its own slab inside the light page: a warm brand wash
+ * starts at the top edge and falls away, and the border is brand at 28 percent
+ * into white rather than a grey hairline.
+ *
+ * Padding is mobile-first, the way the rest of the stage is: the frame starts
+ * at 16px and the slab at 20, and both grow at sm. At 375px the old values
+ * left 279px for the copy, which broke the paragraph into seven lines.
  *
  * The two buttons are the pair from WhyKanbanSection, so the page has one
  * button language: outline first, solid second, both 44px at an 8px radius.
@@ -24,11 +28,12 @@ export default function HomeOpenSource() {
       id="open-source"
       className="light-theme bg-(--bg-root) text-(--text-primary)"
     >
-      <div className="mx-auto w-full max-w-384 border-x border-(--hairline) py-16 sm:px-6 sm:py-20 lg:px-8">
+      <div className="mx-auto w-full max-w-384 border-x border-(--hairline) px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
         <Reveal>
           <div
             className="
-              relative dark-theme max-w-6xl m-auto overflow-hidden rounded-3xl px-8 py-16 sm:py-20
+              relative dark-theme m-auto max-w-6xl overflow-hidden rounded-3xl
+              px-5 py-14 sm:px-8 sm:py-20
               border border-[color-mix(in_srgb,var(--brand)_28%,white)]
             "
             style={{
@@ -48,12 +53,17 @@ export default function HomeOpenSource() {
                 with one command.
               </p>
 
-              <div className="mt-3 flex flex-wrap justify-center gap-3 max-md:w-full max-md:flex-col max-md:items-stretch">
+              {/* Both buttons are given the same box explicitly rather than
+                  inheriting it from `.m-btn`: equal height, equal inline
+                  padding, one text size, and a minimum width so the shorter
+                  label does not read as a smaller button. Below `sm` they
+                  stack and share the full width of the slab. */}
+              <div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-10 w-full flex-col items-stretch gap-3 sm:w-auto sm:flex-row sm:items-center sm:justify-center">
                 <a
                   href={REPO_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="m-btn-outline gap-1.5"
+                  className="m-btn-outline h-11 gap-1.5 px-5 text-[14px] sm:min-w-46"
                 >
                   <HugeiconsIcon
                     icon={GithubIcon}
@@ -65,7 +75,10 @@ export default function HomeOpenSource() {
                   Read the source
                 </a>
 
-                <Link to="/workspaces" className="m-btn">
+                <Link
+                  to="/workspaces"
+                  className="m-btn h-11 px-5 text-[14px] sm:min-w-46"
+                >
                   Open a board
                 </Link>
               </div>

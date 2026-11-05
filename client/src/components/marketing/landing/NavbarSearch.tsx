@@ -285,10 +285,21 @@ export default function NavbarSearch({
             role="search"
             onSubmit={submit}
             className={cn(
-              "flex h-10 flex-1 items-center gap-2 rounded-full border pr-1 pl-4",
-              "border-[rgb(214,214,214)]",
+              /* The same field the desktop bar uses: the magnifier sits inside
+                 on the leading edge, the border is the hairline token rather
+                 than a hardcoded grey, and the submit is a soft circle at the
+                 trailing edge. */
+              "flex h-10 flex-1 items-center gap-2 rounded-full border pr-1 pl-3.5",
+              NAV.edge,
             )}
           >
+            <HugeiconsIcon
+              icon={Search01Icon}
+              size={16}
+              strokeWidth={1.8}
+              aria-hidden="true"
+              className={cn("shrink-0", NAV.icon)}
+            />
             <label htmlFor="navbar-search-input" className="sr-only">
               Search
             </label>
@@ -366,7 +377,7 @@ export default function NavbarSearch({
                   setActiveIndex(0);
                 }}
                 onKeyDown={onKeyDown}
-                placeholder="Search pages"
+                placeholder="Search"
                 autoComplete="off"
                 spellCheck={false}
                 className={cn(
@@ -450,14 +461,21 @@ export default function NavbarSearch({
           id="navbar-search"
           className={cn(
             /* A fixed height keeps the panel from growing with the list: it is
-               a menu, not a page. The rows scroll inside it. On a phone the
-               panel is fixed to the middle of the screen instead of hanging off
-               the left edge of a 36px icon. */
-            /* Centred at every width: hanging it off the trigger put it in the
-               corner once the trigger was a 36px icon. */
-            "fixed top-17 left-1/2 z-50  flex h-90 -translate-x-1/2 flex-col",
-            "rounded-xl border p-2",
-            isMobile ? "w-[calc(100vw-24px)] max-w-110" : "w-90",
+               a menu, not a page. The rows scroll inside it.
+
+               Where it hangs differs by width, and that is the point. On a
+               phone the search is a full-width overlay pinned to the top, so
+               the panel sits directly under that overlay at `top-17`. On a
+               desktop the field is one control in the bar, so the panel is
+               positioned against the wrapper and opens right under the input —
+               anchoring it to the navbar edge left a gap the height of the
+               bar's padding between the field and its own results. */
+            "left-1/2 z-50 flex h-90 w-90 max-w-[calc(100vw-24px)] -translate-x-1/2 flex-col",
+            /* The same panel at every width — same 360px, same rows, same
+               height. Only the anchor differs: on a phone the search is a
+               fixed overlay pinned to the top, so the panel hangs from its
+               bottom edge; on a desktop it hangs from the field itself. */
+            isMobile ? "fixed top-17" : "absolute top-full mt-2",
             "origin-top animate-in fade-in zoom-in-95 duration-150 ease-out",
             "motion-reduce:animate-none",
             NAV.surface,

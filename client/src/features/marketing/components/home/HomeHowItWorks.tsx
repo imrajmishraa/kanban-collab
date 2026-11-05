@@ -332,7 +332,7 @@ export default function HomeHowItWorks() {
           padding: borders sit at max-w-384 like the FAQ, while the copy and
           cards stay on the max-w-7xl measure they had before. */}
       <div className="mx-auto w-full max-w-384 border-x border-t border-(--hairline)">
-        <div className="mx-auto max-w-7xl mb-10 px-10 py-30 sm:px-6 sm:py-24 lg:px-8">
+        <div className="mx-auto mb-10 max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
           {/* ── Heading ── */}
           <div className="mx-auto w-full max-w-245 text-center">
             <Reveal>

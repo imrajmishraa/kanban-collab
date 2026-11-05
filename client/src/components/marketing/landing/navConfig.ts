@@ -329,7 +329,7 @@ export const FOOTER_AI: AiLink[] = [
     brand: "grok",
   },
   {
-    title: "Ask Gemini AI about Kanban",
+    title: "Ask Google AI about Kanban",
     href: `https://www.google.com/search?udm=50&q=${ASK}`,
     brand: "gemini",
   },

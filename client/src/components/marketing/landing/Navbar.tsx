@@ -201,9 +201,7 @@ export default function Navbar({ onNavigate, activeHref = "" }: NavbarProps) {
 
   const iconBtn = cn(
     "flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-lg",
-    "transition-colors duration-150",
-    NAV.icon,
-    NAV.iconHover,
+    "transition-colors duration-150 text-[rgb(55,55,55)] hover:text-[rgb(128,128,128)]",
     focusRing,
   );
 

@@ -36,7 +36,7 @@ export default function HomeHero() {
        the proof row, the preview box and its slides all resolve their tokens
        here, whatever the page or the app theme is doing. */
     <section className="light-theme relative flex items-center overflow-hidden bg-(--bg-root)">
-      <div className="relative mx-auto w-full max-w-384 border-x border-(--hairline) sm:px-4 pt-25 lg:px-8 lg:pb-30">
+      <div className="relative mx-auto w-full max-w-384 border-x border-(--hairline) px-4 pt-14 pb-10 sm:px-6 sm:pt-20 lg:px-8 lg:pb-30">
         <motion.div
           variants={container}
           initial="hidden"
@@ -44,7 +44,7 @@ export default function HomeHero() {
           className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[1fr_1.15fr] lg:gap-8 xl:gap-0 mx-auto max-w-7xl"
         >
           {/* ── Left: the pitch ──────────────────────────────────── */}
-          <div className="mx-auto pl-15 w-full max-w-150 lg:mx-0">
+          <div className="mx-auto md:pl-15 w-full max-w-150 lg:mx-0">
             <motion.h1
               variants={item}
               className="font-sans text-[34px] font-bold leading-[1.12] tracking-[-1px] text-(--text-primary) sm:text-[40px] md:text-[44px] md:tracking-[-1.4px]"
