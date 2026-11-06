@@ -1,111 +1,59 @@
-@keyframes loaderCol1 {
-  0% {
-    transform: scaleY(0);
-  }
-  20% {
-    transform: scaleY(1);
-  }
-  90% {
-    transform: scaleY(1);
-  }
-  94% {
-    transform: scaleY(0);
-  }
-  100% {
-    transform: scaleY(0);
-  }
-}
+/* Splash loader.
+   Timing is copied from the indus.sarvam.ai boot splash, not approximated:
+   blur(10px) + scale(0.8) + opacity 0 easing out to sharp over 800ms on
+   cubic-bezier(0.25, 0.46, 0.45, 0.94), and the second line starts 300ms
+   behind the mark. The idle pulse on the message is the one addition — the
+   Indus splash always ends after 2s, ours can stay up while a session is
+   restored, and a frozen line reads as a hung app. */
 
-@keyframes loaderCol2 {
-  0%,
-  20% {
-    transform: scaleY(0);
-  }
-  40% {
-    transform: scaleY(1);
-  }
-  90% {
-    transform: scaleY(1);
-  }
-  94% {
-    transform: scaleY(0);
-  }
-  100% {
-    transform: scaleY(0);
-  }
-}
-
-@keyframes loaderCol3 {
-  0%,
-  40% {
-    transform: scaleY(0);
-  }
-  60% {
-    transform: scaleY(1);
-  }
-  90% {
-    transform: scaleY(1);
-  }
-  94% {
-    transform: scaleY(0);
-  }
-  100% {
-    transform: scaleY(0);
-  }
-}
-
-@keyframes loaderFadeIn {
+@keyframes splashIn {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: scale(0.8);
+    filter: blur(10px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: scale(1);
+    filter: blur(0);
   }
 }
 
-@keyframes loaderMessage {
+@keyframes splashBreathe {
   0%,
   100% {
-    opacity: 0.35;
+    opacity: 0.55;
   }
   50% {
-    opacity: 0.7;
+    opacity: 1;
   }
 }
 
-.loader-col-1 {
-  animation: loaderCol1 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-  transform-origin: bottom center;
+/* The mark. */
+.splash-mark {
+  animation: splashIn 800ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  will-change: transform, opacity, filter;
 }
-.loader-col-2 {
-  animation: loaderCol2 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-  transform-origin: bottom center;
+
+/* The line under it, 300ms behind, breathing once it has landed. */
+.splash-line {
+  animation:
+    splashIn 800ms cubic-bezier(0.25, 0.46, 0.45, 0.94) 300ms both,
+    splashBreathe 2.4s ease-in-out 1100ms infinite;
 }
-.loader-col-3 {
-  animation: loaderCol3 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-  transform-origin: bottom center;
-}
-.loader-in {
-  animation: loaderFadeIn 500ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-.loader-msg {
-  animation: loaderMessage 2.4s ease-in-out infinite;
+
+/* Same entrance, no pulse — for the static case. */
+.splash-line--still {
+  animation: splashIn 800ms cubic-bezier(0.25, 0.46, 0.45, 0.94) 300ms both;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .loader-col-1,
-  .loader-col-2,
-  .loader-col-3 {
+  .splash-mark,
+  .splash-line,
+  .splash-line--still {
     animation: none !important;
-    transform: scaleY(1) !important;
-  }
-  .loader-msg {
-    animation: none !important;
-    opacity: 0.55;
-  }
-  .loader-in {
-    animation: none !important;
+    opacity: 1;
+    transform: none;
+    filter: none;
   }
 }

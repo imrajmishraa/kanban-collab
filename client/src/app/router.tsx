@@ -31,8 +31,6 @@ export function AppRouter() {
   const element = useRoutes(routes);
 
   return (
-    <Suspense fallback={<LoadingScreen message="Loading…" />}>
-      {element}
-    </Suspense>
+    <Suspense fallback={<LoadingScreen phase="boot" />}>{element}</Suspense>
   );
 }

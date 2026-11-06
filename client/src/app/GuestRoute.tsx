@@ -8,7 +8,7 @@ export default function GuestRoute() {
 
   // Wait for the auth store to finish restoring the session.
   if (isLoading) {
-    return <AuthLoadingScreen message="Checking authentication..." />;
+    return <AuthLoadingScreen phase="auth" />;
   }
 
   // Authenticated users shouldn't see login/register.

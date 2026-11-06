@@ -1,46 +1,77 @@
 import "./loader.css";
 
-interface AuthLoadingScreenProps {
+import KanbanIcon from "@/assets/KanbanIcon";
+
+/**
+ * Which copy the splash shows.
+ *
+ * - `boot` — the app is coming up: the tagline.
+ * - `auth` — a session is being restored / checked: the status line.
+ */
+export type LoadingPhase = "boot" | "auth";
+
+const COPY: Record<LoadingPhase, string> = {
+  boot: "Collaborate, Move Faster",
+  auth: "Restoring session",
+};
+
+interface LoadingScreenProps {
+  /** Picks the copy. Defaults to `boot`. Loses to `message` when that is set. */
+  phase?: LoadingPhase;
+  /**
+   * Any other reason to hold the screen — a route chunk, an upload, an export.
+   * Pass this instead of adding a phase.
+   */
   message?: string;
+  /** Turn off the idle breathing on the line. */
+  pulse?: boolean;
 }
 
+/**
+ * Boot splash. Mark and line blur-and-scale in on the same curve and offsets
+ * the Indus splash uses; see loader.css for the numbers.
+ *
+ *   <LoadingScreen />                          → Collaborate, Move Faster
+ *   <LoadingScreen phase="auth" />             → Restoring session
+ *   <LoadingScreen message="Exporting…" />     → Exporting…
+ */
 export default function LoadingScreen({
-  message = "Restoring session",
-}: AuthLoadingScreenProps) {
+  phase = "boot",
+  message,
+  pulse = true,
+}: LoadingScreenProps) {
+  const line = message ?? COPY[phase];
+
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-(--bg-root) text-(--text-primary)">
+    <main
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+      className="relative flex min-h-screen items-center justify-center overflow-hidden bg-(--bg-root) text-(--text-primary)"
+    >
       {/* Single soft top bloom — matches the forget-password panel */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute left-1/2 top-0 h-96 w-2xl -translate-x-1/2 rounded-[50%] bg-(--brand)/4.5 blur-[150px]"
       />
 
-      {/* Loader */}
-      <div className="loader-in relative z-10 flex flex-col items-center">
-        {/* Three columns */}
-        <div className="flex items-end gap-2.5" aria-hidden="true">
-          <LoaderColumn animClass="loader-col-1" />
-          <LoaderColumn animClass="loader-col-2" />
-          <LoaderColumn animClass="loader-col-3" />
+      <div className="relative z-10 flex flex-col items-center gap-4">
+        {/* Mark + wordmark, the same lockup the sidebar and navbar use */}
+        <div className="splash-mark flex items-center gap-2.5">
+          <KanbanIcon size={28} variant="upper" />
+          <span className="text-[22px] font-bold leading-none tracking-tight">
+            Kanban
+          </span>
         </div>
 
-        {/* Message */}
-        <p className="loader-msg mt-9 font-mono text-[10.5px] uppercase tracking-[0.28em] text-(--text-primary)/40">
-          {message}
+        <p
+          className={`text-[16px] font-normal text-(--text-secondary) ${
+            pulse ? "splash-line" : "splash-line--still"
+          }`}
+        >
+          {line}
         </p>
       </div>
     </main>
-  );
-}
-
-/* LOADER COLUMN */
-
-function LoaderColumn({ animClass }: { animClass: string }) {
-  return (
-    <div className="relative h-10 w-1.5 overflow-hidden rounded-full bg-(--tint-6)">
-      <div
-        className={`absolute inset-0 origin-bottom rounded-full bg-(--brand) ${animClass}`}
-      />
-    </div>
   );
 }

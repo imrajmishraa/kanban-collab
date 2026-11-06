@@ -8,7 +8,7 @@ export default function ProtectedRoute() {
   const location = useLocation();
 
   if (isLoading) {
-    return <LoadingScreen message="Restoring session..." />;
+    return <LoadingScreen phase="auth" />;
   }
 
   if (!isAuthenticated) {
