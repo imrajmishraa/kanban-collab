@@ -65,5 +65,14 @@ export const ProfilePage = lazy(
   () => import("@/pages/account/settings/ProfilePage"),
 );
 
+// Documentation
+export const DocsIntroPage = lazy(() => import("@/pages/docs/DocsIntroPage"));
+export const DocsActivateLicensePage = lazy(
+  () => import("@/pages/docs/DocsActivateLicensePage"),
+);
+export const DocsLicenseTroubleshootingPage = lazy(
+  () => import("@/pages/docs/DocsLicenseTroubleshootingPage"),
+);
+
 /* 404 */
 export const NotFoundPage = lazy(() => import("@/pages/NotFoundPage"));

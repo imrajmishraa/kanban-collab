@@ -7,6 +7,7 @@ import { NotFoundPage } from "./routes/pages";
 import { publicRoutes } from "./routes/public.routes";
 import { authRoutes } from "./routes/auth.routes";
 import { appRoutes } from "./routes/app.routes";
+import { docsRoutes } from "./routes/docs.routes";
 
 /**
  * The route table is assembled here and nowhere else. Each group lives in its
@@ -17,6 +18,7 @@ import { appRoutes } from "./routes/app.routes";
 const routes: RouteObject[] = [
   ...publicRoutes,
   ...authRoutes,
+  ...docsRoutes,
   ...appRoutes,
   {
     path: "/",

@@ -20,37 +20,49 @@
    these sizes with this tracking the difference only shows side by side.
    Nunito is the nearest free substitute if you want something closer. */
 
-@font-face {
-  font-family: "Cera Round Pro";
-  src: url("./assets/fonts/CeraRound-Regular.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
+/* The four `@font-face` rules below are COMMENTED OUT on purpose: the woff2
+   files are not in the repo (Cera Round is a paid licence), and leaving them
+   live pointed four requests at paths that do not exist. Vite answered each
+   with index.html and the browser tried to parse that as a font —
 
-@font-face {
-  font-family: "Cera Round Pro";
-  src: url("./assets/fonts/CeraRound-Medium.woff2") format("woff2");
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
+     Failed to decode downloaded font
+     OTS parsing error: invalid sfntVersion: 1008821359
 
-@font-face {
-  font-family: "Cera Round Pro";
-  src: url("./assets/fonts/CeraRound-Medium.woff2") format("woff2");
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-}
+   1008821359 is 0x3C21646F, the bytes "<!DO" — the start of "<!DOCTYPE html>".
+   Drop the woff2s into `client/src/assets/fonts/` and uncomment the four rules;
+   `--font-sans` already lists "Cera Round Pro" first, so nothing else changes. */
 
-@font-face {
-  font-family: "Cera Round Pro";
-  src: url("./assets/fonts/CeraRound-Bold.woff2") format("woff2");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
+/* @font-face { */
+/*   font-family: "Cera Round Pro"; */
+/*   src: url("./assets/fonts/CeraRound-Regular.woff2") format("woff2"); */
+/*   font-weight: 400; */
+/*   font-style: normal; */
+/*   font-display: swap; */
+/* } */
+
+/* @font-face { */
+/*   font-family: "Cera Round Pro"; */
+/*   src: url("./assets/fonts/CeraRound-Medium.woff2") format("woff2"); */
+/*   font-weight: 500; */
+/*   font-style: normal; */
+/*   font-display: swap; */
+/* } */
+
+/* @font-face { */
+/*   font-family: "Cera Round Pro"; */
+/*   src: url("./assets/fonts/CeraRound-Medium.woff2") format("woff2"); */
+/*   font-weight: 600; */
+/*   font-style: normal; */
+/*   font-display: swap; */
+/* } */
+
+/* @font-face { */
+/*   font-family: "Cera Round Pro"; */
+/*   src: url("./assets/fonts/CeraRound-Bold.woff2") format("woff2"); */
+/*   font-weight: 700; */
+/*   font-style: normal; */
+/*   font-display: swap; */
+/* } */
 
 :root {
   color-scheme: dark;
@@ -568,9 +580,60 @@ select:focus-visible {
 
 /* LINKS */
 
-a {
-  color: inherit;
+/* In `@layer base` on purpose. Unlayered, this rule beats every `text-*`
+   utility on every link: Tailwind v4 puts utilities in `@layer utilities`, and
+   unlayered CSS wins over any layer no matter the specificity. The symptom is a
+   sidebar where the link rows come out in the page's ink while the button rows
+   beside them are correctly coloured — `<Link>` renders an `<a>`, so only the
+   links are hit, and the active state's blue never appears at all. Inside
+   `base`, a link with no colour class still inherits, and a link with one gets
+   the colour it asked for. */
+@layer base {
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}
+
+/* DOCS HEADING ANCHORS */
+
+/* The `#` beside a heading, added by `useTableOfContents` as a runtime element.
+   It lives here rather than as utilities because Tailwind only generates classes
+   it can see in source, and this node is created in JavaScript — a `group-hover`
+   utility on it would never be emitted. */
+.docs-anchor {
+  margin-left: 0.5rem;
+  color: var(--text-muted);
   text-decoration: none;
+  font-weight: 400;
+  opacity: 0;
+  transition:
+    opacity 150ms ease,
+    color 150ms ease;
+}
+
+h2:hover .docs-anchor,
+h3:hover .docs-anchor,
+.docs-anchor:focus-visible {
+  opacity: 1;
+}
+
+.docs-anchor:hover {
+  color: #3b82f6;
+}
+
+/* Touch has no hover, so the anchor would never appear on a phone. Show it at
+   low contrast instead of hiding it. */
+@media (hover: none) {
+  .docs-anchor {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .docs-anchor {
+    transition: none;
+  }
 }
 
 /* PLACEHOLDER */

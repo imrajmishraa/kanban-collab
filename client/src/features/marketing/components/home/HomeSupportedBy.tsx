@@ -191,7 +191,7 @@ export default function HomeSupportedBy() {
                     >
                       <path d={MARKS[supporter.mark]} />
                     </svg>
-                    <span className="text-2xl font-medium tracking-tight text-(--text-primary)">
+                    <span className="text-xl md:text-2xl font-medium tracking-tight text-(--text-primary)">
                       {supporter.name}
                     </span>
                   </div>
