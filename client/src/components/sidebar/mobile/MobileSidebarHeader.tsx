@@ -1,75 +1,148 @@
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Cancel01Icon, Search01Icon } from "@hugeicons/core-free-icons";
-import { useNavigate } from "react-router-dom";
-import logo from "@/assets/logo.svg?inline";
+import {
+  Cancel01Icon,
+  GithubIcon,
+  Menu03Icon,
+  Search01Icon,
+} from "@hugeicons/core-free-icons";
+
+import KanbanIcon from "@/assets/KanbanIcon";
+
+import { Tooltip } from "@/components/Tooltips/ToolTip";
+import { cn } from "@/utils/cn";
+
 import { useSearchStore } from "@/features/search";
 
-interface MobileSidebarHeaderProps {
-  onClose: () => void;
+const REPO_URL = "https://github.com/imrajmishraa/kanban-collab";
+
+interface SidebarMobileHeaderProps {
+  /** Whether the drawer below this bar is open — drives the icon and the label. */
+  menuOpen?: boolean;
+  onMenuClick: () => void;
 }
 
-const MobileSidebarHeader = ({ onClose }: MobileSidebarHeaderProps) => {
-  const navigate = useNavigate();
+/**
+ * The phone bar, taken straight off `DocsNav`: same height (h-16 / sm:h-17),
+ * same brand lockup, same hairline and blur, same trigger button with the same
+ * `Menu03Icon` / `Cancel01Icon` swap.
+ *
+ * Docs-only parts are gone (the DOCS chip, "Back to Home", the ⌘K field);
+ * search is the icon button the docs bar hides below md. `fixed` rather than
+ * `sticky` because this app scrolls `main`, not the document — a sticky header
+ * outside that scroller would never stick.
+ *
+ * The bottom hairline is not always there: at rest the bar sits flush on the
+ * page, and the line only appears once something has scrolled under it. The
+ * border keeps its width either way (`border-transparent`), so nothing moves
+ * when it turns on.
+ */
+export default function SidebarMobileHeader({
+  menuOpen = false,
+  onMenuClick,
+}: SidebarMobileHeaderProps) {
   const openSearch = useSearchStore((s) => s.openSearch);
 
+  const [scrolled, setScrolled] = useState(false);
+
+  /* Capture, because scroll does not bubble: this way one listener hears the
+     window and every inner scroller (`main` is the one that scrolls here). */
+  useEffect(() => {
+    const onScroll = (event: Event) => {
+      const target = event.target;
+
+      setScrolled(
+        target instanceof HTMLElement
+          ? target.scrollTop > 0
+          : (window.scrollY ?? 0) > 0,
+      );
+    };
+
+    document.addEventListener("scroll", onScroll, {
+      capture: true,
+      passive: true,
+    });
+
+    return () =>
+      document.removeEventListener("scroll", onScroll, { capture: true });
+  }, []);
+
   return (
-    <div className="shrink-0 px-3 pt-3">
-      <header
-        className="
-          group/glass relative overflow-hidden rounded-2xl
-          border border-(--hairline) bg-(--tint-3)
-          backdrop-blur-xl backdrop-saturate-150
-          shadow-[0_8px_32px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.08)]
-          transition-all duration-300
-        "
-      >
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.35)_50%,transparent)]" />
-        <div className="pointer-events-none absolute -top-24 left-1/4 h-40 w-72 -translate-x-1/2 rounded-full bg-(--accent)/6 blur-[60px]" />
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,transparent_30%,rgba(255,255,255,0.05)_45%,transparent_60%)]" />
+    <header
+      className={cn(
+        "fixed inset-x-0 top-0 z-30 w-full mx-auto max-w-384 border-x border-b",
+        "bg-(--bg-root)/85 backdrop-blur-xl md:hidden",
+        scrolled ? "border-(--hairline)" : "border-transparent",
+      )}
+    >
+      <div className="mx-auto flex h-16 w-full items-center gap-3 px-4 sm:h-17 sm:gap-4 sm:px-6">
+        {/* ── LEFT: brand ─────────────────────────────────────────── */}
+        <Link to="/home" className="flex shrink-0 items-center gap-2.5">
+          <span className="flex shrink-0 items-center justify-center">
+            <KanbanIcon size={24} variant="upper" theme="auto" />
+          </span>
+          <span className="text-[17px] font-bold tracking-tight">Kanban</span>
+        </Link>
 
-        <div className="relative flex h-14 items-center justify-between px-3">
-          <button
-            type="button"
-            onClick={() => navigate("/")}
-            aria-label="Go to homepage"
-            className="group flex cursor-pointer items-center gap-2.5 transition-opacity hover:opacity-90"
-          >
-            <img
-              src={logo}
-              alt=""
-              width={28}
-              height={28}
-              draggable={false}
-              className="h-7 w-7 rounded-lg border border-(--hairline) shadow-[0_2px_8px_rgba(0,0,0,0.35)] transition-all duration-300 group-hover:border-(--brand)/40"
-            />
-            <span className="font-mono text-lg font-bold tracking-tight text-(--text-primary)">
-              Kanban
-            </span>
-          </button>
-
-          <div className="flex items-center gap-1">
+        <div className="ml-auto flex items-center gap-1.5 sm:gap-2.5">
+          <Tooltip label="Search" side="bottom" size="md">
             <button
               type="button"
               onClick={() => openSearch()}
               aria-label="Search"
-              className="flex size-8 cursor-pointer items-center justify-center rounded-lg text-(--text-secondary) transition-colors duration-200 hover:bg-(--bg-hover) hover:text-(--text-primary)"
+              className="
+                grid size-9 place-items-center rounded-lg text-(--text-secondary)
+                transition-colors duration-150
+                hover:bg-(--tint-4) hover:text-(--text-primary)
+                focus-visible:ring-2 focus-visible:ring-(--brand) focus-visible:outline-none
+              "
             >
-              <HugeiconsIcon icon={Search01Icon} size={16} strokeWidth={1.5} />
+              <HugeiconsIcon icon={Search01Icon} size={18} strokeWidth={1.8} />
             </button>
+          </Tooltip>
 
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Close navigation menu"
-              className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-(--hairline) bg-(--tint-4) text-(--text-secondary) transition-colors hover:border-(--hairline-strong) hover:bg-(--tint-8) hover:text-(--text-primary)"
+          <Tooltip label="Star on GitHub" side="bottom" size="md">
+            <a
+              href={REPO_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="View the source on GitHub"
+              className="
+                grid size-9 place-items-center rounded-lg text-(--text-secondary)
+                transition-colors duration-150
+                hover:bg-(--tint-4) hover:text-(--text-primary)
+                focus-visible:ring-2 focus-visible:ring-(--brand) focus-visible:outline-none
+              "
             >
-              <HugeiconsIcon icon={Cancel01Icon} size={18} strokeWidth={1.5} />
-            </button>
-          </div>
+              <HugeiconsIcon icon={GithubIcon} size={18} strokeWidth={1.8} />
+            </a>
+          </Tooltip>
+
+          {/* Phone menu: the same trigger the docs bar uses, in the same place,
+              so the two bars behave the same way under a thumb. */}
+          <button
+            type="button"
+            onClick={onMenuClick}
+            aria-expanded={menuOpen}
+            aria-controls="app-mobile-nav"
+            aria-label={menuOpen ? "Close navigation" : "Open navigation"}
+            className={cn(
+              "grid size-9 cursor-pointer place-items-center rounded-lg md:hidden",
+              "text-(--text-secondary) transition-colors duration-150",
+              "hover:bg-(--tint-4) hover:text-(--text-primary)",
+              "focus-visible:ring-2 focus-visible:ring-(--brand) focus-visible:outline-none",
+            )}
+          >
+            <HugeiconsIcon
+              icon={menuOpen ? Cancel01Icon : Menu03Icon}
+              size={18}
+              strokeWidth={2}
+            />
+          </button>
         </div>
-      </header>
-    </div>
+      </div>
+    </header>
   );
-};
-
-export default MobileSidebarHeader;
+}

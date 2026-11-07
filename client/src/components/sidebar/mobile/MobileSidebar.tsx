@@ -1,16 +1,24 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
 
-import MobileSidebarHeader from "./MobileSidebarHeader";
-
-import { WorkspaceSelector } from "@/features/dashboard";
-import SidebarNavigation from "@/components/sidebar/SidebarNavigation";
-import { SidebarNewProject } from "@/features/dashboard";
-import SidebarSearch from "@/components/sidebar/SidebarSearch";
-import SidebarBoards from "@/components/sidebar/SidebarBoards";
+import MobileFind from "@/components/sidebar/mobile/MobileFind";
 import SidebarFooter from "@/components/sidebar/SidebarFooter";
+import MobileNavList from "@/components/sidebar/mobile/MobileNavList";
+import MobileWorkspaceSwitch from "@/components/sidebar/mobile/MobileWorkspaceSwitch";
+import { cn } from "@/utils/cn";
 
 import type { MobileSidebarProps } from "@/types/mobileSidebar";
 
+/**
+ * The phone navigation, built like the notifications sheet: a full-width panel
+ * that drops from under the mobile bar, scrim below the bar, `h-0` to full
+ * height on `origin-top`.
+ *
+ * No header of its own — the bar already carries the brand, the bell and the
+ * trigger that closes this. So it runs: find, the workspace switch, the nav
+ * tree, and a footer pinned to the bottom. Padding and spacing are the docs
+ * panel's.
+ */
 export default function MobileSidebar({
   open,
   onClose,
@@ -18,118 +26,103 @@ export default function MobileSidebar({
   workspaces,
   activeWorkspaceId,
   onWorkspaceChange,
-  boards,
-  isBoardsLoading,
-  isBoardsError,
-  boardsOpen,
-  onBoardsToggle,
-  hasNextPage,
-  isFetchingNextPage,
-  onLoadMoreBoards,
   onLogout,
-}: MobileSidebarProps) {
+  onOpenNotifications,
+}: MobileSidebarProps & {
+  /** Opens the inbox sheet, which `DashboardSidebar` owns. */
+  onOpenNotifications?: () => void;
+}) {
+  const { pathname } = useLocation();
+
+  /* A route change closes the panel, or it sits open over the page the reader
+     just navigated to. Kept in a ref so a new `onClose` identity every render
+     does not re-fire this. */
+  const lastPath = useRef(pathname);
   useEffect(() => {
-    if (!open) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, [open]);
+    if (lastPath.current === pathname) return;
+    lastPath.current = pathname;
+    onClose();
+  }, [pathname, onClose]);
 
   useEffect(() => {
     if (!open) return;
+
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
     };
+
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  // Name is needed for the trigger label; the hook inside WorkspaceSelector
-  // only knows the ID.
-  const activeWorkspaceName =
-    workspaces.find((w) => w.id === activeWorkspaceId)?.name ?? null;
-
   return (
     <>
-      <div
-        aria-hidden="true"
+      {/* The scrim: below the bar, so the trigger that opened this stays
+          reachable — tapping it again closes. */}
+      <button
+        type="button"
+        aria-hidden={!open}
+        tabIndex={-1}
         onClick={onClose}
-        className={[
-          "fixed inset-0 z-40 bg-(--scrim) backdrop-blur-sm md:hidden",
-          "transition-opacity duration-200",
+        className={cn(
+          "fixed inset-0 top-16 z-30 cursor-default bg-black/20 transition-opacity duration-200 sm:top-17 md:hidden",
           open ? "opacity-100" : "pointer-events-none opacity-0",
-        ].join(" ")}
+        )}
       />
 
-      <aside
+      <div
+        id="app-mobile-nav"
         role="dialog"
-        aria-modal="true"
         aria-label="Navigation"
-        onClick={(event) => event.stopPropagation()}
-        className={[
-          "fixed inset-y-0 left-0 z-50 flex w-72 flex-col md:hidden",
-          "border-r border-(--border) bg-(--bg-root)",
-          "shadow-[12px_0_40px_rgba(0,0,0,0.45)]",
-          "transition-transform duration-200 ease-out",
-          open ? "translate-x-0" : "-translate-x-full",
-        ].join(" ")}
+        /* Closed, the panel is zero-height but its links are still in the tab
+           order without this. */
+        inert={!open}
+        className={cn(
+          "fixed inset-x-0 top-16 z-40 origin-top overflow-hidden border-b border-(--hairline) bg-(--bg-root) transition-all duration-200 ease-out motion-reduce:transition-none sm:top-17 md:hidden",
+          open
+            ? "h-[calc(100dvh-4rem)] opacity-100 sm:h-[calc(100dvh-4.25rem)]"
+            : "pointer-events-none h-0 opacity-0",
+        )}
       >
-        {/* Header */}
-        <div className="shrink-0">
-          <MobileSidebarHeader onClose={onClose} />
-        </div>
+        {/* Column: everything above the footer scrolls, the footer does not.
+            Padding is the docs panel's: px-4 pt-5, px-6 from sm. */}
+        <div className="flex h-full flex-col">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pt-5 sm:px-6">
+            {/* Find and the workspace share one row: the field takes the
+                space it needs, the switch sits at the right end. */}
+            <div className="mb-4 flex shrink-0 items-center gap-2">
+              <div className="min-w-0 flex-1">
+                <MobileFind />
+              </div>
 
-        {/* Workspace dropdown — same component as desktop navbar */}
-        <div className="shrink-0 px-3 pt-2.5">
-          <WorkspaceSelector
-            activeWorkspaceId={activeWorkspaceId}
-            activeWorkspaceName={activeWorkspaceName}
-            onWorkspaceChange={onWorkspaceChange}
-            triggerClassName="w-full justify-between"
-            dropdownClassName="w-[calc(100vw-3rem)] max-w-[280px]"
-          />
-        </div>
-        {/* Find and the Project button, mirroring the desktop sidebar */}
-        <div className="shrink-0 pt-2">
-          <SidebarSearch collapsed={false} />
-          <SidebarNewProject collapsed={false} />
-        </div>
+              <div className="w-[46%] shrink-0">
+                <MobileWorkspaceSwitch
+                  workspaces={workspaces}
+                  activeWorkspaceId={activeWorkspaceId}
+                  onWorkspaceChange={onWorkspaceChange}
+                  onNavigate={onClose}
+                />
+              </div>
+            </div>
 
-        {/* Scrollable nav + boards */}
-        <div className="relative min-h-0 flex-1">
-          <div className="h-full overflow-y-auto">
-            <SidebarNavigation collapsed={false} />
-
-            <SidebarBoards
-              collapsed={false}
-              open={boardsOpen}
-              onToggle={onBoardsToggle}
-              boards={boards}
-              isLoading={isBoardsLoading}
-              isError={isBoardsError}
-              hasNextPage={hasNextPage}
-              isFetchingNextPage={isFetchingNextPage}
-              onLoadMore={onLoadMoreBoards}
-            />
+            <MobileNavList onNavigate={onClose} />
           </div>
 
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-linear-to-t from-(--bg-surface) via-(--bg-surface)/85 to-transparent backdrop-blur-[3px]"
-            style={{
-              maskImage: "linear-gradient(to top, black 40%, transparent)",
-              WebkitMaskImage:
-                "linear-gradient(to top, black 40%, transparent)",
-            }}
-          />
+          {/* Pinned: the account row never scrolls away. */}
+          <div className="shrink-0 border-t border-(--hairline) mx-5">
+            {/* Right-aligned menu, and no Sidebar row: the rail does not exist
+                at this width, so the option would do nothing. */}
+            <SidebarFooter
+              collapsed={false}
+              user={user}
+              onLogout={onLogout}
+              showSidebarMode={false}
+              menuAlign="right"
+              onNotifications={onOpenNotifications}
+            />
+          </div>
         </div>
-
-        <div className="shrink-0 border-t border-(--border)">
-          <SidebarFooter collapsed={false} user={user} onLogout={onLogout} />
-        </div>
-      </aside>
+      </div>
     </>
   );
 }
