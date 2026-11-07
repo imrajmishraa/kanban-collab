@@ -148,12 +148,6 @@ const SidebarDrillPanel = ({
       <div data-rows>
         {groups.map((group, index) => (
           <div key={group.title ?? `group-${index}`} className="mt-1">
-            {group.title && (
-              <p className="px-3 pb-1 pt-2 text-[9.5px] font-medium uppercase tracking-[0.14em] text-(--text-subtle)">
-                {group.title}
-              </p>
-            )}
-
             <div className="flex flex-col gap-0.5">
               {group.items.map((child) => {
                 const isActive = child.href === routeKey;

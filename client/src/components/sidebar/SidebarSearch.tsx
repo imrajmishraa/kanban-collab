@@ -12,6 +12,7 @@ import {
   LogsIcon,
   UserGroupIcon,
   UserIcon,
+  SlackIcon,
 } from "@hugeicons/core-free-icons";
 
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
@@ -49,7 +50,7 @@ export default function SidebarSearch({ collapsed }: SidebarSearchProps) {
       ? {
           label: "Overview",
           href: `/workspaces/${activeWorkspaceId}`,
-          icon: DashboardSquare02Icon,
+          icon: SlackIcon,
           context: scope,
         }
       : {
@@ -188,7 +189,7 @@ export default function SidebarSearch({ collapsed }: SidebarSearchProps) {
       {collapsed ? (
         <div className="flex justify-center">
           <Tooltip
-            label="Find"
+            label="Find functions"
             highlight="F"
             side="right"
             shape="solid"
@@ -203,7 +204,7 @@ export default function SidebarSearch({ collapsed }: SidebarSearchProps) {
                 event.stopPropagation();
                 setOpen((previous) => !previous);
               }}
-              aria-label="Find"
+              aria-label="Find functions"
               aria-expanded={open}
               className="flex size-9 cursor-pointer items-center justify-center rounded-full text-(--text-muted) transition-colors duration-200 hover:bg-(--bg-hover) hover:text-(--text-primary)"
             >
@@ -231,14 +232,14 @@ export default function SidebarSearch({ collapsed }: SidebarSearchProps) {
             icon={Search01Icon}
             size={14}
             strokeWidth={1.6}
-            className="shrink-0 text-(--text-muted) transition-colors duration-200 group-hover/find:text-(--text-soft)"
+            className="shrink-0 text-(--text-muted) bg-(--primary) transition-colors duration-200 group-hover/find:text-(--text-soft)"
           />
 
           <span className="min-w-0 flex-1 truncate text-[12.5px] tracking-tight text-(--text-muted)">
-            Find
+            Find functions
           </span>
 
-          <kbd className="shrink-0 rounded border border-(--hairline) bg-(--root) px-1.5 py-0.5 font-mono text-[10px] text-(--text-secondary)">
+          <kbd className="shrink-0 rounded border border-(--hairline) bg-(--bg-primary) px-1.5 py-0.5 font-mono text-[10px] text-(--text-brand)">
             F
           </kbd>
         </button>
@@ -248,7 +249,7 @@ export default function SidebarSearch({ collapsed }: SidebarSearchProps) {
           the rows out of the tab order while it is closed. */}
       <div
         role="dialog"
-        aria-label="Find"
+        aria-label="Find functions"
         aria-hidden={!open}
         inert={!open}
         /* Clicks inside the panel are panel clicks, not rail clicks. */
@@ -268,7 +269,7 @@ export default function SidebarSearch({ collapsed }: SidebarSearchProps) {
           className={[
             "flex items-center gap-2.5 border-b border-(--hairline)",
             "transition-[height,padding] duration-300 ease-out motion-reduce:transition-none",
-            open ? "h-12 px-4" : "h-9 px-2.5",
+            open ? "h-10 px-4" : "h-8 px-2.5",
           ].join(" ")}
         >
           <HugeiconsIcon
@@ -286,8 +287,8 @@ export default function SidebarSearch({ collapsed }: SidebarSearchProps) {
               setCursor(0);
             }}
             onKeyDown={onInputKeyDown}
-            placeholder="Find"
-            aria-label="Find"
+            placeholder="Find functions"
+            aria-label="Find functions"
             className={[
               "min-w-0 flex-1 bg-transparent tracking-tight text-(--text-primary) placeholder:text-(--text-subtle) outline-hidden",
               "transition-[font-size] duration-300 ease-out motion-reduce:transition-none",
@@ -320,7 +321,7 @@ export default function SidebarSearch({ collapsed }: SidebarSearchProps) {
                 onClick={() => go(entry)}
                 onMouseEnter={() => setCursor(index)}
                 className={[
-                  "flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left",
+                  "flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left",
                   "transition-colors duration-150",
                   index === cursor ? "bg-(--tint-8)" : "hover:bg-(--bg-hover)",
                 ].join(" ")}

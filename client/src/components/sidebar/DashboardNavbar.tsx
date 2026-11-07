@@ -120,6 +120,7 @@ export default function DashboardNavbar() {
           "fixed top-0 right-0 z-50 hidden h-14 md:flex",
           "items-center gap-2 px-5 ",
           "transition-[left,background-color] duration-200",
+          "border-b border-(--hairline)",
           sidebarCollapsed ? "left-18" : "left-64",
           scrolled ? "bg-(--bg-root)/85 backdrop-blur-md" : "bg-transparent",
         ].join(" ")}
@@ -181,6 +182,7 @@ export default function DashboardNavbar() {
 
           <div ref={bellRef} className="relative">
             <NotificationsButton
+              isOpen={notificationsOpen}
               unreadCount={notificationsData?.unreadCount ?? 0}
               onClick={() => setNotificationsOpen((open) => !open)}
             />

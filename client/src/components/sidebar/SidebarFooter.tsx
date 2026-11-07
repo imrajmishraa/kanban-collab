@@ -19,6 +19,10 @@ interface SidebarFooterProps {
   onLogout: () => Promise<void>;
   /** Off where the rail cannot change, such as the mobile drawer. */
   showSidebarMode?: boolean;
+  /** Which edge the account menu hangs from. `left` in the rail. */
+  menuAlign?: "left" | "right";
+  /** Opens the inbox sheet. Where the caller has one, the menu uses it. */
+  onNotifications?: () => void;
   /**
    * Hover mode: the pointer arriving on the footer opens the menu, because the
    * rail itself already opened that way and a click would be a second gesture
@@ -34,6 +38,8 @@ export default function SidebarFooter({
   user,
   onLogout,
   showSidebarMode,
+  menuAlign = "left",
+  onNotifications,
   hoverMode = false,
 }: SidebarFooterProps) {
   const [panel, setPanel] = useState<Panel>(null);
@@ -105,6 +111,8 @@ export default function SidebarFooter({
             onLogout={onLogout}
             onClose={() => setPanel(null)}
             showSidebarMode={showSidebarMode}
+            align={menuAlign}
+            onNotifications={onNotifications}
             onFeedback={() => setFeedbackOpen(true)}
           />
         )}
@@ -150,6 +158,8 @@ export default function SidebarFooter({
           onLogout={onLogout}
           onClose={() => setPanel(null)}
           showSidebarMode={showSidebarMode}
+          align={menuAlign}
+          onNotifications={onNotifications}
           onFeedback={() => setFeedbackOpen(true)}
         />
       )}

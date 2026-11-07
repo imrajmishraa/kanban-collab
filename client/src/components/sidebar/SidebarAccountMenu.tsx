@@ -33,8 +33,20 @@ interface SidebarAccountMenuProps {
   onLogout: () => Promise<void>;
   onClose: () => void;
   showSidebarMode?: boolean;
+  /**
+   * Which edge of its container it hangs from. `left` in the rail, `right` in
+   * the phone panel, where the footer runs full width and a left-anchored menu
+   * leaves the card floating in the middle of the screen.
+   */
+  align?: "left" | "right";
   /** Opens the feedback form. The menu closes first. */
   onFeedback?: () => void;
+  /**
+   * Opens the inbox. Given, the Notifications row opens it instead of walking
+   * off to a settings page — which is what the phone panel wants, since the
+   * inbox is a sheet there and not a route.
+   */
+  onNotifications?: () => void;
 }
 
 interface Row {
@@ -65,7 +77,9 @@ function SidebarAccountMenu({
   onLogout,
   onClose,
   showSidebarMode = true,
+  align = "left",
   onFeedback,
+  onNotifications,
 }: SidebarAccountMenuProps) {
   const navigate = useNavigate();
 
@@ -139,7 +153,12 @@ function SidebarAccountMenu({
     {
       label: "Notifications",
       icon: BellRingIcon,
-      onClick: () => go("/account/settings/profile"),
+      onClick: onNotifications
+        ? () => {
+            onClose();
+            onNotifications();
+          }
+        : () => go("/account/settings/profile"),
     },
     { label: "Home", icon: Home03Icon, onClick: () => go("/home") },
     { label: "Docs", icon: BookOpen02Icon, onClick: () => go("/docs") },
@@ -156,7 +175,8 @@ function SidebarAccountMenu({
       aria-label="Account"
       className={[
         "absolute bottom-full z-80 overflow-hidden rounded-xl border border-(--hairline-strong)  bg-(--bg-root)",
-        "mb-0.5 left-0.5 w-68",
+        "mb-0.5 w-68",
+        align === "right" ? "right-0.5" : "left-0.5",
       ].join(" ")}
     >
       <div className="flex items-start gap-2 border-b border-(--hairline) px-3.5 py-3">

@@ -7,10 +7,11 @@ export const SidebarSearch = lazy(() => import("./SidebarSearch"));
 export const SidebarFooter = lazy(() => import("./SidebarFooter"));
 
 export const MobileSidebar = lazy(
-  () => import("@/components/mobile/MobileSidebar"),
+  () => import("@/components/sidebar/mobile/MobileSidebar"),
 );
 
-import SidebarMobileHeader from "@/components/mobile/SidebarMobileHeader";
+import SidebarMobileHeader from "@/components/sidebar/mobile/SidebarMobileHeader";
+import { SidebarNotifications } from "@/components/sidebar/SidebarNotifications";
 
 import { useWorkspaces } from "@/hooks/useWorkspaces";
 import { useBoards, boardKeys, BOARDS_LIST_LIMIT } from "@/hooks/useBoards";
@@ -77,6 +78,11 @@ export default function DashboardSidebar({
   useEffect(() => cancelClose, []);
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  /* The inbox sheet. Its bell is in the bar above, so the state lives here with
+     both of them — and the sheet is rendered here, not in the bar, because the
+     bar's `backdrop-blur` would become its containing block. */
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [shareBoardId, setShareBoardId] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<{
     ids: string[];
@@ -207,11 +213,28 @@ export default function DashboardSidebar({
         </div>
       </aside>
 
-      <SidebarMobileHeader onMenuClick={() => setMobileMenuOpen(true)} />
+      <SidebarMobileHeader
+        menuOpen={mobileMenuOpen}
+        onMenuClick={() => setMobileMenuOpen((value) => !value)}
+        notificationsOpen={notificationsOpen}
+        onToggleNotifications={() => {
+          setMobileMenuOpen(false);
+          setNotificationsOpen((value) => !value);
+        }}
+      />
+
+      <SidebarNotifications
+        open={notificationsOpen}
+        onClose={() => setNotificationsOpen(false)}
+      />
 
       <MobileSidebar
         open={mobileMenuOpen}
         onClose={() => setMobileMenuOpen(false)}
+        onOpenNotifications={() => {
+          setMobileMenuOpen(false);
+          setNotificationsOpen(true);
+        }}
         user={user}
         workspaces={workspaces}
         activeWorkspaceId={activeWorkspaceId ?? null}
