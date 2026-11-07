@@ -34,6 +34,10 @@ interface LoadingScreenProps {
  *   <LoadingScreen />                          → Collaborate, Move Faster
  *   <LoadingScreen phase="auth" />             → Restoring session
  *   <LoadingScreen message="Exporting…" />     → Exporting…
+ *
+ * Mounted once by `SplashHost`, which is what lets a phase change swap only the
+ * line: the entrance belongs to the outer elements, and the text sits in its own
+ * keyed span, so changing the copy re-runs the small fade and nothing else.
  */
 export default function LoadingScreen({
   phase = "boot",
@@ -47,7 +51,10 @@ export default function LoadingScreen({
       role="status"
       aria-live="polite"
       aria-busy="true"
-      className="relative flex min-h-screen items-center justify-center overflow-hidden bg-(--bg-root) text-(--text-primary)"
+      /* An overlay, not a page: `SplashHost` renders it next to the router, so
+         the app keeps mounting behind it and the splash has to sit on top of
+         everything (drawers and dialogs stop at z-50). */
+      className="fixed inset-0 z-100 flex items-center justify-center overflow-hidden bg-(--bg-root) text-(--text-primary)"
     >
       {/* Single soft top bloom — matches the forget-password panel */}
       <div
@@ -64,12 +71,17 @@ export default function LoadingScreen({
           </span>
         </div>
 
+        {/* The outer element carries the entrance and the breathe; the keyed
+            span inside carries the swap, so a phase change never touches the
+            entrance above it. */}
         <p
           className={`text-[16px] font-normal text-(--text-secondary) ${
             pulse ? "splash-line" : "splash-line--still"
           }`}
         >
-          {line}
+          <span key={line} className="splash-swap">
+            <span className="splash-shine">{line}</span>
+          </span>
         </p>
       </div>
     </main>

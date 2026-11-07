@@ -42,6 +42,28 @@
     splashBreathe 2.4s ease-in-out 1100ms infinite;
 }
 
+/* A later splash — the text changed under an entrance that already ran. Only
+   the line fades in; the mark stays where it landed. */
+@keyframes splashSwap {
+  from {
+    opacity: 0.6;
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+/* The text, when the copy changes under a splash that is already up. It lives
+   on its own keyed span, so only this runs — the entrance and the breathe
+   belong to the elements around it. It starts visible: a splash can be gone in
+   a couple of hundred milliseconds, and a line still waiting to fade in never
+   appears. */
+.splash-swap {
+  animation: splashSwap 150ms ease-out both;
+}
+
 /* Same entrance, no pulse — for the static case. */
 .splash-line--still {
   animation: splashIn 800ms cubic-bezier(0.25, 0.46, 0.45, 0.94) 300ms both;
@@ -50,10 +72,19 @@
 @media (prefers-reduced-motion: reduce) {
   .splash-mark,
   .splash-line,
-  .splash-line--still {
+  .splash-swap,
+  .splash-line--still,
+  .splash-shine {
     animation: none !important;
     opacity: 1;
     transform: none;
     filter: none;
+  }
+
+  /* A gradient that never moves is just unreadable text — drop it entirely. */
+  .splash-shine {
+    background-image: none;
+    color: var(--text-secondary);
+    -webkit-text-fill-color: currentColor;
   }
 }
