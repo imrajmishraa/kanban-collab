@@ -28,7 +28,7 @@ function SidebarModeMenu({ mode, onSelect }: SidebarModeMenuProps) {
     <div
       role="group"
       aria-label="Sidebar"
-      className="w-30 rounded-xl border border-(--hairline-strong) bg-(--bg-root) p-1"
+      className="w-30 ml-px rounded-xl border border-(--hairline-strong) bg-(--bg-root) p-1"
     >
       {MODES.map((entry) => {
         const active = entry.mode === mode;
@@ -41,7 +41,7 @@ function SidebarModeMenu({ mode, onSelect }: SidebarModeMenuProps) {
             aria-checked={active}
             onClick={() => onSelect(entry.mode)}
             className={[
-              "group flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-left",
+              "group flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 mb-0.5 text-left",
               "transition-colors duration-150 motion-reduce:transition-none",
               active ? "bg-(--tint-6)" : "hover:bg-(--tint-4)",
             ].join(" ")}

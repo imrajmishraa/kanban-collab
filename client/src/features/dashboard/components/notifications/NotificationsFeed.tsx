@@ -5,22 +5,21 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
-  Activity01Icon,
-  Attachment01Icon,
-  Building02Icon,
-  DashboardSquare02Icon,
   FilterAddIcon,
   FilterMailRemoveIcon,
   FilterRemoveIcon,
-  Grid2x2Icon,
+  LayersIcon,
+  LayoutListIcon,
+  LogsIcon,
   Message01Icon,
   MoreHorizontalIcon,
+  PaperclipIcon,
   Search01Icon,
   Settings01Icon,
+  SlackIcon,
   Tick02Icon,
-  UserAccountIcon,
   UserGroupIcon,
-  WalletCardsIcon,
+  UserIcon,
 } from "@hugeicons/core-free-icons";
 
 import { cn } from "@/utils/cn";
@@ -41,14 +40,13 @@ type Tab = (typeof TABS)[number];
  * honest reading of a label like "Columns", which no notification type covers.
  */
 const CATEGORIES = [
-  { label: "Activity", icon: Activity01Icon },
-  { label: "Boards", icon: DashboardSquare02Icon },
-  { label: "Attachments", icon: Attachment01Icon },
-  { label: "Workspace", icon: Building02Icon },
+  { label: "Accounts", icon: UserIcon },
+  { label: "Activity", icon: LogsIcon },
+  { label: "Attachments", icon: PaperclipIcon },
+  { label: "Boards", icon: LayersIcon },
+  { label: "Cards", icon: LayoutListIcon },
   { label: "Members", icon: UserGroupIcon },
-  { label: "Cards", icon: WalletCardsIcon },
-  { label: "Columns", icon: Grid2x2Icon },
-  { label: "Accounts", icon: UserAccountIcon },
+  { label: "Workspace", icon: SlackIcon },
 ] as const;
 
 type Category = (typeof CATEGORIES)[number]["label"];
@@ -73,8 +71,6 @@ function inCategory(
       return type === "WORKSPACE_ROLE_CHANGED" || text.includes("member");
     case "Cards":
       return type.startsWith("CARD_") || text.includes("card");
-    case "Columns":
-      return text.includes("column");
     case "Accounts":
       return (
         type === "WORKSPACE_DELETION_SCHEDULED" || text.includes("account")
@@ -374,7 +370,7 @@ export default function NotificationsFeed() {
                 role="menuitem"
                 onClick={() => {
                   setMenuOpen(false);
-                  navigate("/settings");
+                  navigate("/account/settings/notifications");
                 }}
                 className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[12.5px] text-(--text-soft) transition-colors duration-150 hover:bg-(--tint-4) hover:text-(--text-primary)"
               >
@@ -444,7 +440,7 @@ export default function NotificationsFeed() {
               : "Filter"}
           </button>
 
-          {filterOpen && !filterActive ? (
+          {filterOpen ? (
             <div
               role="menu"
               aria-label="Filter notifications"
@@ -472,8 +468,19 @@ export default function NotificationsFeed() {
                       checked ? "text-(--text-primary)" : "text-(--text-soft)",
                     )}
                   >
-                    {/* The box, drawn rather than native, so it matches the
-                        menu's type and spacing. */}
+                    <HugeiconsIcon
+                      icon={option.icon}
+                      size={15}
+                      strokeWidth={1.7}
+                      aria-hidden="true"
+                      className="shrink-0 text-(--text-muted)"
+                    />
+
+                    <span className="min-w-0 flex-1 truncate">
+                      {option.label}
+                    </span>
+
+                    {/* Last in the row, so every tick lines up in one column. */}
                     <span
                       aria-hidden="true"
                       className={cn(
@@ -491,21 +498,21 @@ export default function NotificationsFeed() {
                         />
                       ) : null}
                     </span>
-
-                    <HugeiconsIcon
-                      icon={option.icon}
-                      size={15}
-                      strokeWidth={1.7}
-                      aria-hidden="true"
-                      className="shrink-0 text-(--text-muted)"
-                    />
-
-                    <span className="min-w-0 flex-1 truncate">
-                      {option.label}
-                    </span>
                   </button>
                 );
               })}
+
+              {categories.length > 0 && (
+                <div className="mt-1 border-t border-(--hairline) pt-1">
+                  <button
+                    type="button"
+                    onClick={clearFilters}
+                    className="flex w-full cursor-pointer items-center rounded-lg px-2.5 py-2 text-left text-[12.5px] text-(--text-secondary) transition-colors duration-150 hover:bg-(--tint-4) hover:text-(--text-primary)"
+                  >
+                    Clear filters
+                  </button>
+                </div>
+              )}
             </div>
           ) : null}
         </div>
