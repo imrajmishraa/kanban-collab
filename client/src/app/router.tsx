@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { Navigate, useRoutes, type RouteObject } from "react-router-dom";
 
-import LoadingScreen from "@components/feedback/LoadingScreen";
+import SplashSignal from "@/components/feedback/SplashSignal";
 
 import { NotFoundPage } from "./routes/pages";
 import { publicRoutes } from "./routes/public.routes";
@@ -31,6 +31,6 @@ export function AppRouter() {
   const element = useRoutes(routes);
 
   return (
-    <Suspense fallback={<LoadingScreen phase="boot" />}>{element}</Suspense>
+    <Suspense fallback={<SplashSignal phase="boot" />}>{element}</Suspense>
   );
 }

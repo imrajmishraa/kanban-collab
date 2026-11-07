@@ -1,6 +1,6 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 
-import LoadingScreen from "@components/feedback/LoadingScreen";
+import SplashSignal from "@components/feedback/SplashSignal";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function ProtectedRoute() {
@@ -8,7 +8,7 @@ export default function ProtectedRoute() {
   const location = useLocation();
 
   if (isLoading) {
-    return <LoadingScreen phase="auth" />;
+    return <SplashSignal phase="auth" />;
   }
 
   if (!isAuthenticated) {

@@ -1,6 +1,6 @@
 import { Navigate, Outlet } from "react-router-dom";
 
-import AuthLoadingScreen from "@/components/feedback/LoadingScreen";
+import SplashSignal from "@/components/feedback/SplashSignal";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function GuestRoute() {
@@ -8,7 +8,7 @@ export default function GuestRoute() {
 
   // Wait for the auth store to finish restoring the session.
   if (isLoading) {
-    return <AuthLoadingScreen phase="auth" />;
+    return <SplashSignal phase="auth" />;
   }
 
   // Authenticated users shouldn't see login/register.
