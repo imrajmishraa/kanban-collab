@@ -76,3 +76,23 @@ export const DocsLicenseTroubleshootingPage = lazy(
 
 /* 404 */
 export const NotFoundPage = lazy(() => import("@/pages/NotFoundPage"));
+
+/* The rest of the marketing surfaces. */
+export const TourPage = lazy(() => import("@/pages/marketing/TourPage"));
+export const UseCasesPage = lazy(
+  () => import("@/pages/marketing/UseCasesPage"),
+);
+export const PricingPage = lazy(() => import("@/pages/marketing/PricingPage"));
+export const SolutionsPage = lazy(
+  () => import("@/pages/marketing/SolutionsPage"),
+);
+export const TestimonialsPage = lazy(
+  () => import("@/pages/marketing/TestimonialsPage"),
+);
+export const HelpPage = lazy(() => import("@/pages/marketing/HelpPage"));
+export const FeedbackPage = lazy(
+  () => import("@/pages/marketing/FeedbackPage"),
+);
+export const CookiesPage = lazy(() => import("@/pages/marketing/CookiesPage"));
+export const TermsPage = lazy(() => import("@/pages/marketing/TermsPage"));
+export const PrivacyPage = lazy(() => import("@/pages/marketing/PrivacyPage"));

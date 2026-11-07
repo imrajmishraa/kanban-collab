@@ -1,0 +1,369 @@
+/* Marketing typography — the two registers the public pages are set in.
+ *
+ * There are two, and they are deliberately different:
+ *
+ *   sans register   the home page and the section heads: large, bold, tight
+ *                   tracking (-1px to -1.4px). Sizes come straight from
+ *                   HomeHero (`34px → 40px → 44px`) and HomeHowItWorks
+ *                   (`32px → 40px`).
+ *
+ *   mono register   the feature sections: uppercase eyebrows at 10px with wide
+ *                   tracking (0.18em to 0.28em), and an h2 set in mono at
+ *                   3xl/4xl/5xl, medium weight, tracking -0.04em.
+ *
+ * Usage:
+ *   <div class="marketing-prose"> … </div>
+ *   <h2 class="mono-heading"> … </h2>      (the features register)
+ *   <p class="eyebrow">Built for teams</p>
+ *
+ * Nothing here sets a colour on the container: the marketing pages wrap
+ * themselves in `light-theme`, and the tokens resolve against whichever palette
+ * that wrapper chose.
+ */
+
+@layer components {
+  .marketing-prose {
+    font-family: var(--font-sans);
+    color: var(--text-secondary);
+    -webkit-font-smoothing: antialiased;
+    text-wrap: pretty;
+  }
+
+  .marketing-prose > :first-child {
+    margin-top: 0;
+  }
+
+  .marketing-prose > :last-child {
+    margin-bottom: 0;
+  }
+
+  /* ── Sans register ─────────────────────────────────────────────────── */
+
+  /* The hero line. One idea per line, so it balances rather than fills. */
+  .marketing-prose h1 {
+    font-family: var(--font-sans);
+    font-size: 34px;
+    font-weight: 700;
+    line-height: 1.12;
+    letter-spacing: -1px;
+    color: var(--text-primary);
+    text-wrap: balance;
+  }
+
+  @media (min-width: 640px) {
+    .marketing-prose h1 {
+      font-size: 40px;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .marketing-prose h1 {
+      font-size: 44px;
+      letter-spacing: -1.4px;
+    }
+  }
+
+  /* A section head. One step down from the hero, same tracking. */
+  .marketing-prose h2 {
+    font-family: var(--font-sans);
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -1px;
+    color: var(--text-primary);
+    text-wrap: balance;
+  }
+
+  @media (min-width: 768px) {
+    .marketing-prose h2 {
+      font-size: 40px;
+    }
+  }
+
+  .marketing-prose h3 {
+    font-family: var(--font-sans);
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: -0.3px;
+    color: var(--text-primary);
+  }
+
+  @media (min-width: 768px) {
+    .marketing-prose h3 {
+      font-size: 22px;
+    }
+  }
+
+  .marketing-prose h4 {
+    font-family: var(--font-sans);
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--text-primary);
+  }
+
+  @media (min-width: 768px) {
+    .marketing-prose h4 {
+      font-size: 18px;
+    }
+  }
+
+  /* The line under a hero. Bigger than body copy and set tighter, because it is
+     read in one go, right after the headline. */
+  .marketing-prose .lead,
+  .marketing-prose > p:first-of-type {
+    margin-top: 1rem;
+    max-width: 31rem;
+    font-size: 18px;
+    line-height: 1.4;
+    letter-spacing: -0.3px;
+    color: var(--text-secondary);
+  }
+
+  @media (min-width: 640px) {
+    .marketing-prose .lead,
+    .marketing-prose > p:first-of-type {
+      font-size: 20px;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .marketing-prose .lead,
+    .marketing-prose > p:first-of-type {
+      font-size: 22px;
+      letter-spacing: -0.5px;
+    }
+  }
+
+  .marketing-prose p {
+    margin-top: 1rem;
+    font-size: 16px;
+    line-height: 1.75;
+  }
+
+  @media (min-width: 768px) {
+    .marketing-prose p {
+      font-size: 18px;
+    }
+  }
+
+  /* Small print: captions, legal, the line under a form. */
+  .marketing-prose .note {
+    margin-top: 0.75rem;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text-muted);
+  }
+
+  @media (min-width: 640px) {
+    .marketing-prose .note {
+      font-size: 15px;
+    }
+  }
+
+  .marketing-prose strong {
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .marketing-prose em {
+    font-style: italic;
+  }
+
+  /* ── Mono register ─────────────────────────────────────────────────── */
+
+  /* The label above a section head: wide tracking, small, quiet. `--wide` is the
+     looser of the two values the pages use. */
+  .marketing-prose .eyebrow {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    line-height: 1.4;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--text-secondary) 70%, transparent);
+  }
+
+  .marketing-prose .eyebrow--wide {
+    letter-spacing: 0.28em;
+    color: color-mix(in srgb, var(--text-secondary) 60%, transparent);
+  }
+
+  /* The features sections set their h2 in mono, not sans. Same element, other
+     register — this class wins because it is declared after the h2 rules and has
+     the same specificity. */
+  .marketing-prose .mono-heading {
+    font-family: var(--font-mono);
+    font-size: 1.875rem;
+    font-weight: 500;
+    line-height: 1.08;
+    letter-spacing: -0.04em;
+    color: var(--text-primary);
+    text-wrap: balance;
+  }
+
+  @media (min-width: 640px) {
+    .marketing-prose .mono-heading {
+      font-size: 2.25rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .marketing-prose .mono-heading {
+      font-size: 3rem;
+    }
+  }
+
+  /* Metadata under a card or a chart: time, count, status. */
+  .marketing-prose .meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--text-secondary);
+  }
+
+  /* A tag on a card. Small enough to sit inside one without competing. */
+  .marketing-prose .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.125rem 0.375rem;
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    background: var(--tint-4);
+    font-family: var(--font-mono);
+    font-size: 9px;
+    line-height: 1.6;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+
+  /* ── Lists ─────────────────────────────────────────────────────────── */
+
+  .marketing-prose ul,
+  .marketing-prose ol {
+    margin-top: 1rem;
+    padding-left: 1.25rem;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  @media (min-width: 768px) {
+    .marketing-prose ul,
+    .marketing-prose ol {
+      font-size: 18px;
+    }
+  }
+
+  .marketing-prose ul {
+    list-style: disc;
+  }
+
+  .marketing-prose ol {
+    list-style: decimal;
+  }
+
+  .marketing-prose li + li {
+    margin-top: 0.5rem;
+  }
+
+  .marketing-prose li::marker {
+    color: var(--text-subtle);
+  }
+
+  /* ── Links ─────────────────────────────────────────────────────────── */
+
+  /* The accent, underlined only on hover: a page of blue underlines would fight
+     the board previews for attention. */
+  .marketing-prose a {
+    color: var(--accent);
+    text-decoration: none;
+    transition: color 200ms ease;
+  }
+
+  .marketing-prose a:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  /* The one loud link: "See how it works", "Start free". */
+  .marketing-prose .link-strong {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .marketing-prose .link-strong:hover {
+    text-decoration: underline;
+  }
+
+  /* ── Code ──────────────────────────────────────────────────────────── */
+
+  .marketing-prose code {
+    padding: 0.125rem 0.375rem;
+    border-radius: 4px;
+    background: var(--tint-6);
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    color: var(--text-primary);
+  }
+
+  .marketing-prose pre {
+    margin-top: 1rem;
+    padding: 1rem;
+    overflow-x: auto;
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    background: var(--bg-surface);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    tab-size: 2;
+  }
+
+  .marketing-prose pre code {
+    padding: 0;
+    border-radius: 0;
+    background: none;
+    font-size: inherit;
+    color: inherit;
+  }
+
+  .marketing-prose kbd {
+    padding: 0.125rem 0.375rem;
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-primary);
+  }
+
+  /* ── Aside and rules ───────────────────────────────────────────────── */
+
+  .marketing-prose blockquote {
+    margin-top: 1.5rem;
+    padding-left: 1.25rem;
+    border-left: 2px solid var(--hairline);
+    font-size: 18px;
+    font-style: italic;
+    line-height: 1.6;
+    color: var(--text-secondary);
+  }
+
+  .marketing-prose hr {
+    margin-top: 2rem;
+    border: 0;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .marketing-prose img,
+  .marketing-prose video {
+    margin-top: 1rem;
+    max-width: 100%;
+    height: auto;
+  }
+}

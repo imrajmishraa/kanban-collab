@@ -1,0 +1,302 @@
+/* Docs typography — the type ramp as element rules.
+ *
+ * The pages used to carry the ramp as class strings (`pages/docs/docsTypography.ts`)
+ * on every heading, paragraph and list. This is the same ramp as a stylesheet,
+ * so a docs page can be written as plain semantic HTML — `<h2>`, `<p>`, `<ul>`,
+ * `<pre>` — and still look identical to the pages already written.
+ *
+ * Usage:
+ *   <article class="docs-prose"> … </article>
+ *
+ * Every number here is the one `docsTypography.ts` uses. If one moves, the other
+ * has to move with it, or the two docs styles drift apart.
+ *
+ * Sizes are deliberately small for body copy: reference documentation is read in
+ * long stretches, and 16px with generous leading reads faster than 19px at the
+ * same measure.
+ */
+
+@layer components {
+  .docs-prose {
+    /* Long-form measure. The column is narrow enough already, so this only
+       guards against a page being dropped into a wide container. */
+    max-width: 72ch;
+
+    font-family: var(--font-sans);
+    color: var(--text-secondary);
+    text-wrap: pretty;
+  }
+
+  /* Nothing should open with a gap: the first block sits flush under the title
+     row, the last one flush against the pagination. */
+  .docs-prose > :first-child {
+    margin-top: 0;
+  }
+
+  .docs-prose > :last-child {
+    margin-bottom: 0;
+  }
+
+  /* ── Headings ──────────────────────────────────────────────────────── */
+
+  .docs-prose h1 {
+    font-size: 34px;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -1px;
+    color: var(--text-primary);
+    text-wrap: balance;
+  }
+
+  @media (min-width: 640px) {
+    .docs-prose h1 {
+      font-size: 40px;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .docs-prose h1 {
+      letter-spacing: -1.4px;
+    }
+  }
+
+  /* The hairline under an h2 is what separates one block of the page from the
+     next; the space above it is twice the space below, so it reads as belonging
+     to what follows. */
+  .docs-prose h2 {
+    margin-top: 3.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--hairline);
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.6px;
+    color: var(--text-primary);
+    text-wrap: balance;
+
+    /* The layout slugs headings and the contents list links to them; without
+       this a jump lands the heading under the sticky navbar. */
+    scroll-margin-top: 6rem;
+  }
+
+  /* No rule on an h3: it belongs to the h2 above it. */
+  .docs-prose h3 {
+    margin-top: 2rem;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--text-primary);
+    scroll-margin-top: 6rem;
+  }
+
+  .docs-prose h4 {
+    margin-top: 1.75rem;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--text-primary);
+    scroll-margin-top: 6rem;
+  }
+
+  /* ── Body copy ─────────────────────────────────────────────────────── */
+
+  .docs-prose p {
+    margin-top: 1.25rem;
+    font-size: 16px;
+    line-height: 1.75;
+  }
+
+  /* The opening paragraph, one step up from body copy. */
+  .docs-prose .lead,
+  .docs-prose > p:first-of-type {
+    margin-top: 2rem;
+    font-size: 17px;
+    line-height: 1.75;
+  }
+
+  .docs-prose strong {
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .docs-prose em {
+    font-style: italic;
+  }
+
+  /* ── Lists ─────────────────────────────────────────────────────────── */
+
+  /* A touch larger than body copy, so the bullets do not look cramped. */
+  .docs-prose ul,
+  .docs-prose ol {
+    margin-top: 1rem;
+    padding-left: 1.5rem;
+    font-size: 17px;
+    line-height: 1.7;
+  }
+
+  .docs-prose ul {
+    list-style: disc;
+  }
+
+  .docs-prose ol {
+    list-style: decimal;
+  }
+
+  .docs-prose li + li {
+    margin-top: 0.625rem;
+  }
+
+  .docs-prose li > ul,
+  .docs-prose li > ol {
+    margin-top: 0.625rem;
+    font-size: 16px;
+  }
+
+  .docs-prose li::marker {
+    color: var(--text-subtle);
+  }
+
+  /* ── Links ─────────────────────────────────────────────────────────── */
+
+  /* Blue, not brand: blue is what a link looks like everywhere else on the
+     site, and the docs already use the accent for the current section. */
+  .docs-prose a {
+    color: var(--color-blue-500);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: color 150ms ease;
+  }
+
+  .docs-prose a:hover {
+    color: var(--color-blue-400);
+  }
+
+  /* ── Code ──────────────────────────────────────────────────────────── */
+
+  .docs-prose code {
+    padding: 0.125rem 0.375rem;
+    border-radius: 4px;
+    background: var(--tint-6);
+    font-family: var(--font-mono);
+    font-size: 15px;
+    color: var(--text-primary);
+  }
+
+  /* Inside a block, the inner `code` is the block itself: no chip, no padding,
+     no second colour. */
+  .docs-prose pre {
+    margin-top: 1.25rem;
+    padding: 1rem;
+    overflow-x: auto;
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    background: var(--bg-surface);
+    font-family: var(--font-mono);
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    tab-size: 2;
+  }
+
+  .docs-prose pre code {
+    padding: 0;
+    border-radius: 0;
+    background: none;
+    font-size: inherit;
+    color: inherit;
+  }
+
+  .docs-prose kbd {
+    padding: 0.125rem 0.375rem;
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--text-primary);
+  }
+
+  /* ── Aside ─────────────────────────────────────────────────────────── */
+
+  .docs-prose blockquote {
+    margin-top: 2rem;
+    padding-left: 1.25rem;
+    border-left: 2px solid var(--hairline);
+    font-size: 19px;
+    font-style: italic;
+    line-height: 1.75;
+    color: var(--text-secondary);
+  }
+
+  .docs-prose blockquote > :first-child {
+    margin-top: 0;
+  }
+
+  /* ── Tables ────────────────────────────────────────────────────────── */
+
+  /* Put the table in a `div.table-wrap`: the border and the radius belong to the
+     frame, and the frame is what scrolls sideways when a table is wider than the
+     column. */
+  .docs-prose .table-wrap {
+    margin-top: 1.25rem;
+    overflow-x: auto;
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+  }
+
+  .docs-prose table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 15px;
+  }
+
+  .docs-prose thead {
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .docs-prose th {
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+  }
+
+  .docs-prose tbody {
+    color: var(--text-secondary);
+  }
+
+  .docs-prose tbody tr + tr {
+    border-top: 1px solid var(--hairline);
+  }
+
+  .docs-prose td {
+    padding: 0.75rem 1rem;
+    vertical-align: top;
+  }
+
+  .docs-prose td code {
+    font-size: 14px;
+  }
+
+  /* ── Rules and media ───────────────────────────────────────────────── */
+
+  .docs-prose hr {
+    margin-top: 2.5rem;
+    border: 0;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .docs-prose img,
+  .docs-prose video {
+    margin-top: 1.25rem;
+    max-width: 100%;
+    height: auto;
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+  }
+
+  /* An image inside a link should not get a second frame. */
+  .docs-prose a img {
+    border: 0;
+  }
+}
