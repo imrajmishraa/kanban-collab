@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
-  ChevronsLeftRightIcon,
+  UnfoldMoreIcon,
   DashboardSquare02Icon,
   LayersIcon,
   Search01Icon,
@@ -126,11 +126,11 @@ export function BoardSelector({
         </span>
 
         <HugeiconsIcon
-          icon={ChevronsLeftRightIcon}
+          icon={UnfoldMoreIcon}
           size={13}
           strokeWidth={1.8}
           className={[
-            "shrink-0 text-(--text-muted) rotate-90 transition-transform duration-200",
+            "shrink-0 text-(--text-muted) transition-transform duration-200",
             isOpen && "",
           ].join(" ")}
         />

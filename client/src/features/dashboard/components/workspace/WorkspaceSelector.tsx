@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Add01Icon,
-  ChevronsLeftRightIcon,
+  UnfoldMoreIcon,
   Cancel01Icon,
   Search01Icon,
   Tick02Icon,
@@ -13,6 +13,7 @@ import {
 import { Tooltip } from "@/components/Tooltips/ToolTip";
 
 import { useWorkspaces } from "@/hooks/useWorkspaces";
+import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { useNewWorkspaceDialog } from "@/components/dashboard/workspace/create/newWorkspaceDialog.context";
 import { useWorkspaceSwitcher } from "@/features/workspaces";
 
@@ -122,6 +123,19 @@ export function WorkspaceSelector({
 
   const containerRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const rowRefs = useRef<Array<HTMLDivElement | null>>([]);
+
+  /* Which row the arrow keys are on. Adjusted during render when the list or
+     the open state changes, the same way the switcher's request counter is —
+     an effect would be a second render for no reason. */
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [navKey, setNavKey] = useState("");
+
+  const currentNavKey = `${isOpen}|${debouncedSearch}`;
+  if (currentNavKey !== navKey) {
+    setNavKey(currentNavKey);
+    setActiveIndex(0);
+  }
 
   const { open: openNewWorkspace } = useNewWorkspaceDialog();
 
@@ -212,6 +226,10 @@ export function WorkspaceSelector({
     };
   }, [isOpen]);
 
+  const clearActiveWorkspace = useActiveWorkspace(
+    (s) => s.clearActiveWorkspace,
+  );
+
   const handleSelect = useCallback(
     (workspace: PickerItem) => {
       onWorkspaceChange(workspace.id, workspace.name);
@@ -219,6 +237,19 @@ export function WorkspaceSelector({
     },
     [onWorkspaceChange],
   );
+
+  /* The row's cross: clear the selection in the store, close the picker, and
+     let the caller navigate away if it has somewhere to go. */
+  const handleClearActive = useCallback(() => {
+    setIsOpen(false);
+    clearActiveWorkspace();
+    onClose?.();
+  }, [clearActiveWorkspace, onClose]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    rowRefs.current[activeIndex]?.scrollIntoView({ block: "nearest" });
+  }, [activeIndex, isOpen]);
 
   const handleScroll = useCallback(() => {
     const element = listRef.current;
@@ -248,7 +279,7 @@ export function WorkspaceSelector({
             "transition-colors duration-200",
             isOpen
               ? "bg-(--tint-10) text-(--text-primary)"
-              : "text-(--text-soft) hover:bg-(--bg-hover) hover:text-(--text-primary)",
+              : "text-(--text-soft) hover:bg-(--tint-6) hover:text-(--text-primary)",
             triggerClassName,
           ]
             .filter(Boolean)
@@ -266,11 +297,11 @@ export function WorkspaceSelector({
           </span>
 
           <HugeiconsIcon
-            icon={ChevronsLeftRightIcon}
+            icon={UnfoldMoreIcon}
             size={11}
             strokeWidth={2}
             className={[
-              "shrink-0 text-(--text-secondary) rotate-90 transition-transform duration-200",
+              "shrink-0 text-(--text-secondary) transition-transform duration-200",
               isOpen && "",
             ].join(" ")}
           />
@@ -321,11 +352,11 @@ export function WorkspaceSelector({
             ].join(" ")}
           >
             <HugeiconsIcon
-              icon={ChevronsLeftRightIcon}
+              icon={UnfoldMoreIcon}
               size={13}
               strokeWidth={2.5}
               className={[
-                "shrink-0 transition-transform rotate-90 duration-200",
+                "shrink-0 transition-transform duration-200",
                 isOpen && "",
               ].join(" ")}
             />
@@ -351,7 +382,7 @@ export function WorkspaceSelector({
                   type="button"
                   onClick={onClose}
                   aria-label="Back to project view"
-                  className="flex ml-0.5 size-7 cursor-pointer items-center justify-center rounded-md text-(--text-muted) transition-colors duration-200 hover:bg-(--bg-hover) hover:text-(--text-primary)"
+                  className="flex ml-0.5 size-7 cursor-pointer items-center justify-center rounded-md text-(--text-muted) transition-colors duration-200 hover:bg-(--tint-6) hover:text-(--text-primary)"
                 >
                   <HugeiconsIcon
                     icon={Cancel01Icon}
@@ -389,6 +420,33 @@ export function WorkspaceSelector({
               type="text"
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "ArrowDown") {
+                  event.preventDefault();
+                  setActiveIndex((index) =>
+                    Math.min(index + 1, workspaces.length - 1),
+                  );
+                  return;
+                }
+
+                if (event.key === "ArrowUp") {
+                  event.preventDefault();
+                  setActiveIndex((index) => Math.max(index - 1, 0));
+                  return;
+                }
+
+                if (event.key === "Enter") {
+                  const picked = workspaces[activeIndex];
+                  if (!picked) return;
+                  event.preventDefault();
+                  handleSelect(picked);
+                }
+              }}
+              aria-activedescendant={
+                workspaces[activeIndex]
+                  ? `workspace-option-${workspaces[activeIndex]!.id}`
+                  : undefined
+              }
               placeholder="Find workspace"
               autoFocus
               className="
@@ -409,7 +467,7 @@ export function WorkspaceSelector({
           <div
             ref={listRef}
             onScroll={handleScroll}
-            className="min-h-0 flex-1 overflow-y-auto p-1"
+            className="min-h-0 flex-1 overflow-y-auto overscroll-contain scroll-smooth p-1"
           >
             {isError ? (
               <p className="px-2 py-2 text-[12px] text-(--danger)">
@@ -425,43 +483,83 @@ export function WorkspaceSelector({
               </p>
             ) : (
               <>
-                {workspaces.map((workspace) => {
+                {workspaces.map((workspace, index) => {
                   const isActive = workspace.id === activeWorkspaceId;
+                  const highlighted = index === activeIndex;
 
                   return (
-                    <button
+                    /* Two halves, two surfaces: the row itself is the page
+                       background, the name carries the fill and the hover, and
+                       the tick sits on its own cell outside that fill. */
+                    <div
                       key={workspace.id}
-                      type="button"
-                      role="option"
-                      aria-selected={isActive}
-                      onClick={() => handleSelect(workspace)}
-                      className={[
-                        "flex h-8 w-full cursor-pointer items-center gap-2.5 rounded-md px-2",
-                        "text-left text-[12.5px] tracking-tight",
-                        "transition-colors duration-200",
-                        isActive
-                          ? "bg-(--tint-7) text-(--text-primary)"
-                          : "text-(--text-soft) hover:bg-(--bg-hover) hover:text-(--text-primary)",
-                      ].join(" ")}
+                      ref={(node) => {
+                        rowRefs.current[index] = node;
+                      }}
+                      role="presentation"
+                      className="group/row flex items-center gap-1 bg-(--bg-root)"
                     >
-                      <WorkspaceAvatar
-                        name={workspace.name}
-                        imageUrl={workspace.avatarUrl ?? null}
-                      />
+                      <button
+                        type="button"
+                        role="option"
+                        id={`workspace-option-${workspace.id}`}
+                        aria-selected={isActive}
+                        onClick={() => handleSelect(workspace)}
+                        onMouseEnter={() => setActiveIndex(index)}
+                        className={[
+                          "flex h-8 min-w-0 flex-1 cursor-pointer items-center gap-2.5 rounded-md px-2",
+                          "text-left text-[12.5px] tracking-tight",
+                          "transition-colors duration-200",
+                          highlighted
+                            ? "bg-(--tint-6) text-(--text-primary)"
+                            : "text-(--text-soft) hover:bg-(--tint-6) hover:text-(--text-primary)",
+                        ].join(" ")}
+                      >
+                        <WorkspaceAvatar
+                          name={workspace.name}
+                          imageUrl={workspace.avatarUrl ?? null}
+                        />
 
-                      <span className="min-w-0 flex-1 truncate">
-                        {workspace.name}
-                      </span>
+                        <span className="min-w-0 flex-1 truncate">
+                          {workspace.name}
+                        </span>
+                      </button>
 
                       {isActive && (
-                        <HugeiconsIcon
-                          icon={Tick02Icon}
-                          size={13}
-                          strokeWidth={2}
-                          className="shrink-0 text-(--accent)"
-                        />
+                        /* Tick at rest, cross under the pointer — same swap as
+                           the phone card. Both are always rendered, so the cell
+                           never changes width. */
+                        <button
+                          type="button"
+                          onClick={handleClearActive}
+                          aria-label="Clear selected workspace"
+                          className="
+                            group/tick relative flex size-8 shrink-0 cursor-pointer items-center
+                            justify-center rounded-md bg-(--bg-root) text-(--text-primary)
+                            transition-colors duration-150
+                          "
+                        >
+                          <HugeiconsIcon
+                            icon={Tick02Icon}
+                            size={18}
+                            strokeWidth={2}
+                            aria-hidden="true"
+                            className="transition-opacity duration-150 group-hover/tick:opacity-0"
+                          />
+
+                          {/* The swap belongs to this button alone: the row is
+                              wide, and turning the tick into a cross because the
+                              pointer is somewhere on it reads as an accident. */}
+                          <HugeiconsIcon
+                            icon={Cancel01Icon}
+                            size={13}
+                            strokeWidth={2}
+                            aria-hidden="true"
+                            className="absolute m-1 size-4.5 opacity-0 transition-opacity duration-150 hover:bg-(--tint-6) group-hover/tick:opacity-100"
+                          />
+                        </button>
                       )}
-                    </button>
+                    </div>
                   );
                 })}
 
@@ -484,7 +582,7 @@ export function WorkspaceSelector({
                 setIsOpen(false);
                 openNewWorkspace();
               }}
-              className="flex h-8 w-full cursor-pointer items-center gap-2.5 rounded-md px-2 text-left text-[12.5px] tracking-tight text-(--text-soft) transition-colors duration-200 hover:bg-(--bg-hover) hover:text-(--text-primary)"
+              className="flex h-8 w-full cursor-pointer items-center gap-2.5 rounded-md px-2 text-left text-[12.5px] tracking-tight text-(--text-soft) transition-colors duration-200 hover:bg-(--tint-6) hover:text-(--text-primary)"
             >
               <HugeiconsIcon
                 icon={Add01Icon}

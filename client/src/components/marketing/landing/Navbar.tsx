@@ -66,6 +66,33 @@ export default function Navbar({ onNavigate, activeHref = "" }: NavbarProps) {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [menuPath, setMenuPath] = useState(location.pathname);
 
+  /* The bar sits flush on the page at rest; the line under it only appears once
+     something has scrolled beneath. The side borders stay either way — this is
+     a column edge, not a fold. */
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = (event: Event) => {
+      const target = event.target;
+
+      setScrolled(
+        target instanceof HTMLElement
+          ? target.scrollTop > 0
+          : (window.scrollY ?? 0) > 0,
+      );
+    };
+
+    /* Capture: scroll does not bubble, and this way one listener hears the
+       window and any inner scroller. */
+    document.addEventListener("scroll", onScroll, {
+      capture: true,
+      passive: true,
+    });
+
+    return () =>
+      document.removeEventListener("scroll", onScroll, { capture: true });
+  }, []);
+
   /* Solutions remembers the route it was opened on, so a navigation closes it
      by derivation instead of by an effect that resets state after render. */
   const [solutionsAt, setSolutionsAt] = useState<string | null>(null);
@@ -260,9 +287,13 @@ export default function Navbar({ onNavigate, activeHref = "" }: NavbarProps) {
            this, any child that does not declare a colour inherits `body`'s,
            which is near-white in dark mode — white text on a white bar. */
         NAV.ink,
-        "border-x border-b ",
+        "border-x border-b",
         NAV.edge,
       )}
+      /* Inline, not a class: `border-b-transparent` and `NAV.edge`'s
+         `border-color` are the same property, so which one wins would depend on
+         the order Tailwind happens to emit them in. */
+      style={{ borderBottomColor: scrolled ? undefined : "transparent" }}
     >
       <div className="relative m-auto flex h-18 max-w-325 items-center justify-between gap-4 px-4 sm:h-16 pt-1.5 sm:gap-6 sm:px-7">
         {/* ── LEFT: brand ─────────────────────────────────────────── */}
