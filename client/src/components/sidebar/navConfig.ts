@@ -163,12 +163,6 @@ export function buildNavigation({
       placement: "primary",
       children: [
         {
-          key: "activity.all",
-          label: "All activity",
-          href: "/activity",
-          icon: LogsIcon,
-        },
-        {
           key: "activity.comments",
           label: "Comments",
           href: at("/activity?type=comments"),

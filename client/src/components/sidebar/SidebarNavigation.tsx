@@ -210,6 +210,10 @@ const SidebarNavigation = ({ collapsed }: SidebarNavigationProps) => {
               href={entry.href}
               icon={entry.iconNode}
               collapsed
+              /* The overview sits at the workspace root, and every scoped page
+                 nests under it — without `end`, NavLink keeps it lit on
+                 /boards, /members and the rest, so two rows glow at once. */
+              end={"key" in entry && entry.key === home.key}
             />
           ))}
         </div>

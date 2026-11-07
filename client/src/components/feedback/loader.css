@@ -64,6 +64,39 @@
   animation: splashSwap 150ms ease-out both;
 }
 
+/* The sweep across the copy. Right to left: the band enters at the right edge
+   of the line and leaves at the left, which reads as the light passing over the
+   text rather than the text moving. `background-position` runs 100% → 0% on a
+   200%-wide gradient; the reverse would send it the other way. */
+@keyframes splashShine {
+  from {
+    background-position: 100% 50%;
+  }
+  to {
+    background-position: 0% 50%;
+  }
+}
+
+.splash-shine {
+  background-image: linear-gradient(
+    100deg,
+    var(--text-subtle) 0%,
+    var(--text-subtle) 40%,
+    var(--text-secondary) 50%,
+    var(--text-subtle) 60%,
+    var(--text-subtle) 100%
+  );
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+
+  animation: splashShine 1.2s linear infinite;
+}
+
 /* Same entrance, no pulse — for the static case. */
 .splash-line--still {
   animation: splashIn 800ms cubic-bezier(0.25, 0.46, 0.45, 0.94) 300ms both;

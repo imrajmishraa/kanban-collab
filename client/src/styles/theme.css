@@ -1,0 +1,163 @@
+@theme {
+  /* Every family here is in the bundle: Figtree and JetBrains Mono both come
+     from @fontsource-variable packages, imported once in `main.tsx`. Nothing
+     has to be dropped in later, so the stack is exactly what ships. */
+  --font-sans:
+    "Figtree Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    sans-serif;
+  --font-mono:
+    "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-new(root) {
+  z-index: 2;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+/* Going to light, the incoming frame is clipped before any JavaScript runs.
+   Without this it is unclipped from the moment the snapshot is taken until
+   `ready` resolves, so the full light page shows for a frame and then the
+   circle starts from the button. */
+.vt-grow::view-transition-new(root) {
+  clip-path: circle(var(--vt-seed, 0px) at var(--vt-x, 50%) var(--vt-y, 50%));
+}
+
+/* Going to dark the layers swap: the outgoing light frame has to sit on top so
+   it can shrink into the toggle and uncover the dark page underneath. Without
+   the swap the frame that shrinks is the hidden one, so nothing appears to
+   move. */
+.vt-collapse::view-transition-old(root) {
+  z-index: 2;
+}
+
+.vt-collapse::view-transition-new(root) {
+  z-index: 1;
+}
+
+/* CTA MARK
+   The hover mark behind the closing banner, and the band of light that crosses
+   it. Four animations run at once, and they can only do that because each
+   drives a DIFFERENT property:
+
+     cta-rock    the individual `rotate` property
+     cta-swell   the individual `scale` property
+     cta-shade   `color`
+     cta-shine   the shine band's `transform`
+
+   Animating `transform` in two of them would not work: the second would
+   overwrite the first on every frame. The individual properties exist for
+   exactly this case.
+
+   All four are parked until the card is pointed at or focused, which is the
+   last rule here. Nothing runs while nobody is looking. */
+
+/* Forward, hold, back, hold. A full turn reads as a machine part; an
+   oscillation reads as the mark turning to look at something and turning back,
+   which is what makes it feel alive rather than looped. */
+@keyframes cta-rock {
+  0% {
+    rotate: 0deg;
+  }
+  50% {
+    rotate: 50deg;
+  }
+  100% {
+    rotate: 0deg;
+  }
+}
+
+@keyframes cta-swell {
+  0%,
+  100% {
+    scale: 1.3;
+  }
+  50% {
+    scale: 1.8;
+  }
+}
+
+/* Colour only, and between two text tokens rather than a text token and the
+   page. `--bg-root` was the end of this ramp, which meant the mark reached the
+   exact colour of the surface it sits on and vanished at the peak in dark mode.
+   `--text-subtle` is the darkest ink that still reads as ink, so the mark goes
+   quiet twice a cycle and never goes away. */
+@keyframes cta-shade {
+  0%,
+  100% {
+    color: var(--text-muted);
+  }
+  50% {
+    color: var(--text-subtle);
+  }
+}
+
+/* A band of light that crosses the card from left to right, then waits off the
+   right edge until the cycle comes round again. */
+@keyframes cta-shine {
+  0% {
+    transform: translateX(-160%) skewX(-14deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  52% {
+    transform: translateX(320%) skewX(-14deg);
+    opacity: 1;
+  }
+  60% {
+    transform: translateX(320%) skewX(-14deg);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(320%) skewX(-14deg);
+    opacity: 0;
+  }
+}
+
+.cta-mark {
+  animation:
+    cta-rock 6s ease-in-out infinite,
+    cta-swell 10s ease-in-out infinite,
+    cta-shade 3s ease-in-out infinite;
+}
+
+.cta-shine {
+  animation: cta-shine 5s ease-in-out infinite;
+}
+
+/* The rock is 6s with no holds: three seconds turning out, three turning back,
+   straight into the next cycle. The swell, the shade and the shine stay on 10,
+   3 and 5, so the small motion is quick while the light behind it breathes
+   slowly. Six, ten, three and five only realign once every half minute. */
+
+/* Parked until the card is pointed at or focused. `animation-play-state` rather
+   than mounting and unmounting, so the moment the pointer arrives the animation
+   continues from where it paused instead of starting over. */
+.cta-mark,
+.cta-shine {
+  animation-play-state: paused;
+}
+
+.group:hover .cta-mark,
+.group:hover .cta-shine,
+.group:focus-visible .cta-mark,
+.group:focus-visible .cta-shine {
+  animation-play-state: running;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta-mark,
+  .cta-shine {
+    animation: none;
+  }
+}

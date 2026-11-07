@@ -63,6 +63,7 @@ export default defineConfig(({ mode }) => ({
       "@components": path.resolve(import.meta.dirname, "src/components"),
       "@validations": path.resolve(import.meta.dirname, "src/validations"),
       "@hooks": path.resolve(import.meta.dirname, "src/hooks"),
+      "@styles": path.resolve(import.meta.dirname, "src/styles")
     },
   },
 

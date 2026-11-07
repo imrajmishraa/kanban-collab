@@ -1,0 +1,513 @@
+@layer base {
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}
+
+/* DOCS HEADING ANCHORS */
+
+/* The `#` beside a heading, added by `useTableOfContents` as a runtime element.
+   It lives here rather than as utilities because Tailwind only generates classes
+   it can see in source, and this node is created in JavaScript — a `group-hover`
+   utility on it would never be emitted. */
+.docs-anchor {
+  margin-left: 0.5rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-weight: 400;
+  opacity: 0;
+  transition:
+    opacity 150ms ease,
+    color 150ms ease;
+}
+
+h2:hover .docs-anchor,
+h3:hover .docs-anchor,
+.docs-anchor:focus-visible {
+  opacity: 1;
+}
+
+.docs-anchor:hover {
+  color: #3b82f6;
+}
+
+/* Touch has no hover, so the anchor would never appear on a phone. Show it at
+   low contrast instead of hiding it. */
+@media (hover: none) {
+  .docs-anchor {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .docs-anchor {
+    transition: none;
+  }
+}
+
+/* PLACEHOLDER */
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-muted);
+}
+
+/* SURFACES */
+
+.glass-surface {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.surface-border {
+  border: 1px solid var(--border);
+}
+
+.surface-border-strong {
+  border: 1px solid var(--border-strong);
+}
+
+.divider {
+  width: 100%;
+  height: 1px;
+  background: var(--border);
+}
+
+/* REDUCED MOTION */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Hide scrollbars everywhere — scrolling still works */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* legacy Edge */
+}
+*::-webkit-scrollbar {
+  display: none; /* Chromium / Safari */
+}
+
+@keyframes flowPulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes flowPing {
+  75%,
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+@keyframes flowBlink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@keyframes peerFloat {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(6px, -4px);
+  }
+}
+
+@keyframes flowDash {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
+.flow-live .flow-pulse {
+  animation: flowPulse 2.4s ease-in-out infinite;
+}
+
+.flow-live .flow-ping {
+  animation: flowPing 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.flow-live .flow-blink {
+  animation: flowBlink 1.6s ease-in-out infinite;
+}
+
+.flow-live .flow-dash {
+  animation: flowDash 1.6s linear infinite;
+}
+
+.flow-live .peer-float-a {
+  animation: peerFloat 4.5s ease-in-out infinite;
+}
+
+.flow-live .peer-float-b {
+  animation: peerFloat 5.1s ease-in-out infinite 0.6s;
+}
+
+.flow-live .peer-float-c {
+  animation: peerFloat 4.8s ease-in-out infinite 1.2s;
+}
+
+.flow-live .peer-float-d {
+  animation: peerFloat 5.4s ease-in-out infinite 1.8s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flow-live .flow-pulse,
+  .flow-live .flow-ping,
+  .flow-live .flow-blink,
+  .flow-live .flow-dash,
+  .flow-live .peer-float-a,
+  .flow-live .peer-float-b,
+  .flow-live .peer-float-c,
+  .flow-live .peer-float-d {
+    animation: none !important;
+  }
+}
+
+/* no theme change can start while one is still revealing. */
+.vt-running [data-theme-swatch] {
+  pointer-events: none;
+  opacity: 0.55;
+}
+
+/* MARKETING STAGE
+   The free and marketing pages do not follow the app theme. They are always
+   light, so a visitor never meets a dark page they did not ask for.
+
+   Two classes, one job each:
+
+     light-theme  the palette. Defined above, next to `:root` and `.dark-theme`.
+     marketing    the stage. Brand washes, type ramp and button shapes below.
+
+   Put both on the shell of any free page:
+
+     <div className="light-theme marketing"> … </div>
+
+   Every rule here is inside `@layer components`, so an ordinary Tailwind
+   utility still wins when a section needs to nudge something. */
+
+.marketing {
+  color-scheme: light;
+
+  /* Brand, at the intensities marketing is allowed to use. A single --brand
+     asked to be a fill, a border and ink at once is why a brand button reads
+     as a warning stripe: the fill is too loud and the ink has to fight it.
+
+     So the button is built the way the reference site builds it. The fill is a
+     light tint of the brand, the border is the same tint a few steps deeper,
+     and the ink is the brand mixed into black. Hover moves the fill and the
+     border one step each. Everything derives from --brand, so retuning the
+     brand retunes the whole set. */
+  --brand-fill: color-mix(in srgb, var(--brand) 22%, white);
+  --brand-fill-hover: color-mix(in srgb, var(--brand) 32%, white);
+  --brand-fill-active: color-mix(in srgb, var(--brand) 40%, white);
+  --brand-line-strong: color-mix(in srgb, var(--brand) 55%, white);
+  --brand-line-hover: color-mix(in srgb, var(--brand) 72%, white);
+  --brand-ink: color-mix(in srgb, var(--brand) 32%, black);
+
+  /* Washes are for beds and cards, never for a button. */
+  --brand-wash: color-mix(in srgb, var(--brand) 7%, transparent);
+  --brand-wash-strong: color-mix(in srgb, var(--brand) 13%, transparent);
+  --brand-line: color-mix(in srgb, var(--brand) 30%, transparent);
+}
+
+@layer components {
+  /* BUTTONS
+     Shape and type follow the reference site: 8px radius, 50px tall, 16px bold
+     on a 1px border, 16px inline padding, nothing that grows on hover. Three
+     variants and one size step, and that is the whole set. */
+
+  /* One box for all three, at the size the marketing sections settled on:
+     44px tall, 16px inline padding, 14px bold. A section that needs the same
+     button should use these classes rather than repeating the ramp inline. */
+  .m-btn,
+  .m-btn-outline,
+  .m-btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    height: 44px;
+    padding-inline: 16px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.2px;
+    white-space: nowrap;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      background-color 150ms ease,
+      border-color 150ms ease,
+      color 150ms ease;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .m-btn,
+    .m-btn-outline,
+    .m-btn-ghost {
+      transition: none;
+    }
+  }
+
+  /* The primary action: solid brand at 80 percent, brand border, and the
+     near-white `--solid-text` for the label. This is the button the hero and
+     the closing banner were drawing by hand. */
+  .m-btn {
+    background: color-mix(in srgb, var(--brand) 80%, transparent);
+    border-color: var(--brand);
+    color: var(--solid-text);
+  }
+
+  .m-btn:hover {
+    background: color-mix(in srgb, var(--brand) 85%, transparent);
+    border-color: var(--brand-hover);
+  }
+
+  .m-btn:active {
+    background: color-mix(in srgb, var(--brand) 90%, transparent);
+    border-color: var(--brand-hover);
+  }
+
+  /* The secondary action: brand at 7 percent into white for the fill, 55 for
+     the border, and 32 into black for the ink, so the label reads on the pale
+     fill instead of fighting it. */
+  .m-btn-outline {
+    background: color-mix(in srgb, var(--brand) 7%, white);
+    border-color: color-mix(in srgb, var(--brand) 55%, white);
+    color: color-mix(in srgb, var(--brand) 32%, black);
+  }
+
+  .m-btn-outline:hover {
+    background: color-mix(in srgb, var(--brand) 13%, white);
+    border-color: color-mix(in srgb, var(--brand) 72%, white);
+  }
+
+  /* For a third action, or one inside a card. No border until it is used. */
+  .m-btn-ghost {
+    height: 40px;
+    padding-inline: 12px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .m-btn-ghost:hover {
+    background: var(--brand-wash);
+    color: var(--brand);
+  }
+
+  /* One step down, for a button inside a card rather than under a heading. */
+  .m-btn-sm {
+    height: 40px;
+    padding-inline: 12px;
+    font-size: 14px;
+  }
+
+  .m-btn:disabled,
+  .m-btn[aria-disabled="true"],
+  .m-btn-outline:disabled,
+  .m-btn-outline[aria-disabled="true"] {
+    background: var(--tint-10);
+    border-color: transparent;
+    color: var(--text-muted);
+    cursor: not-allowed;
+  }
+
+  .m-btn:focus-visible,
+  .m-btn-outline:focus-visible,
+  .m-btn-ghost:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+  }
+
+  /* TYPE
+     The reference's ramp, with the breakpoints folded into clamp() so a
+     heading is one class instead of three. Tracking is negative throughout:
+     at these sizes the default spacing reads loose. */
+
+  /* The numbers below are measured off the reference rather than guessed.
+     On its home page the sizes appear with this frequency — 20px 55 times,
+     18px 48, 16px 17, 40px 8, 36px 5, 32px 4 — which is why body copy is 18
+     to 20 and not 15. Tracking is -0.5 on body, -1 on headings at 40, -1.4 on
+     headings at 44. Leading is 1.12 on display, 1.2 on section headings, 1.4
+     on body. Weights in use: bold 66 times, medium 14, semibold 9, normal 1. */
+
+  .m-display {
+    font-family: var(--font-sans);
+    font-size: clamp(2.125rem, 4.2vw, 2.75rem); /* 34 → 44 */
+    font-weight: 700;
+    line-height: 1.12;
+    letter-spacing: -1px;
+    color: var(--text-primary);
+    text-wrap: balance;
+  }
+
+  .m-h2 {
+    font-family: var(--font-sans);
+    font-size: clamp(2rem, 3.6vw, 2.5rem); /* 32 → 40 */
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -1px;
+    color: var(--text-primary);
+    text-wrap: balance;
+  }
+
+  .m-h3 {
+    font-family: var(--font-sans);
+    font-size: clamp(1.5rem, 2.6vw, 2.25rem); /* 24 → 36 */
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.6px;
+    color: var(--text-primary);
+    text-wrap: balance;
+  }
+
+  /* The standfirst under a heading. */
+  .m-lead {
+    font-family: var(--font-sans);
+    font-size: clamp(1.125rem, 1.6vw, 1.375rem); /* 18 → 22 */
+    line-height: 1.4;
+    letter-spacing: -0.3px;
+    color: var(--text-secondary);
+    text-wrap: pretty;
+  }
+
+  .m-body {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+  }
+
+  /* The label above a card title. Brand, at reading weight, never bold. */
+  .m-eyebrow {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.3;
+    letter-spacing: -0.2px;
+    color: var(--brand);
+  }
+
+  /* The second half of a two-tone heading: "Build the way <you need.>" */
+  .m-quiet {
+    color: var(--text-muted);
+  }
+
+  .m-link {
+    color: var(--brand);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .m-link:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  /* SURFACES
+     A card is a brand wash fading into the page, not a grey panel. That is what
+     keeps a light marketing page from reading as a settings screen. */
+
+  .m-card {
+    border: 1px solid var(--brand-line);
+    border-radius: 12px;
+    background: linear-gradient(to bottom, var(--brand-wash), transparent 70%);
+  }
+
+  /* A neutral panel, for anything that holds a screenshot or a table. */
+  .m-panel {
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    background: var(--bg-surface);
+  }
+
+  /* A small inline label: the "Real-time by default" pill. */
+  .m-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    height: 28px;
+    padding-inline: 10px;
+    border: 1px solid var(--brand-line);
+    border-radius: 999px;
+    background: var(--brand-wash);
+    color: var(--brand);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+  }
+}
+
+/* One reduced-motion rule for the whole set, rather than a utility on every
+   usage. Nothing here moves, so this only has to switch the transitions off. */
+@media (prefers-reduced-motion: reduce) {
+  .m-btn,
+  .m-btn-outline,
+  .m-btn-ghost,
+  .m-link {
+    transition: none;
+  }
+}
+
+/* BRAND HOVER
+   One thing and one thing only: the background, and only under the pointer.
+   The button keeps its border, its label colour, its shadow and its size —
+   nothing else moves. The navbar and the footer CTAs use it so their resting
+   look stays exactly as it was.
+
+   Unlayered on purpose. Tailwind's `hover:bg-*` lives in the utilities layer,
+   which beats anything in `@layer components`, so a class that has to win
+   against a button's own hover rule has to sit outside every layer.
+
+   Declared after `--brand` is in scope on the element, which it is anywhere
+   inside `.light-theme` or `.marketing`. */
+.m-glass-hover:hover {
+  background: color-mix(in srgb, var(--brand) 12%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .m-glass-hover {
+    transition: none;
+  }
+}
+
+/* ── SMOOTH SCROLL ──────────────────────────────────────────────────────
+   Lenis lerps the window scroll so a wheel notch glides instead of jumping.
+   These four rules are the library's own stylesheet; they are inlined here
+   rather than imported so the whole cascade stays in one file.
+
+   The speed itself is not set here — it is `LERP` in
+   `src/lib/useSmoothScroll.ts`, mounted from `PublicLayout`. Nothing on the
+   dashboard is affected, and anything that must keep native scrolling can opt
+   out with `data-lenis-prevent`. */

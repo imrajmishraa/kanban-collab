@@ -49,6 +49,12 @@ export default function DocsSidebarRight({
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
+
+    /* The list has its own scroll offset, kept in step with the section being
+       read. Scrolling the page back to the top left the column still parked at
+       whatever section you had reached, so the first entries never came back
+       into view. Take it home too. */
+    navRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   /* Keep the active entry visible inside the list without touching the page.
@@ -61,8 +67,16 @@ export default function DocsSidebarRight({
     const entry = activeRef.current;
     if (!nav || !entry) return;
 
-    const top = entry.offsetTop;
-    const bottom = top + entry.offsetHeight;
+    /* Measured with rects, not `offsetTop`: the list is not positioned, so
+       `offsetTop` is taken from the nearest positioned ancestor — the sticky
+       column — and carried an extra label's height. That scrolled the list a
+       row too far and hid the first entries. Rects are relative to the
+       viewport, so the subtraction is honest wherever the column sits. */
+    const navRect = nav.getBoundingClientRect();
+    const entryRect = entry.getBoundingClientRect();
+
+    const top = entryRect.top - navRect.top + nav.scrollTop;
+    const bottom = top + entryRect.height;
     const margin = 8;
 
     if (top - margin < nav.scrollTop) {
@@ -106,7 +120,10 @@ export default function DocsSidebarRight({
 
   return (
     <aside className="hidden w-60 shrink-0 xl:block">
-      <div className="sticky top-12 py-8 sm:top-16">
+      {/* The offset clears the sticky navbar (h-16, sm:h-17) with a little air.
+          Smaller than that and the column's top — the "On This Page" label —
+          slides in behind the bar and is unreadable. */}
+      <div className="sticky top-18 py-8 sm:top-19">
         <p className="text-[13px] font-bold text-(--text-primary)">
           On This Page
         </p>
@@ -140,9 +157,9 @@ export default function DocsSidebarRight({
                        and the smaller step. The top-level entries keep a little
                        air above them so the groups separate. */
                     isNested
-                      ? "py-1 pl-4 text-[13px]"
-                      : "py-1.5 text-[14px] font-semibold",
-                    index === 0 ? "" : isNested ? "" : "mt-2",
+                      ? "py-0.75 pl-4 text-[12px]"
+                      : "py-1.25 text-[13.5px] font-semibold",
+                    index === 0 ? "" : isNested ? "" : "mt-1.5",
                     isActive
                       ? "font-semibold text-blue-500"
                       : isNested

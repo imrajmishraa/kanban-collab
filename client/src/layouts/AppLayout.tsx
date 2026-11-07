@@ -30,8 +30,7 @@ export default function AppLayout() {
   /* Hover mode opens the rail *over* the page instead of pushing it, so while
      the pointer is on the rail the outlet gets a little breathing room back. */
   const sidebarMode = useSidebarState((s) => s.mode);
-  const sidebarHovering = useSidebarState((s) => s.hovering);
-  const railOverPage = sidebarMode === "hover" && sidebarHovering;
+  const railOverPage = sidebarMode === "hover";
 
   const searchOpen = useSearchStore((s) => s.open);
   const openSearch = useSearchStore((s) => s.openSearch);
@@ -98,7 +97,7 @@ export default function AppLayout() {
             "ml-0 pt-14 md:pt-0",
             collapsed ? "md:ml-18" : "md:ml-64",
             /* Same 200ms as the rail's own slide, so the two move together. */
-            railOverPage && "md:px-6",
+            railOverPage && "md:px-8 md:ml-4",
           ].join(" ")}
         >
           <DashboardNavbar />

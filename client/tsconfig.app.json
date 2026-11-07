@@ -19,7 +19,8 @@
       "@/*": ["./src/*"],
       "@app/*": ["./src/app/*"],
       "@api/*": ["./src/api/*"],
-      "@components/*": ["./src/components/*"]
+      "@components/*": ["./src/components/*"],
+      "@styles/*": ["./src/styles/*"]
     },
 
     "noUnusedLocals": false,

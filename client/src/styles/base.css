@@ -1,0 +1,104 @@
+/* BASE */
+
+html {
+  background: var(--bg-root);
+  font-family: var(--font-sans);
+}
+
+body {
+  margin: 0;
+  background: var(--bg-root);
+  color: var(--text-primary);
+}
+
+::selection {
+  background: var(--brand-muted);
+  color: var(--text-primary);
+}
+
+/* CURSOR */
+
+button,
+[role="button"],
+a,
+[role="menuitem"],
+[role="option"],
+[role="tab"],
+label[for],
+summary,
+select,
+input[type="checkbox"],
+input[type="radio"],
+input[type="submit"],
+input[type="button"],
+input[type="reset"] {
+  cursor: pointer;
+}
+
+button:disabled,
+[role="button"][aria-disabled="true"],
+input:disabled,
+select:disabled {
+  cursor: not-allowed;
+}
+
+/* SCROLLBAR */
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+/* FOCUS */
+
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/**
+ * Text fields are excluded from the brand outline.
+ *
+ * On a field the outline is drawn 2px outside the border, so a focused input
+ * shows two lines at once and the orange reads as a second border. Fields
+ * already signal focus through their own border and caret, so the outline is
+ * dropped for them only. Buttons, links and other controls keep it.
+ *
+ * This rule has to live here rather than as a utility: `@import "tailwindcss"`
+ * puts utilities in `@layer utilities`, and unlayered CSS always wins over
+ * layered CSS, so `focus-visible:outline-none` cannot override the rule above.
+ */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+}
+
+/* LINKS */
+
+/* In `@layer base` on purpose. Unlayered, this rule beats every `text-*`
+   utility on every link: Tailwind v4 puts utilities in `@layer utilities`, and
+   unlayered CSS wins over any layer no matter the specificity. The symptom is a
+   sidebar where the link rows come out in the page's ink while the button rows
+   beside them are correctly coloured — `<Link>` renders an `<a>`, so only the
+   links are hit, and the active state's blue never appears at all. Inside
+   `base`, a link with no colour class still inherits, and a link with one gets
+   the colour it asked for. */
