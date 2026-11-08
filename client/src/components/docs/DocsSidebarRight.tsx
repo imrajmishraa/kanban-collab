@@ -159,7 +159,7 @@ export default function DocsSidebarRight({
                     isNested
                       ? "py-0.75 pl-4 text-[12px]"
                       : "py-1.25 text-[13.5px] font-semibold",
-                    index === 0 ? "" : isNested ? "" : "mt-1.5",
+                    index === 0 ? "" : isNested ? "" : "mt-1",
                     isActive
                       ? "font-semibold text-blue-500"
                       : isNested
