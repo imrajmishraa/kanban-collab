@@ -94,7 +94,7 @@
   color: transparent;
   -webkit-text-fill-color: transparent;
 
-  animation: splashShine 1.2s linear infinite;
+  animation: splashShine 1.8s linear infinite;
 }
 
 /* Same entrance, no pulse — for the static case. */

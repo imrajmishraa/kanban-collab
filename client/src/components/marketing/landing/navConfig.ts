@@ -108,19 +108,27 @@ export const SOLUTIONS: NavPage[] = [
   { title: "All solutions", href: "/solutions", icon: LayersIcon },
   {
     title: "How it works",
-    href: "/solutions#how-it-works",
+    href: "/how-it-works",
     icon: Rocket01Icon,
   },
   {
-    title: "Engineering",
-    href: "/solutions#engineering",
+    title: "By team",
+    href: "/solutions#teams",
     icon: DashboardSquare01Icon,
   },
-  { title: "Product", href: "/solutions#product", icon: PencilEdit02Icon },
-  { title: "Design", href: "/solutions#design", icon: PencilEdit02Icon },
   {
-    title: "Open source teams",
-    href: "/solutions#open-source",
+    title: "By workflow",
+    href: "/solutions#workflows",
+    icon: PencilEdit02Icon,
+  },
+  {
+    title: "Deployment",
+    href: "/solutions#deployment",
+    icon: CloudServerIcon,
+  },
+  {
+    title: "By constraint",
+    href: "/solutions#constraints",
     icon: GithubIcon,
   },
 ];
@@ -150,7 +158,7 @@ export const PUBLIC_PAGES: NavPage[] = [
   { title: "Privacy policy", href: "/privacy", icon: BiometricAccessIcon },
   { title: "Help", href: "/help", icon: MessageQuestionIcon },
   { title: "Feedback", href: "/feedback", icon: SmilePlusIcon },
-  { title: "Github Team", href: "/solutions#open-source", icon: GithubIcon },
+  { title: "Github Team", href: "/solutions#constraints", icon: GithubIcon },
 ];
 
 /**
@@ -170,7 +178,7 @@ export const QUICK_PAGES: NavPage[] = PUBLIC_PAGES.filter(
       "/tour",
       "/feedback",
       "/testimonials",
-      "/solutions#open-source",
+      "/solutions#constraints",
     ].includes(page.href),
 );
 
