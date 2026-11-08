@@ -3,6 +3,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import {
   LayersIcon,
   Layout01Icon,
+  LayoutListIcon,
   ListChecksIcon,
   LogsIcon,
   Tick02Icon,
@@ -21,7 +22,7 @@ const VIEWS: { id: View; label: string; icon: typeof UserGroupIcon }[] = [
 ];
 
 const EXTRAS: { id: string; label: string; icon: typeof Layout01Icon }[] = [
-  { id: "compact", label: "Compact cards", icon: Layout01Icon },
+  { id: "compact", label: "Compact cards", icon: LayoutListIcon },
   { id: "presence", label: "Presence dots", icon: UserGroupIcon },
   { id: "log", label: "Activity trail", icon: LogsIcon },
 ];
