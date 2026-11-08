@@ -1,76 +1,34 @@
-import { lazy, Suspense } from "react";
-
-import PageHero from "@/features/marketing/components/shared/PageHero";
 import PageShell from "@/features/marketing/components/shared/PageShell";
-import GridSection from "@/features/marketing/components/shared/GridSection";
+import HomePricing from "@/features/marketing/components/home/HomePricing";
+import HelloThereSection from "@/features/marketing/components/pricing/HelloThereSection";
+import PricingCta from "@/features/marketing/components/pricing/PricingCta";
+import PricingFaq from "@/features/marketing/components/pricing/PricingFaq";
+import PricingHero from "@/features/marketing/components/pricing/PricingHero";
 
-const HomePricing = lazy(
-  () => import("@/features/marketing/components/home/HomePricing"),
-);
-const HomeFAQ = lazy(
-  () => import("@/features/marketing/components/home/HomeFAQ"),
-);
-const HomeClosingCTA = lazy(
-  () => import("@/features/marketing/components/home/HomeClosingCTA"),
-);
-
-const INCLUDED = [
-  {
-    title: "Unlimited boards",
-    body: "As many boards and columns as the work needs. No per-board limit anywhere in the product.",
-  },
-  {
-    title: "Real-time collaboration",
-    body: "Live cursors, live cards, and a CRDT underneath so two people editing the same card never overwrite each other.",
-  },
-  {
-    title: "Self-hosting",
-    body: "The whole stack — client, API, Mongo, Redis — ships in the repo and runs with one command.",
-  },
-  {
-    title: "Comments and mentions",
-    body: "Discussion stays on the card it belongs to, with the activity feed keeping the history.",
-  },
-  {
-    title: "Roles and invites",
-    body: "Owner, admin, member, viewer. Invites are links, and a role decides what the link can do.",
-  },
-  {
-    title: "Your data, your database",
-    body: "Nothing leaves the Mongo instance you point it at. There is no vendor in the middle.",
-  },
-];
-
+/**
+ * Pricing — five bands, in the order a purchase decision actually runs:
+ *
+ *   1. the claim            (PricingHero)
+ *   2. the price list       (HomePricing, the same band the home page uses)
+ *   3. the licence questions (PricingFaq)
+ *   4. the letter           (HelloThereSection — one person answering)
+ *   5. the ask              (PricingCta — two quotes and one button)
+ *
+ * The plans band is imported rather than copied: a price that appears twice in
+ * a codebase is a price that will disagree with itself within a month.
+ */
 export default function PricingPage() {
   return (
     <PageShell>
-      <PageHero
-        eyebrow="Pricing"
-        title="Free while it is open source."
-        accentTitle="Paid only if you want someone else to run it."
-        lead="The software has no licence fee. What costs money is hosting, and you can do that yourself."
-        primary={{ label: "Start free", to: "/auth/register" }}
-        secondary={{ label: "Read the docs", to: "/docs" }}
-      />
+      <PricingHero />
 
-      <Suspense fallback={null}>
-        <HomePricing themeLock="light" />
-      </Suspense>
+      <HomePricing themeLock="light" />
 
-      <GridSection
-        eyebrow="In every plan"
-        title="What you get either way"
-        lead="No feature is held back to make the paid tier look better."
-        items={INCLUDED}
-      />
+      <PricingFaq />
 
-      <Suspense fallback={null}>
-        <HomeFAQ themeLock="light" />
-      </Suspense>
+      <HelloThereSection photo="https://ik.imagekit.io/kanban/Profile_WvmehTW_J.JPG" />
 
-      <Suspense fallback={null}>
-        <HomeClosingCTA themeLock="light" />
-      </Suspense>
+      <PricingCta />
     </PageShell>
   );
 }
