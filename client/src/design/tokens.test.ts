@@ -1,26 +1,41 @@
 /// <reference types="node" />
-// This suite reads index.css and design.md off disk, so it needs the Node
+// This suite reads the stylesheet and design.md off disk, so it needs the Node
 // types. The app project deliberately does not include them (they would put
 // `process` and `Buffer` in scope for browser code); this reference pulls them
 // in for this file only.
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 
 import { describe, expect, it } from "vitest";
 
 /**
  * The design system's contract, checked against its own documentation.
  *
- * `design.md` publishes the token set, the type scale and 27 component recipes,
- * and `src/index.css` is where those tokens actually live. Nothing keeps the two
- * in step, so they drift the moment someone adds a token in a hurry — which is
- * how a design doc becomes a historical document. These tests make the doc
- * executable: if the code and the document disagree, this file fails.
+ * `design.md` publishes the token set, the type scale and the component
+ * recipes, and the tokens themselves live in `src/styles/tokens.css`. Nothing
+ * keeps the two in step, so they drift the moment someone adds a token in a
+ * hurry — which is how a design doc becomes a historical document. These tests
+ * make the doc executable: if the code and the document disagree, this file
+ * fails.
  *
  * It also checks the accessibility claims in the doc's table, so the numbers
  * there are measured rather than remembered.
  */
 
-const css = readFileSync(new URL("../index.css", import.meta.url), "utf8");
+/* ── the stylesheet ────────────────────────────────────────────────────── */
+
+/* The design system is split across partials, and `index.css` is imports only.
+   Read the whole folder rather than one file, so a token that moves to a new
+   partial is still found — and so this suite does not fail for the boring
+   reason that someone tidied the imports. */
+const stylesDir = new URL("../styles/", import.meta.url);
+
+const css = [
+  readFileSync(new URL("../index.css", import.meta.url), "utf8"),
+  ...readdirSync(stylesDir)
+    .filter((name) => name.endsWith(".css"))
+    .sort()
+    .map((name) => readFileSync(new URL(name, stylesDir), "utf8")),
+].join("\n\n");
 
 /* The token spec lives at the repo root, one level above `client/`. Accept it
    beside the client too, so moving it does not break the contract test — and say
@@ -33,7 +48,7 @@ const designPath = ((): URL => {
   if (!existsSync(url)) {
     throw new Error(
       `design.md not found at ${url.pathname}. This suite checks the token spec ` +
-        "against index.css, so it needs the spec at the repo root, one level " +
+        "against the stylesheet, so it needs the spec at the repo root, one level " +
         "above client/. Add the file, or delete this test if the spec is not " +
         "being kept.",
     );
@@ -43,12 +58,18 @@ const designPath = ((): URL => {
 
 const design = readFileSync(designPath, "utf8").replace(/^\uFEFF/, "");
 
-/* ── index.css ─────────────────────────────────────────────────────────── */
+/* ── the stylesheet's blocks ───────────────────────────────────────────── */
 
 /** `--token: value;` pairs from one rule block, e.g. `:root { … }`. */
 function block(source: string, selector: string): Map<string, string> {
   const start = source.indexOf(`${selector} {`);
-  if (start === -1) throw new Error(`no ${selector} block in index.css`);
+  if (start === -1) {
+    throw new Error(
+      `no ${selector} block in the stylesheet. The tokens live in ` +
+        "src/styles/tokens.css; if they moved again, point this suite at the " +
+        "file that holds them.",
+    );
+  }
   const body = source.slice(start, source.indexOf("\n}", start));
   const tokens = new Map<string, string>();
   for (const m of body.matchAll(/^\s*(--[\w-]+):\s*([^;]+);/gm)) {
@@ -62,10 +83,17 @@ const light = block(css, ".light-theme");
 
 /* ── design.md ─────────────────────────────────────────────────────────── */
 
-/** The lines of a top-level `key:` block, as `name -> value`. */
-function section(name: string): Map<string, string> {
+/**
+ * The lines of a top-level `key:` block, as `name -> value`.
+ *
+ * `optional` is for a block a doc is allowed not to have yet — an older spec
+ * without the marketing stage should not fail the suite, it should just have
+ * nothing to resolve against.
+ */
+function section(name: string, { optional = false } = {}): Map<string, string> {
   const start = design.indexOf(`\n${name}:\n`);
   if (start === -1) {
+    if (optional) return new Map();
     throw new Error(
       `no ${name}: block in the design doc it read — ${designPath.pathname} ` +
         `(${design.length} bytes, first line: ${JSON.stringify(design.split("\n")[0])})`,
@@ -95,6 +123,9 @@ const docColors = section("colors");
 const docLight = section("light");
 const docRounded = section("rounded");
 const docTypography = section("typography");
+/* The marketing stage derives its own set from `--brand`, and the recipes
+   reference those values, so they are a token group like any other. */
+const docMarketing = section("marketing", { optional: true });
 
 /** Every `'{colors.x}'` / `'{typography.x}'` / `'{rounded.x}'` in the recipes. */
 function recipeRefs(): Array<{ group: string; key: string }> {
@@ -152,7 +183,7 @@ const ratio = (token: string, theme: "dark" | "light") => {
 
 /* ── the contract ──────────────────────────────────────────────────────── */
 
-describe("design.md mirrors index.css", () => {
+describe("design.md mirrors the stylesheet", () => {
   it("documents every token the dark theme defines", () => {
     const undocumented = [...dark.keys()].filter(
       (token) => !docColors.has(token.replace(/^--/, "")),
@@ -195,6 +226,7 @@ describe("design.md mirrors index.css", () => {
       colors: docColors,
       typography: docTypography,
       rounded: docRounded,
+      marketing: docMarketing,
     };
     const dangling = recipeRefs().filter(
       (ref) => !groups[ref.group]?.has(ref.key),
