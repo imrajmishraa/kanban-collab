@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowRight01Icon, UserIcon } from "@hugeicons/core-free-icons";
 
@@ -143,6 +143,8 @@ export function Shortcut({ children }: { children: ReactNode }) {
 interface ProfileCardProps {
   name: string;
   mail: string;
+  /** A profile image URL; without one the placeholder face is drawn. */
+  avatar?: string;
   pro?: boolean;
 }
 
@@ -153,10 +155,15 @@ interface ProfileCardProps {
  * is what makes the account popover read as a card stack rather than a list
  * with a heading.
  */
-export function ProfileCard({ name, mail, pro = true }: ProfileCardProps) {
+export function ProfileCard({
+  name,
+  mail,
+  avatar,
+  pro = true,
+}: ProfileCardProps) {
   return (
     <div className="flex items-center gap-2 rounded-xl border border-(--hairline) bg-(--bg-surface) px-2.5 py-2 text-(--text-primary) sm:gap-2.5 sm:px-3 sm:py-2.5">
-      <PersonAvatar className="size-7 sm:size-8" />
+      <PersonAvatar src={avatar} className="size-7 sm:size-8" />
       <div className="min-w-0">
         <div className="truncate text-[12px] font-semibold tracking-[-0.2px] sm:text-[14px]">
           {name}
@@ -170,14 +177,76 @@ export function ProfileCard({ name, mail, pro = true }: ProfileCardProps) {
   );
 }
 
-/** The avatar a menu shows before the person has uploaded a photo. */
-export function PersonAvatar({ className = "" }: { className?: string }) {
+interface PersonAvatarProps {
+  /**
+   * A profile image URL. With one, the photo fills the circle; without one, the
+   * placeholder face is drawn instead — which is what the product shows before
+   * someone uploads anything.
+   */
+  src?: string;
+  /** Only needed when the avatar is the only thing naming the person. */
+  alt?: string;
+  /**
+   * The hairline around the placeholder. Turn it off when the caller draws its
+   * own ring, so the two edges do not sit one inside the other.
+   */
+  bordered?: boolean;
+  className?: string;
+}
+
+/**
+ * A round avatar that takes a URL.
+ *
+ * The image is clipped by the circle rather than being a circle itself, so a
+ * square or oversized source still lands correctly. A URL that fails to load
+ * falls back to the placeholder face instead of a broken-image glyph, and the
+ * failure is remembered against the URL — pass a new `src` and it tries again.
+ */
+export function PersonAvatar({
+  src,
+  alt = "",
+  bordered = true,
+  className = "",
+}: PersonAvatarProps) {
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const showImage = Boolean(src) && src !== failedSrc;
+
   return (
     <span
-      aria-hidden="true"
-      className={`grid size-8 shrink-0 place-items-center rounded-full border border-(--hairline) bg-(--tint-4) text-(--text-subtle) ${className}`}
+      className={[
+        "grid size-8 shrink-0 place-items-center overflow-hidden rounded-full",
+        "bg-(--tint-4) text-(--text-subtle)",
+        // A photo carries its own edge; the placeholder needs the hairline to
+        // sit on the page. A ring around a photo belongs to the caller, which is
+        // how the letter draws its thin offset circle.
+        showImage || !bordered ? "" : "border border-(--hairline)",
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
     >
-      <HugeiconsIcon icon={UserIcon} size={16} strokeWidth={1.6} />
+      {showImage ? (
+        <img
+          src={src}
+          alt={alt}
+          loading="lazy"
+          decoding="async"
+          // A CDN that restricts by domain answers 403 to a localhost referer,
+          // and the browser shows a broken image rather than the placeholder.
+          // Sending no referer at all is what makes a hosted photo load in dev.
+          referrerPolicy="no-referrer"
+          aria-hidden={alt === "" ? "true" : undefined}
+          onError={() => setFailedSrc(src ?? null)}
+          className="size-full object-cover object-center"
+        />
+      ) : (
+        <HugeiconsIcon
+          icon={UserIcon}
+          size={16}
+          strokeWidth={1.6}
+          aria-hidden="true"
+        />
+      )}
     </span>
   );
 }
@@ -185,14 +254,21 @@ export function PersonAvatar({ className = "" }: { className?: string }) {
 interface AccountHeaderProps {
   name: string;
   mail: string;
+  /** A profile image URL; without one the placeholder face is drawn. */
+  avatar?: string;
   /** The plan tag. Off for the plain account rows in the share dialog. */
   pro?: boolean;
 }
 
-export function AccountHeader({ name, mail, pro = false }: AccountHeaderProps) {
+export function AccountHeader({
+  name,
+  mail,
+  avatar,
+  pro = false,
+}: AccountHeaderProps) {
   return (
     <div className="flex items-center gap-2 px-2.5 py-2.5 sm:gap-2.5 sm:px-3.5 sm:py-3">
-      <PersonAvatar className="size-7 sm:size-8" />
+      <PersonAvatar src={avatar} className="size-7 sm:size-8" />
       <div className="min-w-0">
         <div className="truncate text-[12px] font-semibold tracking-[-0.2px] sm:text-[14px]">
           {name}

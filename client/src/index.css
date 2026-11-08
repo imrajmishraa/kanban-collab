@@ -11,4 +11,8 @@
 @import "./styles/theme.css";
 @import "./styles/base.css";
 @import "./styles/components.css";
+/* The two prose registers the public pages are set in. `ProseSection` wraps its
+   children in `.marketing-prose`, so without this line every marketing page
+   renders as browser-default text — the class was defined and never imported. */
+@import "./styles/marketing-prose.css";
 @import "./styles/vendor.css";

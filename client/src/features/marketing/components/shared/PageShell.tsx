@@ -7,7 +7,7 @@ import type { ReactNode } from "react";
  */
 export default function PageShell({ children }: { children: ReactNode }) {
   return (
-    <div className="light-theme marketing relative min-h-screen bg-(--bg-root) text-(--text-primary)">
+    <div className="light-theme marketing relative min-h-screen bg-(--bg-root) text-(--text-primary) w-full max-w-384 mx-auto border-x border-(--hairline) ">
       <main className="relative z-0">{children}</main>
     </div>
   );
