@@ -42,3 +42,14 @@ export { default as ExamplesHero } from "./components/examples/ExamplesHero";
 export { default as NotificationsExample } from "./components/examples/NotificationsExample";
 export { default as ShareDialogExample } from "./components/examples/ShareDialogExample";
 export { default as ViewsSection } from "./components/examples/ViewsSection";
+
+/* Tour: a hero, six steps and a closing band. The step layout and the icon pool
+   are internal — a page outside this folder only ever needs the bands. */
+export { default as TourHero } from "./components/tour/TourHero";
+export { default as TourCta } from "./components/tour/TourCta";
+export { default as StepWorkspace } from "./components/tour/StepWorkspace";
+export { default as StepColumns } from "./components/tour/StepColumns";
+export { default as StepCards } from "./components/tour/StepCards";
+export { default as StepActivity } from "./components/tour/StepActivity";
+export { default as StepMembers } from "./components/tour/StepMembers";
+export { default as StepSelfHost } from "./components/tour/StepSelfHost";

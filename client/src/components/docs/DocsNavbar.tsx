@@ -58,6 +58,7 @@ export default function DocsNav({ onOpenNav, navOpen }: DocsNavProps) {
         <div className="ml-auto flex items-center gap-1.5 sm:gap-2.5">
           <Link
             to="/home"
+            target="_blank"
             className="
               hidden items-center gap-1.5 px-2.5 py-2 text-[13px]
               text-(-glass) text-(--text-subtle) hover:text-(--text-muted) md:inline-flex
