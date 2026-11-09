@@ -134,7 +134,7 @@ export default function DocsSidebarRight({
         <nav
           ref={navRef}
           aria-label="On this page"
-          className="mt-4 flex max-h-[calc(100vh-17rem)] flex-col overflow-y-auto overscroll-contain pr-1"
+          className="mt-3 flex max-h-[calc(100vh-17rem)] flex-col overflow-y-auto overscroll-contain pr-1"
         >
           {items.length === 0 ? (
             <p className="text-[14px] text-(--text-muted)">
@@ -157,9 +157,9 @@ export default function DocsSidebarRight({
                        and the smaller step. The top-level entries keep a little
                        air above them so the groups separate. */
                     isNested
-                      ? "py-0.75 pl-4 text-[12px]"
-                      : "py-1.25 text-[13.5px] font-semibold",
-                    index === 0 ? "" : isNested ? "" : "mt-1",
+                      ? "py-0.5 pl-4 text-[12px]"
+                      : "py-0.75 text-[13px] font-semibold",
+                    index === 0 ? "" : isNested ? "" : "mt-px",
                     isActive
                       ? "font-semibold text-blue-500"
                       : isNested

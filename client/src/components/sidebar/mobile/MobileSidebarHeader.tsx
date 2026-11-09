@@ -79,7 +79,7 @@ export default function SidebarMobileHeader({
     >
       <div className="mx-auto flex h-16 w-full items-center gap-3 px-4 sm:h-17 sm:gap-4 sm:px-6">
         {/* ── LEFT: brand ─────────────────────────────────────────── */}
-        <Link to="/home" className="flex shrink-0 items-center gap-2.5">
+        <Link to="/workspaces" className="flex shrink-0 items-center gap-2.5">
           <span className="flex shrink-0 items-center justify-center">
             <KanbanIcon size={24} variant="upper" theme="auto" />
           </span>

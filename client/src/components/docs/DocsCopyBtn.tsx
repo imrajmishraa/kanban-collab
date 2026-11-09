@@ -10,6 +10,7 @@ import {
   Tick02Icon,
 } from "@hugeicons/core-free-icons";
 
+import { toastError, toastSuccess } from "@/lib/toast";
 import { cn } from "@/utils/cn";
 
 const BLOCK = {
@@ -71,13 +72,24 @@ export default function DocsCopyBtn({ contentRef }: DocsCopyPageProps) {
       await navigator.clipboard.writeText(toMarkdown(article));
       setCopied(true);
       setMenuOpen(false);
+      toastSuccess(
+        "Copied page as Markdown",
+        "Paste it into ChatGPT, Claude, an issue or a doc.",
+      );
 
       if (resetTimer.current !== null) window.clearTimeout(resetTimer.current);
       resetTimer.current = window.setTimeout(() => setCopied(false), 2000);
-    } catch {
+    } catch (error) {
       /* Clipboard access can be refused — an insecure origin, or a browser
-         setting. Saying nothing is better than claiming it worked. */
+         setting. The button goes back to "Copy page"; the toast is what tells
+         the reader it did not work, because a silent no-op reads as a click
+         that missed. A DOMException's message is browser internals, so it is
+         swapped for the fallback rather than shown. */
       setCopied(false);
+      toastError(
+        error instanceof DOMException ? undefined : error,
+        "Couldn't copy — the browser refused clipboard access.",
+      );
     }
   }, [contentRef]);
 
