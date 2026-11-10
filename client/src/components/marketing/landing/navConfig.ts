@@ -19,8 +19,6 @@ import {
   SmilePlusIcon,
   Home03Icon,
   BellRingIcon,
-  ApiIcon,
-  House02Icon,
   CloudServerIcon,
   NewTwitterIcon,
   InstagramIcon,
@@ -107,18 +105,13 @@ export const NAV_LINKS: NavLink[] = [
 export const SOLUTIONS: NavPage[] = [
   { title: "All solutions", href: "/solutions", icon: LayersIcon },
   {
-    title: "How it works",
-    href: "/how-it-works",
-    icon: Rocket01Icon,
-  },
-  {
     title: "By team",
     href: "/solutions/teams",
     icon: UserGroupIcon,
   },
   {
     title: "By workflow",
-    href: "/solutions/workflows",
+    href: "/solutions/workflow",
     icon: PencilEdit02Icon,
   },
   {
@@ -428,31 +421,6 @@ export const FOOTER_COLUMNS: FooterColumn[] = [
       { title: "Terms of service", href: "/terms" },
     ],
   },
-];
-
-/**
- * The row of square buttons under the columns: the places a developer actually
- * goes next. Brand marks for AI tools would have to be drawn by hand here, so
- * these point at the project's own surfaces instead.
- */
-export const FOOTER_TOOLS: NavPage[] = [
-  { title: "Documentation", href: DOCS, icon: BookOpen02Icon },
-  {
-    title: "API reference",
-    href: `${REPO}/blob/main/docs/api-reference.md`,
-    icon: ApiIcon,
-  },
-  {
-    title: "Architecture",
-    href: `${REPO}/blob/main/docs/architecture.md`,
-    icon: House02Icon,
-  },
-  {
-    title: "Self-hosting",
-    href: `${REPO}/blob/main/docs/deployment.md`,
-    icon: CloudServerIcon,
-  },
-  { title: "Repository", href: REPO, icon: GithubIcon },
 ];
 
 /** Contact and legal, kept out of the columns so the base row stays short. */

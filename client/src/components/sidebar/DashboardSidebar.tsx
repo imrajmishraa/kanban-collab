@@ -11,7 +11,7 @@ export const MobileSidebar = lazy(
 );
 
 import SidebarMobileHeader from "@/components/sidebar/mobile/SidebarMobileHeader";
-import { SidebarNotifications } from "@/components/sidebar/SidebarNotifications";
+import SidebarNotifications from "@/components/sidebar/SidebarNotifications";
 
 import { useWorkspaces } from "@/hooks/useWorkspaces";
 import { useBoards, boardKeys, BOARDS_LIST_LIMIT } from "@/hooks/useBoards";

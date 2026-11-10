@@ -22,7 +22,7 @@ interface SidebarNotificationsProps {
  * `fixed` children — the sheet would have been positioned against the bar
  * instead of the viewport.
  */
-export function SidebarNotifications({
+export default function SidebarNotifications({
   open,
   onClose,
 }: SidebarNotificationsProps) {
@@ -72,5 +72,3 @@ export function SidebarNotifications({
     </>
   );
 }
-
-export default SidebarNotifications;

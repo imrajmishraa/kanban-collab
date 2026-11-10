@@ -28,9 +28,13 @@ export { default as PricingFaq } from "./components/pricing/PricingFaq";
 export { default as PricingHero } from "./components/pricing/PricingHero";
 
 /* Solutions: a catalogue of four categories. */
-export { default as CategoryTabs } from "./components/solutions/CategoryTabs";
 export { default as SolutionSection } from "./components/solutions/SolutionSection";
 export { default as SolutionsHero } from "./components/solutions/SolutionsHero";
+export { default as SolutionsOverview } from "./components/solutions/SolutionsOverview";
+export { default as SolutionsSplit } from "./components/solutions/SolutionsSplit";
+export { default as SolutionsTabs } from "./components/solutions/SolutionsTabs";
+export { default as SolutionsWhy } from "./components/solutions/SolutionsWhy";
+
 export { CATEGORIES } from "./components/solutions/solutions";
 
 /* Examples: the gallery of UI drawn from the system. */

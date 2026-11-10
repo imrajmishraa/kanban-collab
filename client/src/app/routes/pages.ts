@@ -86,6 +86,11 @@ export const PricingPage = lazy(() => import("@/pages/marketing/PricingPage"));
 export const SolutionsPage = lazy(
   () => import("@/pages/marketing/SolutionsPage"),
 );
+
+export const SolutionCategoryPage = lazy(
+  () => import("@/pages/marketing/SolutionCategoryPage"),
+);
+
 export const TestimonialsPage = lazy(
   () => import("@/pages/marketing/TestimonialsPage"),
 );
