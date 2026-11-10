@@ -41,7 +41,7 @@ export default function CategoryTabs() {
   }, []);
 
   return (
-    <div className="sticky top-14 z-30 border-b border-(--hairline) bg-(--bg-surface) md:top-[68px]">
+    <div className="sticky top-14 z-30 border-b border-(--hairline) bg-(--bg-surface) md:top-17">
       <div className="mx-auto w-full max-w-384 px-4 sm:px-6 lg:px-8">
         <div className="flex gap-1 overflow-x-auto">
           {CATEGORIES.map((category) => {

@@ -1,33 +1,47 @@
 /**
- * The opening band. One line, one qualifier in the quieter ink, one sentence
- * under it — the same shape every marketing page in this section opens with.
+ * The opening band, centred and quiet: a title, then a line under it in the
+ * muted ink. The reference page opens this way — "Integrations", then what it
+ * means — and the same component serves the index and every category page, so
+ * moving between them changes one line of type rather than the whole design.
  */
-export default function SolutionsHero() {
+interface SolutionsHeroProps {
+  title: string;
+  /** The second line, in the quieter ink. */
+  accent?: string;
+  lead: string;
+}
+
+export default function SolutionsHero({
+  title,
+  accent,
+  lead,
+}: SolutionsHeroProps) {
   return (
-    <section className="relative overflow-hidden border-b border-(--hairline) bg-(--bg-root)">
+    <header className="relative overflow-hidden bg-(--bg-surface)">
       <div
-        className="mx-auto w-full max-w-384 px-4 pt-14 pb-10 text-center sm:px-6 sm:pt-20 lg:px-8 lg:pb-14"
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
         style={{
           backgroundImage:
-            "radial-gradient(900px 420px at 50% -200px, var(--brand-wash-strong) 0%, rgba(255, 255, 255, 0) 70%)",
+            "radial-gradient(720px 380px at 50% -180px, color-mix(in srgb, var(--brand) 9%, transparent), transparent 72%)",
         }}
-      >
-        <div className="mx-auto w-full max-w-3xl">
-          <span className="font-mono text-[10px] uppercase leading-[14px] tracking-[0.16em] text-(--text-muted)">
-            Solutions
-          </span>
+      />
 
-          <h1 className="mt-4 font-sans text-[34px] font-bold leading-[1.12] tracking-[-1px] text-(--text-primary) sm:text-[40px] md:text-[44px] md:tracking-[-1.4px]">
-            Find the board{" "}
-            <span className="text-(--text-muted)">that fits how you work.</span>
-          </h1>
+      <div className="relative mx-auto w-full max-w-7xl px-4 pt-16 pb-14 text-center sm:px-6 sm:pt-20 sm:pb-16 lg:px-8 lg:pt-24 lg:pb-20">
+        <h1 className="mx-auto max-w-4xl font-sans text-[36px] font-bold leading-[1.08] tracking-[-1.4px] text-(--text-primary) sm:text-[46px] sm:tracking-[-1.8px] md:text-[54px]">
+          {title}
+          {accent ? (
+            <>
+              {" "}
+              <span className="text-(--text-muted)">{accent}</span>
+            </>
+          ) : null}
+        </h1>
 
-          <p className="mx-auto mt-4 max-w-2xl text-[18px] leading-[1.4] tracking-[-0.3px] text-(--text-secondary) sm:text-[20px] md:text-[22px] md:tracking-[-0.5px]">
-            Four ways into the same product: by team, by workflow, by where it
-            runs, and by the constraint that brought you here.
-          </p>
-        </div>
+        <p className="mx-auto mt-5 max-w-180 text-[17px] leading-[1.55] tracking-[-0.2px] text-(--text-secondary) sm:text-[20px] md:text-[22px]">
+          {lead}
+        </p>
       </div>
-    </section>
+    </header>
   );
 }
