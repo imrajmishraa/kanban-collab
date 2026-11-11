@@ -37,8 +37,16 @@ interface AuthState {
  * imports this store, and a static import would be a cycle.
  */
 async function clearActiveWorkspace(): Promise<void> {
-  const { useActiveWorkspace } = await import("@/stores/activeWorkspace");
-  useActiveWorkspace.getState().clearActiveWorkspace();
+  try {
+    const { useActiveWorkspace } = await import("@/stores/activeWorkspace");
+    useActiveWorkspace.getState().clearActiveWorkspace();
+  } catch {
+    /* Best effort on purpose. This runs *after* the session is set, and the
+       dynamic import can fail on a stale chunk or a dropped connection — a
+       failure here used to reject `login()` for a login that had already
+       succeeded, which is exactly the "signed in but nothing happened" state:
+       the token is in the store, the form shows an error, and no redirect runs. */
+  }
 }
 
 export const useAuthStore = create<AuthState>()((set, get) => ({

@@ -15,6 +15,9 @@ export { OAuthButton } from "./components/OAuthButton";
 export { PreviewCard } from "./components/PreviewCard";
 export { useUnifiedOAuth } from "./hooks/useUnifiedOAuth";
 export { AuthBrandPanel } from "./components/AuthBrandPanel";
+export { FieldError } from "./components/FieldError";
+export { postLoginDestination } from "./utils/postLoginDestination";
+export { default as AuthNavbar } from "./components/AuthNavbar";
 export { LoginForm } from "./components/login/LoginForm";
 
 export {
