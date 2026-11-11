@@ -14,6 +14,9 @@ export {
 export { OAuthButton } from "./components/OAuthButton";
 export { PreviewCard } from "./components/PreviewCard";
 export { useUnifiedOAuth } from "./hooks/useUnifiedOAuth";
+export { AuthBrandPanel } from "./components/AuthBrandPanel";
+export { LoginForm } from "./components/login/LoginForm";
+
 export {
   forgotPasswordSchema,
   loginSchema,
