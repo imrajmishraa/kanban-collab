@@ -29,7 +29,7 @@
         var theme = mode === "system" ? (prefersLight ? "light" : "dark") : mode;
         if (theme !== "light" && theme !== "dark") theme = "dark";
         var root = document.documentElement;
-        root.classList.toggle("light", theme === "light");
+        root.classList.toggle("light-theme", theme === "light");
         root.classList.toggle("dark", theme === "dark");
         root.style.colorScheme = theme;
       })();
