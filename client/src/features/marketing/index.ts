@@ -57,3 +57,4 @@ export { default as StepCards } from "./components/tour/StepCards";
 export { default as StepActivity } from "./components/tour/StepActivity";
 export { default as StepMembers } from "./components/tour/StepMembers";
 export { default as StepSelfHost } from "./components/tour/StepSelfHost";
+export { TOUR_ICONS } from "./components/tour/tourIcons";
