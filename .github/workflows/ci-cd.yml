@@ -78,6 +78,8 @@ jobs:
           cache: npm
           cache-dependency-path: server/package-lock.json
       - run: npm ci
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
       - run: npm run typecheck
       - run: npm run lint
       - run: npm run format:check
@@ -100,6 +102,8 @@ jobs:
           cache: npm
           cache-dependency-path: client/package-lock.json
       - run: npm ci
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
       - run: npm run typecheck
       - run: npm run lint
       - run: npm run format:check

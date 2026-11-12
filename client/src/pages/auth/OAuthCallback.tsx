@@ -61,8 +61,5 @@ export default function OAuthCallback() {
     };
   }, [params, refresh, navigate]);
 
-  return (
-
-    <LoadingScreen message={"Signed in — opening your boards"} />
-  )
+  return <LoadingScreen message={"Signed in — opening your boards"} />;
 }
