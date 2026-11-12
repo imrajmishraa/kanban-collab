@@ -2,6 +2,7 @@
   "name": "kanban-collaboration-server",
   "version": "1.0.0",
   "private": true,
+  "license": "MIT",
   "description": "Enterprise Kanban Collaboration Platform Backend — REST & WebSocket real-time sync server",
   "author": "Raj Mishra",
   "repository": {
