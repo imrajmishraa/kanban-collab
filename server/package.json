@@ -16,7 +16,7 @@
   "main": "dist/main.js",
   "types": "dist/main.d.ts",
   "engines": {
-    "node": ">=22.0.0",
+    "node": "22.x",
     "npm": ">=10"
   },
   "scripts": {
