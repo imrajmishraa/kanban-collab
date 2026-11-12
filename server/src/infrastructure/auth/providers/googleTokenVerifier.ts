@@ -1,65 +1,57 @@
+import { OAuth2Client, type TokenPayload } from "google-auth-library";
+
 import { ENV } from "../../../config/env";
-import { fetchWithRetry } from "./fetchWithRetry";
 import { oauthProfileFetchFailedError } from "../../../shared/errors/auth/oauth";
 import type { OAuthProfile } from "./types";
 
-interface GoogleTokenInfo {
-  iss?: string;
-  sub?: string;
-  aud?: string;
-  email?: string;
-  email_verified?: string | boolean;
-  name?: string;
-  picture?: string;
-  exp?: string;
-  error_description?: string;
-}
+/**
+ * One client for the process: `verifyIdToken` checks the signature against
+ * Google's public keys and caches them, so a shared instance is what keeps that
+ * cache warm. It holds no user credentials — only the keys and the audience.
+ */
+const client = new OAuth2Client();
 
 /**
- * Validates a Google Identity Services credential (ID Token).
- * Uses Google's tokeninfo endpoint to verify signatures, expiration, and audience.
+ * Validates a Google Identity Services credential (an ID token).
+ *
+ * `verifyIdToken` does the whole check locally: signature against the cached
+ * JWKS, `iss` is accounts.google.com, `exp` has not passed, and `aud` matches
+ * the client id we pass. That replaces the previous round trip to
+ * `oauth2.googleapis.com/tokeninfo` — same guarantees, no extra network hop, and
+ * it is the path Google documents.
  */
 export async function verifyGoogleIdToken(
   idToken: string,
 ): Promise<OAuthProfile> {
-  const url = `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`;
-
-  const res = await fetchWithRetry(url, {
-    method: "GET",
-    headers: { Accept: "application/json" },
-  });
-
-  if (!res.ok) {
+  /* Without a client id there is no audience to check the token against, and a
+     token accepted from any client is not a token worth accepting. In this state
+     the provider is disabled anyway (`isProviderEnabled`). */
+  if (!ENV.GOOGLE_CLIENT_ID) {
     throw oauthProfileFetchFailedError();
   }
 
-  const tokenInfo = (await res.json()) as GoogleTokenInfo;
+  let payload: TokenPayload | undefined;
 
-  // Validate audience matches our GOOGLE_CLIENT_ID
-  if (ENV.GOOGLE_CLIENT_ID && tokenInfo.aud !== ENV.GOOGLE_CLIENT_ID) {
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken,
+      audience: ENV.GOOGLE_CLIENT_ID,
+    });
+    payload = ticket.getPayload();
+  } catch {
+    /* A bad signature, a wrong audience, an expired token and a malformed one
+       all land here, and all mean the same thing to the caller. */
     throw oauthProfileFetchFailedError();
   }
 
-  // Validate issuer is Google
-  const validIssuers = ["accounts.google.com", "https://accounts.google.com"];
-  if (!tokenInfo.iss || !validIssuers.includes(tokenInfo.iss)) {
-    throw oauthProfileFetchFailedError();
-  }
-
-  // Validate subject ID and email
-  if (!tokenInfo.sub) {
-    throw oauthProfileFetchFailedError();
-  }
-
-  const emailVerified =
-    tokenInfo.email_verified === "true" || tokenInfo.email_verified === true;
+  if (!payload?.sub) throw oauthProfileFetchFailedError();
 
   return {
     provider: "google",
-    providerId: tokenInfo.sub,
-    email: tokenInfo.email?.toLowerCase() ?? null,
-    emailVerified,
-    fullName: tokenInfo.name ?? null,
-    avatarUrl: tokenInfo.picture ?? null,
+    providerId: payload.sub,
+    email: payload.email?.toLowerCase() ?? null,
+    emailVerified: payload.email_verified === true,
+    fullName: payload.name ?? null,
+    avatarUrl: payload.picture ?? null,
   };
 }

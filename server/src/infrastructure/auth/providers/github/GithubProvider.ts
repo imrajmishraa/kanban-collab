@@ -1,5 +1,11 @@
+import {
+  exchangeWebFlowCode,
+  getWebFlowAuthorizationUrl,
+} from "@octokit/oauth-methods";
+import { request } from "@octokit/request";
+
 import { GITHUB_CONFIG } from "./config";
-import type { GithubEmail, GithubTokenResponse, GithubUser } from "./profile";
+import type { GithubEmail, GithubUser } from "./profile";
 import type {
   AuthorizeUrlParams,
   ExchangeCodeParams,
@@ -7,109 +13,90 @@ import type {
   OAuthProfile,
   OAuthProvider,
 } from "../types";
-import { fetchWithRetry } from "../fetchWithRetry";
 import {
   oauthExchangeFailedError,
   oauthProfileFetchFailedError,
 } from "../../../../shared/errors/auth/oauth";
 
+function reason(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
 export class GithubProvider implements OAuthProvider {
   readonly name = "github" as const;
 
   getAuthorizeUrl({ state }: AuthorizeUrlParams): string {
-    const url = new URL(GITHUB_CONFIG.authorizeUrl);
-    url.searchParams.set("client_id", GITHUB_CONFIG.clientId);
-    url.searchParams.set("redirect_uri", GITHUB_CONFIG.redirectUri);
-    url.searchParams.set("scope", GITHUB_CONFIG.scopes.join(" "));
-    url.searchParams.set("state", state);
-    return url.toString();
+    const { url } = getWebFlowAuthorizationUrl({
+      clientType: "oauth-app",
+      clientId: GITHUB_CONFIG.clientId,
+      redirectUrl: GITHUB_CONFIG.redirectUri,
+      scopes: [...GITHUB_CONFIG.scopes],
+      state,
+    });
+
+    return url;
   }
 
   async exchangeCode({
     code,
   }: ExchangeCodeParams): Promise<ExchangeCodeResult> {
-    const res = await fetchWithRetry(GITHUB_CONFIG.tokenUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({
-        client_id: GITHUB_CONFIG.clientId,
-        client_secret: GITHUB_CONFIG.clientSecret,
-        code,
-        redirect_uri: GITHUB_CONFIG.redirectUri,
-      }),
-    });
-
-    // GitHub often returns HTTP 200 even on failure and puts the error in the
-    // JSON body. Always parse the body and check for `error` / missing token.
-    let data:
-      | (GithubTokenResponse & {
-          error?: string;
-          error_description?: string;
-        })
-      | null = null;
-
     try {
-      data = (await res.json()) as GithubTokenResponse & {
-        error?: string;
-        error_description?: string;
-      };
-    } catch {
-      // fall through to the generic error below
-    }
+      const { authentication } = await exchangeWebFlowCode({
+        clientType: "oauth-app",
+        clientId: GITHUB_CONFIG.clientId,
+        clientSecret: GITHUB_CONFIG.clientSecret,
+        code,
+        redirectUrl: GITHUB_CONFIG.redirectUri,
+      });
 
-    if (
-      !res.ok ||
-      !data ||
-      data.error ||
-      typeof data.access_token !== "string" ||
-      !data.access_token
-    ) {
-      const detail =
-        data?.error_description ||
-        data?.error ||
-        (await res.text().catch(() => "")) ||
-        `HTTP ${res.status}`;
-      throw oauthExchangeFailedError(`GitHub token exchange failed: ${detail}`);
+      return { accessToken: authentication.token };
+    } catch (error) {
+      /* `exchangeWebFlowCode` throws on the error body GitHub returns — which
+         used to need its own check, because GitHub answers HTTP 200 with
+         `{"error": …}` in the body rather than a 4xx. */
+      throw oauthExchangeFailedError(
+        `GitHub token exchange failed: ${reason(error)}`,
+      );
     }
-
-    return { accessToken: data.access_token };
   }
 
   async fetchProfile(accessToken: string): Promise<OAuthProfile> {
-    const headers = {
-      Authorization: `Bearer ${accessToken}`,
-      Accept: "application/vnd.github+json",
-      "User-Agent": "kanban-collab",
-    };
+    const headers = { authorization: `token ${accessToken}` };
 
-    const userRes = await fetchWithRetry(GITHUB_CONFIG.userUrl, { headers });
-    if (!userRes.ok) throw oauthProfileFetchFailedError();
-    const user = (await userRes.json()) as GithubUser;
+    let user: GithubUser;
+
+    try {
+      const response = await request("GET /user", { headers });
+      user = response.data as GithubUser;
+    } catch {
+      throw oauthProfileFetchFailedError();
+    }
 
     let email: string | null = user.email?.toLowerCase() ?? null;
     let emailVerified = false;
 
-    const emailsRes = await fetchWithRetry(GITHUB_CONFIG.emailsUrl, {
-      headers,
-    });
-    if (emailsRes.ok) {
-      const emails = (await emailsRes.json()) as GithubEmail[];
+    /* The profile's own `email` is often null — GitHub only fills it when the
+       address is public. `/user/emails` is the source of truth, and it needs the
+       `user:email` scope; a token without it gets a 404 here, which must not
+       fail a sign-in that already has a profile. */
+    try {
+      const response = await request("GET /user/emails", { headers });
+      const emails = response.data as GithubEmail[];
 
       if (!email) {
-        const primary = emails.find((e) => e.primary) ?? emails[0];
+        const primary = emails.find((entry) => entry.primary) ?? emails[0];
         if (primary) {
           email = primary.email.toLowerCase();
           emailVerified = primary.verified;
         }
       } else {
         const match = emails.find(
-          (e) => e.email.toLowerCase() === email!.toLowerCase(),
+          (entry) => entry.email.toLowerCase() === email?.toLowerCase(),
         );
         emailVerified = match?.verified ?? false;
       }
+    } catch {
+      /* No access to the email list: keep the profile's own address, unverified. */
     }
 
     return {

@@ -1,25 +1,16 @@
-import { ENV } from "../../../config/env";
-import { GITHUB_CONFIG } from "../../../infrastructure/auth/providers/github/config";
-import type {
-  GithubEmail,
-  GithubTokenResponse,
-  GithubUser,
-} from "../../../infrastructure/auth/providers/github/profile";
-import { fetchWithRetry } from "../../../infrastructure/auth/providers/fetchWithRetry";
 import {
   signInWithProvider,
   type SignInWithProviderResult,
 } from "../providers/signInWithProvider";
-import {
-  oauthExchangeFailedError,
-  oauthProfileFetchFailedError,
-  unknownProviderError,
-} from "../../../shared/errors/auth/oauth";
+import { unknownProviderError } from "../../../shared/errors/auth/oauth";
 import type { OAuthProfile } from "../../../infrastructure/auth/providers/types";
 import type { Platform } from "../../../infrastructure/db/mongoose/schemas";
+import { verifyGoogleIdToken } from "../../../infrastructure/auth/providers/googleTokenVerifier";
+import { GithubProvider } from "../../../infrastructure/auth/providers/github/GithubProvider";
 
 export interface VerifyOAuthInput {
   provider: "google" | "github";
+  /** A Google ID token (JWT), or a GitHub authorisation code. */
   token: string;
   redirectUri?: string;
   rememberMe?: boolean;
@@ -29,147 +20,28 @@ export interface VerifyOAuthInput {
   platform?: Platform;
 }
 
-interface GoogleTokenInfo {
-  iss?: string;
-  sub?: string;
-  aud?: string;
-  email?: string;
-  email_verified?: string | boolean;
-  name?: string;
-  picture?: string;
-}
+/** One instance: it holds no state, only the client ids it was built with. */
+const github = new GithubProvider();
 
-async function verifyGoogleCredential(
-  credential: string,
-): Promise<OAuthProfile> {
-  const url = `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`;
-  const res = await fetchWithRetry(url, {
-    method: "GET",
-    headers: { Accept: "application/json" },
-  });
-
-  if (!res.ok) {
-    throw oauthProfileFetchFailedError();
-  }
-
-  const tokenInfo = (await res.json()) as GoogleTokenInfo;
-
-  if (ENV.GOOGLE_CLIENT_ID && tokenInfo.aud !== ENV.GOOGLE_CLIENT_ID) {
-    throw oauthProfileFetchFailedError();
-  }
-
-  const validIssuers = ["accounts.google.com", "https://accounts.google.com"];
-  if (
-    !tokenInfo.iss ||
-    !validIssuers.includes(tokenInfo.iss) ||
-    !tokenInfo.sub
-  ) {
-    throw oauthProfileFetchFailedError();
-  }
-
-  const emailVerified =
-    tokenInfo.email_verified === "true" || tokenInfo.email_verified === true;
-
-  return {
-    provider: "google",
-    providerId: tokenInfo.sub,
-    email: tokenInfo.email?.toLowerCase() ?? null,
-    emailVerified,
-    fullName: tokenInfo.name ?? null,
-    avatarUrl: tokenInfo.picture ?? null,
-  };
-}
-
-async function exchangeGithubCode(
-  code: string,
-  redirectUri?: string,
-): Promise<OAuthProfile> {
-  const res = await fetchWithRetry(GITHUB_CONFIG.tokenUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
-    body: JSON.stringify({
-      client_id: GITHUB_CONFIG.clientId,
-      client_secret: GITHUB_CONFIG.clientSecret,
-      code,
-      redirect_uri: redirectUri ?? GITHUB_CONFIG.redirectUri,
-    }),
-  });
-
-  let data:
-    | (GithubTokenResponse & { error?: string; error_description?: string })
-    | null = null;
-  try {
-    data = (await res.json()) as GithubTokenResponse & {
-      error?: string;
-      error_description?: string;
-    };
-  } catch {
-    // fall through
-  }
-
-  if (
-    !res.ok ||
-    !data ||
-    data.error ||
-    typeof data.access_token !== "string" ||
-    !data.access_token
-  ) {
-    const detail =
-      data?.error_description || data?.error || `HTTP ${res.status}`;
-    throw oauthExchangeFailedError(`GitHub token exchange failed: ${detail}`);
-  }
-
-  const accessToken = data.access_token;
-  const headers = {
-    Authorization: `Bearer ${accessToken}`,
-    Accept: "application/vnd.github+json",
-    "User-Agent": "kanban-collab",
-  };
-
-  const userRes = await fetchWithRetry(GITHUB_CONFIG.userUrl, { headers });
-  if (!userRes.ok) throw oauthProfileFetchFailedError();
-  const user = (await userRes.json()) as GithubUser;
-
-  let email: string | null = user.email?.toLowerCase() ?? null;
-  let emailVerified = false;
-
-  const emailsRes = await fetchWithRetry(GITHUB_CONFIG.emailsUrl, { headers });
-  if (emailsRes.ok) {
-    const emails = (await emailsRes.json()) as GithubEmail[];
-    if (!email) {
-      const primary = emails.find((e) => e.primary) ?? emails[0];
-      if (primary) {
-        email = primary.email.toLowerCase();
-        emailVerified = primary.verified;
-      }
-    } else {
-      const match = emails.find(
-        (e) => e.email.toLowerCase() === email!.toLowerCase(),
-      );
-      emailVerified = match?.verified ?? false;
-    }
-  }
-
-  return {
-    provider: "github",
-    providerId: String(user.id),
-    email,
-    emailVerified,
-    fullName: user.name ?? user.login,
-    avatarUrl: user.avatar_url,
-  };
-}
-
+/**
+ * The unified entry point for a native client — an ID token from Google, or an
+ * authorisation code from GitHub — turned into a session.
+ *
+ * Both branches used to carry their own copy of the provider's logic: a second
+ * `tokeninfo` round trip for Google, a second hand-rolled code exchange for
+ * GitHub. They now call the same code the web flow calls, so a fix in
+ * `GoogleProvider` or `GithubProvider` reaches both.
+ *
+ * `redirectUri` is accepted and ignored: the exchange always uses the redirect
+ * URI the provider was configured with, which is the one GitHub was asked to
+ * send the code to. Passing a different one here could only produce a mismatch.
+ */
 export async function verifyOAuthToken(
   input: VerifyOAuthInput,
 ): Promise<SignInWithProviderResult> {
   const {
     provider,
     token,
-    redirectUri,
     rememberMe,
     userAgent,
     ipAddress,
@@ -180,9 +52,10 @@ export async function verifyOAuthToken(
   let profile: OAuthProfile;
 
   if (provider === "google") {
-    profile = await verifyGoogleCredential(token);
+    profile = await verifyGoogleIdToken(token);
   } else if (provider === "github") {
-    profile = await exchangeGithubCode(token, redirectUri);
+    const { accessToken } = await github.exchangeCode({ code: token });
+    profile = await github.fetchProfile(accessToken);
   } else {
     throw unknownProviderError(provider);
   }

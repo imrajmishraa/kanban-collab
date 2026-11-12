@@ -1,5 +1,7 @@
+import { OAuth2Client } from "google-auth-library";
+
 import { GOOGLE_CONFIG } from "./config";
-import type { GoogleTokenResponse, GoogleUserInfo } from "./profile";
+import type { GoogleUserInfo } from "./profile";
 import type {
   AuthorizeUrlParams,
   ExchangeCodeParams,
@@ -7,79 +9,91 @@ import type {
   OAuthProfile,
   OAuthProvider,
 } from "../types";
-import { fetchWithRetry } from "../fetchWithRetry";
 import {
   oauthExchangeFailedError,
   oauthProfileFetchFailedError,
 } from "../../../../shared/errors/auth/oauth";
 
+/**
+ * A client per operation, not one shared instance.
+ *
+ * `OAuth2Client` keeps the credentials it was last handed, so a module-level
+ * instance would let two concurrent sign-ins swap access tokens under each
+ * other — one user's profile read with another user's token. Constructing one
+ * is cheap: no network, no key fetch.
+ */
+function newClient(): OAuth2Client {
+  return new OAuth2Client({
+    clientId: GOOGLE_CONFIG.clientId,
+    clientSecret: GOOGLE_CONFIG.clientSecret,
+    redirectUri: GOOGLE_CONFIG.redirectUri,
+  });
+}
+
+function reason(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
 export class GoogleProvider implements OAuthProvider {
   readonly name = "google" as const;
 
   getAuthorizeUrl({ state }: AuthorizeUrlParams): string {
-    const url = new URL(GOOGLE_CONFIG.authorizeUrl);
-    url.searchParams.set("client_id", GOOGLE_CONFIG.clientId);
-    url.searchParams.set("redirect_uri", GOOGLE_CONFIG.redirectUri);
-    url.searchParams.set("response_type", "code");
-    url.searchParams.set("scope", GOOGLE_CONFIG.scopes.join(" "));
-    url.searchParams.set("state", state);
-    // Do not force prompt=consent or access_type=offline.
-    // The app does not use Google's refresh token, and forcing consent on
-    // every login creates unnecessary friction for returning users.
-    return url.toString();
+    /* `access_type: "online"` and no `prompt`: the app never uses Google's
+       refresh token, and forcing consent on every login is friction for
+       returning users. `redirect_uri`, `response_type=code` and the client id
+       come from the client itself. */
+    return newClient().generateAuthUrl({
+      access_type: "online",
+      scope: GOOGLE_CONFIG.scopes,
+      state,
+    });
   }
 
   async exchangeCode({
     code,
   }: ExchangeCodeParams): Promise<ExchangeCodeResult> {
-    const body = new URLSearchParams({
-      code,
-      client_id: GOOGLE_CONFIG.clientId,
-      client_secret: GOOGLE_CONFIG.clientSecret,
-      redirect_uri: GOOGLE_CONFIG.redirectUri,
-      grant_type: "authorization_code",
-    });
+    try {
+      const { tokens } = await newClient().getToken(code);
 
-    const res = await fetchWithRetry(GOOGLE_CONFIG.tokenUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body,
-    });
+      if (typeof tokens.access_token !== "string" || !tokens.access_token) {
+        throw new Error("no access_token in the token response");
+      }
 
-    if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      throw oauthExchangeFailedError(`Google token exchange failed: ${text}`);
-    }
-
-    const data = (await res.json()) as GoogleTokenResponse;
-
-    // Defensive: ensure we actually received an access token.
-    if (typeof data.access_token !== "string" || !data.access_token) {
+      /* Google only returns a refresh_token on first consent (or with
+         prompt=consent); this app never uses it, so a missing one must not fail
+         an otherwise-valid login. `expiry_date` is an absolute timestamp, and
+         the interface wants the seconds left. */
+      return {
+        accessToken: tokens.access_token,
+        ...(tokens.refresh_token ? { refreshToken: tokens.refresh_token } : {}),
+        ...(tokens.expiry_date
+          ? {
+              expiresIn: Math.max(
+                0,
+                Math.round((tokens.expiry_date - Date.now()) / 1000),
+              ),
+            }
+          : {}),
+      };
+    } catch (error) {
       throw oauthExchangeFailedError(
-        "Google token exchange failed: missing access_token in response",
+        `Google token exchange failed: ${reason(error)}`,
       );
     }
-
-    // Google only returns a refresh_token on first consent (or with
-    // prompt=consent); this app never uses it, so a missing one must not fail
-    // an otherwise-valid login.
-    return {
-      accessToken: data.access_token,
-      ...(data.refresh_token !== undefined
-        ? { refreshToken: data.refresh_token }
-        : {}),
-      expiresIn: data.expires_in,
-    };
   }
 
   async fetchProfile(accessToken: string): Promise<OAuthProfile> {
-    const res = await fetchWithRetry(GOOGLE_CONFIG.userInfoUrl, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
+    let data: GoogleUserInfo;
 
-    if (!res.ok) throw oauthProfileFetchFailedError();
-
-    const data = (await res.json()) as GoogleUserInfo;
+    try {
+      const response = await newClient().request<GoogleUserInfo>({
+        url: GOOGLE_CONFIG.userInfoUrl,
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      data = response.data;
+    } catch {
+      throw oauthProfileFetchFailedError();
+    }
 
     return {
       provider: "google",
