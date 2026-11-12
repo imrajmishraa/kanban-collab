@@ -305,7 +305,7 @@ export function RegisterForm() {
     return (
       <div className="mx-auto flex w-full max-w-105 flex-col">
         <h2 className="text-center text-[30px] leading-[1.08] font-bold tracking-[-1.2px] text-(--text-primary) sm:text-[34px] sm:tracking-[-1.5px]">
-          Your first deploy
+          Your first board
           <br />
           is just a sign-up away.
         </h2>

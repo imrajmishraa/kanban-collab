@@ -90,12 +90,12 @@ export function verifyStateToken(
 ): { rememberMe: boolean } {
   const parts = token.split(".");
 
-  if (parts.length !== 2) throw invalidOAuthStateError();
+  if (parts.length !== 2) throw invalidOAuthStateError("malformed");
 
   const encoded = parts[0];
   const providedSignature = parts[1];
 
-  if (!encoded || !providedSignature) throw invalidOAuthStateError();
+  if (!encoded || !providedSignature) throw invalidOAuthStateError("malformed");
 
   const expectedSignature = sign(encoded);
 
@@ -103,10 +103,12 @@ export function verifyStateToken(
   const expected = Buffer.from(expectedSignature);
 
   // Length check first: timingSafeEqual throws on mismatched lengths.
-  if (provided.length !== expected.length) throw invalidOAuthStateError();
+  if (provided.length !== expected.length) {
+    throw invalidOAuthStateError("signature_mismatch");
+  }
 
   if (!crypto.timingSafeEqual(provided, expected)) {
-    throw invalidOAuthStateError();
+    throw invalidOAuthStateError("signature_mismatch");
   }
 
   let payload: unknown;
@@ -114,28 +116,28 @@ export function verifyStateToken(
   try {
     payload = JSON.parse(Buffer.from(encoded, "base64url").toString("utf8"));
   } catch {
-    throw invalidOAuthStateError();
+    throw invalidOAuthStateError("unparseable");
   }
 
   if (typeof payload !== "object" || payload === null) {
-    throw invalidOAuthStateError();
+    throw invalidOAuthStateError("unparseable");
   }
 
   const { p, t, r } = payload as Partial<StatePayload>;
 
   if (typeof p !== "string" || p !== expectedProvider) {
-    throw invalidOAuthStateError();
+    throw invalidOAuthStateError("provider_mismatch");
   }
 
   if (typeof t !== "number" || !Number.isFinite(t)) {
-    throw invalidOAuthStateError();
+    throw invalidOAuthStateError("bad_timestamp");
   }
 
   const age = Date.now() - t;
 
   // Reject both expired tokens and tokens with unrealistic future timestamps beyond allowed clock skew.
   if (age < -CLOCK_SKEW_TOLERANCE_MS || age > STATE_TTL_MS) {
-    throw invalidOAuthStateError();
+    throw invalidOAuthStateError(age > STATE_TTL_MS ? "expired" : "future");
   }
 
   return { rememberMe: r === 1 };

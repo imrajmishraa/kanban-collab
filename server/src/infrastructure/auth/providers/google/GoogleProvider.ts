@@ -38,15 +38,13 @@ export class GoogleProvider implements OAuthProvider {
   readonly name = "google" as const;
 
   getAuthorizeUrl({ state }: AuthorizeUrlParams): string {
-    /* `access_type: "online"` and no `prompt`: the app never uses Google's
-       refresh token, and forcing consent on every login is friction for
-       returning users. `redirect_uri`, `response_type=code` and the client id
-       come from the client itself. */
     return newClient().generateAuthUrl({
       access_type: "online",
       scope: GOOGLE_CONFIG.scopes,
       state,
+      prompt: "select_account",
     });
+
   }
 
   async exchangeCode({

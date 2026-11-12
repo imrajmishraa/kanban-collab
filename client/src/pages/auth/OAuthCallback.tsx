@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import LoadingScreen from "@/components/feedback/LoadingScreen";
 
 export default function OAuthCallback() {
   const [params] = useSearchParams();
@@ -61,10 +62,7 @@ export default function OAuthCallback() {
   }, [params, refresh, navigate]);
 
   return (
-    <main className="flex h-screen items-center justify-center">
-      <p className="font-mono text-sm text-(--text-primary)/60">
-        Completing sign-in…
-      </p>
-    </main>
-  );
+
+    <LoadingScreen message={"Signed in — opening your boards"} />
+  )
 }

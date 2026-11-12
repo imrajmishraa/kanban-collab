@@ -10,6 +10,7 @@ import { verifyStateToken } from "../../../../application/auth/oauth/stateToken"
 import { listEnabledProviders } from "../../../../infrastructure/auth/providers";
 
 import { unknownProviderError } from "../../../../shared/errors/auth/oauth";
+import { ApiError } from "../../../../shared/utils/ApiError";
 
 import {
   REFRESH_COOKIE_NAME,
@@ -191,7 +192,10 @@ export const oauthCallback = asyncHandler(
         "OAuth callback missing code or state.",
       );
 
-      redirectToClient(res, { status: "error", reason: "invalid_state" });
+      redirectToClient(res, {
+        status: "error",
+        reason: code === undefined ? "missing_code" : "missing_state",
+      });
       return;
     }
 
@@ -201,13 +205,24 @@ export const oauthCallback = asyncHandler(
 
     try {
       ({ rememberMe } = verifyStateToken(state, provider));
-    } catch {
+    } catch (error) {
+      /* The reason travels in the redirect URL, because a browser-side OAuth
+         flow leaves no other trace: `invalid_state` alone cannot distinguish a
+         bad signature from an expired token from a provider mismatch. */
+      const detail =
+        error instanceof ApiError &&
+        typeof error.data === "object" &&
+        error.data !== null &&
+        "detail" in error.data
+          ? String((error.data as { detail?: unknown }).detail)
+          : "unknown";
+
       authLogger.warn(
-        { provider },
+        { provider, detail },
         "OAuth callback rejected — invalid or expired state.",
       );
 
-      redirectToClient(res, { status: "error", reason: "invalid_state" });
+      redirectToClient(res, { status: "error", reason: `state_${detail}` });
       return;
     }
 

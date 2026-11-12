@@ -22,11 +22,18 @@ export function providerDisabledError(name: string): ApiError {
   );
 }
 
-export function invalidOAuthStateError(): ApiError {
+/* `detail` is what the callback redirect carries back to the client. Without
+   it every rejection — missing param, bad signature, expired token, provider
+   mismatch — surfaces as the same opaque `invalid_state`, which is impossible
+   to debug from a browser alone. */
+export function invalidOAuthStateError(detail?: string): ApiError {
   return new ApiError(
     HTTP_STATUS.BAD_REQUEST,
     ERROR_MESSAGE.OAUTH_INVALID_STATE,
-    { code: "INVALID_OAUTH_STATE" },
+    {
+      code: "INVALID_OAUTH_STATE",
+      ...(detail === undefined ? {} : { data: { detail } }),
+    },
   );
 }
 
