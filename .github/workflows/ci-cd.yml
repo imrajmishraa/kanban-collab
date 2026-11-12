@@ -111,6 +111,30 @@ jobs:
       - run: npm run build
 
   # ───────────────────────────────────────────────────────────────────────────
+  # Single required check.
+  #
+  # `server` and `client` are path-filtered, so a PR touching one side skips the
+  # other job. A skipped job never reports a status, and a required check that
+  # never reports leaves the PR stuck on "Expected — waiting for status to be
+  # reported". This gate always runs, always reports, and fails only when a job
+  # that did run failed. Point the branch ruleset at `CI gate` instead of the
+  # individual jobs.
+  # ───────────────────────────────────────────────────────────────────────────
+
+  ci-gate:
+    name: CI gate
+    needs: [changes, server, client]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if any required job failed or was cancelled
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: |
+          echo "At least one required job did not succeed:"
+          echo '${{ toJSON(needs) }}'
+          exit 1
+
+  # ───────────────────────────────────────────────────────────────────────────
   # Deploys — main only, changed side only, checks green only.
   # ───────────────────────────────────────────────────────────────────────────
 
