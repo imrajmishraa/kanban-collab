@@ -151,9 +151,18 @@
     "vitest": "^5.0.5"
   },
   "overrides": {
-    "glob": "^11.0.1",
-    "y-leveldb": "^0.2.0"
+  "glob": "^11.0.1",
+  "y-leveldb": "^0.2.0",
+  "eslint": {
+    "minimatch": "^11.0.8"
   },
+  "@typescript-eslint/typescript-estree": {
+    "minimatch": "^11.0.8"
+  },
+  "nodemon": {
+    "minimatch": "^11.0.8"
+  }
+ },
   "allowScripts": {
     "bcrypt@6.0.0": true,
     "classic-level@1.4.1": true,
