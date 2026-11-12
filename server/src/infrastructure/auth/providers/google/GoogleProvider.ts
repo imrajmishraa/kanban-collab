@@ -44,7 +44,6 @@ export class GoogleProvider implements OAuthProvider {
       state,
       prompt: "select_account",
     });
-
   }
 
   async exchangeCode({
