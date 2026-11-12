@@ -102,8 +102,6 @@
     "prepare": "echo 'Ready'"
   },
   "dependencies": {
-    "@octokit/oauth-methods": "^6.0.5",
-    "@octokit/request": "^10.0.16",
     "bcrypt": "^6.0.0",
     "compression": "^1.8.1",
     "cookie-parser": "^1.4.7",
@@ -151,18 +149,18 @@
     "vitest": "^5.0.5"
   },
   "overrides": {
-  "glob": "^11.0.1",
-  "y-leveldb": "^0.2.0",
-  "eslint": {
-    "minimatch": "^11.0.8"
+    "glob": "^11.0.1",
+    "y-leveldb": "^0.2.0",
+    "eslint": {
+      "minimatch": "^11.0.8"
+    },
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": "^11.0.8"
+    },
+    "nodemon": {
+      "minimatch": "^11.0.8"
+    }
   },
-  "@typescript-eslint/typescript-estree": {
-    "minimatch": "^11.0.8"
-  },
-  "nodemon": {
-    "minimatch": "^11.0.8"
-  }
- },
   "allowScripts": {
     "bcrypt@6.0.0": true,
     "classic-level@1.4.1": true,

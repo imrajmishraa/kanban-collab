@@ -38,11 +38,16 @@ export function oauthExchangeFailedError(reason?: string): ApiError {
   );
 }
 
-export function oauthProfileFetchFailedError(): ApiError {
+/* The client keeps the generic message; `reason` rides along in `data` so the
+   controller's log line says what actually went wrong instead of a bare code. */
+export function oauthProfileFetchFailedError(reason?: string): ApiError {
   return new ApiError(
     HTTP_STATUS.UNAUTHORIZED,
     ERROR_MESSAGE.OAUTH_PROFILE_FETCH_FAILED,
-    { code: "OAUTH_PROFILE_FETCH_FAILED" },
+    {
+      code: "OAUTH_PROFILE_FETCH_FAILED",
+      ...(reason === undefined ? {} : { data: { reason } }),
+    },
   );
 }
 

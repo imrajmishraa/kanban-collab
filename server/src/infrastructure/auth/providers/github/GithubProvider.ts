@@ -1,9 +1,3 @@
-import {
-  exchangeWebFlowCode,
-  getWebFlowAuthorizationUrl,
-} from "@octokit/oauth-methods";
-import { request } from "@octokit/request";
-
 import { GITHUB_CONFIG } from "./config";
 import type { GithubEmail, GithubUser } from "./profile";
 import type {
@@ -18,58 +12,114 @@ import {
   oauthProfileFetchFailedError,
 } from "../../../../shared/errors/auth/oauth";
 
+/**
+ * GitHub is talked to over `fetch` directly, not through Octokit.
+ *
+ * Every `@octokit/*` package this server used to import (`oauth-methods`,
+ * `request`) is ESM-only — no CommonJS entry point. The server compiles to
+ * CommonJS (no `"type": "module"` in package.json), so `tsc` emitted a
+ * `require()` for them, and Node refused it with ERR_REQUIRE_ESM at module load.
+ * That killed the process before any route could answer, which is why every
+ * endpoint 500'd on Vercel while `ts-node` locally — where `require(esm)` is
+ * enabled — was fine.
+ *
+ * The web-flow endpoints used here are three plain HTTP calls, so the dependency
+ * bought nothing that `fetch` does not already give.
+ */
+const API_HEADERS = {
+  accept: "application/vnd.github+json",
+  "x-github-api-version": "2022-11-28",
+} as const;
+
 function reason(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
+}
+
+interface TokenPayload {
+  access_token?: string;
+  token_type?: string;
+  scope?: string;
+  error?: string;
+  error_description?: string;
 }
 
 export class GithubProvider implements OAuthProvider {
   readonly name = "github" as const;
 
   getAuthorizeUrl({ state }: AuthorizeUrlParams): string {
-    const { url } = getWebFlowAuthorizationUrl({
-      clientType: "oauth-app",
-      clientId: GITHUB_CONFIG.clientId,
-      redirectUrl: GITHUB_CONFIG.redirectUri,
-      scopes: [...GITHUB_CONFIG.scopes],
-      state,
-    });
+    const url = new URL(GITHUB_CONFIG.authorizeUrl);
 
-    return url;
+    url.searchParams.set("client_id", GITHUB_CONFIG.clientId);
+    url.searchParams.set("redirect_uri", GITHUB_CONFIG.redirectUri);
+    url.searchParams.set("scope", GITHUB_CONFIG.scopes.join(" "));
+    url.searchParams.set("state", state);
+
+    return url.toString();
   }
 
   async exchangeCode({
     code,
   }: ExchangeCodeParams): Promise<ExchangeCodeResult> {
+    let payload: TokenPayload;
+
     try {
-      const { authentication } = await exchangeWebFlowCode({
-        clientType: "oauth-app",
-        clientId: GITHUB_CONFIG.clientId,
-        clientSecret: GITHUB_CONFIG.clientSecret,
-        code,
-        redirectUrl: GITHUB_CONFIG.redirectUri,
+      const response = await fetch(GITHUB_CONFIG.tokenUrl, {
+        method: "POST",
+        headers: {
+          accept: "application/json",
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          client_id: GITHUB_CONFIG.clientId,
+          client_secret: GITHUB_CONFIG.clientSecret,
+          code,
+          redirect_uri: GITHUB_CONFIG.redirectUri,
+        }),
       });
 
-      return { accessToken: authentication.token };
+      payload = (await response.json()) as TokenPayload;
+
+      if (!response.ok) {
+        throw new Error(`token endpoint returned HTTP ${response.status}`);
+      }
     } catch (error) {
-      /* `exchangeWebFlowCode` throws on the error body GitHub returns — which
-         used to need its own check, because GitHub answers HTTP 200 with
-         `{"error": …}` in the body rather than a 4xx. */
       throw oauthExchangeFailedError(
         `GitHub token exchange failed: ${reason(error)}`,
       );
     }
+
+    /* GitHub answers HTTP 200 with `{"error": …}` in the body rather than a 4xx,
+       so the status code alone is not enough. */
+    const accessToken = payload.access_token;
+
+    if (payload.error !== undefined || accessToken === undefined) {
+      throw oauthExchangeFailedError(
+        `GitHub token exchange failed: ${
+          payload.error_description ??
+          payload.error ??
+          "no access_token in the response"
+        }`,
+      );
+    }
+
+    return { accessToken };
   }
 
   async fetchProfile(accessToken: string): Promise<OAuthProfile> {
-    const headers = { authorization: `token ${accessToken}` };
+    const headers = { ...API_HEADERS, authorization: `Bearer ${accessToken}` };
 
     let user: GithubUser;
 
     try {
-      const response = await request("GET /user", { headers });
-      user = response.data as GithubUser;
-    } catch {
-      throw oauthProfileFetchFailedError();
+      const response = await fetch(GITHUB_CONFIG.userUrl, { headers });
+
+      if (!response.ok) {
+        throw new Error(`GET /user returned HTTP ${response.status}`);
+      }
+
+      user = (await response.json()) as GithubUser;
+    } catch (error) {
+      throw oauthProfileFetchFailedError(`GitHub GET /user: ${reason(error)}`);
     }
 
     let email: string | null = user.email?.toLowerCase() ?? null;
@@ -80,8 +130,13 @@ export class GithubProvider implements OAuthProvider {
        `user:email` scope; a token without it gets a 404 here, which must not
        fail a sign-in that already has a profile. */
     try {
-      const response = await request("GET /user/emails", { headers });
-      const emails = response.data as GithubEmail[];
+      const response = await fetch(GITHUB_CONFIG.emailsUrl, { headers });
+
+      if (!response.ok) {
+        throw new Error(`GET /user/emails returned HTTP ${response.status}`);
+      }
+
+      const emails = (await response.json()) as GithubEmail[];
 
       if (!email) {
         const primary = emails.find((entry) => entry.primary) ?? emails[0];

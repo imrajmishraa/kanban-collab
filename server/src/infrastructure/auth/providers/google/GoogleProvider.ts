@@ -86,13 +86,24 @@ export class GoogleProvider implements OAuthProvider {
     let data: GoogleUserInfo;
 
     try {
-      const response = await newClient().request<GoogleUserInfo>({
-        url: GOOGLE_CONFIG.userInfoUrl,
+      /* Plain `fetch`, not `newClient().request()`.
+         `OAuth2Client.request()` asks the client for its own credentials before
+         it builds the request, and a client constructed from ids alone has none
+         — it throws "No access, refresh token, API key or refresh handler
+         callback is set." The header passed in here never got a chance to be
+         used, so the profile call failed 100% of the time while the token
+         exchange (which does use the client) succeeded. */
+      const response = await fetch(GOOGLE_CONFIG.userInfoUrl, {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
-      data = response.data;
-    } catch {
-      throw oauthProfileFetchFailedError();
+
+      if (!response.ok) {
+        throw new Error(`userinfo returned HTTP ${response.status}`);
+      }
+
+      data = (await response.json()) as GoogleUserInfo;
+    } catch (error) {
+      throw oauthProfileFetchFailedError(`Google userinfo: ${reason(error)}`);
     }
 
     return {
