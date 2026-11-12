@@ -4,11 +4,7 @@ import type { DragEvent } from "react";
 
 import { AvatarStack } from "@/components/board/BoardAvatar";
 
-import {
-  formatDue,
-  isOverdue,
-  labelColor,
-} from "@/features/boards/board.helpers";
+import { formatDue, isOverdue, labelColor } from "@/features/boards";
 
 import type { BoardCard } from "@/types/board";
 

@@ -11,15 +11,17 @@ import {
   ReplyIcon,
 } from "@hugeicons/core-free-icons";
 
-import CommentReplies from "./CommentReplies";
-import CommentVotes from "./CommentVotes";
-
 import { useCreateComment } from "@/hooks/useComments";
 
 import { Avatar } from "@/components/board/BoardAvatar";
 import { Tooltip } from "@/components/Tooltips/ToolTip";
 
-import { avatarColor, formatRelative } from "@/features/boards/board.helpers";
+import {
+  avatarColor,
+  formatRelative,
+  CommentReplies,
+  CommentVotes,
+} from "@/features/boards";
 
 import type { Comment } from "@/types/comment";
 

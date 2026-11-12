@@ -9,10 +9,20 @@ export { default as DeferredSection } from "./components/DeferredSection";
 export { default as FeaturesHero } from "./components/features/FeaturesHero";
 export { default as HowItWorksHero } from "./components/howItWorks/HowItWorksHero";
 export { default as HomeHero } from "./components/home/HomeHero";
+export { default as HomePricing } from "./components/home/HomePricing";
+export { default as BoardPreview } from "./components/home/BoardPreview";
+export { default as HomeWhyKanban } from "./components/home/HomeWhyKanban";
+export { default as HomeHowItWorks } from "./components/home/HomeHowItWorks";
+export { default as HomeOpenSource } from "./components/home/HomeOpenSource";
+export { default as HomeFAQ } from "./components/home/HomeFAQ";
+export { default as HomeClosingCTA } from "./components/home/HomeClosingCTA";
+export { default as HomeSupportedBy } from "./components/home/HomeSupportedBy";
+export { default as HomeContact } from "./components/home/HomeContact";
 
 /* The shared marketing page parts: the hero, the frame and the section
    patterns every public page outside the home page is built from. */
 export { default as PageHero } from "./components/shared/PageHero";
+export { default as PricingHero } from "./components/pricing/PricingHero";
 export { default as PageShell } from "./components/shared/PageShell";
 export { default as SectionHead } from "./components/shared/SectionHead";
 export { default as CardGrid } from "./components/shared/CardGrid";
@@ -21,11 +31,13 @@ export { default as ProseSection } from "./components/shared/ProseSection";
 
 /* Pricing: the claim, the price list, the licence questions, the letter and
    the ask. The page composes them in that order. */
-export { default as HomePricing } from "./components/home/HomePricing";
+export {
+  TESTIMONIALS,
+  type Testimonial,
+} from "./components/pricing/testimonials";
 export { default as HelloThereSection } from "./components/pricing/HelloThereSection";
 export { default as PricingCta } from "./components/pricing/PricingCta";
 export { default as PricingFaq } from "./components/pricing/PricingFaq";
-export { default as PricingHero } from "./components/pricing/PricingHero";
 
 /* Solutions: a catalogue of four categories. */
 export { default as SolutionSection } from "./components/solutions/SolutionSection";
@@ -39,6 +51,7 @@ export { CATEGORIES } from "./components/solutions/solutions";
 
 /* Examples: the gallery of UI drawn from the system. */
 export { default as AccountMenuExample } from "./components/examples/AccountMenuExample";
+export { default as PersonAvatar } from "./components/examples/PersonAvatar";
 export { default as BoardMenusExample } from "./components/examples/BoardMenusExample";
 export { default as CommandPaletteExample } from "./components/examples/CommandPaletteExample";
 export { default as DarkWorkspaceExample } from "./components/examples/DarkWorkspaceExample";
@@ -58,3 +71,19 @@ export { default as StepActivity } from "./components/tour/StepActivity";
 export { default as StepMembers } from "./components/tour/StepMembers";
 export { default as StepSelfHost } from "./components/tour/StepSelfHost";
 export { TOUR_ICONS } from "./components/tour/tourIcons";
+
+// CoreFeatures
+export { default as CoreFeaturesSection } from "./components/features/CoreFeaturesSection";
+export { default as CollaborationSection } from "./components/features/CollaborationSection";
+export { default as ProductivitySection } from "./components/features/ProductivitySection";
+export { default as SecuritySection } from "./components/features/SecuritySection";
+export { default as TechnologySection } from "./components/features/TechnologySection";
+export { default as FeaturesCTA } from "./components/features/FeaturesCTA";
+
+// how-it-works
+export { default as WorkflowOverviewSection } from "./components/howItWorks/WorkflowOverviewSection";
+export { default as StepOneSection } from "./components/howItWorks/StepOneSection";
+export { default as StepTwoSection } from "./components/howItWorks/StepTwoSection";
+export { default as StepThreeSection } from "./components/howItWorks/StepThreeSection";
+export { default as CollaborationFlowSection } from "./components/howItWorks/CollaborationFlowSection";
+export { default as HowItWorksCTA } from "./components/howItWorks/HowItWorksCTA";

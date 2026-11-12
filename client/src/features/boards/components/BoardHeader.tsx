@@ -15,7 +15,7 @@ import { ShareBoardDialog } from "@/components/sidebar/ShareBoardDialog";
 
 import { DeleteBoardDialog, EditBoardDialog } from "@/features/workspaces";
 
-import { ui } from "@/features/boards/board.helpers";
+import { ui } from "@/features/boards";
 import { usePinnedBoards } from "@/features/dashboard";
 import { toastSuccess } from "@/lib/toast";
 

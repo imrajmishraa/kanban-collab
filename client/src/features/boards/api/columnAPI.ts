@@ -2,10 +2,7 @@ import type { BoardColumn } from "@/types/board";
 import { assertValid } from "./boardApi";
 import type { ApiResponse } from "@/types/api";
 import { apiClient } from "@/services/client";
-import {
-  createColumnSchema,
-  updateColumnSchema,
-} from "@/features/boards/validations/column.validator";
+import { createColumnSchema, updateColumnSchema } from "@/features/boards";
 
 export const columnApi = {
   async createColumn(payload: {

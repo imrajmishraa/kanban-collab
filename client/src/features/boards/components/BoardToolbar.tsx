@@ -10,9 +10,7 @@ import {
   SlidersHorizontalIcon,
 } from "@hugeicons/core-free-icons";
 
-import { labelColor, ui } from "@/features/boards/board.helpers";
-
-import type { SortKey, ViewMode } from "@/features/boards/board.helpers";
+import { type SortKey, type ViewMode, labelColor, ui } from "@/features/boards";
 
 interface BoardToolbarProps {
   /** Opens the card palette, which owns searching now. */

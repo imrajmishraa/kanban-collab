@@ -1,6 +1,4 @@
-import PageHero from "@/features/marketing/components/shared/PageHero";
-import PageShell from "@/features/marketing/components/shared/PageShell";
-import ProseSection from "@/features/marketing/components/shared/ProseSection";
+import { PageHero, PageShell, ProseSection } from "@/features/marketing";
 
 /**
  * A template, not legal advice: it describes what this build actually does.
@@ -10,7 +8,6 @@ export default function CookiesPage() {
   return (
     <PageShell>
       <PageHero
-        eyebrow="Legal"
         title="Cookies policy"
         lead="What this site stores in your browser, and why. Short, because the list is short."
       />

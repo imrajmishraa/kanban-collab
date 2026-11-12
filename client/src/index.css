@@ -16,3 +16,12 @@
    renders as browser-default text — the class was defined and never imported. */
 @import "./styles/marketing-prose.css";
 @import "./styles/vendor.css";
+
+/* Tailwind's built-in `dark` variant reads `prefers-color-scheme`, but the theme
+   here is decided by the store (a stored choice, else the OS) and written as a
+   class on <html>. Without this a `dark:` utility would follow the OS while
+   every token followed the app — two answers to one question, on the same
+   element. Point the variant at the class the store writes.
+
+   Below the imports, because `@import` has to stay above every rule. */
+@custom-variant dark (&:where(.dark, .dark *));

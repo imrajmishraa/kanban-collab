@@ -9,10 +9,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import type { DragEvent } from "react";
 
-import BoardCardItem from "./BoardCardItem";
-import CardComposer from "@/features/boards/components/cards/CardComposer";
-
-import { ui } from "@/features/boards/board.helpers";
+import { CardComposer, ui, BoardCardItem } from "@/features/boards";
 
 import type { BoardCard, BoardColumn as BoardColumnType } from "@/types/board";
 

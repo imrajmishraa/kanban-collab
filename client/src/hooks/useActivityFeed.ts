@@ -1,6 +1,6 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 
-import { activityApi } from "@/features/activity/api/activityApi";
+import { activityApi } from "@/features/activity";
 
 import { activityKeys } from "./useBoardActivity";
 

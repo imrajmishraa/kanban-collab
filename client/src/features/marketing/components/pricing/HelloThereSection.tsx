@@ -1,7 +1,7 @@
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Tick02Icon } from "@hugeicons/core-free-icons";
 
-import { PersonAvatar } from "@/features/marketing/components/examples/parts";
+import { PersonAvatar } from "@/features/marketing";
 
 /**
  * The letter.

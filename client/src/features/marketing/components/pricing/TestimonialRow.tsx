@@ -1,5 +1,8 @@
-import { PersonAvatar } from "@/features/marketing/components/examples/parts";
-import { TESTIMONIALS, type Testimonial } from "./testimonials";
+import {
+  PersonAvatar,
+  TESTIMONIALS,
+  type Testimonial,
+} from "@/features/marketing";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { StarIcon } from "@hugeicons/core-free-icons";
 
@@ -56,7 +59,7 @@ export default function TestimonialRow({
         >
           <PersonAvatar
             src={testimonial.avatar}
-            className="size-[76px] [&_svg]:size-8"
+            className="size-19 [&_svg]:size-8"
           />
 
           <p className="mx-auto mt-6 max-w-[320px] text-[17px] font-medium leading-[1.4] tracking-[-0.2px] text-(--text-primary) md:text-[18px]">

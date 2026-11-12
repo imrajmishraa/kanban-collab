@@ -1,11 +1,11 @@
 import { lazy, Suspense } from "react";
 
-import PageHero from "@/features/marketing/components/shared/PageHero";
-import PageShell from "@/features/marketing/components/shared/PageShell";
-import GridSection from "@/features/marketing/components/shared/GridSection";
+import { PageHero, PageShell, GridSection } from "@/features/marketing";
 
-const HomeContact = lazy(
-  () => import("@/features/marketing/components/home/HomeContact"),
+const HomeContact = lazy(() =>
+  import("@/features/marketing").then((module) => ({
+    default: module.HomeContact,
+  })),
 );
 
 const TOPICS = [
@@ -45,7 +45,6 @@ export default function HelpPage() {
   return (
     <PageShell>
       <PageHero
-        eyebrow="Help"
         title="Start with the docs."
         accentTitle="Then ask us directly."
         lead="Most questions are answered by the documentation, because the product has few moving parts. For the rest, there is a person on the other end."
@@ -54,7 +53,6 @@ export default function HelpPage() {
       />
 
       <GridSection
-        eyebrow="Common ground"
         title="Where to look first"
         lead="Six topics that cover most of what people ask on day one."
         items={TOPICS}

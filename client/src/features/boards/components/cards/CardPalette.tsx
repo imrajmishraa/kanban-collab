@@ -9,14 +9,15 @@ import {
   Search01Icon,
 } from "@hugeicons/core-free-icons";
 
-import CardAttachments from "./CardAttachments";
-import CardComments from "./CardComments";
-import CardEditorContent from "./CardEditorContent";
-import CardEditorMeta from "./CardEditorMeta";
+import {
+  type BoardMember,
+  avatarColor,
+  CardAttachments,
+  CardComments,
+  CardEditorContent,
+  CardEditorMeta,
+} from "@/features/boards";
 
-import { avatarColor } from "@/features/boards/board.helpers";
-
-import type { BoardMember } from "@/features/boards/board.helpers";
 import type { BoardCard, BoardColumn as BoardColumnType } from "@/types/board";
 
 interface CardPaletteProps {

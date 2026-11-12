@@ -9,7 +9,7 @@ import {
 
 import { Avatar } from "@/components/board/BoardAvatar";
 
-import { avatarColor } from "@/features/boards/index";
+import { avatarColor } from "@/features/boards";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { useWorkspaces } from "@/hooks/useWorkspaces";
 

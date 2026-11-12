@@ -4,12 +4,9 @@ import { useQuery } from "@tanstack/react-query";
 
 import { DashboardSquare02Icon, Note01Icon } from "@hugeicons/core-free-icons";
 
-import { searchApi } from "@/features/search/api/searchApi";
-import { useBoardsStore } from "@/features/boards/stores/boards";
-import { useSearchStore } from "@/features/search/stores/searchStore";
-
-import { formatDay } from "./formatDay";
-import type { PaletteRow, Scope } from "./types";
+import { useBoardsStore } from "@/features/boards";
+import { useSearchStore, searchApi } from "@/features/search";
+import { formatDay, type PaletteRow, type Scope } from "@/features/dashboard";
 
 /**
  * Debounce a value. The state update happens inside the timer callback (not

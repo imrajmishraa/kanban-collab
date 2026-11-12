@@ -2,34 +2,47 @@ import { lazy, Suspense } from "react";
 
 import { HomeHero } from "@/features/marketing";
 
-const HomeWhyKanban = lazy(
-  () => import("@/features/marketing/components/home/HomeWhyKanban"),
+const HomeWhyKanban = lazy(() =>
+  import("@/features/marketing").then((module) => ({
+    default: module.HomeWhyKanban,
+  })),
 );
-const HomeHowItWorks = lazy(
-  () => import("@/features/marketing/components/home/HomeHowItWorks"),
+const HomeHowItWorks = lazy(() =>
+  import("@/features/marketing").then((module) => ({
+    default: module.HomeHowItWorks,
+  })),
+);
+const HomeOpenSource = lazy(() =>
+  import("@/features/marketing").then((module) => ({
+    default: module.HomeOpenSource,
+  })),
+);
+const HomeFAQ = lazy(() =>
+  import("@/features/marketing").then((module) => ({
+    default: module.HomeFAQ,
+  })),
+);
+const HomeClosingCTA = lazy(() =>
+  import("@/features/marketing").then((module) => ({
+    default: module.HomeClosingCTA,
+  })),
+);
+const HomePricing = lazy(() =>
+  import("@/features/marketing").then((module) => ({
+    default: module.HomePricing,
+  })),
+);
+const HomeSupportedBy = lazy(() =>
+  import("@/features/marketing").then((module) => ({
+    default: module.HomeSupportedBy,
+  })),
 );
 
-const HomeOpenSource = lazy(
-  () => import("@/features/marketing/components/home/HomeOpenSource"),
+const HomeContact = lazy(() =>
+  import("@/features/marketing").then((module) => ({
+    default: module.HomeContact,
+  })),
 );
-const HomeFAQ = lazy(
-  () => import("@/features/marketing/components/home/HomeFAQ"),
-);
-const HomeClosingCTA = lazy(
-  () => import("@/features/marketing/components/home/HomeClosingCTA"),
-);
-const HomePricing = lazy(
-  () => import("@/features/marketing/components/home/HomePricing"),
-);
-const HomeSupportedBy = lazy(
-  () => import("@/features/marketing/components/home/HomeSupportedBy"),
-);
-const HomeContact = lazy(
-  () => import("@/features/marketing/components/home/HomeContact"),
-);
-
-/* NOTE: <homeBackground /> moved into PublicLayout so every public
-   route shares the same depth field. Remove any local import of it. */
 
 /* ── Fallback: the same quiet skeleton FeaturesPage uses, so a loading
    section reads as "coming" rather than "broken". ── */

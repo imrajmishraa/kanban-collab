@@ -1,6 +1,6 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
-import { boardApi } from "@/features/boards/api/boardApi";
+import { boardApi } from "@/features/boards";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 
 export const boardKeys = {

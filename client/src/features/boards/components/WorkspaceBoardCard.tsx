@@ -10,7 +10,7 @@ import {
   isOverdue,
   labelColor,
   ui,
-} from "@/features/boards/board.helpers";
+} from "@/features/boards";
 
 import type { Board, BoardCard, BoardDetails } from "@/types/board";
 

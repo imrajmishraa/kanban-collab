@@ -18,7 +18,10 @@ export { AuthBrandPanel } from "./components/AuthBrandPanel";
 export { FieldError } from "./components/FieldError";
 export { postLoginDestination } from "./utils/postLoginDestination";
 export { default as AuthNavbar } from "./components/AuthNavbar";
+export { CLEAR, FIELD, MARK, PAD } from "./components/fieldChrome";
 export { LoginForm } from "./components/login/LoginForm";
+export { RegisterForm } from "./components/register/RegisterForm";
+export { ForgotPasswordForm } from "./components/forgot/ForgotPasswordForm";
 
 export {
   forgotPasswordSchema,

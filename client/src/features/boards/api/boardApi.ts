@@ -10,7 +10,7 @@ import {
   updateCardSchema,
   moveCardSchema,
   shareBoardSchema,
-} from "@/features/boards/validations/board.validator";
+} from "@/features/boards";
 
 import type { ApiResponse } from "@/types/api";
 import type {

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { ui } from "@/features/boards/board.helpers";
+import { ui } from "@/features/boards";
 
 /** Dashboard-style page container (padding + max width). */
 export function BoardShell({ children }: { children: ReactNode }) {

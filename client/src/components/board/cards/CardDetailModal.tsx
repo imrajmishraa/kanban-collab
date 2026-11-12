@@ -16,7 +16,7 @@ import {
   CardEditorMeta,
   avatarColor,
   type BoardMember,
-} from "@/features/boards/index";
+} from "@/features/boards";
 
 import { Tooltip } from "@/components/Tooltips/ToolTip";
 import { Avatar } from "@/components/board/BoardAvatar";

@@ -6,9 +6,7 @@ import { workspaceApi } from "@/features/workspaces";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { useAuthStore } from "@/stores/useAuthStore";
 
-import { avatarColor } from "@/features/boards/board.helpers";
-
-import type { BoardMember } from "@/features/boards/board.helpers";
+import { type BoardMember, avatarColor } from "@/features/boards";
 
 /**
  * Members of the active workspace, with their names.

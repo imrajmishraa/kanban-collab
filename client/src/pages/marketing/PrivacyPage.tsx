@@ -1,6 +1,4 @@
-import PageHero from "@/features/marketing/components/shared/PageHero";
-import PageShell from "@/features/marketing/components/shared/PageShell";
-import ProseSection from "@/features/marketing/components/shared/ProseSection";
+import { PageHero, PageShell, ProseSection } from "@/features/marketing";
 
 /**
  * A template, not legal advice: it describes what this build collects, which is
@@ -10,7 +8,6 @@ export default function PrivacyPage() {
   return (
     <PageShell>
       <PageHero
-        eyebrow="Legal"
         title="Privacy policy"
         lead="What we collect, why, and how to get it back or have it deleted."
       />

@@ -6,6 +6,7 @@
  * when something outside genuinely needs it.
  */
 export { notificationsApi } from "./api/notificationsApi";
+export { getDashboard } from "./api/dashboardApi";
 export { default as NotificationPreferences } from "./components/NotificationPreferences";
 export { default as SidebarItem } from "./components/SidebarItem";
 export { default as ActivitySection } from "./components/main/ActivitySection";
@@ -31,3 +32,6 @@ export { useDashboard } from "./hooks/useDashboard";
 export { usePinnedBoards } from "./stores/pinnedBoards";
 export { useSidebarState } from "./stores/sidebarState";
 export type { SidebarMode } from "./stores/sidebarState";
+
+export { formatDay } from "./components/search/formatDay";
+export type { PaletteRow, Scope } from "./components/search/types";

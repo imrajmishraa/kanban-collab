@@ -1,3 +1,5 @@
+import { LIGHT_CLASS } from "@/lib/theme";
+
 interface ViewTransitionLike {
   ready: Promise<void>;
   finished: Promise<void>;
@@ -60,7 +62,7 @@ let lastTap = Number.NEGATIVE_INFINITY;
 
 function clearDirectionClasses(): void {
   const root = document.documentElement;
-  root.classList.remove("vt-collapse", "vt-grow"); // vt-running removed from here
+  root.classList.remove("vt-collapse", "vt-grow");
 }
 
 let lockTimer: ReturnType<typeof setTimeout> | null = null;
@@ -144,8 +146,11 @@ export function applyThemeWithReveal(
   const root = document.documentElement;
 
   /* Which way are we going? The class is still the old one, because this runs
-     before the snapshot callback flips it. */
-  const goingDark = root.classList.contains("light");
+     before the snapshot callback flips it. The palette class is `light-theme`
+     (see `LIGHT_CLASS` in lib/theme.ts) — reading `light` here meant this was
+     always false, so every switch ran as a grow with the grow timings, and the
+     `.vt-grow` pre-clip never applied at all. */
+  const goingDark = root.classList.contains(LIGHT_CLASS);
 
   /* The origin is the button itself, so the circle opens out of the control
      rather than off the bottom edge of the window. */
@@ -166,8 +171,8 @@ export function applyThemeWithReveal(
      between the snapshot and `ready`. */
   root.classList.toggle("vt-collapse", goingDark);
   root.classList.toggle("vt-grow", !goingDark);
-  /* Optional: lets CSS disable the control for the length of the reveal. See
-     the `.vt-running` rule in index.css if you want the input locked. */
+  /* Locks the theme control for the length of the reveal. The rule that acts on
+     it is `.vt-running` in styles/components.css. */
   root.classList.add("vt-running");
   root.style.setProperty("--vt-seed", "0px");
   root.style.setProperty("--vt-x", `${x}px`);

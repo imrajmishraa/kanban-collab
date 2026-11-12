@@ -5,7 +5,7 @@ import { Cancel01Icon, Search01Icon } from "@hugeicons/core-free-icons";
 
 import { Tooltip } from "@/components/Tooltips/ToolTip";
 
-import type { Scope } from "./types";
+import type { Scope } from "@/features/dashboard";
 
 const TABS: Array<{ id: Scope; label: string }> = [
   { id: "cards", label: "Cards" },

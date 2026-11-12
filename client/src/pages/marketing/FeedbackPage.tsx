@@ -1,7 +1,6 @@
 import { useState } from "react";
 
-import PageHero from "@/features/marketing/components/shared/PageHero";
-import PageShell from "@/features/marketing/components/shared/PageShell";
+import { PageHero, PageShell } from "@/features/marketing";
 
 /** Where feedback goes until there is an endpoint for it. */
 const FEEDBACK_INBOX = "raj212558@gmail.com";
@@ -26,7 +25,6 @@ export default function FeedbackPage() {
   return (
     <PageShell>
       <PageHero
-        eyebrow="Feedback"
         title="Tell us what is wrong"
         accentTitle="with the product, not the copy."
         lead="Bug reports, missing features, a screen that made no sense — all of it is useful, and all of it gets read."
@@ -40,7 +38,7 @@ export default function FeedbackPage() {
         >
           <label
             htmlFor="feedback-email"
-            className="block font-mono text-[10px] uppercase tracking-[0.18em] text-(--text-secondary)/70"
+            className="block font-sans text-[12px] tracking-normal text-(--text-secondary)/70"
           >
             Your email
           </label>
@@ -49,13 +47,13 @@ export default function FeedbackPage() {
             type="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            placeholder="you@team.com"
+            placeholder="Email address"
             className="mt-2 h-10 w-full rounded-lg border border-(--hairline) bg-(--bg-root) px-3 text-[14px] text-(--text-primary) outline-hidden placeholder:text-(--text-subtle) focus:border-(--hairline-strong)"
           />
 
           <label
             htmlFor="feedback-message"
-            className="mt-5 block font-mono text-[10px] uppercase tracking-[0.18em] text-(--text-secondary)/70"
+            className="mt-5 block font-sans text-[12px] tracking-normal text-(--text-secondary)/70"
           >
             What happened
           </label>

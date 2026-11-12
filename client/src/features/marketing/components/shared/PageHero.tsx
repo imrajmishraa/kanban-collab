@@ -2,8 +2,6 @@ import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 
 interface PageHeroProps {
-  /** The small label above the title, in the mono register. */
-  eyebrow: string;
   /** The title, split so the second half can sit in the quieter ink. */
   title: string;
   accentTitle?: string;
@@ -22,7 +20,6 @@ interface PageHeroProps {
  * ones `HomeHero` was tuned to; change them here and every page follows.
  */
 export default function PageHero({
-  eyebrow,
   title,
   accentTitle,
   lead,
@@ -34,10 +31,6 @@ export default function PageHero({
     <section className="light-theme relative overflow-hidden bg-(--bg-root)">
       <div className="relative mx-auto w-full max-w-384 border-x border-(--hairline) px-4 pt-14 pb-10 sm:px-6 sm:pt-20 lg:px-8 lg:pb-24">
         <div className="mx-auto w-full max-w-3xl">
-          <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-(--text-secondary)/60">
-            {eyebrow}
-          </p>
-
           <h1 className="mt-5 font-sans text-[34px] font-bold leading-[1.12] tracking-[-1px] text-(--text-primary) sm:text-[40px] md:text-[44px] md:tracking-[-1.4px]">
             {title}
             {accentTitle ? (

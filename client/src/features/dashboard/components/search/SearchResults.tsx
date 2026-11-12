@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AddCircleIcon } from "@hugeicons/core-free-icons";
 
-import type { PaletteRow, Scope } from "./types";
+import type { PaletteRow, Scope } from "@/features/dashboard";
 
 function SectionLabel({ children }: { children: ReactNode }) {
   return (

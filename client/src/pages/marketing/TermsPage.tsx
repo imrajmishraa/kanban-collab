@@ -1,6 +1,4 @@
-import PageHero from "@/features/marketing/components/shared/PageHero";
-import PageShell from "@/features/marketing/components/shared/PageShell";
-import ProseSection from "@/features/marketing/components/shared/ProseSection";
+import { PageHero, PageShell, ProseSection } from "@/features/marketing";
 
 /**
  * A template, not legal advice. It describes the terms this build is meant to
@@ -10,7 +8,6 @@ export default function TermsPage() {
   return (
     <PageShell>
       <PageHero
-        eyebrow="Legal"
         title="Terms of Service"
         lead="The short version: the software is open source, your data is yours, and we are not liable for how you run it."
       />

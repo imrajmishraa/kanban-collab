@@ -6,7 +6,7 @@ import {
   Layout01Icon,
 } from "@hugeicons/core-free-icons";
 
-import { ui } from "@/features/boards/board.helpers";
+import { ui } from "@/features/boards";
 
 interface BoardOverviewProps {
   columnCount: number;

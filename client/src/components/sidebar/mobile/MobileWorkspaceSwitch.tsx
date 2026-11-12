@@ -14,7 +14,7 @@ import {
 import { Avatar } from "@/components/board/BoardAvatar";
 
 import { useNewWorkspaceDialog } from "@/components/dashboard/workspace/create/newWorkspaceDialog.context";
-import { avatarColor } from "@/features/boards/index";
+import { avatarColor } from "@/features/boards";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { cn } from "@/utils/cn";
 

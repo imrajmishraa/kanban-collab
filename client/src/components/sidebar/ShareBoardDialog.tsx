@@ -7,7 +7,7 @@ import { Loading03Icon, Share08Icon } from "@hugeicons/core-free-icons";
 
 import { DialogShell } from "@/features/workspaces";
 
-import { boardApi } from "@/features/boards/api/boardApi";
+import { boardApi } from "@/features/boards";
 
 interface ShareBoardDialogProps {
   boardId: string;

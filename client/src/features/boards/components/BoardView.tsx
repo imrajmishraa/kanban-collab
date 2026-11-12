@@ -2,13 +2,20 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { DragEvent } from "react";
 
 import BoardColumns from "@/components/board/BoardColumns";
-import BoardHeader from "./BoardHeader";
-import BoardListView from "./BoardListView";
-import BoardOverview from "./BoardOverview";
-import BoardPresence from "./BoardPresence";
-import BoardToolbar from "./BoardToolbar";
-import CardPalette from "@/features/boards/components/cards/CardPalette";
-import BoardActivityPanel from "./BoardActivityPanel";
+import {
+  BoardHeader,
+  BoardListView,
+  BoardOverview,
+  BoardToolbar,
+  BoardPresence,
+  BoardActivityPanel,
+  CardPalette,
+  isOverdue,
+  type SortKey,
+  type ViewMode,
+  useActiveWorkspaceMembers,
+  useBoardMutations,
+} from "@/features/boards";
 import ConfirmDialog from "@/components/dialog/ConfirmDialog";
 import { AddColumnDialog, EditColumnDialog } from "@/features/workspaces";
 
@@ -21,12 +28,7 @@ import {
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { useAuthStore } from "@/stores/useAuthStore";
 
-import { isOverdue } from "@/features/boards/board.helpers";
-import { useActiveWorkspaceMembers } from "@/features/boards/hooks/useActiveWorkspaceMembers";
-import { useBoardMutations } from "@/features/boards/hooks/useBoardMutations";
-
 import type { BoardCard, BoardDetails } from "@/types/board";
-import type { SortKey, ViewMode } from "@/features/boards/board.helpers";
 
 interface BoardViewProps {
   board: BoardDetails;

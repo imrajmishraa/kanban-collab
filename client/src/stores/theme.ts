@@ -2,52 +2,23 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
 import { applyThemeWithReveal } from "@/lib/themeReveal";
+import {
+  THEME_STORAGE_KEY,
+  applyTheme,
+  readStoredMode,
+  resolveTheme,
+  watchSystemTheme,
+  type Theme,
+  type ThemeMode,
+} from "@/lib/theme";
 
-/** What the user picked. "system" follows the OS and keeps following it. */
-export type ThemeMode = "system" | "light" | "dark";
+export type { Theme, ThemeMode };
 
-/** What that resolves to on screen. */
-export type Theme = "light" | "dark";
-
-const STORAGE_KEY = "kanban-theme";
-
-function systemTheme(): Theme {
-  if (typeof window === "undefined" || !window.matchMedia) return "dark";
-  return window.matchMedia("(prefers-color-scheme: light)").matches
-    ? "light"
-    : "dark";
-}
-
-function resolveTheme(mode: ThemeMode): Theme {
-  return mode === "system" ? systemTheme() : mode;
-}
-
-function applyTheme(theme: Theme) {
-  if (typeof document === "undefined") return;
-  const root = document.documentElement;
-  /* Dark is the :root default, so `.light` is the override and `.dark` is kept
-     for the pre-paint script and for anything that reads it. */
-  root.classList.toggle("light-theme", theme === "light");
-  root.classList.toggle("dark", theme === "dark");
-  root.style.colorScheme = theme;
-}
-
-/* Only one listener at a time: switching away from system, or back to it,
-   replaces the previous one. */
-let stopWatching: (() => void) | null = null;
-
-function watchSystemTheme(onChange: (theme: Theme) => void) {
-  stopWatching?.();
-  stopWatching = null;
-
-  if (typeof window === "undefined" || !window.matchMedia) return;
-
-  const query = window.matchMedia("(prefers-color-scheme: light)");
-  const handler = () => onChange(query.matches ? "light" : "dark");
-
-  query.addEventListener("change", handler);
-  stopWatching = () => query.removeEventListener("change", handler);
-}
+/* The first render has to agree with `<html>`, which `index.html` painted
+   before this module existed. So the initial state is the stored choice, not a
+   fixed default: with nothing stored, `"system"` resolves to the OS, which is
+   the same answer the pre-paint script reached. */
+const initialMode = readStoredMode() ?? "system";
 
 interface ThemeState {
   /** The user's choice, which is what the control shows. */
@@ -64,8 +35,8 @@ interface ThemeState {
 export const useThemeStore = create<ThemeState>()(
   persist(
     (set, get) => ({
-      mode: "system",
-      theme: resolveTheme("system"),
+      mode: initialMode,
+      theme: resolveTheme(initialMode),
 
       setMode: (mode, origin) => {
         const theme = resolveTheme(mode);
@@ -78,23 +49,11 @@ export const useThemeStore = create<ThemeState>()(
         if (get().theme !== theme) {
           applyThemeWithReveal(() => applyTheme(theme), origin);
         }
-
-        if (mode === "system") {
-          watchSystemTheme((next) => {
-            applyTheme(next);
-            set({ theme: next });
-          });
-        } else {
-          /* Leaving system means the OS no longer gets a say. */
-          stopWatching?.();
-          stopWatching = null;
-        }
-
         set({ mode, theme });
       },
     }),
     {
-      name: STORAGE_KEY,
+      name: THEME_STORAGE_KEY,
       storage: createJSONStorage(() => localStorage),
       /* v1 stores `mode`. v0 stored `theme`, with no notion of system. */
       version: 1,
@@ -108,21 +67,59 @@ export const useThemeStore = create<ThemeState>()(
         }
         return persisted as { mode: ThemeMode };
       },
-      onRehydrateStorage: () => (state) => {
-        if (!state) return;
-
-        const theme = resolveTheme(state.mode);
-        applyTheme(theme);
-
-        if (state.mode === "system") {
-          watchSystemTheme((next) => {
-            applyTheme(next);
-            useThemeStore.setState({ theme: next });
-          });
-        }
-
-        useThemeStore.setState({ theme });
-      },
+      /* Nothing here on purpose. Binding the document is `installThemeMatcher`'s
+         job and it runs from `main.tsx`; rehydrating used to start a second OS
+         listener of its own, so two callbacks raced to write the same class. */
     },
   ),
 );
+
+/* ── the binding ─────────────────────────────────────────────────────────
+   Installed once, from `main.tsx`, before the first render. */
+
+let uninstall: (() => void) | null = null;
+
+/**
+ * Binds `<html>` to the matcher: applies the stored theme (or the OS when
+ * nothing is stored) and keeps following the OS while the mode is `"system"`.
+ *
+ * One listener at a time. Picking a side stops the OS from having a say;
+ * picking "system" again hands it back. Either way the class itself is written
+ * by `setMode`, through the reveal — this only moves the listener.
+ *
+ * @returns a teardown, for tests and for HMR
+ */
+export function installThemeMatcher(): () => void {
+  if (uninstall) return uninstall;
+
+  let stopWatching: (() => void) | null = null;
+
+  const show = (theme: Theme) => {
+    applyTheme(theme);
+    useThemeStore.setState({ theme });
+  };
+
+  /* The OS changing under us is not a choice, so it must not run the reveal:
+     there is no control to start the circle from. */
+  const repoint = (mode: ThemeMode) => {
+    stopWatching?.();
+    stopWatching = mode === "system" ? watchSystemTheme(show) : null;
+  };
+
+  const mode = useThemeStore.getState().mode;
+  show(resolveTheme(mode));
+  repoint(mode);
+
+  const unsubscribe = useThemeStore.subscribe((state, previous) => {
+    if (state.mode !== previous.mode) repoint(state.mode);
+  });
+
+  uninstall = () => {
+    unsubscribe();
+    stopWatching?.();
+    stopWatching = null;
+    uninstall = null;
+  };
+
+  return uninstall;
+}

@@ -1,5 +1,4 @@
 interface SectionHeadProps {
-  eyebrow?: string;
   title: string;
   lead?: string;
   /** `sans` for the marketing sections, `mono` for the feature register. */
@@ -12,19 +11,12 @@ interface SectionHeadProps {
  * added later is indistinguishable from the ones already on the site.
  */
 export default function SectionHead({
-  eyebrow,
   title,
   lead,
   register = "sans",
 }: SectionHeadProps) {
   return (
     <header className="max-w-2xl">
-      {eyebrow ? (
-        <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-(--text-secondary)/70">
-          {eyebrow}
-        </p>
-      ) : null}
-
       <h2
         className={
           register === "mono"

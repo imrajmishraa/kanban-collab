@@ -9,7 +9,7 @@ import {
   Time04Icon,
 } from "@hugeicons/core-free-icons";
 
-import { BoardShell, avatarColor } from "@/features/boards/index";
+import { BoardShell, avatarColor } from "@/features/boards";
 import BoardError from "@/components/board/BoardError";
 import { Avatar } from "@/components/board/BoardAvatar";
 

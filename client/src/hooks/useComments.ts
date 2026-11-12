@@ -4,7 +4,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 
-import { commentsApi } from "@/features/boards/api/commentsApi";
+import { commentsApi } from "@/features/boards";
 
 import type { CreateCommentPayload } from "@/types/comment";
 

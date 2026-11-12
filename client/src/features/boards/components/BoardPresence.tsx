@@ -1,4 +1,4 @@
-import { initials } from "@/features/boards/board.helpers";
+import { initials } from "@/features/boards";
 
 interface PresencePeer {
   userId: string;

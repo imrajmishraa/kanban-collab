@@ -24,6 +24,7 @@ import {
   OAuthButton,
   FieldError,
 } from "@/features/auth";
+import { CLEAR, FIELD, MARK, PAD } from "../fieldChrome";
 
 function loginErrorMessage(err: unknown): string {
   if (!(err instanceof ApiClientError)) {
@@ -51,32 +52,11 @@ function loginErrorMessage(err: unknown): string {
   }
 }
 
-/** The field chrome, shared by both inputs so they cannot drift apart. */
-const FIELD = [
-  "h-12 w-full rounded-xl border bg-(--bg-surface) pr-4",
-  "text-[15px] text-(--text-primary) placeholder:text-(--text-subtle)",
-  "outline-hidden transition-colors duration-150",
-  "hover:border-(--hairline-strong) focus:border-(--brand) focus:bg-(--tint-2)",
-].join(" ");
-
-/**
- * The mark at the left edge of a field.
- */
-const MARK =
-  "pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-(--text-subtle) opacity-0 transition-[opacity,color] duration-150 peer-focus:opacity-100 peer-focus:text-(--brand) peer-not-placeholder-shown:opacity-100";
-
-/** Padding follows the mark: reserved while it shows, plain while it does not. */
-const PAD = "pl-4 focus:pl-11 [&:not(:placeholder-shown)]:pl-11";
-
-/** The clear button: only while there is something to clear. */
-const CLEAR =
-  "absolute top-1/2 hidden size-6 -translate-y-1/2 place-items-center rounded-md text-(--text-subtle) transition-colors duration-150 peer-not-placeholder-shown:grid hover:bg-(--tint-4) hover:text-(--text-primary)";
-
 /**
  * The sign-in column.
  */
 export function LoginForm() {
-  const { login, refresh } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const destination = postLoginDestination(location.state);
@@ -112,24 +92,10 @@ export function LoginForm() {
     if (errors[field]) clearErrors(field);
   };
 
-  const handleOAuthSuccess = async () => {
-    const ok = await refresh();
-    if (ok) {
-      toastSuccess("Login Success", "Taking you to your workspaces.");
-      navigate(destination, { replace: true });
-    }
-  };
-
-  const handleOAuthError = (errorMsg: string) => {
-    toastError(new Error(errorMsg));
-  };
-
+  /* The provider flow is a top-level navigation: this component does not see
+     the outcome. `/auth/callback` refreshes the session and navigates. */
   const { signInWithGoogle, signInWithGithub, loadingProvider } =
-    useUnifiedOAuth({
-      onSuccess: handleOAuthSuccess,
-      onError: handleOAuthError,
-      rememberMe: remember,
-    });
+    useUnifiedOAuth({ rememberMe: remember });
 
   const onSubmit = handleSubmit(async (values) => {
     try {
@@ -165,7 +131,7 @@ export function LoginForm() {
 
       <div className="my-6 flex items-center gap-3">
         <span className="h-px flex-1 bg-(--hairline)" />
-        <span className="font-mono text-[10px] text-(--text-subtle)">
+        <span className="font-sans text-[12px] text-(--text-subtle)">
           Or With Email
         </span>
         <span className="h-px flex-1 bg-(--hairline)" />

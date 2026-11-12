@@ -3,25 +3,35 @@ import { lazy } from "react";
 import { HowItWorksHero } from "@/features/marketing";
 import { DeferredSection } from "@/features/marketing";
 
-const WorkflowOverviewSection = lazy(
-  () =>
-    import("@/features/marketing/components/howItWorks/WorkflowOverviewSection"),
+const WorkflowOverviewSection = lazy(() =>
+  import("@/features/marketing").then((module) => ({
+    default: module.WorkflowOverviewSection,
+  })),
 );
-const StepOneSection = lazy(
-  () => import("@/features/marketing/components/howItWorks/StepOneSection"),
+const StepOneSection = lazy(() =>
+  import("@/features/marketing").then((module) => ({
+    default: module.StepOneSection,
+  })),
 );
-const StepTwoSection = lazy(
-  () => import("@/features/marketing/components/howItWorks/StepTwoSection"),
+const StepTwoSection = lazy(() =>
+  import("@/features/marketing").then((module) => ({
+    default: module.StepTwoSection,
+  })),
 );
-const StepThreeSection = lazy(
-  () => import("@/features/marketing/components/howItWorks/StepThreeSection"),
+const StepThreeSection = lazy(() =>
+  import("@/features/marketing").then((module) => ({
+    default: module.StepThreeSection,
+  })),
 );
-const CollaborationFlowSection = lazy(
-  () =>
-    import("@/features/marketing/components/howItWorks/CollaborationFlowSection"),
+const CollaborationFlowSection = lazy(() =>
+  import("@/features/marketing").then((module) => ({
+    default: module.CollaborationFlowSection,
+  })),
 );
-const HowItWorksCTA = lazy(
-  () => import("@/features/marketing/components/howItWorks/HowItWorksCTA"),
+const HowItWorksCTA = lazy(() =>
+  import("@/features/marketing").then((module) => ({
+    default: module.HowItWorksCTA,
+  })),
 );
 
 export default function HowItWorksPage() {

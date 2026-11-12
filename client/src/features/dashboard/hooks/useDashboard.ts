@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { getDashboard } from "@/features/dashboard/api/dashboardApi";
+import { getDashboard } from "@/features/dashboard";
 
 export function useDashboard() {
   return useQuery({

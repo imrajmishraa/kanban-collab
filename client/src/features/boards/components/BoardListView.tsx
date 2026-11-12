@@ -1,6 +1,6 @@
 import { AvatarStack } from "@/components/board/BoardAvatar";
 
-import { formatDue, isOverdue } from "@/features/boards/board.helpers";
+import { formatDue, isOverdue } from "@/features/boards";
 
 import type { BoardCard, BoardColumn as BoardColumnType } from "@/types/board";
 

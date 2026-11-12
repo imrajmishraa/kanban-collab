@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { attachmentsApi } from "@/features/boards/api/attachmentsApi";
+import { attachmentsApi } from "@/features/boards";
 
 export const attachmentKeys = {
   all: ["attachments"] as const,

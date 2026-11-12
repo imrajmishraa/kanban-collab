@@ -8,9 +8,8 @@ import {
   editorSmallField,
 } from "./CardEditorContent";
 
-import { labelColor } from "@/features/boards/board.helpers";
+import { type BoardMember, labelColor } from "@/features/boards";
 
-import type { BoardMember } from "@/features/boards/board.helpers";
 import type { BoardCard } from "@/types/board";
 
 interface CardEditorMetaProps {

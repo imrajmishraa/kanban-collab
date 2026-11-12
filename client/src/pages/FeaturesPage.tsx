@@ -2,23 +2,35 @@ import { lazy, Suspense } from "react";
 
 import { FeaturesHero } from "@/features/marketing";
 
-const CoreFeaturesSection = lazy(
-  () => import("@/features/marketing/components/features/CoreFeaturesSection"),
+const CoreFeaturesSection = lazy(() =>
+  import("@/features/marketing").then((module) => ({
+    default: module.CoreFeaturesSection,
+  })),
 );
-const CollaborationSection = lazy(
-  () => import("@/features/marketing/components/features/CollaborationSection"),
+const CollaborationSection = lazy(() =>
+  import("@/features/marketing").then((module) => ({
+    default: module.CollaborationSection,
+  })),
 );
-const ProductivitySection = lazy(
-  () => import("@/features/marketing/components/features/ProductivitySection"),
+const ProductivitySection = lazy(() =>
+  import("@/features/marketing").then((module) => ({
+    default: module.ProductivitySection,
+  })),
 );
-const SecuritySection = lazy(
-  () => import("@/features/marketing/components/features/SecuritySection"),
+const SecuritySection = lazy(() =>
+  import("@/features/marketing").then((module) => ({
+    default: module.SecuritySection,
+  })),
 );
-const TechnologySection = lazy(
-  () => import("@/features/marketing/components/features/TechnologySection"),
+const TechnologySection = lazy(() =>
+  import("@/features/marketing").then((module) => ({
+    default: module.TechnologySection,
+  })),
 );
-const FeaturesCTA = lazy(
-  () => import("@/features/marketing/components/features/FeaturesCTA"),
+const FeaturesCTA = lazy(() =>
+  import("@/features/marketing").then((module) => ({
+    default: module.FeaturesCTA,
+  })),
 );
 
 /* ── Fallback: a quiet skeleton in the page's own visual language,

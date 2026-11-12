@@ -53,7 +53,7 @@ export default function DarkWorkspaceExample() {
             <div
               key={label}
               className={[
-                "flex items-center gap-2 rounded-md px-2 py-[6px] text-[10.5px]",
+                "flex items-center gap-2 rounded-md px-2 py-1.5 text-[10.5px]",
                 active
                   ? "bg-(--tint-4) font-semibold"
                   : "text-(--text-secondary)",
@@ -67,7 +67,7 @@ export default function DarkWorkspaceExample() {
             {["Overview", "Merchants", "Platforms"].map((row) => (
               <div
                 key={row}
-                className="flex items-center justify-between rounded-md px-2 py-[6px] text-[10.5px] text-(--text-muted)"
+                className="flex items-center justify-between rounded-md px-2 py-1.5 text-[10.5px] text-(--text-muted)"
               >
                 {row}
                 <span className="font-mono text-[9px] tracking-[0.08em]">
@@ -94,7 +94,7 @@ export default function DarkWorkspaceExample() {
               <div
                 key={label}
                 className={[
-                  "mb-0.5 flex items-center gap-1.5 rounded-md px-1.5 py-[6px] text-[10px]",
+                  "mb-0.5 flex items-center gap-1.5 rounded-md px-1.5 py-1.5 text-[10px]",
                   active
                     ? "bg-(--tint-4) font-semibold text-(--text-primary)"
                     : "text-(--text-secondary)",
@@ -177,7 +177,7 @@ export default function DarkWorkspaceExample() {
                 viewBox="0 0 300 90"
                 preserveAspectRatio="none"
                 aria-hidden="true"
-                className="ml-6 h-[86px] w-[calc(100%-1.5rem)]"
+                className="ml-6 h-21.5 w-[calc(100%-1.5rem)]"
               >
                 <g
                   stroke="var(--hairline)"

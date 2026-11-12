@@ -1,7 +1,7 @@
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowRight01Icon } from "@hugeicons/core-free-icons";
 
-import type { PaletteRow, Scope } from "./types";
+import type { PaletteRow, Scope } from "@/features/dashboard";
 
 interface SearchPreviewProps {
   active: PaletteRow | undefined;

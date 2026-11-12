@@ -1,11 +1,11 @@
 import { lazy, Suspense } from "react";
 
-import PageHero from "@/features/marketing/components/shared/PageHero";
-import PageShell from "@/features/marketing/components/shared/PageShell";
-import GridSection from "@/features/marketing/components/shared/GridSection";
+import { PageHero, PageShell, GridSection } from "@/features/marketing";
 
-const HomeClosingCTA = lazy(
-  () => import("@/features/marketing/components/home/HomeClosingCTA"),
+const HomeClosingCTA = lazy(() =>
+  import("@/features/marketing").then((module) => ({
+    default: module.HomeClosingCTA,
+  })),
 );
 
 /**
@@ -56,7 +56,6 @@ export default function TestimonialsPage() {
   return (
     <PageShell>
       <PageHero
-        eyebrow="Testimonials"
         title="What changes when the board"
         accentTitle="is the source of truth."
         lead="Notes from teams running their work on a board instead of a thread. Replace these with your own as they come in."
@@ -65,7 +64,6 @@ export default function TestimonialsPage() {
       />
 
       <GridSection
-        eyebrow="From the teams"
         title="Six things people notice first"
         lead="Not features — the thing that stops happening once the board is accurate."
         items={NOTES}

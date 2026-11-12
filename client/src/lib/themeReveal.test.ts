@@ -111,8 +111,11 @@ function teardown() {
 }
 
 const root = () => document.documentElement;
-const setLight = () => root().classList.add("light");
-const clearLight = () => root().classList.remove("light");
+/* The real palette class. This used to say `light`, which is the class the
+   module read — so the suite and the bug agreed with each other and neither
+   agreed with `styles/tokens.css`. */
+const setLight = () => root().classList.add("light-theme");
+const clearLight = () => root().classList.remove("light-theme");
 
 // Each test runs far enough after the previous one that the 200ms coalesce
 // window has always expired; tests that want a repeat press create it
@@ -147,8 +150,9 @@ describe("applyThemeWithReveal", () => {
     harness.releaseReady();
     await flush();
 
-    // Going light: the new frame grows out of the control, so the clip belongs
-    // to ::view-transition-new(root).
+    // From dark to light: the new frame grows out of the control, so the clip
+    // belongs to ::view-transition-new(root). No `light-theme` class yet, which
+    // is the "currently dark" signal.
     expect(harness.options[0]?.pseudoElement).toBe(
       "::view-transition-new(root)",
     );

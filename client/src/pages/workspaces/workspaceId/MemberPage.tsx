@@ -8,7 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Avatar } from "@/components/board/BoardAvatar";
 import ConfirmDialog from "@/components/dialog/ConfirmDialog";
 
-import { avatarColor } from "@/features/boards/index";
+import { avatarColor } from "@/features/boards";
 
 const ROLE_LABEL: Record<string, string> = {
   owner: "Owner",

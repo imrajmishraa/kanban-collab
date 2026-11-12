@@ -2,7 +2,7 @@ import { useBoardActivity } from "@/hooks/useBoardActivity";
 
 import { Avatar } from "@/components/board/BoardAvatar";
 
-import { avatarColor, formatRelative } from "@/features/boards/board.helpers";
+import { avatarColor, formatRelative } from "@/features/boards";
 
 import type { ActivityEntry } from "@/types/activity";
 

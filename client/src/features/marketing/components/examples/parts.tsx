@@ -88,8 +88,8 @@ export function MenuRow({
   return (
     <div
       className={[
-        "flex gap-2 px-2 py-[7px] text-[12px] leading-[1.45] tracking-[-0.2px]",
-        "sm:gap-3 sm:px-2.5 sm:py-[9px] sm:text-[14px]",
+        "flex gap-2 px-2 py-1.75 text-[12px] leading-[1.45] tracking-[-0.2px]",
+        "sm:gap-3 sm:px-2.5 sm:py-2.25 sm:text-[14px]",
         helper ? "items-start" : "items-center",
         active ? "rounded-md bg-(--tint-4) font-semibold" : "",
         danger ? "text-(--danger)" : "",
@@ -285,7 +285,7 @@ export function AccountHeader({
 /** The plan chip: brand wash, brand line, mono caps — never a solid fill. */
 export function ProTag() {
   return (
-    <span className="ml-auto inline-flex shrink-0 items-center gap-1 rounded-full border border-(--brand-line) bg-(--brand-wash) px-2 py-[3px] font-mono text-[9px] font-semibold uppercase tracking-[0.1em] text-(--brand)">
+    <span className="ml-auto inline-flex shrink-0 items-center gap-1 rounded-full border border-(--brand-line) bg-(--brand-wash) px-2 py-0.75 font-mono text-[9px] font-semibold uppercase tracking-widest text-(--brand)">
       <span className="size-1 rounded-full bg-(--brand)" />
       Pro
     </span>
@@ -318,7 +318,7 @@ export function Switch({ on = false, className = "" }: SwitchProps) {
     <span
       aria-hidden="true"
       className={[
-        "ml-auto h-[18px] w-[30px] shrink-0 rounded-full transition-colors duration-150",
+        "ml-auto h-4.5 w-7.5 shrink-0 rounded-full transition-colors duration-150",
         on ? "bg-(--brand)" : "bg-(--tint-10)",
         className,
       ]
@@ -328,7 +328,7 @@ export function Switch({ on = false, className = "" }: SwitchProps) {
       <span
         className={[
           "mt-0.5 block size-3.5 rounded-full border border-(--hairline) bg-(--bg-surface) transition-transform duration-150",
-          on ? "translate-x-[14px]" : "translate-x-0.5",
+          on ? "translate-x-3.5" : "translate-x-0.5",
         ].join(" ")}
       />
     </span>
@@ -339,7 +339,7 @@ export function Switch({ on = false, className = "" }: SwitchProps) {
 export function Mono({ children, className = "" }: SlotProps) {
   return (
     <span
-      className={`font-mono text-[10px] uppercase leading-[14px] tracking-[0.16em] text-(--text-muted) ${className}`}
+      className={`font-mono text-[10px] uppercase leading-3.5 tracking-[0.16em] text-(--text-muted) ${className}`}
     >
       {children}
     </span>

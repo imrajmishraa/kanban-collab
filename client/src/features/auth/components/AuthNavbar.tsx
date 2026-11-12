@@ -1,7 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 
 import KanbanIcon from "@/assets/KanbanIcon";
-import { NAV } from "@/components/marketing/landing/navConfig";
 
 export default function AuthNavbar() {
   const { pathname } = useLocation();
@@ -15,13 +14,8 @@ export default function AuthNavbar() {
   return (
     <header
       className={[
-        /* Pinned light: the auth layout sits outside any page-level
-           `light-theme` wrapper, so without this every token here resolves
-           against the dark `:root` — a black bar above a white card. */
-        "marketing sticky top-0 z-40 mx-auto h-16",
-        NAV.surface,
-        NAV.ink,
-        NAV.edge,
+        "sticky top-0 z-40 mx-auto h-16",
+        "bg-(--bg-root) text-(--text-primary)",
       ].join(" ")}
     >
       <div className="relative m-auto flex h-18 max-w- items-center justify-between gap-4 px-4 pt-1.5 sm:px-7">

@@ -1,17 +1,21 @@
 import { lazy, Suspense, type ComponentType } from "react";
 
-import PageShell from "@/features/marketing/components/shared/PageShell";
-import AccountMenuExample from "@/features/marketing/components/examples/AccountMenuExample";
-import BoardMenusExample from "@/features/marketing/components/examples/BoardMenusExample";
-import CommandPaletteExample from "@/features/marketing/components/examples/CommandPaletteExample";
-import DarkWorkspaceExample from "@/features/marketing/components/examples/DarkWorkspaceExample";
-import ExamplesHero from "@/features/marketing/components/examples/ExamplesHero";
-import NotificationsExample from "@/features/marketing/components/examples/NotificationsExample";
-import ShareDialogExample from "@/features/marketing/components/examples/ShareDialogExample";
-import ViewsSection from "@/features/marketing/components/examples/ViewsSection";
+import {
+  AccountMenuExample,
+  PageShell,
+  BoardMenusExample,
+  CommandPaletteExample,
+  DarkWorkspaceExample,
+  ExamplesHero,
+  NotificationsExample,
+  ShareDialogExample,
+  ViewsSection,
+} from "@/features/marketing";
 
-const HomeClosingCTA = lazy(
-  () => import("@/features/marketing/components/home/HomeClosingCTA"),
+const HomeClosingCTA = lazy(() =>
+  import("@/features/marketing").then((module) => ({
+    default: module.HomeClosingCTA,
+  })),
 );
 
 /**
