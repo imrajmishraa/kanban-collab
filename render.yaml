@@ -14,7 +14,7 @@ services:
     envVars:
       # Pin the build to Node 22 to match client/package.json "engines".
       - key: NODE_VERSION
-        value: "22"
+        value: "26"
       # F-3: Vite inlines VITE_* at build time. The static client and the API are
       # separate origins on Render, so point the socket at the API host.
       - key: VITE_WS_URL

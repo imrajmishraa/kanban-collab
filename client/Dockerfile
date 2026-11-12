@@ -9,7 +9,7 @@
 # API URL baked into the bundle.
 # ─────────────────────────────────────────────────────────────────────────────
 
-ARG NODE_VERSION=22
+ARG NODE_VERSION=26
 
 # ── Stage 1: build ───────────────────────────────────────────────────────────
 FROM node:${NODE_VERSION}-bookworm-slim AS build

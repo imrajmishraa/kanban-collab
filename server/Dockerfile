@@ -11,7 +11,7 @@
 # non-root user. Build tools live only in the `deps` stage, which is discarded.
 # ─────────────────────────────────────────────────────────────────────────────
 
-ARG NODE_VERSION=22
+ARG NODE_VERSION=26
 
 # ── Stage 1: production dependencies ─────────────────────────────────────────
 FROM node:${NODE_VERSION}-bookworm-slim AS deps
