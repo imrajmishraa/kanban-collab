@@ -16,6 +16,7 @@ import { getCacheClient } from "../../../../infrastructure/cache/cacheClient";
 import { commentControllerLogger } from "../../../../infrastructure/logging/childLogger";
 import { cardNotFoundError } from "../../../../shared/errors/card/card";
 import { notWorkspaceMemberError } from "../../../../shared/errors/workspace/workspace";
+import { assertWorkspaceWritable } from "../../../../application/workspaces/membership";
 import { guestCannotModifyBoardError } from "../../../../shared/errors/board/board";
 
 /**
@@ -309,6 +310,8 @@ const createComment = asyncHandler(async (req: AuthenticatedRequest, res) => {
 
   const { card, role } = await loadCardContext(cardId, userId);
 
+  await assertWorkspaceWritable(card.workspaceId);
+
   if (role === "guest") {
     throw guestCannotModifyBoardError();
   }
@@ -489,6 +492,8 @@ const voteComment = asyncHandler(async (req: AuthenticatedRequest, res) => {
 
   const { comment, role } = await loadCommentContext(commentId, userId);
 
+  await assertWorkspaceWritable(comment.workspaceId);
+
   if (role === "guest") {
     throw guestCannotModifyBoardError();
   }
@@ -564,6 +569,8 @@ const clearVote = asyncHandler(async (req: AuthenticatedRequest, res) => {
 
   const { comment } = await loadCommentContext(commentId, userId);
 
+  await assertWorkspaceWritable(comment.workspaceId);
+
   const existing = await CommentLikeModel.findOneAndDelete({
     commentId: new Types.ObjectId(commentId),
     userId: new Types.ObjectId(userId),
@@ -604,6 +611,8 @@ const updateComment = asyncHandler(async (req: AuthenticatedRequest, res) => {
 
   const { comment } = await loadCommentContext(commentId, userId);
 
+  await assertWorkspaceWritable(comment.workspaceId);
+
   /* Only the author may edit. Admins can delete but not rewrite someone
      else's words, which would misattribute them. */
   if (comment.userId.toString() !== userId) {
@@ -638,6 +647,8 @@ const deleteComment = asyncHandler(async (req: AuthenticatedRequest, res) => {
   const { commentId } = req.params as { commentId: string };
 
   const { comment, role } = await loadCommentContext(commentId, userId);
+
+  await assertWorkspaceWritable(comment.workspaceId);
 
   // Authors may delete their own; admins and owners may delete any.
   if (

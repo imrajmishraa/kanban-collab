@@ -108,6 +108,34 @@ export async function loadActiveMembership(
 }
 
 /**
+ * Assert that a workspace still accepts writes, without re-checking membership.
+ *
+ * The comment, note and attachment controllers share ONE context loader between
+ * their read and write handlers (`loadCommentContext`, `assertWorkspaceMember`,
+ * `loadCardForMember`), so they cannot swap in `loadActiveMembership` without
+ * also blocking reads — and reads must keep working, otherwise a pending
+ * workspace becomes unreachable and the owner cannot cancel its deletion.
+ *
+ * This is the narrow check those write handlers need: call it after the shared
+ * loader has already established membership.
+ */
+export async function assertWorkspaceWritable(
+  workspaceId: Types.ObjectId | string,
+): Promise<void> {
+  const workspace = (await WorkspaceModel.findById(workspaceId)
+    .select("status")
+    .lean()) as { status: WorkspaceStatus } | null;
+
+  if (!workspace) {
+    throw notWorkspaceMemberError();
+  }
+
+  if (!isWorkspaceWritable(workspace.status)) {
+    throw workspacePendingDeletionError();
+  }
+}
+
+/**
  * `loadActiveMembership` plus "guests may not write here".
  *
  * The board, column and card surfaces all refuse guests with the same error, so

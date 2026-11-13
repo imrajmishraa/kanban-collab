@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   findOne: vi.fn(),
+  findById: vi.fn(),
   select: vi.fn(),
   lean: vi.fn(),
 }));
@@ -10,10 +11,12 @@ const mocks = vi.hoisted(() => ({
 vi.mock("../../../src/infrastructure/db/mongoose/schemas", () => ({
   WorkspaceModel: {
     findOne: mocks.findOne,
+    findById: mocks.findById,
   },
 }));
 
 import {
+  assertWorkspaceWritable,
   loadActiveMembership,
   loadWriterMembership,
 } from "../../../src/application/workspaces/membership";
@@ -144,6 +147,39 @@ describe("loadWriterMembership", () => {
     ).rejects.toMatchObject({
       statusCode: 403,
       code: "GUEST_CANNOT_MODIFY_BOARD",
+    });
+  });
+});
+
+describe("assertWorkspaceWritable", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.findById.mockReturnValue({ select: mocks.select });
+    mocks.select.mockReturnValue({ lean: mocks.lean });
+  });
+
+  it("passes for an active workspace", async () => {
+    mocks.lean.mockResolvedValue({ status: "active" });
+
+    await expect(assertWorkspaceWritable(workspaceId)).resolves.toBeUndefined();
+    expect(mocks.findById).toHaveBeenCalledWith(workspaceId);
+  });
+
+  it("refuses a workspace scheduled for deletion", async () => {
+    mocks.lean.mockResolvedValue({ status: "deletion_pending" });
+
+    await expect(assertWorkspaceWritable(workspaceId)).rejects.toMatchObject({
+      statusCode: 409,
+      code: "WORKSPACE_PENDING_DELETION",
+    });
+  });
+
+  it("treats a missing workspace as not-a-member rather than not-found", async () => {
+    mocks.lean.mockResolvedValue(null);
+
+    await expect(assertWorkspaceWritable(workspaceId)).rejects.toMatchObject({
+      statusCode: 403,
+      code: "WORKSPACE_MEMBER_REQUIRED",
     });
   });
 });
