@@ -24,8 +24,8 @@ import { userNotFoundError } from "../../../../shared/errors/auth/custom";
 import {
   boardNotFoundError,
   boardAccessDeniedError,
-  guestCannotModifyBoardError,
 } from "../../../../shared/errors/board/board";
+import { loadWriterMembership } from "../../../../application/workspaces/membership";
 
 /**
  * Resolve the authenticated user's id, or reject.
@@ -67,23 +67,8 @@ const createBoard = asyncHandler(async (req: AuthenticatedRequest, res) => {
   } = req.body;
   const userId = requireUserId(req);
   try {
-    // Verify workspace membership
-    const workspace = await WorkspaceModel.findOne({
-      _id: workspaceId,
-      "members.userId": new Types.ObjectId(userId),
-    });
-
-    if (!workspace) {
-      throw notWorkspaceMemberError();
-    }
-
-    const member = workspace.members.find(
-      (m) => m.userId.toString() === userId,
-    );
-
-    if (!member || member.role === "guest") {
-      throw guestCannotModifyBoardError();
-    }
+    // Verify workspace membership (and that the workspace is still writable)
+    await loadWriterMembership(workspaceId, userId);
 
     const board = await BoardModel.create({
       workspaceId: new Types.ObjectId(workspaceId as string),
@@ -283,22 +268,9 @@ const updateBoard = asyncHandler(async (req: AuthenticatedRequest, res) => {
       throw boardNotFoundError();
     }
 
-    const workspace = await WorkspaceModel.findOne({
-      _id: board.workspaceId,
-      "members.userId": new Types.ObjectId(userId),
+    await loadWriterMembership(board.workspaceId, userId, {
+      onMissing: boardAccessDeniedError,
     });
-
-    if (!workspace) {
-      throw boardAccessDeniedError();
-    }
-
-    const member = workspace.members.find(
-      (m) => m.userId.toString() === userId,
-    );
-
-    if (!member || member.role === "guest") {
-      throw guestCannotModifyBoardError();
-    }
 
     if (name !== undefined) board.name = name;
     if (description !== undefined) board.description = description;
@@ -468,23 +440,8 @@ const deleteBoard = asyncHandler(async (req: AuthenticatedRequest, res) => {
       throw boardNotFoundError();
     }
 
-    // Verify workspace membership
-    const workspace = await WorkspaceModel.findOne({
-      _id: board.workspaceId,
-      "members.userId": new Types.ObjectId(userId),
-    });
-
-    if (!workspace) {
-      throw notWorkspaceMemberError();
-    }
-
-    const member = workspace.members.find(
-      (m) => m.userId.toString() === userId,
-    );
-
-    if (!member || member.role === "guest") {
-      throw guestCannotModifyBoardError();
-    }
+    // Verify workspace membership (and that the workspace is still writable)
+    await loadWriterMembership(board.workspaceId, userId);
 
     // Cascade: a board owns its columns and cards.
     await Promise.all([
@@ -545,9 +502,12 @@ const shareBoard = asyncHandler(async (req: AuthenticatedRequest, res) => {
     throw boardNotFoundError();
   }
 
-  // Only an owner/admin of the board's workspace may share it.
+  // Only an owner/admin of the board's workspace may share it, and only while
+  // that workspace is still alive: inviting someone into a workspace the purge
+  // job is about to delete loses their membership without telling anyone.
   const workspace = await WorkspaceModel.findOne({
     _id: board.workspaceId,
+    status: "active",
     members: {
       $elemMatch: {
         userId: new Types.ObjectId(userId),

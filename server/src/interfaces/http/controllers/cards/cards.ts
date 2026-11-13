@@ -5,8 +5,8 @@ import {
   BoardModel,
   CardModel,
   ColumnModel,
-  WorkspaceModel,
 } from "../../../../infrastructure/db/mongoose/schemas";
+import { loadWriterMembership } from "../../../../application/workspaces/membership";
 import { ApiResponse } from "../../../../shared/utils/ApiResponse";
 import { Types } from "mongoose";
 import { cardControllerLogger } from "../../../../infrastructure/logging/childLogger";
@@ -19,11 +19,7 @@ function requireUserId(req: AuthenticatedRequest): string {
   }
   return req.user.userId;
 }
-import {
-  boardNotFoundError,
-  guestCannotModifyBoardError,
-} from "../../../../shared/errors/board/board";
-import { notWorkspaceMemberError } from "../../../../shared/errors/workspace/workspace";
+import { boardNotFoundError } from "../../../../shared/errors/board/board";
 import { cardNotFoundError } from "../../../../shared/errors/card/card";
 import { columnNotFoundError } from "../../../../shared/errors/column/column";
 
@@ -46,20 +42,7 @@ const createCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
     }
 
     // Verify membership
-    const workspace = await WorkspaceModel.findOne({
-      _id: board.workspaceId,
-      "members.userId": new Types.ObjectId(userId),
-    });
-    if (!workspace) {
-      throw notWorkspaceMemberError();
-    }
-
-    const member = workspace.members.find(
-      (m) => m.userId.toString() === userId,
-    );
-    if (!member || member.role === "guest") {
-      throw guestCannotModifyBoardError();
-    }
+    await loadWriterMembership(board.workspaceId, userId);
 
     // Verify the target column belongs to this board (prevents cross-board cards)
     const column = await ColumnModel.findOne({
@@ -159,24 +142,8 @@ const updateCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
     }
 
     // Verify workspace membership
-    const workspace = await WorkspaceModel.findOne({
-      _id: board.workspaceId,
-      "members.userId": new Types.ObjectId(userId),
-    });
-
-    if (!workspace) {
-      throw notWorkspaceMemberError();
-    }
-
     // Verify member permissions
-
-    const member = workspace.members.find(
-      (m) => m.userId.toString() === userId,
-    );
-
-    if (!member || member.role === "guest") {
-      throw guestCannotModifyBoardError();
-    }
+    await loadWriterMembership(board.workspaceId, userId);
 
     // Update only supplied fields
     if (title !== undefined) {
@@ -296,20 +263,7 @@ const moveCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
     }
 
     // Verify membership
-    const workspace = await WorkspaceModel.findOne({
-      _id: board.workspaceId,
-      "members.userId": new Types.ObjectId(userId),
-    });
-    if (!workspace) {
-      throw notWorkspaceMemberError();
-    }
-
-    const member = workspace.members.find(
-      (m) => m.userId.toString() === userId,
-    );
-    if (!member || member.role === "guest") {
-      throw guestCannotModifyBoardError();
-    }
+    await loadWriterMembership(board.workspaceId, userId);
 
     // Verify the target column belongs to this card's board (prevents moving a
     // card into a column of another board / workspace)
@@ -383,22 +337,7 @@ const deleteCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
     }
 
     // Verify workspace membership
-    const workspace = await WorkspaceModel.findOne({
-      _id: board.workspaceId,
-      "members.userId": new Types.ObjectId(userId),
-    });
-
-    if (!workspace) {
-      throw notWorkspaceMemberError();
-    }
-
-    const member = workspace.members.find(
-      (m) => m.userId.toString() === userId,
-    );
-
-    if (!member || member.role === "guest") {
-      throw guestCannotModifyBoardError();
-    }
+    await loadWriterMembership(board.workspaceId, userId);
 
     await card.deleteOne();
 
