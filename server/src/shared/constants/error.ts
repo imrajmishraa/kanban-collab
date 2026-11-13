@@ -93,6 +93,8 @@ export const ERROR_MESSAGE = {
   WORKSPACE_DELETION_FAILED: "Workspace deletion failed.",
   WORKSPACE_DELETION_ALREADY_STARTED: "Workspace deletion already scheduled.",
   WORKSPACE_DELETION_NOT_PENDING: "No pending deletion to cancel.",
+  WORKSPACE_PENDING_DELETION:
+    "This workspace is scheduled for deletion and is read-only. Cancel the deletion first.",
   WORKSPACE_LAST_OWNER: "Cannot remove the last owner of a workspace.",
 
   // BOARD

@@ -72,6 +72,20 @@ export const workspaceApi = {
     return response.data.data;
   },
 
+  /**
+   * Undo a scheduled deletion (`deletion_pending` → `active`).
+   * Owner only; 409 if the workspace is not actually pending.
+   */
+  async cancelWorkspaceDeletion(
+    workspaceId: string,
+  ): Promise<WorkspaceDeletionResponse> {
+    const response = await apiClient.post<
+      ApiResponse<WorkspaceDeletionResponse>
+    >(`/workspaces/${workspaceId}/cancel-deletion`);
+
+    return response.data.data;
+  },
+
   async addWorkspaceMember(
     workspaceId: string,
     payload: AddWorkspaceMemberPayload,

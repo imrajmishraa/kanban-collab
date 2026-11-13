@@ -10,7 +10,10 @@ import {
   boardNotFoundError,
 } from "../../../shared/errors/board/board";
 
-import { notWorkspaceMemberError } from "../../../shared/errors/workspace/workspace";
+import {
+  notWorkspaceMemberError,
+  workspacePendingDeletionError,
+} from "../../../shared/errors/workspace/workspace";
 
 import { invalidObjectIdError } from "../../../shared/errors/handler/generic";
 
@@ -28,7 +31,8 @@ export interface BoardAuthorization {
  *   1. The ids are valid ObjectIds.
  *   2. The board exists.
  *   3. The user is a member of the board's workspace.
- *   4. The board's visibility allows this role — a `private` board is not
+ *   4. The workspace is not scheduled for deletion (it would be read-only).
+ *   5. The board's visibility allows this role — a `private` board is not
  *      exposed to `guest` members.
  *
  * Returns the caller's role so the connection can be made read-only for
@@ -54,11 +58,19 @@ export async function authorize(
     _id: board.workspaceId,
     "members.userId": new Types.ObjectId(userId),
   })
-    .select("members.userId members.role")
+    .select("members.userId members.role status")
     .lean();
 
   if (!workspace) {
     throw notWorkspaceMemberError();
+  }
+
+  /* A workspace scheduled for deletion is read-only. Without this check the
+     socket upgraded happily and every edit made in the grace window was thrown
+     away by the purge job — the user saw a working board that was already
+     doomed. */
+  if (workspace.status !== "active") {
+    throw workspacePendingDeletionError();
   }
 
   const member = workspace.members.find((m) => m.userId.toString() === userId);

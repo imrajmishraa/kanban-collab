@@ -44,7 +44,7 @@ export const useSidebarState = create<SidebarState>()(
           mode,
           collapsed: mode !== "open",
           /* Leaving hover mode should not leave the rail looking hovered. */
-          hovering: mode === "hover" ? false : false,
+          hovering: false,
         }),
 
       setHovering: (hovering) => set({ hovering }),

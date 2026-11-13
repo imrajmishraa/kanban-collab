@@ -8,9 +8,44 @@ import {
   YjsUpdateModel,
 } from "../../infrastructure/db/mongoose/schemas";
 
+import {
+  transitionWorkspace,
+  type WorkspaceStatus,
+} from "./workspaceLifecycle";
+
 export const permanentlyDeleteWorkspace = async (
   workspaceId: string,
 ): Promise<void> => {
+  /*
+   * Guard the destructive path with the state machine before touching anything.
+   *
+   * The cron job already filters on `deletion_pending` + elapsed date, but this
+   * function is also called directly (scripts, tests, future admin tooling).
+   * Without the guard, one call on an `active` workspace would cascade-delete
+   * boards, cards and comments and then leave the workspace itself alive
+   * (the final deleteOne is filtered on `status: "deletion_pending"`).
+   */
+  const target = await WorkspaceModel.findById(workspaceId)
+    .select("status deletionRequestedAt deletionScheduledFor")
+    .lean();
+
+  // Already gone — nothing to do, and not an error for the caller.
+  if (!target) return;
+
+  const allowed = transitionWorkspace(
+    {
+      status: target.status as WorkspaceStatus,
+      deletionRequestedAt: target.deletionRequestedAt ?? null,
+      deletionScheduledFor: target.deletionScheduledFor ?? null,
+    },
+    { type: "PURGE", now: new Date() },
+  );
+
+  if (!allowed.ok) {
+    throw new Error(
+      `Refusing to purge workspace ${workspaceId}: ${allowed.reason}.`,
+    );
+  }
   // 1. Find all boards belonging to the workspace
   const boards = await BoardModel.find(
     {
