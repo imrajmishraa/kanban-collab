@@ -10,6 +10,7 @@ import {
 } from "../../../../infrastructure/db/mongoose/schemas";
 import { noteControllerLogger } from "../../../../infrastructure/logging/childLogger";
 import { notWorkspaceMemberError } from "../../../../shared/errors/workspace/workspace";
+import { assertWorkspaceWritable } from "../../../../application/workspaces/membership";
 
 /** Guard instead of `req.user!` — see the dashboard controller for rationale. */
 function requireUserId(req: AuthenticatedRequest): string {
@@ -102,6 +103,7 @@ const createNote = asyncHandler(async (req: AuthenticatedRequest, res) => {
   const { workspaceId, boardId, title, body, isPinned } = req.body;
 
   await assertWorkspaceMember(String(workspaceId), userId);
+  await assertWorkspaceWritable(String(workspaceId));
 
   if (boardId && !Types.ObjectId.isValid(boardId)) {
     throw ApiError.badRequest("Invalid boardId.");
@@ -143,6 +145,8 @@ const updateNote = asyncHandler(async (req: AuthenticatedRequest, res) => {
     throw ApiError.notFound("Note not found.");
   }
 
+  await assertWorkspaceWritable(note.workspaceId);
+
   // Only the author may edit their note.
   if (note.userId.toString() !== userId) {
     throw ApiError.forbidden("You can only edit your own notes.");
@@ -176,6 +180,8 @@ const deleteNote = asyncHandler(async (req: AuthenticatedRequest, res) => {
   if (!note) {
     throw ApiError.notFound("Note not found.");
   }
+
+  await assertWorkspaceWritable(note.workspaceId);
 
   if (note.userId.toString() !== userId) {
     throw ApiError.forbidden("You can only delete your own notes.");
