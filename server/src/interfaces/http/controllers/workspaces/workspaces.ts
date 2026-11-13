@@ -26,8 +26,16 @@ import {
   cannotDeleteWorkspaceError,
   workspaceAlreadyPendingDeletionError,
   workspaceDeletionFailedError,
+  workspaceDeletionNotPendingError,
   workspaceNotFoundError,
+  workspacePendingDeletionError,
 } from "../../../../shared/errors/workspace/workspace";
+
+import {
+  isWorkspaceWritable,
+  transitionWorkspace,
+  type WorkspaceStatus,
+} from "../../../../application/workspaces/workspaceLifecycle";
 
 import { userNotFoundError } from "../../../../shared/errors/auth/custom";
 import { invalidObjectIdError } from "../../../../shared/errors/handler/generic";
@@ -90,6 +98,12 @@ const updateWorkspace = asyncHandler(async (req: AuthenticatedRequest, res) => {
     throw cannotModifyWorkspaceError();
   }
 
+  /* A workspace scheduled for deletion is read-only: renaming it (or changing
+     its slug) would silently be thrown away by the purge job. */
+  if (!isWorkspaceWritable(workspace.status as WorkspaceStatus)) {
+    throw workspacePendingDeletionError();
+  }
+
   const updateData: {
     name?: string;
     slug?: string;
@@ -133,10 +147,22 @@ const deleteWorkspace = asyncHandler(async (req: AuthenticatedRequest, res) => {
   const userObjectId = new Types.ObjectId(userId);
 
   const now = new Date();
-  const deletionScheduledFor = new Date(now);
-  deletionScheduledFor.setDate(
-    deletionScheduledFor.getDate() + WORKSPACE_DELETION_GRACE_PERIOD_DAYS,
+
+  /* The dates and the target status come from the state machine, not from
+     inline arithmetic. The query below still carries `status: "active"` so two
+     concurrent requests cannot both schedule the same workspace. */
+  const planned = transitionWorkspace(
+    { status: "active", deletionRequestedAt: null, deletionScheduledFor: null },
+    {
+      type: "REQUEST_DELETION",
+      now,
+      graceDays: WORKSPACE_DELETION_GRACE_PERIOD_DAYS,
+    },
   );
+
+  if (!planned.ok) {
+    throw workspaceDeletionFailedError();
+  }
 
   const workspace = await WorkspaceModel.findOneAndUpdate(
     {
@@ -144,13 +170,7 @@ const deleteWorkspace = asyncHandler(async (req: AuthenticatedRequest, res) => {
       ownerId: userObjectId,
       status: "active",
     },
-    {
-      $set: {
-        status: "deletion_pending",
-        deletionRequestedAt: now,
-        deletionScheduledFor,
-      },
-    },
+    { $set: planned.patch },
     { new: true },
   );
 
@@ -189,6 +209,80 @@ const deleteWorkspace = asyncHandler(async (req: AuthenticatedRequest, res) => {
     }),
   );
 });
+
+// CANCEL DELETE
+
+/**
+ * Undo a scheduled deletion: `deletion_pending` → `active`.
+ *
+ * The grace period is only useful if the owner can change their mind inside it.
+ * Only the owner may cancel, and only while the workspace is actually pending —
+ * cancelling an active workspace is a 409, not a silent no-op.
+ */
+const cancelWorkspaceDeletion = asyncHandler(
+  async (req: AuthenticatedRequest, res) => {
+    const { workspaceId } = req.params;
+    const userId = requireUserId(req);
+
+    if (!workspaceId || !Types.ObjectId.isValid(workspaceId)) {
+      throw invalidObjectIdError();
+    }
+
+    const userObjectId = new Types.ObjectId(userId);
+
+    const existing = await WorkspaceModel.findById(workspaceId);
+
+    if (!existing) {
+      throw workspaceNotFoundError();
+    }
+
+    if (!existing.ownerId.equals(userObjectId)) {
+      throw cannotDeleteWorkspaceError();
+    }
+
+    const planned = transitionWorkspace(
+      {
+        status: existing.status as WorkspaceStatus,
+        deletionRequestedAt: existing.deletionRequestedAt ?? null,
+        deletionScheduledFor: existing.deletionScheduledFor ?? null,
+      },
+      { type: "CANCEL_DELETION", now: new Date() },
+    );
+
+    if (!planned.ok) {
+      throw workspaceDeletionNotPendingError();
+    }
+
+    /* Filtered on `status` too: if the purge job got there first, this is a
+       404-shaped race rather than a resurrection of a half-deleted workspace. */
+    const workspace = await WorkspaceModel.findOneAndUpdate(
+      { _id: workspaceId, status: "deletion_pending" },
+      { $set: planned.patch },
+      { new: true },
+    );
+
+    if (!workspace) {
+      throw workspaceDeletionNotPendingError();
+    }
+
+    workspaceControllerLogger.info(
+      {
+        workspaceId: workspace._id.toString(),
+        userId,
+      },
+      "Workspace deletion cancelled",
+    );
+
+    return res.status(200).json(
+      new ApiResponse(200, "Workspace deletion cancelled.", {
+        workspaceId: workspace._id,
+        status: workspace.status,
+        deletionRequestedAt: workspace.deletionRequestedAt,
+        deletionScheduledFor: workspace.deletionScheduledFor,
+      }),
+    );
+  },
+);
 
 // LIST
 
@@ -585,6 +679,7 @@ export {
   listWorkspaceMembers,
   updateWorkspace,
   deleteWorkspace,
+  cancelWorkspaceDeletion,
   updateWorkspaceMemberRole,
   removeWorkspaceMember,
   leaveWorkspace,

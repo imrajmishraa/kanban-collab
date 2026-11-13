@@ -87,6 +87,28 @@ export function workspaceDeletionAlreadyStartedError(): ApiError {
   );
 }
 
+export function workspaceDeletionNotPendingError(): ApiError {
+  return new ApiError(
+    HTTP_STATUS.CONFLICT,
+    ERROR_MESSAGE.WORKSPACE_DELETION_NOT_PENDING,
+    { code: "WORKSPACE_DELETION_NOT_PENDING" },
+  );
+}
+
+/**
+ * The workspace is scheduled for deletion, so it is read-only.
+ *
+ * Returned by every write path that would otherwise let a user keep working in
+ * a workspace the cron job is going to destroy.
+ */
+export function workspacePendingDeletionError(): ApiError {
+  return new ApiError(
+    HTTP_STATUS.CONFLICT,
+    ERROR_MESSAGE.WORKSPACE_PENDING_DELETION,
+    { code: "WORKSPACE_PENDING_DELETION" },
+  );
+}
+
 export function workspaceDeletionFailedError(): ApiError {
   return new ApiError(
     HTTP_STATUS.INTERNAL_SERVER_ERROR,

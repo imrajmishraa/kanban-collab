@@ -7,6 +7,7 @@ import {
   listWorkspaceMembers,
   updateWorkspace,
   deleteWorkspace,
+  cancelWorkspaceDeletion,
   updateWorkspaceMemberRole,
   removeWorkspaceMember,
   leaveWorkspace,
@@ -50,11 +51,18 @@ router.patch(
   updateWorkspace,
 );
 
-// DELETE /api/v1/workspaces/:workspaceId
+// DELETE /api/v1/workspaces/:workspaceId — schedules deletion (30-day grace)
 router.delete(
   "/:workspaceId",
   validateSchema({ params: workspaceParamsSchema }),
   deleteWorkspace,
+);
+
+// POST /api/v1/workspaces/:workspaceId/cancel-deletion — undo it
+router.post(
+  "/:workspaceId/cancel-deletion",
+  validateSchema({ params: workspaceParamsSchema }),
+  cancelWorkspaceDeletion,
 );
 
 // GET /api/v1/workspaces/:workspaceId/members
