@@ -11,6 +11,7 @@ import {
 import { fileUploadControllerLogger } from "../../../../infrastructure/logging/childLogger";
 import { cardNotFoundError } from "../../../../shared/errors/card/card";
 import { notWorkspaceMemberError } from "../../../../shared/errors/workspace/workspace";
+import { assertWorkspaceWritable } from "../../../../application/workspaces/membership";
 import { guestCannotModifyBoardError } from "../../../../shared/errors/board/board";
 
 function requireUserId(req: AuthenticatedRequest): string {
@@ -101,7 +102,9 @@ const addCardAttachment = asyncHandler(
       size?: number;
     };
 
-    const { role } = await loadCardForMember(cardId, userId);
+    const { card, role } = await loadCardForMember(cardId, userId);
+
+    await assertWorkspaceWritable(card.workspaceId);
 
     if (role === "guest") {
       throw guestCannotModifyBoardError();
@@ -165,6 +168,8 @@ const removeCardAttachment = asyncHandler(
     };
 
     const { card, role } = await loadCardForMember(cardId, userId);
+
+    await assertWorkspaceWritable(card.workspaceId);
 
     if (role === "guest") {
       throw guestCannotModifyBoardError();
