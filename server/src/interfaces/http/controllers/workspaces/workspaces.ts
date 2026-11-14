@@ -284,6 +284,39 @@ const cancelWorkspaceDeletion = asyncHandler(
   },
 );
 
+// GET ONE
+
+/**
+ * `GET /workspaces/:id` — the only way a client can read `status` for a single
+ * workspace without paging the whole list.
+ *
+ * The deletion notice in the UI needs exactly this: is this workspace counting
+ * down, and until when. Membership is the whole authorization rule — a pending
+ * workspace stays readable on purpose, so the owner can reach the cancel
+ * endpoint before the grace period runs out.
+ */
+const getWorkspace = asyncHandler(async (req: AuthenticatedRequest, res) => {
+  const { workspaceId } = req.params;
+  const userId = requireUserId(req);
+
+  if (!workspaceId || !Types.ObjectId.isValid(workspaceId)) {
+    throw invalidObjectIdError();
+  }
+
+  const workspace = await WorkspaceModel.findOne({
+    _id: workspaceId,
+    "members.userId": new Types.ObjectId(userId),
+  }).lean();
+
+  if (!workspace) {
+    throw notWorkspaceMemberError();
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "Workspace fetched successfully.", workspace));
+});
+
 // LIST
 
 const listWorkspaces = asyncHandler(async (req: AuthenticatedRequest, res) => {
@@ -674,6 +707,7 @@ const leaveWorkspace = asyncHandler(async (req: AuthenticatedRequest, res) => {
 
 export {
   createWorkspace,
+  getWorkspace,
   listWorkspaces,
   addWorkspaceMember,
   listWorkspaceMembers,

@@ -18,6 +18,7 @@ import {
   CreateBoardDialog,
   EditWorkspaceDialog,
   WorkspaceAvatarDialog,
+  WorkspaceDeletionNotice,
   BoardSearch,
   BoardCard,
 } from "@/features/workspaces";
@@ -191,6 +192,10 @@ export function WorkspacePage() {
 
   return (
     <BoardShell>
+      {workspaceId && (
+        <WorkspaceDeletionNotice workspaceId={workspaceId} className="mb-6" />
+      )}
+
       <header className="flex flex-col gap-4 border-b border-(--hairline) pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div className="flex min-w-0 items-start gap-3">
           <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-(--hairline-strong) bg-(--tint-3) text-[15px] font-semibold text-(--text-soft)">
