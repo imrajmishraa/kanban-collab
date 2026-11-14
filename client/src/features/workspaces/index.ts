@@ -7,6 +7,7 @@
  */
 export { workspaceApi } from "./api/workspaceApi";
 export { BoardCard } from "./components/BoardCard";
+export { WorkspaceDeletionNotice } from "./components/WorkspaceDeletionNotice";
 export { BoardSearch } from "./components/BoardSearch";
 export {
   AddColumnDialog,

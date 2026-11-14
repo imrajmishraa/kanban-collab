@@ -50,6 +50,20 @@ export const workspaceApi = {
     return normalize(response.data.data);
   },
 
+  /**
+   * One workspace, including `status` and the deletion dates.
+   *
+   * The list endpoint is paginated, so a client that needs to know whether the
+   * *current* workspace is counting down cannot reliably find it there.
+   */
+  async getWorkspace(workspaceId: string): Promise<Workspace> {
+    const response = await apiClient.get<ApiResponse<WorkspaceApiDocument>>(
+      `/workspaces/${workspaceId}`,
+    );
+
+    return normalize(response.data.data);
+  },
+
   async updateWorkspace(
     workspaceId: string,
     payload: UpdateWorkspacePayload,

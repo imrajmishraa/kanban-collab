@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import {
   createWorkspace,
+  getWorkspace,
   listWorkspaces,
   addWorkspaceMember,
   listWorkspaceMembers,
@@ -39,6 +40,13 @@ router.get(
   "/",
   validateSchema({ query: listWorkspacesQuerySchema }),
   listWorkspaces,
+);
+
+// GET /api/v1/workspaces/:workspaceId
+router.get(
+  "/:workspaceId",
+  validateSchema({ params: workspaceParamsSchema }),
+  getWorkspace,
 );
 
 // PATCH /api/v1/workspaces/:workspaceId

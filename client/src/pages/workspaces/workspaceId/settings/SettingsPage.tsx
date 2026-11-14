@@ -2,9 +2,10 @@ import { useState } from "react";
 
 import { useMutation } from "@tanstack/react-query";
 
-import { workspaceApi } from "@/features/workspaces";
+import { workspaceApi, WorkspaceDeletionNotice } from "@/features/workspaces";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { useAuth } from "@/hooks/useAuth";
+import { useWorkspace } from "@/hooks/useWorkspace";
 import { NotificationPreferences } from "@/features/dashboard";
 
 function SettingsPage() {
@@ -13,6 +14,9 @@ function SettingsPage() {
     useActiveWorkspace();
   const [confirming, setConfirming] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+
+  const { data: workspace } = useWorkspace(activeWorkspaceId);
+  const deletionPending = workspace?.status === "deletion_pending";
 
   const deleteWorkspace = useMutation({
     mutationFn: (workspaceId: string) =>
@@ -41,6 +45,13 @@ function SettingsPage() {
             Manage your account and workspace preferences.
           </p>
         </header>
+
+        {activeWorkspaceId && (
+          <WorkspaceDeletionNotice
+            workspaceId={activeWorkspaceId}
+            className="mt-6"
+          />
+        )}
 
         {/* Account */}
         <section className="mt-6 rounded-xl border border-(--border) bg-(--tint-3) p-5">
@@ -79,7 +90,12 @@ function SettingsPage() {
             All of its boards and cards are removed with it.
           </p>
 
-          {activeWorkspaceId ? (
+          {deletionPending ? (
+            <p className="mt-3 font-mono text-[12px] text-(--text-muted)">
+              This workspace is already scheduled for deletion — cancel it above
+              to keep it.
+            </p>
+          ) : activeWorkspaceId ? (
             <div className="mt-3 flex flex-wrap items-center gap-2">
               {confirming ? (
                 <>
