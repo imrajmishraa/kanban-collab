@@ -17,6 +17,7 @@ import { commentControllerLogger } from "../../../../infrastructure/logging/chil
 import { cardNotFoundError } from "../../../../shared/errors/card/card";
 import { notWorkspaceMemberError } from "../../../../shared/errors/workspace/workspace";
 import { assertWorkspaceWritable } from "../../../../application/workspaces/membership";
+import { planVote } from "../../../../application/comments/voteTransition";
 import { guestCannotModifyBoardError } from "../../../../shared/errors/board/board";
 
 /**
@@ -440,50 +441,6 @@ const getComment = asyncHandler(async (req: AuthenticatedRequest, res) => {
 });
 
 /* ── POST /comments/:commentId/like ──────────────────────────────────────── */
-
-type VoteOp = "create" | "delete" | "update";
-
-interface VotePlan {
-  op: VoteOp;
-  likeDelta: number;
-  dislikeDelta: number;
-  userAction: 1 | -1 | 0;
-}
-
-/**
- * Decide what a vote press does.
- *
- * Pure and total: every path returns all four values, so the handler never
- * needs a pre-initialised variable that a branch then overwrites. Three cases,
- * as the spec asks: first vote, same vote again (toggle off), opposite vote
- * (switch sides and adjust both counters).
- */
-function planVote(existingAction: 1 | -1 | null, action: 1 | -1): VotePlan {
-  if (existingAction === null) {
-    return {
-      op: "create",
-      likeDelta: action === 1 ? 1 : 0,
-      dislikeDelta: action === -1 ? 1 : 0,
-      userAction: action,
-    };
-  }
-
-  if (existingAction === action) {
-    return {
-      op: "delete",
-      likeDelta: action === 1 ? -1 : 0,
-      dislikeDelta: action === -1 ? -1 : 0,
-      userAction: 0,
-    };
-  }
-
-  return {
-    op: "update",
-    likeDelta: action === 1 ? 1 : -1,
-    dislikeDelta: action === -1 ? 1 : -1,
-    userAction: action,
-  };
-}
 
 const voteComment = asyncHandler(async (req: AuthenticatedRequest, res) => {
   const userId = requireUserId(req);

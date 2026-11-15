@@ -25,7 +25,10 @@ import { updateBroadcaster } from "../collaboration/yjs/updateBroadcaster";
 import { awarenessBroadcaster } from "../collaboration/yjs/awarenessProtocol";
 
 import { CollaborationMessage } from "../collaboration/yjs/protocol";
-import type { CollaborationClient } from "../collaboration/yjs/types";
+import type {
+  CollaborationClient,
+  ManagedDocument,
+} from "../collaboration/yjs/types";
 
 export function registerYWebSocket(wss: WebSocketServer): void {
   wss.on("connection", (ws, request) => {
@@ -73,6 +76,7 @@ async function handleConnection(
   const documentName = boardId;
 
   let client: CollaborationClient | undefined;
+  let document: ManagedDocument | undefined;
   let registered = false;
 
   try {
@@ -102,7 +106,12 @@ async function handleConnection(
      * Load or create collaborative document
      */
 
-    const document = await documentManager.getOrCreate(documentName);
+    document = await documentManager.getOrCreate(documentName);
+
+    /* Assigned once, then used by the handlers below. Kept as a local so those
+       closures see a non-optional value — `document` itself is optional only so
+       the catch block can tell whether loading got this far. */
+    const activeDocument = document;
 
     /*
      * Attach Yjs update broadcaster.
@@ -110,12 +119,12 @@ async function handleConnection(
      * The broadcaster attaches exactly once per Y.Doc.
      */
 
-    updateBroadcaster.attach(document);
+    updateBroadcaster.attach(activeDocument);
 
     /*
      * Attach the awareness (presence) broadcaster — once per document.
      */
-    awarenessBroadcaster.attach(document);
+    awarenessBroadcaster.attach(activeDocument);
 
     /*
      * Register collaboration client
@@ -251,7 +260,7 @@ async function handleConnection(
        * Delegate protocol processing.
        */
 
-      messageHandler.handleMessage(ws, document, message, { canWrite });
+      messageHandler.handleMessage(ws, activeDocument, message, { canWrite });
 
       connectionRegistry.updateLastSeen(ws);
     });
@@ -268,7 +277,7 @@ async function handleConnection(
       /*
        * H-5: remove this socket's presence so peers don't see a ghost cursor.
        */
-      awarenessBroadcaster.removeSocket(document, ws);
+      awarenessBroadcaster.removeSocket(activeDocument, ws);
 
       /*
        * If this was the last client, schedule idle cleanup so the document is
@@ -289,7 +298,7 @@ async function handleConnection(
           clientId,
           code,
           reason: reason.toString(),
-          connections: document.connectionCount,
+          connections: activeDocument.connectionCount,
           remoteAddress,
         },
         "Yjs collaboration connection closed.",
@@ -342,6 +351,19 @@ async function handleConnection(
 
     if (client) {
       documentManager.removeClient(documentName, client.id);
+    }
+
+    /*
+     * Drop this socket's awareness entry.
+     *
+     * The close handler does this, and this path did not — so a connection that
+     * failed after `addClient` but before its handlers were attached left its
+     * presence behind and every peer kept rendering a cursor for a socket that
+     * was already gone. Guarded because `document` is only assigned once
+     * `getOrCreate` resolves; a failure before that has no awareness to clear.
+     */
+    if (document) {
+      awarenessBroadcaster.removeSocket(document, ws);
     }
 
     /*
