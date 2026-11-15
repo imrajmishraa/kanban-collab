@@ -47,14 +47,22 @@ import {
   encodeSyncUpdate,
   type CollaborationMessageType,
 } from "./syncProtocol";
+import {
+  INITIAL_CONNECTION_STATE,
+  reconnectDelayMs,
+  transitionConnection,
+  type ConnectionEffect,
+  type ConnectionEvent,
+  type ConnectionState,
+  type ConnectionStatus,
+} from "./connectionMachine";
 
-export type ProviderStatus =
-  | "idle"
-  | "connecting"
-  | "connected"
-  | "reconnecting"
-  | "disconnected"
-  | "error";
+/**
+ * The public status union. It is exactly the machine's status set — kept as an
+ * alias so consumers (`useCollaboration`, the presence UI) keep their import
+ * while there is only one definition to maintain.
+ */
+export type ProviderStatus = ConnectionStatus;
 
 export interface YjsProviderOptions {
   /** Full WebSocket URL (including auth / room query params). */
@@ -125,15 +133,11 @@ export class YjsProvider {
   private readonly reconnectMaxDelayMs: number;
 
   private ws: WebSocket | null = null;
-  private status: ProviderStatus = "idle";
-  /** True once the first server sync (state) has been applied. */
-  private synced = false;
-  private intentionalClose = false;
   private peersUnsub: (() => void) | null = null;
-
-  /** Consecutive failed connect attempts — drives the backoff. */
-  private reconnectAttempt = 0;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+
+  /** Status, synced flag, intent and backoff counter live in one machine. */
+  private state: ConnectionState = INITIAL_CONNECTION_STATE;
 
   private readonly boundDocUpdate: (
     update: Uint8Array,
@@ -168,34 +172,126 @@ export class YjsProvider {
 
   /** Current connection status. */
   getStatus(): ProviderStatus {
-    return this.status;
+    return this.state.status;
   }
 
   /** True once the first server sync has been applied. */
   getSynced(): boolean {
-    return this.synced;
+    return this.state.synced;
   }
 
   /** Number of consecutive failed attempts (0 once connected). */
   getReconnectAttempt(): number {
-    return this.reconnectAttempt;
+    return this.state.attempt;
   }
 
   /** Open the WebSocket and start syncing. */
   connect(): void {
-    if (
-      this.ws &&
-      (this.ws.readyState === WebSocket.OPEN ||
-        this.ws.readyState === WebSocket.CONNECTING)
-    ) {
-      return;
+    this.apply({ type: "CONNECT" });
+  }
+
+  /** Gracefully disconnect and clean up local awareness. */
+  disconnect(): void {
+    this.apply({ type: "DISCONNECT" });
+  }
+
+  /** Destroy the provider, awareness, and document. */
+  destroy(): void {
+    this.apply({ type: "DESTROY" });
+    this.awareness.destroy();
+    this.doc.destroy();
+  }
+
+  /** Push updated local user metadata into awareness. */
+  updateUser(user: AwarenessUser): void {
+    setLocalUser(this.awareness, user);
+  }
+
+  // ── private ──────────────────────────────────────────────
+
+  /**
+   * Feed one event to the machine and run whatever it asks for.
+   *
+   * Status and synced callbacks fire only on an actual change, so a repeated
+   * `SYNCED` or a redundant `ERROR` never re-notifies subscribers.
+   */
+  private apply(event: ConnectionEvent): void {
+    const before = this.state;
+    const { state, effects } = transitionConnection(before, event);
+
+    this.state = state;
+
+    if (state.status !== before.status) {
+      this.onStatus?.(state.status);
     }
 
-    this.clearReconnectTimer();
-    this.intentionalClose = false;
-    this.synced = false;
-    this.setStatus(this.reconnectAttempt > 0 ? "reconnecting" : "connecting");
+    if (state.synced && !before.synced) {
+      this.onSynced?.();
+    }
 
+    for (const effect of effects) {
+      this.runEffect(effect);
+    }
+  }
+
+  private runEffect(effect: ConnectionEffect): void {
+    switch (effect) {
+      case "open-socket":
+        this.openSocket();
+        break;
+
+      case "close-socket":
+        if (this.ws) {
+          try {
+            this.ws.close();
+          } catch {
+            /* ignore */
+          }
+          this.ws = null;
+        }
+        break;
+
+      case "detach-socket":
+        this.ws = null;
+        break;
+
+      case "teardown-listeners":
+        this.teardownListeners();
+        break;
+
+      case "send-sync-step-1":
+        this.sendSyncStep1();
+        break;
+
+      case "send-full-awareness":
+        this.sendFullAwareness();
+        break;
+
+      case "schedule-reconnect":
+        this.scheduleReconnect();
+        break;
+
+      case "clear-reconnect-timer":
+        this.clearReconnectTimer();
+        break;
+
+      case "remove-local-awareness":
+        removeLocalAwareness(this.awareness);
+        break;
+
+      case "report-error":
+        this.onError?.(new Error("WebSocket connection error."));
+        break;
+    }
+  }
+
+  /**
+   * Create the socket and wire its handlers to the machine.
+   *
+   * Kept separate from `connect()` so the effects list stays declarative: the
+   * machine decides *that* a socket opens, this decides *how*.
+   */
+  private openSocket(): void {
     let ws: WebSocket;
     try {
       // H-2: carry the token in the subprotocol, not the URL. Read it now so a
@@ -211,7 +307,7 @@ export class YjsProvider {
       // a React effect, would repeat on every render).
       const error = err instanceof Error ? err : new Error(String(err));
       this.onError?.(error);
-      this.setStatus("error");
+      this.apply({ type: "SOCKET_FAILED" });
       return;
     }
 
@@ -226,11 +322,7 @@ export class YjsProvider {
     }
 
     ws.onopen = () => {
-      // Successful connection — reset the backoff.
-      this.reconnectAttempt = 0;
-      this.setStatus("connected");
-      this.sendSyncStep1();
-      this.sendFullAwareness();
+      this.apply({ type: "OPEN" });
     };
 
     ws.onmessage = (event) => {
@@ -238,73 +330,21 @@ export class YjsProvider {
     };
 
     ws.onerror = () => {
-      const err = new Error("WebSocket connection error.");
-      this.onError?.(err);
-      // `onclose` always follows an error; let it own the reconnect so we do
-      // not schedule two attempts.
+      // `onclose` always follows an error; the machine gives ERROR no reconnect
+      // so the two cannot schedule a second socket between them.
+      this.apply({ type: "ERROR" });
     };
 
     ws.onclose = () => {
-      this.teardownListeners();
-      this.ws = null;
-
-      if (this.intentionalClose) {
-        this.setStatus("disconnected");
-        return;
-      }
-
-      this.scheduleReconnect();
+      this.apply({ type: "CLOSE" });
     };
   }
 
-  /** Gracefully disconnect and clean up local awareness. */
-  disconnect(): void {
-    this.intentionalClose = true;
-    this.clearReconnectTimer();
-    this.reconnectAttempt = 0;
-    this.synced = false;
-    removeLocalAwareness(this.awareness);
-
-    if (this.ws) {
-      try {
-        this.ws.close();
-      } catch {
-        /* ignore */
-      }
-      this.ws = null;
-    }
-
-    this.teardownListeners();
-    this.setStatus("disconnected");
-  }
-
-  /** Destroy the provider, awareness, and document. */
-  destroy(): void {
-    this.disconnect();
-    this.awareness.destroy();
-    this.doc.destroy();
-    this.setStatus("idle");
-  }
-
-  /** Push updated local user metadata into awareness. */
-  updateUser(user: AwarenessUser): void {
-    setLocalUser(this.awareness, user);
-  }
-
-  // ── private ──────────────────────────────────────────────
-
   private scheduleReconnect(): void {
-    this.reconnectAttempt += 1;
-    this.setStatus("reconnecting");
-
-    const exponential = Math.min(
+    const delay = reconnectDelayMs(
+      this.state.attempt,
+      this.reconnectBaseDelayMs,
       this.reconnectMaxDelayMs,
-      this.reconnectBaseDelayMs * 2 ** (this.reconnectAttempt - 1),
-    );
-
-    // Full jitter — avoids a thundering herd when a server restarts.
-    const delay = Math.round(
-      exponential / 2 + Math.random() * (exponential / 2),
     );
 
     this.clearReconnectTimer();
@@ -319,17 +359,6 @@ export class YjsProvider {
       clearTimeout(this.reconnectTimer);
       this.reconnectTimer = null;
     }
-  }
-
-  private setStatus(status: ProviderStatus): void {
-    this.status = status;
-    this.onStatus?.(status);
-  }
-
-  private markSynced(): void {
-    if (this.synced) return;
-    this.synced = true;
-    this.onSynced?.();
   }
 
   private send(type: CollaborationMessageType, payload?: Uint8Array): void {
@@ -389,7 +418,7 @@ export class YjsProvider {
           const response = applySyncMessage(this.doc, payload, ORIGIN_REMOTE);
           // The first step-2/update from the server means the document has
           // caught up — safe to mark synced (F-10).
-          if (carriesState) this.markSynced();
+          if (carriesState) this.apply({ type: "SYNCED" });
           if (response.length > 0) {
             this.send(CollaborationMessage.Sync, response);
           }
