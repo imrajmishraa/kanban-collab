@@ -5,7 +5,7 @@ import axios, {
 
 import {
   getAccessToken,
-  setAccessToken,
+  setAuthSession,
   clearAuthSession,
 } from "@/stores/authTokenAccessor";
 import { refreshRequest } from "@/features/auth";
@@ -140,10 +140,23 @@ apiClient.interceptors.response.use(
       originalConfig._retriedAfterRefresh = true;
 
       try {
+        /* `refreshRequest` is single-flight (see features/auth/api/authApi.ts),
+           so N parallel 401s share one refresh call rather than racing the
+           server's rotation and tripping reuse detection. */
         const refreshed = await refreshRequest();
-        setAccessToken(refreshed.data.accessToken);
 
-        originalConfig.headers.Authorization = `Bearer ${refreshed.data.accessToken}`;
+        if (!refreshed.success || !refreshed.data) {
+          throw new Error(refreshed.message || "Session refresh failed.");
+        }
+
+        const { accessToken, user } = refreshed.data;
+
+        /* Token, user and status move together. Setting only the token left the
+           store reporting `unauthenticated` after a successful refresh, so the
+           guards redirected to /auth/login while holding a valid session. */
+        setAuthSession(accessToken, user);
+
+        originalConfig.headers.Authorization = `Bearer ${accessToken}`;
         return apiClient(originalConfig);
       } catch (refreshErr) {
         // Refresh failed → the session is gone. Clear ALL of it so the guards
