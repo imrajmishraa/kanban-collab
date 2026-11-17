@@ -7,6 +7,7 @@ import { schedulerLogger } from "../logging/childLogger";
 import { workspaceDeletionJob } from "../../jobs/workspaceDeletion.job";
 import { yjsSnapshotJob } from "../../jobs/yjsSnapshot.job";
 import { notificationDueReminderJob } from "../../jobs/notificationDueReminder.job";
+import { notificationOverdueJob } from "../../jobs/notificationOverdue.job";
 import { notificationDigestJob } from "../../jobs/notificationDigest.job";
 import { selfPingJob } from "../../jobs/selfPing.job";
 
@@ -27,6 +28,7 @@ export const SCHEDULED_JOB_NAMES = [
   "workspace-cleanup",
   "yjs-snapshot",
   "notification-due-reminder",
+  "notification-overdue",
   "notification-digest",
   "self-ping",
 ] as const;
@@ -68,6 +70,11 @@ function buildJobDefinitions(): CronJobDefinition[] {
       name: "notification-due-reminder",
       schedule: ENV.NOTIF_DUE_REMINDER_CRON,
       handler: notificationDueReminderJob,
+    },
+    {
+      name: "notification-overdue",
+      schedule: ENV.NOTIF_OVERDUE_CRON,
+      handler: notificationOverdueJob,
     },
     {
       name: "notification-digest",

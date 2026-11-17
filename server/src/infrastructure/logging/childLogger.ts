@@ -46,6 +46,7 @@ export type JobName =
   | "workspace-cleanup"
   | "yjs-snapshot"
   | "notification-due-reminder"
+  | "notification-overdue"
   | "notification-digest"
   | "self-ping";
 
@@ -115,6 +116,9 @@ export const workspaceCleanupJobLogger =
 export const yjsSnapshotJobLogger = createJobSchedulerLogger("yjs-snapshot");
 export const notificationDueReminderJobLogger = createJobSchedulerLogger(
   "notification-due-reminder",
+);
+export const notificationOverdueJobLogger = createJobSchedulerLogger(
+  "notification-overdue",
 );
 export const notificationDigestJobLogger = createJobSchedulerLogger(
   "notification-digest",
