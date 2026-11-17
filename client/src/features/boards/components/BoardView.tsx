@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
 import type { DragEvent } from "react";
 
 import BoardColumns from "@/components/board/BoardColumns";
@@ -16,6 +16,11 @@ import {
   useActiveWorkspaceMembers,
   useBoardMutations,
 } from "@/features/boards";
+import {
+  IDLE_DRAG,
+  boardDragReducer,
+  resolveDrop,
+} from "@/features/boards/utils/boardDrag";
 import ConfirmDialog from "@/components/dialog/ConfirmDialog";
 import { AddColumnDialog, EditColumnDialog } from "@/features/workspaces";
 
@@ -93,9 +98,11 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
     run: () => void;
   } | null>(null);
   const [composerColumnId, setComposerColumnId] = useState<string | null>(null);
-  const [draggingCardId, setDraggingCardId] = useState<string | null>(null);
-  const [dragOverColumnId, setDragOverColumnId] = useState<string | null>(null);
-  const [dropIndex, setDropIndex] = useState<number | null>(null);
+  /* One drag state instead of three booleans/ids: "dragging card X over column
+     Y at index Z" is now the only shape a live drag can take. */
+  const [drag, dispatchDrag] = useReducer(boardDragReducer, IDLE_DRAG);
+  const draggingCardId = drag.phase === "dragging" ? drag.cardId : null;
+  const dragOverColumnId = drag.phase === "dragging" ? drag.overColumnId : null;
 
   /* Declared before the callbacks below: the React Compiler rejects a setter
      that is read before its declaration, even inside a closure that runs
@@ -372,23 +379,23 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
   /* ── Drag handlers ── */
 
   const handleDragStart = (card: BoardCard, event: DragEvent<HTMLElement>) => {
-    setDraggingCardId(card.id);
+    dispatchDrag({ type: "START", cardId: card.id });
     event.dataTransfer.effectAllowed = "move";
     event.dataTransfer.setData("text/plain", card.id);
   };
 
   const handleDragEnd = () => {
-    setDraggingCardId(null);
-    setDragOverColumnId(null);
-    setDropIndex(null);
+    dispatchDrag({ type: "END" });
   };
 
   const handleDropColumn = (columnId: string, index: number) => {
-    if (!draggingCardId) return;
-    moveCard(draggingCardId, columnId, dropIndex ?? index);
-    setDraggingCardId(null);
-    setDragOverColumnId(null);
-    setDropIndex(null);
+    const target = resolveDrop(drag, columnId, index);
+
+    if (target) {
+      moveCard(target.cardId, target.columnId, target.index);
+    }
+
+    dispatchDrag({ type: "DROP" });
   };
 
   return (
@@ -456,14 +463,12 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
               onOpenCard={openCard}
               onDragStartCard={handleDragStart}
               onDragEndCard={handleDragEnd}
-              onDragOverCard={(columnId, index) => {
-                setDragOverColumnId(columnId);
-                setDropIndex(index);
-              }}
-              onDragOverColumn={(columnId, count) => {
-                setDragOverColumnId(columnId);
-                setDropIndex(count);
-              }}
+              onDragOverCard={(columnId, index) =>
+                dispatchDrag({ type: "OVER", columnId, index })
+              }
+              onDragOverColumn={(columnId, count) =>
+                dispatchDrag({ type: "OVER", columnId, index: count })
+              }
               onDropColumn={handleDropColumn}
               onEditColumn={setEditColumnId}
               onDeleteColumn={handleDeleteColumn}
