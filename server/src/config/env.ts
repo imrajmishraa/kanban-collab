@@ -153,6 +153,8 @@ const envSchema = z.object({
   NOTIF_DIGEST_CRON: zCron.default("0 8 * * *"),
   NOTIF_DUE_REMINDER_CRON: zCron.default("*/15 * * * *"),
   NOTIF_DUE_SOON_WINDOW_HOURS: z.coerce.number().int().positive().default(24),
+  NOTIF_OVERDUE_CRON: zCron.default("0 * * * *"),
+  NOTIF_OVERDUE_WINDOW_DAYS: z.coerce.number().int().positive().default(14),
   NOTIF_BATCH_SIZE: z.coerce.number().int().positive().default(200),
   NOTIF_TTL_READ_DAYS: z.coerce.number().int().positive().default(90),
 
