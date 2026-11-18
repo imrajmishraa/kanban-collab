@@ -7,6 +7,18 @@ import { YjsUpdateModel } from "../../../../infrastructure/db/mongoose/schemas";
 import { Debouncer } from "./debounce";
 import type { DocumentPersistence } from "./documentPersistence";
 
+/**
+ * Retry policy for a failed write.
+ *
+ * A Yjs document lives in memory until something persists it. When the write
+ * fails, the old code logged and returned — and because the debouncer entry had
+ * already been removed when the timer fired, nothing marked the document as
+ * unsaved. The state stayed only in memory and was lost if the process died
+ * before the next edit. Retrying with backoff keeps that window small.
+ */
+const MAX_PERSIST_ATTEMPTS = 4;
+const RETRY_BASE_DELAY_MS = 500;
+
 export class MongoPersistence implements DocumentPersistence {
   private readonly debouncer = new Debouncer();
 
@@ -47,17 +59,18 @@ export class MongoPersistence implements DocumentPersistence {
         documentName,
         websocketConfig.persistenceDebounceMs,
         async () => {
-          void this.writeState(documentName, document);
+          void this.persistWithRetry(documentName, document);
         },
       );
     });
   }
 
-  // Persists the latest Yjs document state
+  // Persists the latest Yjs document state. Returns false when the write
+  // failed, so the caller can decide whether to retry.
   public async writeState(
     documentName: string,
     document: Y.Doc,
-  ): Promise<void> {
+  ): Promise<boolean> {
     try {
       const update = Y.encodeStateAsUpdate(document);
 
@@ -83,6 +96,8 @@ export class MongoPersistence implements DocumentPersistence {
         },
         "Persisted Yjs document.",
       );
+
+      return true;
     } catch (error) {
       logger.error(
         {
@@ -91,7 +106,47 @@ export class MongoPersistence implements DocumentPersistence {
         },
         "Failed to persist Yjs document.",
       );
+
+      return false;
     }
+  }
+
+  /**
+   * Persist, retrying with exponential backoff until it succeeds or the
+   * attempt budget runs out.
+   *
+   * The retry is scheduled through the debouncer under its own key, so a burst
+   * of edits still coalesces (the debounced task is replaced, not queued) and a
+   * pending retry never cancels the document's own debounce.
+   */
+  private async persistWithRetry(
+    documentName: string,
+    document: Y.Doc,
+    attempt = 1,
+  ): Promise<void> {
+    const persisted = await this.writeState(documentName, document);
+
+    if (persisted) return;
+
+    if (attempt >= MAX_PERSIST_ATTEMPTS) {
+      logger.error(
+        { documentName, attempts: attempt },
+        "Giving up on persisting Yjs document; state is only in memory.",
+      );
+
+      return;
+    }
+
+    const delay = RETRY_BASE_DELAY_MS * 2 ** (attempt - 1);
+
+    logger.warn(
+      { documentName, attempt, delay },
+      "Yjs persistence failed; scheduling a retry.",
+    );
+
+    this.debouncer.debounce(`${documentName}::retry`, delay, async () => {
+      await this.persistWithRetry(documentName, document, attempt + 1);
+    });
   }
 
   /**
@@ -102,7 +157,16 @@ export class MongoPersistence implements DocumentPersistence {
    */
   public async flush(documentName: string, document: Y.Doc): Promise<void> {
     this.debouncer.cancel(documentName);
-    await this.writeState(documentName, document);
+    this.debouncer.cancel(`${documentName}::retry`);
+
+    const persisted = await this.writeState(documentName, document);
+
+    if (!persisted) {
+      logger.warn(
+        { documentName },
+        "Final flush failed; the document's latest state is only in memory.",
+      );
+    }
   }
 
   public async shutdown(): Promise<void> {
