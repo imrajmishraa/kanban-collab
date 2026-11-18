@@ -42,5 +42,6 @@
       "path": "/api/v1/internal/cron/notification-digest",
       "schedule": "0 8 * * *"
     }
-  ]
+  ],
+  "outputDirectory": "dist"
 }
