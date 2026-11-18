@@ -145,8 +145,13 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
     return [...state.columns]
       .sort((a, b) => a.orderIndex - b.orderIndex)
       .map((column) => {
+        /* Archived cards never render, whatever the filter. The REST listing
+           already excludes them; a live CRDT can still hold one (archived from
+           this tab), so the projection filters as well. */
         let cards = column.cards.filter(
-          (card) => !labelFilter || card.labels.includes(labelFilter),
+          (card) =>
+            !card.isArchived &&
+            (!labelFilter || card.labels.includes(labelFilter)),
         );
 
         if (sortBy === "dueDate") {
@@ -230,6 +235,22 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
         labels: updated.labels,
         checklists: updated.checklists,
       });
+    }
+    closeCard();
+  };
+
+  /**
+   * Hide a card without deleting it.
+   *
+   * Reversible from the board menu ("Archived cards"). Live boards write the
+   * flag into the CRDT so peers drop the card immediately; the reconciler
+   * persists it.
+   */
+  const handleArchiveCard = (cardId: string) => {
+    if (live) {
+      docApi.updateCard(cardId, { isArchived: true });
+    } else {
+      rest.updateCard.mutate({ cardId, isArchived: true });
     }
     closeCard();
   };
@@ -487,6 +508,7 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
           members={members}
           initialCard={paletteCard ?? undefined}
           onSave={(card) => handleUpdateCard(card)}
+          onArchive={handleArchiveCard}
           onDelete={handleDeleteCard}
           onClose={closeCard}
         />

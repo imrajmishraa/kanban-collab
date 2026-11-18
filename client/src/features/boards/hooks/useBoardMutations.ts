@@ -43,6 +43,7 @@ export function useBoardMutations(boardId: string | undefined) {
       members?: string[];
       labels?: string[];
       checklists?: BoardCardChecklistItem[];
+      isArchived?: boolean;
     }) => cardApi.updateCard(input.cardId, input),
     onSuccess: invalidate,
   });

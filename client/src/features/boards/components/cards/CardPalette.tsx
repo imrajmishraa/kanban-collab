@@ -5,6 +5,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ArrowRight01Icon,
   Cancel01Icon,
+  Archive02Icon,
   Delete02Icon,
   Search01Icon,
 } from "@hugeicons/core-free-icons";
@@ -27,6 +28,8 @@ interface CardPaletteProps {
   initialCard?: BoardCard;
   onSave: (card: BoardCard) => void;
   onDelete?: (cardId: string) => void;
+  /** Hides the card without deleting it; reversible from "Archived cards". */
+  onArchive?: (cardId: string) => void;
   onClose: () => void;
 }
 
@@ -49,6 +52,7 @@ export default function CardPalette({
   initialCard,
   onSave,
   onDelete,
+  onArchive,
   onClose,
 }: CardPaletteProps) {
   const [query, setQuery] = useState("");
@@ -380,6 +384,24 @@ export default function CardPalette({
                 </div>
 
                 <footer className="flex items-center justify-between gap-2 border-t border-(--hairline) px-4 py-2.5">
+                  {onArchive && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onArchive(draft.id);
+                        onClose();
+                      }}
+                      className="flex cursor-pointer items-center gap-1.5 text-[10px] uppercase tracking-wider text-(--text-soft) transition-opacity duration-200 hover:opacity-80"
+                    >
+                      <HugeiconsIcon
+                        icon={Archive02Icon}
+                        size={13}
+                        strokeWidth={1.6}
+                      />
+                      Archive
+                    </button>
+                  )}
+
                   {onDelete ? (
                     <button
                       type="button"
