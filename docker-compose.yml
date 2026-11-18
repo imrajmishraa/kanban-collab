@@ -43,7 +43,11 @@ services:
   api:
     build:
       context: ./server
-      dockerfile: Dockerfile
+      # Not `Dockerfile` at the server root: Vercel treats a root-level
+      # Dockerfile as "build this project as a container", and its container
+      # registry is capped on Hobby. The API deploys as a Vercel Function
+      # (api/index.ts + rewrites in server/vercel.json) instead.
+      dockerfile: docker/Dockerfile
     image: kanban-collab-server:latest
     container_name: kanban-api
     env_file:
