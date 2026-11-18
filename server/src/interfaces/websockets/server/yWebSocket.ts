@@ -17,6 +17,11 @@ import {
 } from "../collaboration/heartbeat/heartbeat";
 
 import { connectionRegistry } from "../collaboration/lifecycle/connectionRegistry";
+import {
+  NEW_CONNECTION,
+  transitionConnectionPhase,
+  type ConnectionPhase,
+} from "../collaboration/lifecycle/connectionPhase";
 import { idleCleanup } from "../collaboration/lifecycle/idleCleanup";
 
 import { documentManager } from "../collaboration/yjs/documentManager";
@@ -77,7 +82,47 @@ async function handleConnection(
 
   let client: CollaborationClient | undefined;
   let document: ManagedDocument | undefined;
-  let registered = false;
+
+  /**
+   * Where this connection is in its lifecycle. One value replaces the
+   * `client`/`registered` pair of flags, and the teardown below is driven by
+   * what the transition says still needs undoing — the same sequence from both
+   * the close handler and the catch block, which had already drifted apart once.
+   */
+  let phase: ConnectionPhase = NEW_CONNECTION;
+
+  const closeConnection = (): void => {
+    const transition = transitionConnectionPhase(phase, { type: "CLOSED" });
+
+    phase = transition.phase;
+
+    for (const effect of transition.effects) {
+      switch (effect) {
+        case "detach-client":
+          if (client) {
+            documentManager.removeClient(documentName, client.id);
+          }
+          break;
+
+        case "clear-awareness":
+          /* H-5: no ghost cursors for a socket that is already gone. */
+          if (document) {
+            awarenessBroadcaster.removeSocket(document, ws);
+          }
+          break;
+
+        case "schedule-idle-cleanup":
+          /* Only the last client leaving frees the document; schedule() is a
+             no-op while other clients remain. */
+          idleCleanup.schedule(documentName);
+          break;
+
+        case "unregister":
+          connectionRegistry.unregister(ws);
+          break;
+      }
+    }
+  };
 
   try {
     /*
@@ -86,7 +131,7 @@ async function handleConnection(
 
     connectionRegistry.register(ws, userId, boardId, remoteAddress);
 
-    registered = true;
+    phase = transitionConnectionPhase(phase, { type: "REGISTERED" }).phase;
 
     /*
      * Initialize heartbeat
@@ -180,6 +225,9 @@ async function handleConnection(
       ws.send(initialSync);
     }
 
+    /* Registered, attached and synced: the connection is live. */
+    phase = transitionConnectionPhase(phase, { type: "READY" }).phase;
+
     yjsLogger.info(
       {
         documentName,
@@ -270,26 +318,7 @@ async function handleConnection(
      */
 
     ws.on("close", (code, reason) => {
-      if (client) {
-        documentManager.removeClient(documentName, client.id);
-      }
-
-      /*
-       * H-5: remove this socket's presence so peers don't see a ghost cursor.
-       */
-      awarenessBroadcaster.removeSocket(activeDocument, ws);
-
-      /*
-       * If this was the last client, schedule idle cleanup so the document is
-       * eventually freed instead of living in memory forever. When other
-       * clients remain, schedule() is a no-op (connectionCount > 0).
-       */
-      idleCleanup.schedule(documentName);
-
-      if (registered) {
-        connectionRegistry.unregister(ws);
-        registered = false;
-      }
+      closeConnection();
 
       yjsLogger.info(
         {
@@ -346,40 +375,13 @@ async function handleConnection(
     );
 
     /*
-     * Remove collaboration client if it was registered.
-     */
-
-    if (client) {
-      documentManager.removeClient(documentName, client.id);
-    }
-
-    /*
-     * Drop this socket's awareness entry.
+     * Undo whatever this connection managed to set up.
      *
-     * The close handler does this, and this path did not — so a connection that
-     * failed after `addClient` but before its handlers were attached left its
-     * presence behind and every peer kept rendering a cursor for a socket that
-     * was already gone. Guarded because `document` is only assigned once
-     * `getOrCreate` resolves; a failure before that has no awareness to clear.
+     * Same call as the close handler, so the two paths cannot drift again: the
+     * phase decides whether the registry entry, the document client, the
+     * awareness entry or all of them still need releasing.
      */
-    if (document) {
-      awarenessBroadcaster.removeSocket(document, ws);
-    }
-
-    /*
-     * Schedule idle cleanup in case this failed connection left the document
-     * with no active clients.
-     */
-    idleCleanup.schedule(documentName);
-
-    /*
-     * Remove global connection registry entry.
-     */
-
-    if (registered) {
-      connectionRegistry.unregister(ws);
-      registered = false;
-    }
+    closeConnection();
 
     /*
      * Close the socket if it is still usable.
