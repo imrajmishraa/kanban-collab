@@ -49,6 +49,20 @@ export interface UpdateCardResponse {
   labels: string[];
 }
 
+// ── Archived ─────────────────────────────────────────────────
+
+/** A card that has been archived, as returned by the archived-cards listing. */
+export interface ArchivedCard {
+  id: string;
+  title: string;
+  description: string;
+  columnId: string;
+  columnName: string | null;
+  dueDate: string | null;
+  labels: string[];
+  archivedAt: string;
+}
+
 // ── Move ─────────────────────────────────────────────────────
 
 export interface MoveCardRequest {

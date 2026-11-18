@@ -26,6 +26,7 @@ import {
   boardAccessDeniedError,
 } from "../../../../shared/errors/board/board";
 import { loadWriterMembership } from "../../../../application/workspaces/membership";
+import { invalidObjectIdError } from "../../../../shared/errors/handler/generic";
 
 /**
  * Resolve the authenticated user's id, or reject.
@@ -429,6 +430,81 @@ const getBoardDetails = asyncHandler(async (req: AuthenticatedRequest, res) => {
   return res.status(200).json(response);
 });
 
+// ARCHIVED CARDS
+
+/**
+ * `GET /boards/:boardId/archived-cards`
+ *
+ * Archived cards are excluded from every board listing, so without this the
+ * archive action is a one-way trip into invisibility: `isArchived` was accepted
+ * by `PATCH /cards/:id` but nothing could ever list or restore what it hid.
+ *
+ * Read-only, so membership is the whole rule — a pending workspace still lists
+ * its cards (see the workspace lifecycle work); only writes are refused there.
+ */
+const listArchivedCards = asyncHandler(
+  async (req: AuthenticatedRequest, res) => {
+    const { boardId } = req.params;
+    const userId = requireUserId(req);
+
+    if (!boardId || !Types.ObjectId.isValid(boardId)) {
+      throw invalidObjectIdError();
+    }
+
+    const board = await BoardModel.findById(boardId)
+      .select("_id workspaceId")
+      .lean();
+
+    if (!board) {
+      throw boardNotFoundError();
+    }
+
+    const membership = await WorkspaceModel.findOne({
+      _id: board.workspaceId,
+      "members.userId": new Types.ObjectId(userId),
+    })
+      .select("_id")
+      .lean();
+
+    if (!membership) {
+      throw notWorkspaceMemberError();
+    }
+
+    const cards = await CardModel.find({ boardId: board._id, isArchived: true })
+      .select("_id title description columnId dueDate labels updatedAt")
+      .sort({ updatedAt: -1 })
+      .limit(200)
+      .lean();
+
+    const columnIds = [
+      ...new Set(cards.map((card) => card.columnId.toString())),
+    ];
+
+    const columns = await ColumnModel.find({ _id: { $in: columnIds } })
+      .select("_id name")
+      .lean();
+
+    const columnNames = new Map(
+      columns.map((column) => [column._id.toString(), column.name]),
+    );
+
+    return res.status(200).json(
+      new ApiResponse(200, "Archived cards fetched successfully.", {
+        cards: cards.map((card) => ({
+          id: card._id,
+          title: card.title,
+          description: card.description ?? "",
+          columnId: card.columnId,
+          columnName: columnNames.get(card.columnId.toString()) ?? null,
+          dueDate: card.dueDate ?? null,
+          labels: card.labels ?? [],
+          archivedAt: card.updatedAt,
+        })),
+      }),
+    );
+  },
+);
+
 const deleteBoard = asyncHandler(async (req: AuthenticatedRequest, res) => {
   const userId = requireUserId(req);
   const boardId = req.params["boardId"] || req.params["id"];
@@ -580,6 +656,7 @@ const shareBoard = asyncHandler(async (req: AuthenticatedRequest, res) => {
 
 export {
   createBoard,
+  listArchivedCards,
   updateBoard,
   listBoards,
   getBoardDetails,

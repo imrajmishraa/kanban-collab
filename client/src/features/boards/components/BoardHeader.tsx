@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
+  Archive02Icon,
   ArrowUpRight01Icon,
   Delete02Icon,
   Edit02Icon,
@@ -14,6 +15,7 @@ import {
 import { ShareBoardDialog } from "@/components/sidebar/ShareBoardDialog";
 
 import { DeleteBoardDialog, EditBoardDialog } from "@/features/workspaces";
+import { ArchivedCardsDialog } from "./ArchivedCardsDialog";
 
 import { ui } from "@/features/boards";
 import { usePinnedBoards } from "@/features/dashboard";
@@ -28,7 +30,7 @@ interface BoardHeaderProps {
   onOpenChange?: (open: boolean) => void;
 }
 
-type Dialog = "edit" | "share" | "delete" | null;
+type Dialog = "edit" | "share" | "delete" | "archived" | null;
 
 function IconButton({
   label,
@@ -198,6 +200,9 @@ export default function BoardHeader({
                 togglePin(boardId),
               )}
               {item("Share", Share08Icon, () => setDialog("share"))}
+              {item("Archived cards", Archive02Icon, () =>
+                setDialog("archived"),
+              )}
               {item("Copy link", Link01Icon, copyLink)}
               {item("Open in new tab", ArrowUpRight01Icon, () =>
                 window.open(`/boards/${boardId}`, "_blank"),
@@ -226,6 +231,13 @@ export default function BoardHeader({
         <ShareBoardDialog
           boardId={boardId}
           boardName={name}
+          onClose={() => setDialog(null)}
+        />
+      )}
+
+      {dialog === "archived" && (
+        <ArchivedCardsDialog
+          boardId={boardId}
           onClose={() => setDialog(null)}
         />
       )}

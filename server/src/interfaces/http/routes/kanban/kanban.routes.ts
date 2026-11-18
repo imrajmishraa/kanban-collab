@@ -5,6 +5,7 @@ import {
   updateBoard,
   listBoards,
   getBoardDetails,
+  listArchivedCards,
   deleteBoard,
   shareBoard,
 } from "../../controllers/boards/boards";
@@ -99,6 +100,12 @@ router.patch(
     params: boardParamsSchema,
   }),
   updateBoard,
+);
+
+router.get(
+  "/boards/:boardId/archived-cards",
+  validateSchema({ params: boardParamsSchema }),
+  listArchivedCards,
 );
 
 router.delete(

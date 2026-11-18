@@ -1,4 +1,5 @@
 import type {
+  ArchivedCard,
   CreateCardRequest,
   CreateCardResponse,
   MoveCardRequest,
@@ -29,6 +30,15 @@ export const cardApi = {
     const response = await apiClient.patch(`/cards/${cardId}`, data);
 
     return response.data.data;
+  },
+
+  /** Archived cards for a board — the only way back from an archive. */
+  async listArchivedCards(boardId: string): Promise<ArchivedCard[]> {
+    const response = await apiClient.get<
+      ApiResponse<{ cards: ArchivedCard[] }>
+    >(`/boards/${boardId}/archived-cards`);
+
+    return response.data.data.cards;
   },
 
   async deleteCard(cardId: string): Promise<{ id: string }> {
