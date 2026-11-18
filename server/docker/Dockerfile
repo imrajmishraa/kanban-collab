@@ -2,6 +2,14 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # kanban-collaboration-server — production image
 #
+# Lives in docker/, NOT at the server root: Vercel treats a root-level
+# Dockerfile as "deploy this project as a container" and pushes the image to its
+# container registry, which is capped on Hobby — that is what broke the API
+# deploy on 18 Nov ("repository has reached the maximum allowed number of
+# images"). The API deploys as a Vercel Function instead (api/index.ts plus the
+# rewrites in server/vercel.json). This file is for docker-compose and local
+# production builds only.
+#
 # Multi-stage build:
 #   deps   → production-only node_modules (native modules compiled here)
 #   build  → full deps + TypeScript compiled to dist/
