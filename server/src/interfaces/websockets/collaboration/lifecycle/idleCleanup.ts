@@ -1,6 +1,7 @@
 import { websocketLogger } from "../../../../infrastructure/logging/childLogger";
 
 import { documentManager } from "../yjs/documentManager";
+import { isDocumentUsable } from "../yjs/types";
 
 const DEFAULT_IDLE_TIMEOUT_MS = 5 * 60 * 1000;
 
@@ -28,7 +29,7 @@ export class IdleCleanup {
 
     const document = documentManager.get(documentName);
 
-    if (!document || document.destroyed) {
+    if (!document || !isDocumentUsable(document.phase)) {
       return;
     }
 
@@ -97,7 +98,7 @@ export class IdleCleanup {
 
     const document = documentManager.get(documentName);
 
-    if (!document || document.destroyed) {
+    if (!document || !isDocumentUsable(document.phase)) {
       return;
     }
 

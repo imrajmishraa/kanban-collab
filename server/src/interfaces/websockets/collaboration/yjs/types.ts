@@ -25,6 +25,13 @@ export interface AwarenessState {
   };
 }
 
+export type DocumentPhase = "active" | "destroying" | "destroyed";
+
+/** True only while the document can accept clients and traffic. */
+export function isDocumentUsable(phase: DocumentPhase): boolean {
+  return phase === "active";
+}
+
 export interface ManagedDocument {
   readonly name: string;
   readonly doc: Y.Doc;
@@ -36,8 +43,21 @@ export interface ManagedDocument {
   lastAccessedAt: Date;
 
   connectionCount: number;
-  loaded: boolean;
-  destroyed: boolean;
+
+  /**
+   * Where this document is in its life.
+   *
+   * `active`     — usable: clients attach, updates broadcast, persistence runs
+   * `destroying` — teardown started; nothing new may attach, but the flush to
+   *                Mongo and the Redis unsubscribe are still in flight
+   * `destroyed`  — torn down and unregistered
+   *
+   * A single phase replaces the `loaded`/`destroyed` pair, because "not
+   * destroyed" was true during teardown too: a connection arriving mid-destroy
+   * attached to a document that was about to have its awareness and Y.Doc
+   * destroyed underneath it.
+   */
+  phase: DocumentPhase;
 
   clients: Map<string, CollaborationClient>;
 }

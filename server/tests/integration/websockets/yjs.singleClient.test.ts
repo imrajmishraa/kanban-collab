@@ -346,9 +346,7 @@ describe("Yjs Collaboration - Single Client", () => {
 
     expect(managedDocument?.doc).toBeInstanceOf(Y.Doc);
 
-    expect(managedDocument?.loaded).toBe(true);
-
-    expect(managedDocument?.destroyed).toBe(false);
+    expect(managedDocument?.phase).toBe("active");
 
     expect(managedDocument?.connectionCount).toBe(1);
 
