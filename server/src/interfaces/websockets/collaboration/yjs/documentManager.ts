@@ -7,9 +7,10 @@ import { persistence } from "../persistence/mongoPersistence";
 import { bindRedisSync, cleanupRedisRoom } from "../persistence/redisSync";
 import { boardReconciler } from "../persistence/boardReconciler";
 
+import { isDocumentUsable } from "./types";
 import type { CollaborationClient, ManagedDocument } from "./types";
 
-class DocumentManager {
+export class DocumentManager {
   /**
    * Active in-memory collaborative documents.
    */
@@ -25,6 +26,15 @@ class DocumentManager {
     string,
     Promise<ManagedDocument>
   >();
+
+  /**
+   * Teardowns in flight, keyed by document name.
+   *
+   * `getOrCreate` waits on this before building a replacement: creating a second
+   * Y.Doc for the same board while the first is still flushing to Mongo would
+   * seed the new one from stale state and then let both write.
+   */
+  private readonly pendingDestroys = new Map<string, Promise<boolean>>();
 
   /**
    * Returns true if the document is already loaded.
@@ -50,10 +60,26 @@ class DocumentManager {
   public async getOrCreate(documentName: string): Promise<ManagedDocument> {
     const existing = this.documents.get(documentName);
 
-    if (existing && !existing.destroyed) {
+    if (existing && isDocumentUsable(existing.phase)) {
       this.touch(documentName);
 
       return existing;
+    }
+
+    /* Mid-teardown: wait for the flush and unsubscribe to finish, otherwise the
+       replacement would be built from state that is still being written. */
+    const teardown = this.pendingDestroys.get(documentName);
+
+    if (teardown) {
+      await teardown;
+
+      const rebuilt = this.documents.get(documentName);
+
+      if (rebuilt && isDocumentUsable(rebuilt.phase)) {
+        this.touch(documentName);
+
+        return rebuilt;
+      }
     }
 
     const pending = this.pendingDocuments.get(documentName);
@@ -85,7 +111,7 @@ class DocumentManager {
      */
     const existing = this.documents.get(documentName);
 
-    if (existing && !existing.destroyed) {
+    if (existing && isDocumentUsable(existing.phase)) {
       this.touch(documentName);
 
       return existing;
@@ -150,7 +176,7 @@ class DocumentManager {
   ): ManagedDocument {
     const existing = this.documents.get(documentName);
 
-    if (existing && !existing.destroyed) {
+    if (existing && isDocumentUsable(existing.phase)) {
       yjsLogger.warn(
         {
           documentName,
@@ -180,8 +206,7 @@ class DocumentManager {
       lastAccessedAt: now,
 
       connectionCount: 0,
-      loaded: true,
-      destroyed: false,
+      phase: "active",
 
       clients: new Map(),
     };
@@ -224,7 +249,7 @@ class DocumentManager {
   public touch(documentName: string): void {
     const managed = this.documents.get(documentName);
 
-    if (!managed || managed.destroyed) {
+    if (!managed || !isDocumentUsable(managed.phase)) {
       return;
     }
 
@@ -269,7 +294,7 @@ class DocumentManager {
   public addClient(documentName: string, client: CollaborationClient): boolean {
     const managed = this.documents.get(documentName);
 
-    if (!managed || managed.destroyed) {
+    if (!managed || !isDocumentUsable(managed.phase)) {
       return false;
     }
 
@@ -298,7 +323,7 @@ class DocumentManager {
   public removeClient(documentName: string, clientId: string): boolean {
     const managed = this.documents.get(documentName);
 
-    if (!managed || managed.destroyed) {
+    if (!managed || !isDocumentUsable(managed.phase)) {
       return false;
     }
 
@@ -333,7 +358,7 @@ class DocumentManager {
   ): CollaborationClient | undefined {
     const managed = this.documents.get(documentName);
 
-    if (!managed || managed.destroyed) {
+    if (!managed || !isDocumentUsable(managed.phase)) {
       return undefined;
     }
 
@@ -346,7 +371,7 @@ class DocumentManager {
   public getClients(documentName: string): readonly CollaborationClient[] {
     const managed = this.documents.get(documentName);
 
-    if (!managed || managed.destroyed) {
+    if (!managed || !isDocumentUsable(managed.phase)) {
       return [];
     }
 
@@ -365,7 +390,7 @@ class DocumentManager {
   ): void {
     const managed = this.documents.get(documentName);
 
-    if (!managed || managed.destroyed) {
+    if (!managed || !isDocumentUsable(managed.phase)) {
       return;
     }
 
@@ -406,10 +431,42 @@ class DocumentManager {
       return false;
     }
 
-    if (managed.destroyed) {
+    if (managed.phase === "destroyed") {
       return true;
     }
 
+    /* A second caller joins the teardown already running instead of starting a
+       competing one — the idle sweep and the last client leaving can both land
+       here. */
+    const running = this.pendingDestroys.get(documentName);
+
+    if (running) {
+      return running;
+    }
+
+    /* Mark first, then await: from this line on nothing new can attach, even
+       though the flush below takes several awaits to finish. */
+    managed.phase = "destroying";
+
+    const teardown = this.runDestroy(documentName, managed);
+
+    this.pendingDestroys.set(documentName, teardown);
+
+    try {
+      return await teardown;
+    } finally {
+      this.pendingDestroys.delete(documentName);
+    }
+  }
+
+  /**
+   * The actual teardown, split out so `destroy` can register the promise before
+   * awaiting it.
+   */
+  private async runDestroy(
+    documentName: string,
+    managed: ManagedDocument,
+  ): Promise<boolean> {
     yjsLogger.info(
       {
         documentName,
@@ -453,8 +510,7 @@ class DocumentManager {
       /*
        * Mark as destroyed.
        */
-      managed.destroyed = true;
-      managed.loaded = false;
+      managed.phase = "destroyed";
 
       /*
        * Remove from registry.
@@ -477,6 +533,11 @@ class DocumentManager {
         },
         "Failed to destroy collaborative document.",
       );
+
+      /* Nothing was released, so let the idle sweep try again rather than
+         leaving the document stranded in `destroying` for the life of the
+         process. */
+      managed.phase = "active";
 
       return false;
     }
