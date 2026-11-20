@@ -1,4 +1,17 @@
-import type { CSSProperties } from "react";
+import {
+  MOBILE_WIDTH,
+  SHAPE_CLASS,
+  SIZE_CLASS,
+  SURFACE,
+  SURFACE_BY_TONE,
+  dimension,
+  type ToasterPosition,
+  type ToasterShape,
+  type ToasterSize,
+  type ToasterTheme,
+  type CssVars,
+  type ToasterTone,
+} from "./toasterVariants";
 import { Toaster as SonnerToaster } from "sonner";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
 import {
@@ -65,63 +78,101 @@ function IconBadge({ tone }: { tone: Tone }) {
   );
 }
 
-/**
- * Sonner stops reading `--width` below 600px: its own media query makes the
- * toaster full-bleed and gives each toast `calc(100% - 2 × mobileOffset)`. So
- * the mobile width cannot be another `--width` value — it has to be a cap on
- * the toast itself, at sonner's breakpoint rather than Tailwind's `sm` (640px),
- * or the 600–640px band would shrink a desktop toast.
- */
-const MOBILE_WIDTH = [
-  "[@media(max-width:600px)]:[&_[data-sonner-toast]]:!mx-auto",
-  "[@media(max-width:600px)]:[&_[data-sonner-toast]]:!max-w-[340px]",
-].join(" ");
+export interface ToasterProps {
+  /** Where the stack sits. Default `bottom-right`. */
+  position?: ToasterPosition;
+  /** `system` follows the app's theme class. Default `dark`. */
+  theme?: ToasterTheme;
+  /** Type scale inside the toast. Default `md`. */
+  size?: ToasterSize;
+  /** Corner + padding. Default `default`. */
+  shape?: ToasterShape;
+  /** Surface colour. Default `auto` (the elevated panel). */
+  tone?: ToasterTone;
 
-/**
- * What sonner reads for the surface.
- *
- * `--normal-bg` takes an image as well as a colour, so it carries a gradient:
- * four percent of the ink at the top edge falling into the elevated surface.
- * That highlight is the difference between a panel and a slab — it is the same
- * trick `m-card` uses, at toast scale.
- */
-const SURFACE = {
-  "--normal-bg":
-    "linear-gradient(to bottom, color-mix(in srgb, var(--text-primary) 5%, var(--bg-elevated)), var(--bg-elevated) 62%)",
-  "--normal-border": "var(--border)",
-  "--normal-text": "var(--text-primary)",
-  "--border-radius": "12px",
-  "--width": "380px",
-} as CSSProperties;
+  /** Fixed stack width — sonner's `--width`. Default `380`. */
+  width?: number | string;
+  /** Cap on a single toast, in addition to `width`. */
+  maxWidth?: number | string;
+  /** Minimum height of a toast — useful when every toast should be one size. */
+  height?: number | string;
+  /** Maximum height; longer content is clipped by sonner's own overflow. */
+  maxHeight?: number | string;
 
-interface ToasterProps {
-  /**
-   * Extra classes for the toaster root — the fixed-position container sonner
-   * renders. Use it for things that belong to the stack rather than to a single
-   * toast (offsets, z-index, a page-level backdrop).
-   */
+  /** Space between stacked toasts. Default `10`. */
+  gap?: number;
+  /** Distance from the viewport edge. Default `16`. */
+  offset?: number;
+  /** Same, on narrow screens. Default `12`. */
+  mobileOffset?: number;
+  /** Show every stacked toast, rather than collapsing them. Default `false`. */
+  expand?: boolean;
+  /** How many toasts can be on screen at once. Default `3`. */
+  visibleToasts?: number;
+  /** Default lifetime in ms. Default `4000`. */
+  duration?: number;
+  /** Show the dismiss button. Default `true`. */
+  closeButton?: boolean;
+  /** Dismiss button shape: `md` (rounded-md) or `round`. Default `md`. */
+  closeButtonShape?: "md" | "round";
+
+  /** Extra classes for the toaster root (offsets, z-index, backdrop). */
   className?: string;
-  /**
-   * Extra classes for each toast surface. This is where a background goes when
-   * the default gradient is not what you want — e.g. `!bg-(--bg-root)` to make
-   * toasts opaque, or `!bg-transparent !backdrop-blur-md` for glass.
-   */
+  /** Extra classes for each toast surface — this is where a background goes. */
   toastClassName?: string;
+  /** Extra classes for the bubble only, after every variant class. */
+  bubbleClassName?: string;
 }
 
-export function Toaster({ className, toastClassName }: ToasterProps = {}) {
+export function Toaster({
+  position = "bottom-right",
+  theme = "dark",
+  size = "md",
+  shape = "default",
+  tone = "auto",
+  width = 380,
+  maxWidth,
+  height,
+  maxHeight,
+  gap = 10,
+  offset = 16,
+  mobileOffset = 12,
+  expand = false,
+  visibleToasts = 3,
+  duration = 4000,
+  closeButton = true,
+  closeButtonShape = "md",
+  className,
+  toastClassName,
+  bubbleClassName,
+}: ToasterProps = {}) {
+  const scale = SIZE_CLASS[size];
+
+  /* Height caps travel as CSS variables: a Tailwind class built by string
+     interpolation would never be generated at build time, and the class list
+     here has to stay static. */
+  const dimensions: CssVars = {
+    ...(height !== undefined && {
+      "--toast-min-height": dimension(height),
+    }),
+    ...(maxHeight !== undefined && {
+      "--toast-max-height": dimension(maxHeight),
+    }),
+    ...(maxWidth !== undefined && { "--toast-max-width": dimension(maxWidth) }),
+  };
+
   return (
     <SonnerToaster
-      position="bottom-right"
-      theme="dark"
-      closeButton
+      position={position}
+      theme={theme}
+      closeButton={closeButton}
       richColors={false}
-      expand={false}
-      visibleToasts={3}
-      duration={4000}
-      gap={10}
-      offset={{ top: 16, right: 16, bottom: 16, left: 16 }}
-      mobileOffset={{ top: 12, right: 12, bottom: 12, left: 12 }}
+      expand={expand}
+      visibleToasts={visibleToasts}
+      duration={duration}
+      gap={gap}
+      offset={offset}
+      mobileOffset={mobileOffset}
       swipeDirections={["right", "top"]}
       hotkey={["altKey", "KeyT"]}
       containerAriaLabel="Notifications"
@@ -136,51 +187,51 @@ export function Toaster({ className, toastClassName }: ToasterProps = {}) {
       toastOptions={{
         unstyled: false,
         closeButtonAriaLabel: "Dismiss notification",
-        style: SURFACE,
+        style: {
+          ...SURFACE,
+          "--width": dimension(width) ?? "380px",
+          ...SURFACE_BY_TONE[tone],
+          ...dimensions,
+        } as CssVars,
         classNames: {
           toast: [
             "!font-sans",
+            SHAPE_CLASS[shape],
             toastClassName ?? "",
+            bubbleClassName ?? "",
+            height !== undefined && "!min-h-[var(--toast-min-height)]",
+            maxHeight !== undefined && "!max-h-[var(--toast-max-height)]",
+            maxWidth !== undefined && "!max-w-[var(--toast-max-width)]",
             // Two shadows, not one: a hairline of light on the top edge and a
             // deep, wide drop. A single blur reads as a browser default.
             "!shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_24px_56px_-20px_rgba(0,0,0,0.75),0_2px_8px_-2px_rgba(0,0,0,0.5)]",
             "!transition-[transform,opacity] !duration-300 !ease-[cubic-bezier(0.21,0.47,0.32,0.98)]",
-          ].join(" "),
-          title:
-            "!text-[13px] !font-semibold !leading-[1.35] !tracking-[-0.1px]",
-          description:
-            "!text-[12px] !leading-[1.5] !tracking-[-0.05px] !text-(--text-muted)",
-          /* Room for the close button now that it sits inside the box. */
-          content: "!gap-1 !pr-8",
+          ]
+            .filter(Boolean)
+            .join(" "),
+          title: scale.title,
+          description: scale.description,
+          content: "!gap-1",
           icon: "!size-6 !items-center !justify-center",
           actionButton:
             "!h-7 !rounded-md !bg-(--brand) !px-2.5 !text-[12px] !font-semibold !text-(--solid-text)",
           cancelButton:
             "!h-7 !rounded-md !bg-(--tint-8) !px-2.5 !text-[12px] !font-medium !text-(--text-secondary)",
           /*
-           * Inside the surface, right edge, vertically centred — sonner's
-           * default puts this button *outside* the top-left corner, floating on
-           * the page rather than belonging to the toast. Four utilities undo
-           * that: `left-auto` cancels the left anchor, `right-2` moves it
-           * inside, and the two translate resets cancel the -35% offset that
-           * pushed it out of the box.
+           * In the flow, not on top of it.
+           *
+           * Sonner's toast is already `display: flex; align-items: center`, so a
+           * static button is centred by the layout for any content height. It is
+           * also rendered as the toast's *first* child, so `!order-last` is what
+           * keeps it at the right edge. `!transform-none` cancels sonner's
+           * `translate(-35%, -35%)`, which applies even when static.
            */
           closeButton: [
-            /*
-             * Centred with `top: 0; bottom: 0; margin: auto` rather than
-             * `top: 50%` + translate: the toast's height is content-driven, so
-             * the percentage was fine, but the translate then had to fight
-             * sonner's own `transform: translate(-35%, -35%)` and a toast with
-             * a description drifted off centre. Margin-centring needs no
-             * transform at all, so the two resets below are all that is left.
-             */
-            "!left-auto !right-2 !top-0 !bottom-0 !my-auto",
-            "!translate-x-0 !translate-y-0",
-            "!size-6 !rounded-md !border-0 !bg-transparent !text-(--text-muted)",
+            "!static !transform-none !shrink-0 !order-last",
+            closeButtonShape === "round" ? "!rounded-full" : "!rounded-md",
+            "!size-6 !border-0 !bg-transparent !text-(--text-muted)",
             "!transition-colors !duration-150",
             "hover:!bg-(--tint-8) hover:!text-(--text-primary)",
-            /* Sonner's ✕ is a 12px inline svg; 16px reads better next to a
-               13px title and is still inside the 24px hit area. */
             "[&_svg]:!size-4",
           ].join(" "),
           loader: "!text-(--text-secondary)",

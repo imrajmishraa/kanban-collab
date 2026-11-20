@@ -1,3 +1,5 @@
+import type { CSSProperties } from "react";
+
 import { toast } from "sonner";
 
 import { ApiClientError } from "@/services/client";
@@ -14,8 +16,41 @@ import { ApiClientError } from "@/services/client";
 const SUCCESS_MS = 3000;
 const ERROR_MS = 6000;
 
-export function toastSuccess(message: string, description?: string) {
-  return toast.success(message, { description, duration: SUCCESS_MS });
+/**
+ * Successes that should read as a moment rather than a notification — signing
+ * in, finishing onboarding. Same library, different surface: sonner paints from
+ * `--normal-bg`, so overriding the variable recolours the toast *and* the close
+ * button that sits on it.
+ */
+const AUTH_MS = 2500;
+
+const AUTH_SURFACE = {
+  "--normal-bg": "var(--auth)",
+  "--normal-border": "color-mix(in srgb, var(--auth) 70%, black)",
+  "--normal-text": "var(--auth-ink)",
+} as CSSProperties;
+
+export type ToastVariant = "default" | "auth";
+
+export interface ToastOptions {
+  /** `auth` paints the toast with the brand-blue auth surface. */
+  variant?: ToastVariant;
+  /** Override the lifetime for this one toast. */
+  duration?: number;
+}
+
+export function toastSuccess(
+  message: string,
+  description?: string,
+  { variant = "default", duration }: ToastOptions = {},
+) {
+  const auth = variant === "auth";
+
+  return toast.success(message, {
+    description,
+    duration: duration ?? (auth ? AUTH_MS : SUCCESS_MS),
+    ...(auth && { style: AUTH_SURFACE }),
+  });
 }
 
 export function toastError(err: unknown, fallback = "Something went wrong.") {
