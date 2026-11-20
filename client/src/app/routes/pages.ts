@@ -15,6 +15,10 @@ export const HomePage = lazy(() => import("@/pages/HomePage"));
 export const FeaturesPage = lazy(() => import("@/pages/FeaturesPage"));
 export const HowItWorksPage = lazy(() => import("@/pages/HowItWorksPage"));
 
+export const SharedBoardPage = lazy(
+  () => import("@/pages/shared/SharedBoardPage"),
+);
+
 /* Auth */
 export const LoginPage = lazy(() => import("@/pages/auth/LoginPage"));
 export const RegisterPage = lazy(() => import("@/pages/auth/RegisterPage"));

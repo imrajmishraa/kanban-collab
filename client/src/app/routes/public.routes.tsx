@@ -16,10 +16,16 @@ import {
   TestimonialsPage,
   TourPage,
   UseCasesPage,
+  SharedBoardPage,
 } from "./pages";
 
 /** Marketing surfaces. Public, no auth, their own layout. */
 export const publicRoutes: RouteObject[] = [
+  /*
+   * A board shared with a public link. Outside `PublicLayout` on purpose — it is
+   * a document, not a marketing page, and it must render without a session.
+   */
+  { path: "/b/:boardId", element: <SharedBoardPage /> },
   {
     element: <PublicLayout />,
     children: [
