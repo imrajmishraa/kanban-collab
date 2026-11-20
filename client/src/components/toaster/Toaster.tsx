@@ -134,14 +134,27 @@ export function Toaster() {
             "!text-[13px] !font-semibold !leading-[1.35] !tracking-[-0.1px]",
           description:
             "!text-[12px] !leading-[1.5] !tracking-[-0.05px] !text-(--text-muted)",
-          content: "!gap-1",
+          /* Room for the close button now that it sits inside the box. */
+          content: "!gap-1 !pr-8",
           icon: "!size-6 !items-center !justify-center",
           actionButton:
             "!h-7 !rounded-md !bg-(--brand) !px-2.5 !text-[12px] !font-semibold !text-(--solid-text)",
           cancelButton:
             "!h-7 !rounded-md !bg-(--tint-8) !px-2.5 !text-[12px] !font-medium !text-(--text-secondary)",
-          closeButton:
-            "!size-[18px] !bg-(--bg-elevated) !text-(--text-muted) !transition-colors !duration-150 hover:!bg-(--tint-8) hover:!text-(--text-primary)",
+          /*
+           * Inside the surface, right edge, vertically centred — sonner's
+           * default puts this button *outside* the top-left corner, floating on
+           * the page rather than belonging to the toast. Four utilities undo
+           * that: `left-auto` cancels the left anchor, `right-2` moves it
+           * inside, and the two translate resets cancel the -35% offset that
+           * pushed it out of the box.
+           */
+          closeButton: [
+            "!left-auto !right-2 !top-1/2 !-translate-y-1/2 !translate-x-0",
+            "!size-6 !rounded-full !border-0 !bg-transparent !text-(--text-muted)",
+            "!transition-colors !duration-150",
+            "hover:!bg-(--tint-8) hover:!text-(--text-primary)",
+          ].join(" "),
           loader: "!text-(--text-secondary)",
         },
       }}
