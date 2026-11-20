@@ -71,6 +71,8 @@
   --success: #35d399;
   --warning: #f5b84b;
   --danger: #f16b7a;
+  --auth: #2563eb;
+  --auth-ink: #ffffff;
 }
 
 /* ── THEME SCOPES ───────────────────────────────────────────────────────
@@ -160,6 +162,8 @@
   --success: #047857;
   --warning: #a16207;
   --danger: #be123c;
+  --auth: #1d4ed8;
+  --auth-ink: #ffffff;
 }
 
 /* The dark palette as a scope, the mirror of `.light-theme`.
@@ -245,6 +249,8 @@
   --success: #35d399;
   --warning: #f5b84b;
   --danger: #f16b7a;
+  --auth: #2563eb;
+  --auth-ink: #ffffff;
 }
 
 /* THEME REVEAL
