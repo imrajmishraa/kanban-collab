@@ -5,6 +5,7 @@ import {
   updateBoard,
   listBoards,
   getBoardDetails,
+  getSharedBoard,
   listArchivedCards,
   deleteBoard,
   shareBoard,
@@ -78,6 +79,20 @@ import {
 } from "../../validators/kanban/column.validator";
 
 const router = Router();
+
+/*
+ * Public read of a shared board.
+ *
+ * Declared before `authenticateJWT`, which is applied to the whole router
+ * below: this is the one kanban route a reader without a session may call.
+ * It only serves boards whose visibility is `public`, and only the read
+ * projection — no membership data, no writes.
+ */
+router.get(
+  "/boards/:boardId/public",
+  validateSchema({ params: boardParamsSchema }),
+  getSharedBoard,
+);
 
 router.use(authenticateJWT);
 
