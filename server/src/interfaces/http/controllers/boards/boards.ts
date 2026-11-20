@@ -430,6 +430,95 @@ const getBoardDetails = asyncHandler(async (req: AuthenticatedRequest, res) => {
   return res.status(200).json(response);
 });
 
+// SHARED (PUBLIC) BOARD
+
+/**
+ * `GET /boards/:boardId/public` — read a board that is shared publicly.
+ *
+ * This is the one kanban route mounted *before* `authenticateJWT`, so it must
+ * answer without a session. It exists because `BoardVisibility` has three
+ * values and only one was enforced: `private` denied guests, while `public` and
+ * `workspace` behaved identically — every read went through membership. A board
+ * marked public was therefore not reachable by anyone outside the workspace.
+ *
+ * Rules:
+ *   - `public` boards are readable by anyone holding the link
+ *   - anything else answers 404, not 403: a 403 would confirm that a board with
+ *     that id exists, which is exactly what a private board should not disclose
+ *   - the payload is the read projection only — columns, cards, and the
+ *     workspace's display name. No members, no emails, no settings
+ */
+const getSharedBoard = asyncHandler(async (req, res) => {
+  const { boardId } = req.params;
+
+  if (!boardId || !Types.ObjectId.isValid(boardId)) {
+    throw invalidObjectIdError();
+  }
+
+  const board = await BoardModel.findById(boardId).lean();
+
+  if (!board || board.visibility !== "public") {
+    throw boardNotFoundError();
+  }
+
+  const workspace = await WorkspaceModel.findById(board.workspaceId)
+    .select("name")
+    .lean();
+
+  const columns = await ColumnModel.find({ boardId: board._id })
+    .sort({ orderIndex: 1 })
+    .lean();
+
+  const cards = await CardModel.find({
+    boardId: board._id,
+    isArchived: false,
+  })
+    .sort({ orderIndex: 1 })
+    .select(
+      "_id title description orderIndex dueDate labels checklists columnId members",
+    )
+    .lean();
+
+  const cardsByColumn = new Map<string, typeof cards>();
+
+  for (const card of cards) {
+    const key = card.columnId.toString();
+    const bucket = cardsByColumn.get(key);
+
+    if (bucket) {
+      bucket.push(card);
+    } else {
+      cardsByColumn.set(key, [card]);
+    }
+  }
+
+  return res.status(200).json(
+    new ApiResponse(200, "Board fetched successfully.", {
+      board: {
+        id: board._id,
+        name: board.name,
+        description: board.description ?? "",
+        visibility: board.visibility,
+        workspaceName: workspace?.name ?? null,
+      },
+      columns: columns.map((column) => ({
+        id: column._id,
+        name: column.name,
+        orderIndex: column.orderIndex,
+        cards: (cardsByColumn.get(column._id.toString()) ?? []).map((card) => ({
+          id: card._id,
+          title: card.title,
+          description: card.description ?? "",
+          orderIndex: card.orderIndex,
+          dueDate: card.dueDate ?? null,
+          labels: card.labels ?? [],
+          checklistCount: card.checklists?.length ?? 0,
+        })),
+      })),
+    }),
+  );
+});
+
 // ARCHIVED CARDS
 
 /**
@@ -656,6 +745,7 @@ const shareBoard = asyncHandler(async (req: AuthenticatedRequest, res) => {
 
 export {
   createBoard,
+  getSharedBoard,
   listArchivedCards,
   updateBoard,
   listBoards,
