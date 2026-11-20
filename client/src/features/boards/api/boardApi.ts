@@ -22,6 +22,7 @@ import type {
   UpdateBoardPayload,
   ListBoardsParams,
   BoardPagination,
+  SharedBoard,
 } from "@/types/board";
 
 interface BoardApiDocument extends Omit<Board, "id"> {
@@ -195,6 +196,20 @@ export const boardApi = {
   async getBoardDetails(boardId: string): Promise<BoardDetails> {
     const response = await apiClient.get<ApiResponse<{ data: BoardDetails }>>(
       `/boards/${boardId}`,
+    );
+
+    return response.data.data.data;
+  },
+
+  /**
+   * A board shared publicly — the only board call that works without a session.
+   *
+   * Answers 404 for anything not marked public, so a failure here means "not
+   * shared" rather than "not allowed".
+   */
+  async getSharedBoard(boardId: string): Promise<SharedBoard> {
+    const response = await apiClient.get<ApiResponse<{ data: SharedBoard }>>(
+      `/boards/${boardId}/public`,
     );
 
     return response.data.data.data;

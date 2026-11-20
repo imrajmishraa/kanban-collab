@@ -82,3 +82,40 @@ export interface BoardPagination {
   hasNextPage: boolean;
   hasPreviousPage: boolean;
 }
+
+// ── Shared (public) board ────────────────────────────────────
+
+/** A card as seen by a reader who is not a workspace member. */
+export interface SharedBoardCard {
+  id: string;
+  title: string;
+  description: string;
+  orderIndex: number;
+  dueDate: string | null;
+  labels: string[];
+  checklistCount: number;
+}
+
+export interface SharedBoardColumn {
+  id: string;
+  name: string;
+  orderIndex: number;
+  cards: SharedBoardCard[];
+}
+
+/**
+ * The read projection served by `GET /boards/:boardId/public`.
+ *
+ * Deliberately carries no members, user ids or settings — the endpoint is the
+ * one kanban route that answers without a session.
+ */
+export interface SharedBoard {
+  board: {
+    id: string;
+    name: string;
+    description: string;
+    visibility: string;
+    workspaceName: string | null;
+  };
+  columns: SharedBoardColumn[];
+}
