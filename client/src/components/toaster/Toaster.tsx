@@ -94,7 +94,22 @@ const SURFACE = {
   "--width": "380px",
 } as CSSProperties;
 
-export function Toaster() {
+interface ToasterProps {
+  /**
+   * Extra classes for the toaster root — the fixed-position container sonner
+   * renders. Use it for things that belong to the stack rather than to a single
+   * toast (offsets, z-index, a page-level backdrop).
+   */
+  className?: string;
+  /**
+   * Extra classes for each toast surface. This is where a background goes when
+   * the default gradient is not what you want — e.g. `!bg-(--bg-root)` to make
+   * toasts opaque, or `!bg-transparent !backdrop-blur-md` for glass.
+   */
+  toastClassName?: string;
+}
+
+export function Toaster({ className, toastClassName }: ToasterProps = {}) {
   return (
     <SonnerToaster
       position="bottom-right"
@@ -110,7 +125,7 @@ export function Toaster() {
       swipeDirections={["right", "top"]}
       hotkey={["altKey", "KeyT"]}
       containerAriaLabel="Notifications"
-      className={MOBILE_WIDTH}
+      className={[MOBILE_WIDTH, className].filter(Boolean).join(" ")}
       icons={{
         success: <IconBadge tone="success" />,
         error: <IconBadge tone="error" />,
@@ -125,6 +140,7 @@ export function Toaster() {
         classNames: {
           toast: [
             "!font-sans",
+            toastClassName ?? "",
             // Two shadows, not one: a hairline of light on the top edge and a
             // deep, wide drop. A single blur reads as a browser default.
             "!shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_24px_56px_-20px_rgba(0,0,0,0.75),0_2px_8px_-2px_rgba(0,0,0,0.5)]",
@@ -150,10 +166,22 @@ export function Toaster() {
            * pushed it out of the box.
            */
           closeButton: [
-            "!left-auto !right-2 !top-1/2 !-translate-y-1/2 !translate-x-0",
-            "!size-6 !rounded-full !border-0 !bg-transparent !text-(--text-muted)",
+            /*
+             * Centred with `top: 0; bottom: 0; margin: auto` rather than
+             * `top: 50%` + translate: the toast's height is content-driven, so
+             * the percentage was fine, but the translate then had to fight
+             * sonner's own `transform: translate(-35%, -35%)` and a toast with
+             * a description drifted off centre. Margin-centring needs no
+             * transform at all, so the two resets below are all that is left.
+             */
+            "!left-auto !right-2 !top-0 !bottom-0 !my-auto",
+            "!translate-x-0 !translate-y-0",
+            "!size-6 !rounded-md !border-0 !bg-transparent !text-(--text-muted)",
             "!transition-colors !duration-150",
             "hover:!bg-(--tint-8) hover:!text-(--text-primary)",
+            /* Sonner's ✕ is a 12px inline svg; 16px reads better next to a
+               13px title and is still inside the 24px hit area. */
+            "[&_svg]:!size-4",
           ].join(" "),
           loader: "!text-(--text-secondary)",
         },
