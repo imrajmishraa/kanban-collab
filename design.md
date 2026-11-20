@@ -54,6 +54,8 @@ colors:
   success: '#35d399'
   warning: '#f5b84b'
   danger: '#f16b7a'
+  auth: '#2563eb'
+  auth-ink: '#ffffff'
 light:
   bg-root: 'rgb(250, 250, 250)'
   bg-surface: 'rgb(255, 255, 255)'
@@ -102,6 +104,8 @@ light:
   success: '#047857'
   warning: '#a16207'
   danger: '#be123c'
+  auth: '#1d4ed8'
+  auth-ink: '#ffffff'
 typography:
   font-ui:
     fontFamily: "\"Plus Jakarta Sans Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif"
