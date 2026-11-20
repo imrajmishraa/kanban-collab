@@ -6,6 +6,10 @@ import { ApiResponse } from "../../../../shared/utils/ApiResponse";
 import { ApiError } from "../../../../shared/utils/ApiError";
 import { NotificationModel } from "../../../../infrastructure/db/mongoose/schemas";
 import { notificationControllerLogger } from "../../../../infrastructure/logging/childLogger";
+import {
+  applyReadState,
+  isReadState,
+} from "../../../../application/notifications/readState";
 
 /** Guard instead of `req.user!` — see the dashboard controller for rationale. */
 function requireUserId(req: AuthenticatedRequest): string {
@@ -89,9 +93,10 @@ const markNotificationRead = asyncHandler(
       throw ApiError.notFound("Notification not found.");
     }
 
-    if (!notification.isRead) {
-      notification.isRead = true;
-      notification.readAt = new Date();
+    if (!isReadState(notification)) {
+      /* One helper writes both fields, so they cannot disagree — `readAt` is
+         what the TTL index watches. */
+      Object.assign(notification, applyReadState({ isRead: true }));
       await notification.save();
     }
 
@@ -111,7 +116,7 @@ const markAllNotificationsRead = asyncHandler(
 
     const result = await NotificationModel.updateMany(
       { userId: new Types.ObjectId(userId), isRead: false },
-      { $set: { isRead: true, readAt: new Date() } },
+      { $set: applyReadState({ isRead: true }) },
     );
 
     notificationControllerLogger.info(

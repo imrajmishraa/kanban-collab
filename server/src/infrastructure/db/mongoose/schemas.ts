@@ -717,6 +717,14 @@ NotificationSchema.index(
   { userId: 1, dedupeKey: 1 },
   { unique: true, sparse: true },
 );
+/*
+ * TTL: a notification is deleted 90 days after it was read.
+ *
+ * This is why `isRead` and `readAt` must never disagree — the partial filter is
+ * on `isRead`, and the clock is `readAt`. A row with `isRead: true` and a null
+ * `readAt` never expires; a row with a `readAt` but a false flag expires without
+ * the index knowing. `applyReadState()` writes them together.
+ */
 NotificationSchema.index(
   { readAt: 1 },
   {
