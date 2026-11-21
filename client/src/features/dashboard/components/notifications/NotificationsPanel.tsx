@@ -72,7 +72,7 @@ export default function NotificationsPanel({
       className="
         fixed right-0 top-14 mr-5 mb-1 bottom-0 z-90 flex w-90
         max-w-[calc(100vw-1rem)] flex-col overflow-hidden rounded-2xl
-        border border-(--hairline) bg-(--bg-root)
+        border border-b-0 border-(--hairline) bg-(--bg-root)
         motion-safe:animate-in motion-safe:slide-in-from-right-2
         motion-safe:fade-in-0 motion-safe:duration-200
       "

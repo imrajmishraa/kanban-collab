@@ -59,7 +59,7 @@ export default function SidebarNotifications({
            order without this. */
         inert={!open}
         className={cn(
-          "fixed inset-x-0 top-16 z-40 origin-top overflow-hidden border-b border-(--hairline) bg-(--bg-root) transition-all duration-200 ease-out motion-reduce:transition-none sm:top-17 md:hidden",
+          "fixed inset-x-0 top-16 z-40 origin-top overflow-hidden bg-(--bg-root) transition-all duration-200 ease-out motion-reduce:transition-none sm:top-17 md:hidden",
           open
             ? "h-[calc(100dvh-4rem)] opacity-100 sm:h-[calc(100dvh-4.25rem)]"
             : "pointer-events-none h-0 opacity-0",

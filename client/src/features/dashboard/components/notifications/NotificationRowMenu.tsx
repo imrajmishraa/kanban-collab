@@ -132,18 +132,50 @@ export function NotificationRowMenu({
       close(false);
     };
 
-    /* A fixed-position menu does not move with the page, so it would detach from
-       its row on scroll; closing is the honest answer. */
-    const onScroll = () => close(false);
+    /*
+     * Reposition on scroll, do not close.
+     *
+     * The first version closed on any scroll event — including the one the
+     * browser fires when the first item is focused a frame after opening. That
+     * made the menu appear and vanish in the same breath, which read as "the
+     * button does nothing". A fixed menu has to be re-anchored as the row moves;
+     * closing it was the wrong instinct.
+     */
+    let frame = 0;
+
+    const reposition = () => {
+      if (frame) return;
+
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+
+        const trigger = triggerRef.current?.getBoundingClientRect();
+        if (!trigger) return;
+
+        const measured = menuRef.current?.getBoundingClientRect().height;
+        const next = placeMenu({
+          trigger,
+          menu: {
+            width: MENU_WIDTH,
+            height: measured || estimateMenuHeight(ITEM_COUNT),
+          },
+          viewport: { width: window.innerWidth, height: window.innerHeight },
+        });
+
+        setPosition({ top: next.top, left: next.left, side: next.side });
+      });
+    };
 
     document.addEventListener("mousedown", onDown);
-    window.addEventListener("scroll", onScroll, true);
-    window.addEventListener("resize", onScroll);
+    window.addEventListener("scroll", reposition, true);
+    window.addEventListener("resize", reposition);
 
     return () => {
+      if (frame) cancelAnimationFrame(frame);
+
       document.removeEventListener("mousedown", onDown);
-      window.removeEventListener("scroll", onScroll, true);
-      window.removeEventListener("resize", onScroll);
+      window.removeEventListener("scroll", reposition, true);
+      window.removeEventListener("resize", reposition);
     };
   }, [open, close]);
 

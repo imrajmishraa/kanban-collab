@@ -23,7 +23,9 @@ function unit(count: number, singular: string, pluralForm = singular): string {
 }
 
 /**
- * Human distance from `iso` to `now`.
+ * Human distance from `iso` to `now`, with the direction spelled out: "2 min ago"
+ * rather than "2 min". The row is a log, and a bare unit reads as a duration
+ * ("2 min") as often as it reads as a timestamp.
  *
  * Units, in order: `just now` under a minute, then minutes, hours and days. Days
  * are rounded rather than capped into weeks — "12 days" is more use in an inbox
@@ -41,10 +43,10 @@ export function relativeTime(iso: string, now: Date = new Date()): string {
   if (diff < MINUTE) return "just now";
 
   const minutes = Math.round(diff / MINUTE);
-  if (minutes < 60) return unit(minutes, "min");
+  if (minutes < 60) return `${unit(minutes, "min")} ago`;
 
   const hours = Math.round(diff / HOUR);
-  if (hours < 24) return unit(hours, "hr");
+  if (hours < 24) return `${unit(hours, "hr")} ago`;
 
-  return unit(Math.round(diff / DAY), "day", "days");
+  return `${unit(Math.round(diff / DAY), "day", "days")} ago`;
 }

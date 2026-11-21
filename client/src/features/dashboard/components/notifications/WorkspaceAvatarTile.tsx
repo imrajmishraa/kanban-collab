@@ -34,7 +34,7 @@ export function WorkspaceAvatarTile({
   const [failed, setFailed] = useState(false);
 
   const base =
-    "mt-0.5 flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-full border border-(--hairline) bg-(--tint-6) text-[10px] font-semibold uppercase text-(--text-soft)";
+    "flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-(--hairline) bg-(--tint-6) text-[10px] font-semibold uppercase text-(--text-soft)";
 
   if (imageUrl && !failed) {
     return (

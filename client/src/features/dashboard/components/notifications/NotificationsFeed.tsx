@@ -626,16 +626,22 @@ export default function NotificationsFeed({
                     onClick={() => openItem(item)}
                     /* Right padding is the menu's room: the trigger sits over
                        it, so the row never runs underneath the button. */
-                    className="flex w-full cursor-pointer items-start gap-2.5 px-3.5 py-3 pr-9 text-left transition-colors duration-200 hover:bg-(--tint-4)"
+                    /* `items-center`: the dot and the avatar sit on the row's
+                       vertical centre rather than being nudged down by a magic
+                       top margin, which is what kept them from lining up with
+                       each other. */
+                    className="flex w-full cursor-pointer items-center gap-2.5 px-3.5 py-3 pr-9 text-left transition-colors duration-200 hover:bg-(--tint-4)"
                   >
                     {/* First in the row, before the avatar: unread is the
                         thing being scanned for, so it takes the left edge.
                         Always rendered, transparent once read, so the avatars
-                        stay on one column down the whole list. */}
+                        stay on one column down the whole list. `ml-0.5` keeps it
+                        off the padding edge, so it reads as centred in its own
+                        gutter rather than glued to the border. */}
                     <span
                       aria-hidden="true"
                       className={cn(
-                        "mt-3 size-1.5 shrink-0 rounded-full",
+                        "ml-0.5 size-1 shrink-0 rounded-full",
                         item.isRead ? "bg-transparent" : "bg-(--unread-dot)",
                       )}
                     />
@@ -646,22 +652,22 @@ export default function NotificationsFeed({
                     />
 
                     <span className="min-w-0 flex-1">
-                      <span className="flex items-baseline justify-between gap-2">
-                        <span className="min-w-0 truncate text-[12px] font-medium tracking-tight text-(--text-primary)">
-                          {item.title}
-                        </span>
-
-                        <time
-                          dateTime={item.createdAt}
-                          className="shrink-0 font-mono text-[9px] tabular-nums text-(--text-subtle)"
-                        >
-                          {relativeTime(item.createdAt)}
-                        </time>
+                      <span className="block min-w-0 truncate text-[12px] font-medium tracking-tight text-(--text-primary)">
+                        {item.title}
                       </span>
 
                       <span className="mt-1 block text-[11.5px] leading-5 text-(--text-secondary)">
                         {item.message}
                       </span>
+
+                      {/* Bottom-left, under the message: the row reads top to
+                          bottom as title, then what happened, then when. */}
+                      <time
+                        dateTime={item.createdAt}
+                        className="mt-1.5 block font-mono text-[9px] tabular-nums text-(--text-subtle)"
+                      >
+                        {relativeTime(item.createdAt)}
+                      </time>
                     </span>
                   </button>
 
