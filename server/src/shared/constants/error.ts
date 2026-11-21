@@ -127,6 +127,8 @@ export const ERROR_MESSAGE = {
   CARD_ARCHIVED: "Card is archived and cannot be modified.",
   CARD_ORDER_CONFLICT: "Card order conflict detected. Please retry.",
   CARD_MOVE_ACROSS_BOARD_FORBIDDEN: "Cards cannot be moved across boards.",
+  CARD_MEMBERS_NOT_IN_WORKSPACE:
+    "Every assignee must be a member of this workspace.",
 
   // COMMENT
 

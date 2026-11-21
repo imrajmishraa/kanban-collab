@@ -1,18 +1,11 @@
 import { apiClient } from "@/services/client";
 
 import type { ApiResponse } from "@/types/api";
-import type { SearchCardsParams, SearchResultCard } from "@/types/search";
-
-interface SearchResponse {
-  results: SearchResultCard[];
-  total: number;
-}
+import type { SearchCardsParams, SearchCardsResponse } from "@/types/search";
 
 export const searchApi = {
-  async searchCards(
-    params: SearchCardsParams,
-  ): Promise<{ results: SearchResultCard[]; total: number }> {
-    const response = await apiClient.get<ApiResponse<SearchResponse>>(
+  async searchCards(params: SearchCardsParams): Promise<SearchCardsResponse> {
+    const response = await apiClient.get<ApiResponse<SearchCardsResponse>>(
       "/cards/search",
       { params },
     );

@@ -58,6 +58,7 @@ import {
   updateCardSchema,
   cardParamsSchema,
 } from "../../validators/kanban/card.validator";
+import { searchCardsQuerySchema } from "../../validators/kanban/search.validator";
 import {
   commentParamsSchema,
   createCommentSchema,
@@ -157,7 +158,14 @@ router.delete(
 
 // CARDS
 
-router.get("/cards/search", searchCards);
+/* The only route here whose input arrives entirely in the query string, and
+   the only one that had no schema: an array `q` reached `$text` and a duplicated
+   `boardId` reached `findById`. */
+router.get(
+  "/cards/search",
+  validateSchema({ query: searchCardsQuerySchema }),
+  searchCards,
+);
 
 router.post("/cards", validateSchema(createCardSchema), createCard);
 
