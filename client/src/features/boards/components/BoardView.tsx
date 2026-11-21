@@ -31,6 +31,10 @@ import {
   useCursors,
 } from "@/services/collaboration";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
+import {
+  canManageWorkspaceContent,
+  useWorkspaceRole,
+} from "@/hooks/useWorkspaceRole";
 import { useAuthStore } from "@/stores/useAuthStore";
 
 import type { BoardCard, BoardDetails } from "@/types/board";
@@ -43,6 +47,11 @@ interface BoardViewProps {
 export default function BoardView({ board, boardId }: BoardViewProps) {
   const { activeWorkspaceName } = useActiveWorkspace();
   const currentUser = useAuthStore((state) => state.user);
+
+  /* Members keep every content write; deleting a column is owner/admin work on
+     the server, so do not offer the menu item to anyone else. */
+  const role = useWorkspaceRole(board.workspaceId);
+  const canManage = canManageWorkspaceContent(role);
   const members = useActiveWorkspaceMembers();
 
   /* ── Collaboration (live board state) ── */
@@ -494,6 +503,7 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
               onEditColumn={setEditColumnId}
               onDeleteColumn={handleDeleteColumn}
               onClearColumn={clearColumn}
+              canDeleteColumn={canManage}
             />
           ) : (
             <BoardListView columns={visibleColumns} onOpenCard={openCard} />

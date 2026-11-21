@@ -17,6 +17,10 @@ import {
 } from "@/features/workspaces/components/board-dialogs";
 import { ShareBoardDialog } from "@/components/sidebar/ShareBoardDialog";
 
+import {
+  canManageWorkspaceContent,
+  useWorkspaceRole,
+} from "@/hooks/useWorkspaceRole";
 import { usePinnedBoards } from "@/features/dashboard";
 import { toastSuccess } from "@/lib/toast";
 
@@ -80,6 +84,12 @@ export function BoardCard({
   const [dialog, setDialog] = useState<BoardDialog>(null);
 
   const menuRef = useRef<HTMLDivElement>(null);
+
+  /* Deleting a board takes its columns and cards with it, so the server keeps it
+     to owner/admin. Offering the item to a member only produces a 403 after a
+     confirmation dialog. */
+  const role = useWorkspaceRole(board.workspaceId);
+  const canManage = canManageWorkspaceContent(role);
 
   const isPinned = usePinnedBoards((state) => state.ids.includes(board.id));
   const togglePin = usePinnedBoards((state) => state.toggle);
@@ -268,12 +278,13 @@ export function BoardCard({
             )}
             {item("Share", Share08Icon, () => setDialog("share"))}
             {item("Copy link", Link01Icon, copyLink)}
-            {item(
-              "Delete board",
-              Delete02Icon,
-              () => setDialog("delete"),
-              true,
-            )}
+            {canManage &&
+              item(
+                "Delete board",
+                Delete02Icon,
+                () => setDialog("delete"),
+                true,
+              )}
           </div>
         )}
       </div>

@@ -15,9 +15,14 @@ import {
 import { ShareBoardDialog } from "@/components/sidebar/ShareBoardDialog";
 
 import { DeleteBoardDialog, EditBoardDialog } from "@/features/workspaces";
+import {
+  canManageWorkspaceContent,
+  useWorkspaceRole,
+} from "@/hooks/useWorkspaceRole";
 import { ArchivedCardsDialog } from "./ArchivedCardsDialog";
 
 import { ui } from "@/features/boards";
+import { useBoardDetails } from "@/hooks/useBoards";
 import { usePinnedBoards } from "@/features/dashboard";
 import { toastSuccess } from "@/lib/toast";
 
@@ -72,6 +77,13 @@ export default function BoardHeader({
   const [menuOpen, setMenuOpen] = useState(false);
 
   const menuRef = useRef<HTMLDivElement>(null);
+
+  /* The header is not given the workspace id, and the details query is already
+     warm by the time it renders, so read it from there rather than threading a
+     new prop through the board view. */
+  const { data: details } = useBoardDetails(boardId);
+  const role = useWorkspaceRole(details?.workspaceId);
+  const canManage = canManageWorkspaceContent(role);
 
   const isPinned = usePinnedBoards((state) => state.ids.includes(boardId));
   const togglePin = usePinnedBoards((state) => state.toggle);
@@ -207,12 +219,13 @@ export default function BoardHeader({
               {item("Open in new tab", ArrowUpRight01Icon, () =>
                 window.open(`/boards/${boardId}`, "_blank"),
               )}
-              {item(
-                "Delete board",
-                Delete02Icon,
-                () => setDialog("delete"),
-                true,
-              )}
+              {canManage &&
+                item(
+                  "Delete board",
+                  Delete02Icon,
+                  () => setDialog("delete"),
+                  true,
+                )}
             </div>
           )}
         </div>
