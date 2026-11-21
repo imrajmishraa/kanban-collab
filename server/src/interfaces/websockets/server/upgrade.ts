@@ -17,7 +17,7 @@ interface AuthenticatedRequest extends IncomingMessage {
   pathname?: string;
   userId?: string;
   boardId?: string;
-  role?: string;
+  role?: string | null;
   canWrite?: boolean;
 }
 

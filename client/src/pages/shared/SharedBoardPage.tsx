@@ -8,7 +8,15 @@ import {
   Tick02Icon,
 } from "@hugeicons/core-free-icons";
 
+import { useCallback, useMemo } from "react";
+
 import { boardApi } from "@/features/boards/api/boardApi";
+import { readBoard } from "@/services/collaboration/boardDoc";
+import {
+  buildCollaborationWsUrl,
+  useCollaboration,
+} from "@/services/collaboration";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 /**
  * A board somebody shared with a public link.
@@ -18,6 +26,21 @@ import { boardApi } from "@/features/boards/api/boardApi";
  * handler, no composer, no edit affordance, because a non-member has no write
  * path at all.
  */
+interface ViewCard {
+  id: string;
+  title: string;
+  description: string;
+  dueDate: string | null;
+  labels: string[];
+  checklistCount: number;
+}
+
+interface ViewColumn {
+  id: string;
+  name: string;
+  cards: ViewCard[];
+}
+
 export default function SharedBoardPage() {
   const { boardId } = useParams<{ boardId: string }>();
 
@@ -28,6 +51,43 @@ export default function SharedBoardPage() {
     retry: false,
     staleTime: 30_000,
   });
+
+  /*
+   * A signed-in reader also gets the live channel. The server allows a
+   * non-member onto a `public` board read-only (`authorize`), so this is the
+   * same socket the members use, with writes dropped upstream.
+   *
+   * An anonymous visitor stays on the HTTP snapshot: the socket's presence list
+   * is keyed by user id, and inventing one would put fictional people in front
+   * of real ones.
+   */
+  const currentUser = useAuthStore((state) => state.user);
+  const accessToken = useAuthStore((state) => state.accessToken);
+
+  const wsUrl = useMemo(() => buildCollaborationWsUrl(boardId), [boardId]);
+  const getToken = useCallback(() => useAuthStore.getState().accessToken, []);
+
+  const collabUser = useMemo(() => {
+    if (!currentUser) return null;
+
+    return {
+      userId: currentUser.id,
+      name: currentUser.fullName,
+      color: "var(--auth)",
+    };
+  }, [currentUser]);
+
+  const { doc, synced } = useCollaboration({
+    room: boardId ?? null,
+    wsUrl,
+    getToken,
+    user: collabUser,
+    enabled: Boolean(accessToken),
+  });
+
+  /* The CRDT is authoritative once it holds the board; the REST snapshot is the
+     first paint and the fallback for an anonymous reader. */
+  const liveBoard = doc ? readBoard(doc) : null;
 
   if (!boardId) {
     return <Message title="Board not found" />;
@@ -49,7 +109,34 @@ export default function SharedBoardPage() {
     );
   }
 
-  const { board, columns } = shared.data;
+  /* Two sources, one shape. The CRDT carries the full `BoardDetails`; the REST
+     endpoint carries a smaller public projection. Normalising here keeps the
+     render below ignorant of which one answered. */
+  const snapshot = shared.data;
+  const board = liveBoard
+    ? {
+        name: liveBoard.name,
+        description: liveBoard.description ?? "",
+        workspaceName: snapshot.board.workspaceName,
+      }
+    : snapshot.board;
+
+  const columns: ViewColumn[] = liveBoard
+    ? liveBoard.columns.map((column) => ({
+        id: column.id,
+        name: column.name,
+        cards: column.cards.map((card) => ({
+          id: card.id,
+          title: card.title,
+          description: card.description,
+          dueDate: card.dueDate ?? null,
+          labels: card.labels,
+          checklistCount: card.checklists.length,
+        })),
+      }))
+    : snapshot.columns;
+
+  const isLive = Boolean(liveBoard) && synced;
 
   return (
     <div className="min-h-screen bg-(--bg-root) px-4 py-8 sm:px-8">
@@ -59,6 +146,18 @@ export default function SharedBoardPage() {
             <p className="flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-wider text-(--text-muted)">
               <HugeiconsIcon icon={Globe02Icon} size={12} strokeWidth={1.7} />
               Public board
+              {isLive && (
+                <span
+                  title="Connected — changes appear as they happen"
+                  className="ml-1 inline-flex items-center gap-1 rounded-full border border-(--hairline) px-1.5 py-0.5 text-[9.5px] text-(--success)"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="size-1.5 rounded-full bg-(--success)"
+                  />
+                  Live
+                </span>
+              )}
             </p>
             <h1 className="mt-2 truncate text-[22px] font-semibold text-(--text-primary)">
               {board.name}
