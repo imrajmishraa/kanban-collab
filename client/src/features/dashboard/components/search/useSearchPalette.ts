@@ -48,8 +48,7 @@ export function useSearchPalette() {
 
   const cardResults = useQuery({
     queryKey: ["card-search", lastBoardId, trimmed],
-    queryFn: () =>
-      searchApi.searchCards({ boardId: lastBoardId!, query: trimmed }),
+    queryFn: () => searchApi.searchCards({ boardId: lastBoardId!, q: trimmed }),
     enabled: Boolean(lastBoardId) && trimmed.length >= 2,
   });
 
@@ -77,7 +76,7 @@ export function useSearchPalette() {
 
   const cardRows = useMemo<PaletteRow[]>(
     () =>
-      (cardResults.data?.results ?? []).map((card) => ({
+      (cardResults.data?.cards ?? []).map((card) => ({
         key: `card-${card.id}`,
         title: card.title,
         meta: activeBoard?.name,

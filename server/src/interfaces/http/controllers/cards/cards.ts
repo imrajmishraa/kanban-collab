@@ -6,7 +6,10 @@ import {
   CardModel,
   ColumnModel,
 } from "../../../../infrastructure/db/mongoose/schemas";
-import { loadWriterMembership } from "../../../../application/workspaces/membership";
+import {
+  loadWriterMembership,
+  type ActiveMembership,
+} from "../../../../application/workspaces/membership";
 import { ApiResponse } from "../../../../shared/utils/ApiResponse";
 import { Types } from "mongoose";
 import { cardControllerLogger } from "../../../../infrastructure/logging/childLogger";
@@ -21,8 +24,37 @@ function requireUserId(req: AuthenticatedRequest): string {
 }
 import { boardNotFoundError } from "../../../../shared/errors/board/board";
 import { invalidateBoardCache } from "../../../../infrastructure/cache/boardCache";
+import { unknownCardMembers } from "../../../../application/cards/cardMembers";
+import { invalidCardMembersError } from "../../../../shared/errors/card/card";
 import { cardNotFoundError } from "../../../../shared/errors/card/card";
 import { columnNotFoundError } from "../../../../shared/errors/column/column";
+
+/**
+ * Refuse assignees who are not in this workspace.
+ *
+ * The ids arrive as an array of `ObjectId`s and the validator can only check
+ * their shape — whether a user exists, and whether they belong here, is a
+ * question for the database. The membership load the handler already does
+ * carries the answer, so this costs nothing extra.
+ */
+function assertCardMembersInWorkspace(
+  members: unknown,
+  membership: ActiveMembership,
+): void {
+  if (!Array.isArray(members) || members.length === 0) {
+    return;
+  }
+
+  const workspaceUserIds = new Set(
+    membership.workspace.members.map((member) => member.userId.toString()),
+  );
+
+  const unknown = unknownCardMembers(members as string[], workspaceUserIds);
+
+  if (unknown.length > 0) {
+    throw invalidCardMembersError(unknown);
+  }
+}
 
 const createCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
   const {
@@ -43,7 +75,9 @@ const createCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
     }
 
     // Verify membership
-    await loadWriterMembership(board.workspaceId, userId);
+    const membership = await loadWriterMembership(board.workspaceId, userId);
+
+    assertCardMembersInWorkspace(members, membership);
 
     // Verify the target column belongs to this board (prevents cross-board cards)
     const column = await ColumnModel.findOne({
@@ -146,7 +180,9 @@ const updateCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
 
     // Verify workspace membership
     // Verify member permissions
-    await loadWriterMembership(board.workspaceId, userId);
+    const membership = await loadWriterMembership(board.workspaceId, userId);
+
+    assertCardMembersInWorkspace(members, membership);
 
     // Update only supplied fields
     if (title !== undefined) {
