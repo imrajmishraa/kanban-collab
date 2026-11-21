@@ -154,9 +154,33 @@ app.get("/", (_req: Request, res: Response) => {
 app.use("/api/v1", globalLimiter);
 app.use("/", healthzRoute);
 
-// OAuth before auth — public routes, must not be shadowed
-app.use("/api/v1/auth/oauth", oauthRoute);
-app.use("/api/v1/auth", authLimiter, authRoute);
+/*
+ * The login budget, applied where guessing happens.
+ *
+ * `authLimiter` has `skipSuccessfulRequests: true`, so only *failures* count —
+ * which is what a credential-guessing limit should measure, and the opposite of
+ * what the rest of this router needed. It used to sit on the whole of
+ * `/api/v1/auth`, so a 401 from `/me` (an expired access token) or `/refresh` (a
+ * stale cookie) burned the same 15-minute budget as a wrong password. On a
+ * shared or NAT address, a handful of idle tabs could lock everyone behind it
+ * out of logging in.
+ *
+ * Now:
+ *   - `/register` and `/login` keep the login budget, by prefix, before the
+ *     router below claims them.
+ *   - `/refresh`, `/logout` and `/me` fall through to `globalLimiter` — a 401
+ *     from those is a normal state, not an attack.
+ *   - `/oauth` was mounted *before* this line and so was never limited at all.
+ *     It hits the provider on every call, so it now shares the budget; the
+ *     start redirect is a 302 and therefore still skipped as a success.
+ *
+ * Order matters: the prefix mounts must precede `authRoute`, and `/oauth` must
+ * precede the bare `/auth` mount or it is shadowed.
+ */
+app.use("/api/v1/auth/oauth", authLimiter, oauthRoute);
+app.use("/api/v1/auth/register", authLimiter);
+app.use("/api/v1/auth/login", authLimiter);
+app.use("/api/v1/auth", authRoute);
 
 app.use("/api/v1", kanbanRoute);
 app.use("/api/v1/workspaces", workspaceRoute);
