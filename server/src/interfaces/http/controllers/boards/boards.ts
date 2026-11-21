@@ -9,6 +9,10 @@ import {
   UserModel,
   WorkspaceModel,
 } from "../../../../infrastructure/db/mongoose/schemas";
+import {
+  canManageBoard,
+  canReadBoard,
+} from "../../../../application/boards/boardAccess";
 import { ApiResponse } from "../../../../shared/utils/ApiResponse";
 import { ApiError } from "../../../../shared/utils/ApiError";
 import { Types } from "mongoose";
@@ -24,8 +28,12 @@ import { userNotFoundError } from "../../../../shared/errors/auth/custom";
 import {
   boardNotFoundError,
   boardAccessDeniedError,
+  boardManageDeniedError,
 } from "../../../../shared/errors/board/board";
-import { loadWriterMembership } from "../../../../application/workspaces/membership";
+import {
+  loadManagerMembership,
+  loadWriterMembership,
+} from "../../../../application/workspaces/membership";
 import { invalidObjectIdError } from "../../../../shared/errors/handler/generic";
 
 /**
@@ -269,9 +277,19 @@ const updateBoard = asyncHandler(async (req: AuthenticatedRequest, res) => {
       throw boardNotFoundError();
     }
 
-    await loadWriterMembership(board.workspaceId, userId, {
+    const { member } = await loadWriterMembership(board.workspaceId, userId, {
       onMissing: boardAccessDeniedError,
     });
+
+    /* Changing who can see a board is a permission change, not content: a
+       member could otherwise flip a private board to public and expose it. */
+    if (
+      visibility !== undefined &&
+      visibility !== board.visibility &&
+      !canManageBoard(member.role)
+    ) {
+      throw boardManageDeniedError();
+    }
 
     if (name !== undefined) board.name = name;
     if (description !== undefined) board.description = description;
@@ -337,6 +355,19 @@ const getBoardDetails = asyncHandler(async (req: AuthenticatedRequest, res) => {
   }).lean();
 
   if (!workspace) {
+    throw boardAccessDeniedError();
+  }
+
+  /*
+   * Membership alone was the whole rule, which made `private` mean nothing on
+   * this path: a guest could read a board the WebSocket upgrade refused them.
+   * One table now answers for both surfaces.
+   */
+  const member = workspace.members.find(
+    (candidate) => candidate.userId.toString() === userId,
+  );
+
+  if (!canReadBoard(board.visibility, member?.role ?? null)) {
     throw boardAccessDeniedError();
   }
 
@@ -605,8 +636,9 @@ const deleteBoard = asyncHandler(async (req: AuthenticatedRequest, res) => {
       throw boardNotFoundError();
     }
 
-    // Verify workspace membership (and that the workspace is still writable)
-    await loadWriterMembership(board.workspaceId, userId);
+    /* Deleting a board cascades to its columns and cards and cannot be undone,
+       so this is an owner/admin action — not every writer's. */
+    await loadManagerMembership(board.workspaceId, userId);
 
     // Cascade: a board owns its columns and cards.
     await Promise.all([

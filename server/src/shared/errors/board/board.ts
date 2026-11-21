@@ -80,3 +80,18 @@ export function invalidBoardIdError(): ApiError {
     },
   );
 }
+
+/**
+ * 403 — the caller may write here but may not destroy structure.
+ *
+ * Deleting a board (and with it every column and card) or deleting a column is
+ * an owner/admin action. Members keep every content write; they just cannot
+ * take something away that nobody can put back.
+ */
+export function boardManageDeniedError(): ApiError {
+  return new ApiError(
+    HTTP_STATUS.FORBIDDEN,
+    ERROR_MESSAGE.BOARD_MANAGE_DENIED,
+    { code: "BOARD_MANAGE_DENIED" },
+  );
+}
