@@ -18,6 +18,7 @@ import {
   WorkspaceModel,
 } from "../../../../infrastructure/db/mongoose/schemas";
 import { workspaceControllerLogger } from "../../../../infrastructure/logging/childLogger";
+import { revokeWorkspaceSockets } from "../../../websockets/collaboration/lifecycle/accessRevocation";
 
 import {
   userAlreadyWorkspaceMemberError,
@@ -599,6 +600,11 @@ const updateWorkspaceMemberRole = asyncHandler(
     target.role = role;
     await workspace.save();
 
+    /* A role change can widen or narrow what this person may read, and the
+       socket was authorised against the old role. Close it and let the client
+       re-upgrade against the new one. */
+    await revokeWorkspaceSockets(memberId, workspaceId, "role_changed");
+
     workspaceControllerLogger.info(
       { workspaceId, userId, memberId, role },
       "Workspace member role updated",
@@ -649,6 +655,11 @@ const removeWorkspaceMember = asyncHandler(
     );
     await workspace.save();
 
+    /* Membership was the only thing the socket was authorised against, and it
+       is gone. Without this the removed member keeps the live document, the
+       presence list and every subsequent update until they reload. */
+    await revokeWorkspaceSockets(memberId, workspaceId, "member_removed");
+
     workspaceControllerLogger.info(
       { workspaceId, userId, memberId },
       "Workspace member removed",
@@ -692,6 +703,9 @@ const leaveWorkspace = asyncHandler(async (req: AuthenticatedRequest, res) => {
     (m) => m.userId.toString() !== userId,
   );
   await workspace.save();
+
+  /* Their own session, on the boards of a workspace they just left. */
+  await revokeWorkspaceSockets(userId, workspaceId, "member_left");
 
   workspaceControllerLogger.info(
     { workspaceId, userId },

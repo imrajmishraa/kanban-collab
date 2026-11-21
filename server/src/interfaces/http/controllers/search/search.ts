@@ -1,13 +1,8 @@
 import type { AuthenticatedRequest } from "../../middleware/auth.middleware";
 import { asyncHandler } from "../../../../shared/utils/asyncHandler";
-import {
-  WorkspaceModel,
-  BoardModel,
-  CardModel,
-} from "../../../../infrastructure/db/mongoose/schemas";
+import { CardModel } from "../../../../infrastructure/db/mongoose/schemas";
 import { ApiResponse } from "../../../../shared/utils/ApiResponse";
 import { ApiError } from "../../../../shared/utils/ApiError";
-import { Types } from "mongoose";
 import { searchControllerLogger } from "../../../../infrastructure/logging/childLogger";
 
 /** Guard instead of `req.user!` — see the dashboard controller for rationale. */
@@ -18,11 +13,8 @@ function requireUserId(req: AuthenticatedRequest): string {
   return req.user.userId;
 }
 
-import { forbiddenWorkspaceError } from "../../../../shared/errors/workspace/workspace";
-import {
-  boardIdAndQueryParametersRequiredError,
-  boardNotFoundError,
-} from "../../../../shared/errors/board/board";
+import { boardIdAndQueryParametersRequiredError } from "../../../../shared/errors/board/board";
+import { loadReadableBoard } from "../../../../application/boards/readableBoard";
 
 const searchCards = asyncHandler(async (req: AuthenticatedRequest, res) => {
   const { boardId, q } = req.query;
@@ -32,23 +24,15 @@ const searchCards = asyncHandler(async (req: AuthenticatedRequest, res) => {
       throw boardIdAndQueryParametersRequiredError();
     }
 
-    const board = await BoardModel.findById(boardId as string);
-    if (!board) {
-      throw boardNotFoundError();
-    }
-
-    // Verify membership
-    const workspace = await WorkspaceModel.findOne({
-      _id: board.workspaceId,
-      "members.userId": new Types.ObjectId(userId),
-    });
-    if (!workspace) {
-      throw forbiddenWorkspaceError();
-    }
+    /* Search is a read of the board, so it carries the same visibility rule as
+       `GET /boards/:id`. Membership alone let a guest search the cards of a
+       `private` board whose contents they could not open — the card titles and
+       ids came back anyway. */
+    const board = await loadReadableBoard(boardId as string, userId);
 
     // Search database using text index
     const cards = await CardModel.find({
-      boardId: board._id,
+      boardId: board.id,
       isArchived: false,
       $text: { $search: q as string },
     });
@@ -56,7 +40,7 @@ const searchCards = asyncHandler(async (req: AuthenticatedRequest, res) => {
     searchControllerLogger.info(
       {
         userId,
-        workspaceId: workspace._id,
+        workspaceId: board.workspaceId,
         query: q,
         resultCount: cards.length,
       },

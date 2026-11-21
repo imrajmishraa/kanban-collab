@@ -17,6 +17,7 @@ import { commentControllerLogger } from "../../../../infrastructure/logging/chil
 import { cardNotFoundError } from "../../../../shared/errors/card/card";
 import { notWorkspaceMemberError } from "../../../../shared/errors/workspace/workspace";
 import { assertWorkspaceWritable } from "../../../../application/workspaces/membership";
+import { assertBoardReadable } from "../../../../application/boards/readableBoard";
 import { planVote } from "../../../../application/comments/voteTransition";
 import { guestCannotModifyBoardError } from "../../../../shared/errors/board/board";
 
@@ -81,6 +82,11 @@ async function loadCardContext(
   if (!member) {
     throw notWorkspaceMemberError();
   }
+
+  /* Membership is not enough: a `guest` is a member, and `private` is meant to
+     hide the board from them. Comments are card content, so they carry the same
+     visibility rule as the board itself. */
+  await assertBoardReadable(card.boardId, member.role);
 
   return {
     card: {

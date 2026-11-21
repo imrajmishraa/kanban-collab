@@ -10,7 +10,12 @@ import {
 } from "../../../../infrastructure/db/mongoose/schemas";
 import { noteControllerLogger } from "../../../../infrastructure/logging/childLogger";
 import { notWorkspaceMemberError } from "../../../../shared/errors/workspace/workspace";
-import { assertWorkspaceWritable } from "../../../../application/workspaces/membership";
+import {
+  hiddenBoardIdsFor,
+  loadReadableBoard,
+} from "../../../../application/boards/readableBoard";
+import type { WorkspaceRole } from "../../../../application/boards/boardAccess";
+import { loadWriterMembership } from "../../../../application/workspaces/membership";
 
 /** Guard instead of `req.user!` — see the dashboard controller for rationale. */
 function requireUserId(req: AuthenticatedRequest): string {
@@ -23,7 +28,7 @@ function requireUserId(req: AuthenticatedRequest): string {
 async function assertWorkspaceMember(
   workspaceId: string,
   userId: string,
-): Promise<void> {
+): Promise<WorkspaceRole> {
   if (!workspaceId || !Types.ObjectId.isValid(workspaceId)) {
     throw ApiError.badRequest("A valid workspaceId is required.");
   }
@@ -32,12 +37,25 @@ async function assertWorkspaceMember(
     _id: workspaceId,
     "members.userId": new Types.ObjectId(userId),
   })
-    .select("_id")
+    .select("members")
     .lean();
 
   if (!workspace) {
     throw notWorkspaceMemberError();
   }
+
+  const member = workspace.members.find(
+    (candidate) => candidate.userId.toString() === userId,
+  );
+
+  if (!member) {
+    throw notWorkspaceMemberError();
+  }
+
+  /* Returned rather than checked here: the caller needs the role to decide which
+     boards it may read, and this is a *read* helper — it must not start refusing
+     pending-deletion workspaces the way `loadActiveMembership` does. */
+  return member.role as WorkspaceRole;
 }
 
 const serializeNote = (note: {
@@ -68,7 +86,7 @@ const listNotes = asyncHandler(async (req: AuthenticatedRequest, res) => {
   const workspaceId = String(req.query["workspaceId"] ?? "");
   const boardId = req.query["boardId"] ? String(req.query["boardId"]) : null;
 
-  await assertWorkspaceMember(workspaceId, userId);
+  const role = await assertWorkspaceMember(workspaceId, userId);
 
   const filter: Record<string, unknown> = {
     workspaceId: new Types.ObjectId(workspaceId),
@@ -78,7 +96,20 @@ const listNotes = asyncHandler(async (req: AuthenticatedRequest, res) => {
     if (!Types.ObjectId.isValid(boardId)) {
       throw ApiError.badRequest("Invalid boardId.");
     }
+
+    /* Asking for one board's notes is asking to read that board, so answer the
+       way the board surfaces do: 403 when the board is not for this caller. */
+    await loadReadableBoard(boardId, userId);
     filter["boardId"] = new Types.ObjectId(boardId);
+  } else {
+    /* Unfiltered, this returns notes for every board in the workspace — which
+       for a guest included notes attached to a `private` one. A note with no
+       board is workspace-level and stays visible. */
+    const hidden = await hiddenBoardIdsFor(workspaceId, role);
+
+    if (hidden.length > 0) {
+      filter["boardId"] = { $nin: hidden };
+    }
   }
 
   const notes = await NoteModel.find(filter)
@@ -102,8 +133,10 @@ const createNote = asyncHandler(async (req: AuthenticatedRequest, res) => {
   const userId = requireUserId(req);
   const { workspaceId, boardId, title, body, isPinned } = req.body;
 
-  await assertWorkspaceMember(String(workspaceId), userId);
-  await assertWorkspaceWritable(String(workspaceId));
+  /* `loadWriterMembership` is membership + "not pending deletion" + "not a
+     guest", which is the rule every other write surface applies. Notes asked
+     only the first two, so a guest could create, edit and delete them. */
+  await loadWriterMembership(String(workspaceId), userId);
 
   if (boardId && !Types.ObjectId.isValid(boardId)) {
     throw ApiError.badRequest("Invalid boardId.");
@@ -145,7 +178,7 @@ const updateNote = asyncHandler(async (req: AuthenticatedRequest, res) => {
     throw ApiError.notFound("Note not found.");
   }
 
-  await assertWorkspaceWritable(note.workspaceId);
+  await loadWriterMembership(note.workspaceId, userId);
 
   // Only the author may edit their note.
   if (note.userId.toString() !== userId) {
@@ -181,7 +214,7 @@ const deleteNote = asyncHandler(async (req: AuthenticatedRequest, res) => {
     throw ApiError.notFound("Note not found.");
   }
 
-  await assertWorkspaceWritable(note.workspaceId);
+  await loadWriterMembership(note.workspaceId, userId);
 
   if (note.userId.toString() !== userId) {
     throw ApiError.forbidden("You can only delete your own notes.");

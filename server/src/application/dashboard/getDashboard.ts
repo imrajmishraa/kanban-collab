@@ -134,29 +134,62 @@ export const getDashboard = async (
    * ---------------------------------------------------------
    */
 
-  const [boardWorkspacePairs, recentBoardDocs, activityLogs] =
-    await Promise.all([
-      BoardModel.find({
-        workspaceId: { $in: workspaceIds },
-      })
-        .select("workspaceId")
-        .lean(),
+  /* Boards come first, alone: the other two queries need to know which of them
+     this caller may not see, and that depends on their role in each workspace.
+     A guest is a member, and `private` is exactly the visibility that excludes
+     them — so their dashboard must not name the board, count it, or report
+     activity from it. Members and above hide nothing, and `$nin: []` is a
+     no-op, so their queries are the same as before. */
+  const roleByWorkspaceId = new Map<string, string>();
 
-      BoardModel.find({
-        workspaceId: { $in: workspaceIds },
-      })
-        .sort({ updatedAt: -1 })
-        .limit(6)
-        .select("name backgroundColor updatedAt workspaceId")
-        .lean(),
+  for (const workspace of workspaces) {
+    const member = workspace.members.find(
+      (candidate) => candidate.userId.toString() === userId,
+    );
 
-      ActivityLogModel.find({
-        workspaceId: { $in: workspaceIds },
-      })
-        .sort({ createdAt: -1 })
-        .limit(8)
-        .lean(),
-    ]);
+    if (member) {
+      roleByWorkspaceId.set(workspace._id.toString(), member.role);
+    }
+  }
+
+  const allBoards = await BoardModel.find({
+    workspaceId: { $in: workspaceIds },
+  })
+    .select("workspaceId visibility")
+    .lean();
+
+  const hiddenBoardIds = allBoards
+    .filter(
+      (board) =>
+        board.visibility === "private" &&
+        roleByWorkspaceId.get(board.workspaceId.toString()) === "guest",
+    )
+    .map((board) => board._id);
+
+  const hiddenBoardIdSet = new Set(hiddenBoardIds.map((id) => id.toString()));
+
+  const boardWorkspacePairs = allBoards.filter(
+    (board) => !hiddenBoardIdSet.has(board._id.toString()),
+  );
+
+  const [recentBoardDocs, activityLogs] = await Promise.all([
+    BoardModel.find({
+      workspaceId: { $in: workspaceIds },
+      _id: { $nin: hiddenBoardIds },
+    })
+      .sort({ updatedAt: -1 })
+      .limit(6)
+      .select("name backgroundColor updatedAt workspaceId")
+      .lean(),
+
+    ActivityLogModel.find({
+      workspaceId: { $in: workspaceIds },
+      boardId: { $nin: hiddenBoardIds },
+    })
+      .sort({ createdAt: -1 })
+      .limit(8)
+      .lean(),
+  ]);
 
   /*
    * ---------------------------------------------------------
