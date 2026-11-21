@@ -22,6 +22,7 @@
   },
   "scripts": {
     "// ── Development ──────────────────────────────────────": "",
+    "notify": "ts-node --files scripts/push-notification.ts",
     "dev": "nodemon --watch src -e ts,json --exec \"ts-node --files src/main.ts\"",
     "dev:debug": "nodemon --watch src -e ts --exec \"node --inspect=0.0.0.0:9229 -r ts-node/register src/main.ts\"",
     "dev:pretty": "NODE_ENV=development nodemon --watch src -e ts --exec \"ts-node --files src/main.ts\" | pino-pretty",
