@@ -77,7 +77,7 @@ export default function NotificationsPanel({
         motion-safe:fade-in-0 motion-safe:duration-200
       "
     >
-      <NotificationsFeed />
+      <NotificationsFeed onOpened={onClose} />
     </div>,
     document.body,
   );

@@ -56,6 +56,7 @@ colors:
   danger: '#f16b7a'
   auth: '#2563eb'
   auth-ink: '#ffffff'
+  unread-dot: 'rgb(59, 130, 246)'
 light:
   bg-root: 'rgb(250, 250, 250)'
   bg-surface: 'rgb(255, 255, 255)'
@@ -106,6 +107,7 @@ light:
   danger: '#be123c'
   auth: '#1d4ed8'
   auth-ink: '#ffffff'
+  unread-dot: 'rgb(59, 130, 246)'
 typography:
   font-ui:
     fontFamily: "\"Plus Jakarta Sans Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif"
