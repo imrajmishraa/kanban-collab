@@ -25,9 +25,14 @@ import {
 import { cn } from "@/utils/cn";
 
 import { notificationKeys, notificationsApi } from "@/features/dashboard";
+import { useWorkspaces } from "@/hooks/useWorkspaces";
 import { toastError } from "@/lib/toast";
+import { useActiveWorkspace } from "@/stores/activeWorkspace";
 
 import type { AppNotification } from "@/types/notification";
+
+import { NotificationRowMenu } from "./NotificationRowMenu";
+import { WorkspaceAvatarTile } from "./WorkspaceAvatarTile";
 
 const TABS = ["Inbox", "Unread", "Comments"] as const;
 type Tab = (typeof TABS)[number];
@@ -93,14 +98,31 @@ function relativeTime(iso: string): string {
   return `${Math.round(hours / 24)}d`;
 }
 
+interface NotificationsFeedProps {
+  /**
+   * Called once a notification has been opened, so the shell can get out of
+   * the way: the desktop panel would otherwise stay open over the board it just
+   * navigated to, and the phone sheet would stay over the page.
+   */
+  onOpened?: () => void;
+}
+
 /**
  * The inbox itself: tabs, search, the filter menu, the rows and the mutations
  * behind them. One component, so the phone sheet and the desktop panel cannot
  * drift apart — they are two shells around this.
  */
-export default function NotificationsFeed() {
+export default function NotificationsFeed({
+  onOpened,
+}: NotificationsFeedProps = {}) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  const { setActiveWorkspace } = useActiveWorkspace();
+
+  /* The same cached list the sidebar and the switcher read, so opening the
+     inbox does not cost a second request. */
+  const { workspaces } = useWorkspaces();
 
   const [tab, setTab] = useState<Tab>("Inbox");
   const [query, setQuery] = useState("");
@@ -245,17 +267,47 @@ export default function NotificationsFeed() {
     setFilterOpen(false);
   };
 
+  const workspaceById = useMemo(
+    () => new Map(workspaces.map((workspace) => [workspace.id, workspace])),
+    [workspaces],
+  );
+
+  /**
+   * Opening a notification selects its workspace and lands on the target.
+   *
+   * The workspace has to be set first. A notification can come from any
+   * workspace the user belongs to, and the old `/boards/:boardId` hop resolved
+   * the board against whichever workspace happened to be active — so a
+   * notification from another workspace opened the wrong one, or a 404. The
+   * scoped path carries the workspace in the URL, and setting the store keeps
+   * the sidebar in step with where we just went.
+   */
   const openItem = (notification: AppNotification) => {
+    /* One click is the read receipt: no separate "mark read" step. */
     if (!notification.isRead) markRead.mutate(notification.id);
 
-    if (notification.boardId) {
-      navigate(`/boards/${notification.boardId}`);
+    const { workspaceId, boardId } = notification;
+
+    if (workspaceId) {
+      setActiveWorkspace(
+        workspaceId,
+        workspaceById.get(workspaceId)?.name ?? "",
+      );
+    }
+
+    if (boardId) {
+      navigate(
+        workspaceId
+          ? `/workspaces/${workspaceId}/boards/${boardId}`
+          : `/boards/${boardId}`,
+      );
+    } else if (workspaceId) {
+      navigate(`/workspaces/${workspaceId}`);
+    } else {
       return;
     }
 
-    if (notification.workspaceId) {
-      navigate(`/workspaces/${notification.workspaceId}`);
-    }
+    onOpened?.();
   };
 
   const emptyLine = needle
@@ -548,70 +600,64 @@ export default function NotificationsFeed() {
           </div>
         ) : (
           <ul className="divide-y divide-(--hairline)">
-            {rows.map((item) => (
-              <li key={item.id}>
-                <button
-                  type="button"
-                  onClick={() => openItem(item)}
-                  className="flex w-full cursor-pointer items-start gap-3 px-3.5 py-3 text-left transition-colors duration-200 hover:bg-(--tint-4)"
-                >
-                  <span
-                    aria-hidden="true"
-                    className={cn(
-                      "mt-1.5 size-1.5 shrink-0 rounded-full",
-                      item.isRead ? "bg-(--text-subtle)" : "bg-(--accent)",
-                    )}
-                  />
+            {rows.map((item) => {
+              const workspace = workspaceById.get(item.workspaceId);
 
-                  <span className="min-w-0 flex-1">
-                    <span className="flex items-baseline justify-between gap-2">
-                      <span className="min-w-0 truncate text-[12px] font-medium tracking-tight text-(--text-primary)">
-                        {item.title}
+              return (
+                <li key={item.id} className="relative">
+                  <button
+                    type="button"
+                    onClick={() => openItem(item)}
+                    /* Right padding is the menu's room: the trigger sits over
+                       it, so the row never runs underneath the button. */
+                    className="flex w-full cursor-pointer items-start gap-2.5 px-3.5 py-3 pr-9 text-left transition-colors duration-200 hover:bg-(--tint-4)"
+                  >
+                    <WorkspaceAvatarTile
+                      name={workspace?.name ?? null}
+                      imageUrl={workspace?.avatarUrl ?? null}
+                    />
+
+                    {/* Always rendered, transparent once read: the title stays
+                        on one left edge down the whole list. */}
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        "mt-2 size-1.5 shrink-0 rounded-full",
+                        item.isRead ? "bg-transparent" : "bg-(--unread-dot)",
+                      )}
+                    />
+
+                    <span className="min-w-0 flex-1">
+                      <span className="flex items-baseline justify-between gap-2">
+                        <span className="min-w-0 truncate text-[12px] font-medium tracking-tight text-(--text-primary)">
+                          {item.title}
+                        </span>
+
+                        <time
+                          dateTime={item.createdAt}
+                          className="shrink-0 font-mono text-[9px] tabular-nums text-(--text-subtle)"
+                        >
+                          {relativeTime(item.createdAt)}
+                        </time>
                       </span>
 
-                      <time
-                        dateTime={item.createdAt}
-                        className="shrink-0 font-mono text-[9px] tabular-nums text-(--text-subtle)"
-                      >
-                        {relativeTime(item.createdAt)}
-                      </time>
+                      <span className="mt-1 block text-[11.5px] leading-5 text-(--text-secondary)">
+                        {item.message}
+                      </span>
                     </span>
-
-                    <span className="mt-1 block text-[11.5px] leading-5 text-(--text-secondary)">
-                      {item.message}
-                    </span>
-                  </span>
-                </button>
-
-                <div className="flex items-center gap-1 px-3.5 pb-2">
-                  {!item.isRead && (
-                    <button
-                      type="button"
-                      onClick={() => markRead.mutate(item.id)}
-                      className="cursor-pointer rounded px-1.5 py-0.5 text-[10.5px] text-(--text-muted) transition-colors duration-150 hover:bg-(--tint-4) hover:text-(--text-primary)"
-                    >
-                      Mark read
-                    </button>
-                  )}
-
-                  <button
-                    type="button"
-                    onClick={() => clearOne.mutate(item.id)}
-                    className="cursor-pointer rounded px-1.5 py-0.5 text-[10.5px] text-(--text-muted) transition-colors duration-150 hover:bg-(--tint-4) hover:text-(--text-primary)"
-                  >
-                    Clear
                   </button>
 
-                  <button
-                    type="button"
-                    onClick={() => mute.mutate(item.type)}
-                    className="cursor-pointer rounded px-1.5 py-0.5 text-[10.5px] text-(--text-muted) transition-colors duration-150 hover:bg-(--tint-4) hover:text-(--text-primary)"
-                  >
-                    Mute
-                  </button>
-                </div>
-              </li>
-            ))}
+                  <div className="absolute right-1.5 top-2">
+                    <NotificationRowMenu
+                      isRead={item.isRead}
+                      onClear={() => clearOne.mutate(item.id)}
+                      onMute={() => mute.mutate(item.type)}
+                      onMarkRead={() => markRead.mutate(item.id)}
+                    />
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>

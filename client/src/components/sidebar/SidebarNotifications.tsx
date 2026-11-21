@@ -66,7 +66,7 @@ export default function SidebarNotifications({
         )}
       >
         <div className="flex h-full flex-col">
-          <NotificationsFeed />
+          <NotificationsFeed onOpened={onClose} />
         </div>
       </div>
     </>

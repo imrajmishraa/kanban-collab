@@ -73,6 +73,10 @@
   --danger: #f16b7a;
   --auth: #2563eb;
   --auth-ink: #ffffff;
+
+  /* The unread marker on a notification. Blue in both themes: it is a
+     status, not a surface, so it does not follow the accent. */
+  --unread-dot: rgb(59, 130, 246);
 }
 
 /* ── THEME SCOPES ───────────────────────────────────────────────────────
@@ -164,6 +168,10 @@
   --danger: #be123c;
   --auth: #1d4ed8;
   --auth-ink: #ffffff;
+
+  /* The unread marker on a notification. Blue in both themes: it is a
+     status, not a surface, so it does not follow the accent. */
+  --unread-dot: rgb(59, 130, 246);
 }
 
 /* The dark palette as a scope, the mirror of `.light-theme`.
@@ -251,6 +259,10 @@
   --danger: #f16b7a;
   --auth: #2563eb;
   --auth-ink: #ffffff;
+
+  /* The unread marker on a notification. Blue in both themes: it is a
+     status, not a surface, so it does not follow the accent. */
+  --unread-dot: rgb(59, 130, 246);
 }
 
 /* THEME REVEAL
