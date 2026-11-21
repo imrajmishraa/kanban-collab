@@ -623,9 +623,7 @@ export default function NotificationsFeed({
                       aria-hidden="true"
                       className={cn(
                         "mt-2 size-1.5 shrink-0 rounded-full",
-                        item.isRead
-                          ? "bg-transparent"
-                          : "bg-(--unread-dot)",
+                        item.isRead ? "bg-transparent" : "bg-(--unread-dot)",
                       )}
                     />
 
