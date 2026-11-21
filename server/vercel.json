@@ -3,6 +3,8 @@
   "framework": null,
   "installCommand": "npm ci --include=dev",
   "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- src api package.json package-lock.json tsconfig.build.json vercel.json",
   "git": {
     "deploymentEnabled": false
   },
@@ -42,6 +44,5 @@
       "path": "/api/v1/internal/cron/notification-digest",
       "schedule": "0 8 * * *"
     }
-  ],
-  "outputDirectory": "dist"
+  ]
 }
