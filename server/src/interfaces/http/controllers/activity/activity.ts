@@ -12,8 +12,8 @@ import {
 } from "../../../../infrastructure/db/mongoose/schemas";
 import { activityControllerLogger } from "../../../../infrastructure/logging/childLogger";
 import { createActivityMessage } from "../../../../shared/utils/activityMessage";
-import { boardNotFoundError } from "../../../../shared/errors/board/board";
-import { notWorkspaceMemberError } from "../../../../shared/errors/workspace/workspace";
+import { loadReadableBoard } from "../../../../application/boards/readableBoard";
+import { invalidObjectIdError } from "../../../../shared/errors/handler/generic";
 
 function requireUserId(req: AuthenticatedRequest): string {
   if (!req.user) {
@@ -34,25 +34,14 @@ const listBoardActivity = asyncHandler(
     const boardId = req.params["boardId"];
     const limit = Math.min(Math.max(Number(req.query["limit"]) || 30, 1), 100);
 
-    const board = await BoardModel.findById(boardId)
-      .select("_id workspaceId")
-      .lean();
-
-    if (!board) {
-      throw boardNotFoundError();
+    if (!boardId) {
+      throw invalidObjectIdError();
     }
 
-    // Reading activity is allowed for any member, guests included.
-    const workspace = await WorkspaceModel.findOne({
-      _id: board.workspaceId,
-      "members.userId": new Types.ObjectId(userId),
-    })
-      .select("_id")
-      .lean();
-
-    if (!workspace) {
-      throw notWorkspaceMemberError();
-    }
+    /* Any member may read the feed, guests included — but only of a board they
+       may read. Membership alone let a guest pull the activity of a `private`
+       board, which names its cards, columns and people. */
+    await loadReadableBoard(boardId, userId);
 
     const entries = await ActivityLogModel.find({ boardId })
       .sort({ createdAt: -1 })

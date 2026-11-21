@@ -12,6 +12,7 @@ import { fileUploadControllerLogger } from "../../../../infrastructure/logging/c
 import { cardNotFoundError } from "../../../../shared/errors/card/card";
 import { notWorkspaceMemberError } from "../../../../shared/errors/workspace/workspace";
 import { assertWorkspaceWritable } from "../../../../application/workspaces/membership";
+import { assertBoardReadable } from "../../../../application/boards/readableBoard";
 import { guestCannotModifyBoardError } from "../../../../shared/errors/board/board";
 import { ENV } from "../../../../config/env";
 
@@ -46,6 +47,10 @@ async function loadCardForMember(cardId: string, userId: string) {
   if (!member) {
     throw notWorkspaceMemberError();
   }
+
+  /* Attachment URLs and file names are card content, so a `private` board's
+     files are not for a guest — membership alone said otherwise. */
+  await assertBoardReadable(card.boardId, member.role);
 
   return { card, role: member.role };
 }

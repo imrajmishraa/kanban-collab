@@ -13,6 +13,8 @@ import {
   canManageBoard,
   canReadBoard,
 } from "../../../../application/boards/boardAccess";
+import { loadReadableBoard } from "../../../../application/boards/readableBoard";
+import { revokeGuestSocketsOnBoard } from "../../../websockets/collaboration/lifecycle/accessRevocation";
 import { ApiResponse } from "../../../../shared/utils/ApiResponse";
 import { ApiError } from "../../../../shared/utils/ApiError";
 import { Types } from "mongoose";
@@ -138,8 +140,17 @@ const listBoards = asyncHandler(async (req: AuthenticatedRequest, res) => {
 
     const skip = (currentPage - 1) * pageLimit;
 
-    const boardFilter = {
+    /* A guest is in the workspace but must not see a `private` board at all, so
+       the filter — not just the details endpoint — has to carry the rule.
+       Applied to the query rather than after it, so `totalBoards` and the page
+       count stay consistent with what is returned. */
+    const caller = workspace.members.find(
+      (member) => member.userId.toString() === userId,
+    );
+
+    const boardFilter: Record<string, unknown> = {
       workspaceId: new Types.ObjectId(workspaceId as string),
+      ...(caller?.role === "guest" ? { visibility: { $ne: "private" } } : {}),
     };
 
     // Fetch boards + total count
@@ -298,6 +309,16 @@ const updateBoard = asyncHandler(async (req: AuthenticatedRequest, res) => {
     if (visibility !== undefined) board.visibility = visibility;
 
     await board.save();
+
+    /* A board that has just become private must stop streaming to the guests who
+       were watching it: their socket was authorised under the old visibility, and
+       sync messages are never re-checked. */
+    if (visibility !== undefined && board.visibility === "private") {
+      await revokeGuestSocketsOnBoard(
+        board._id.toString(),
+        board.workspaceId.toString(),
+      );
+    }
 
     // Invalidate the cached board-details payload so the next read is fresh.
     try {
@@ -571,26 +592,11 @@ const listArchivedCards = asyncHandler(
       throw invalidObjectIdError();
     }
 
-    const board = await BoardModel.findById(boardId)
-      .select("_id workspaceId")
-      .lean();
+    /* Archived cards are board content, so the same visibility rule applies as
+       for the live board — a guest must not read the archive of a private one. */
+    const board = await loadReadableBoard(boardId, userId);
 
-    if (!board) {
-      throw boardNotFoundError();
-    }
-
-    const membership = await WorkspaceModel.findOne({
-      _id: board.workspaceId,
-      "members.userId": new Types.ObjectId(userId),
-    })
-      .select("_id")
-      .lean();
-
-    if (!membership) {
-      throw notWorkspaceMemberError();
-    }
-
-    const cards = await CardModel.find({ boardId: board._id, isArchived: true })
+    const cards = await CardModel.find({ boardId: board.id, isArchived: true })
       .select("_id title description columnId dueDate labels updatedAt")
       .sort({ updatedAt: -1 })
       .limit(200)

@@ -38,6 +38,7 @@ import {
 } from "./awareness";
 import { ORIGIN_REDIS, ORIGIN_REMOTE } from "./origins";
 import { WS_AUTH_SUBPROTOCOL } from "./buildWsUrl";
+import { isAccessRevokedClose } from "./closeCodes";
 import {
   CollaborationMessage,
   applySyncMessage,
@@ -335,8 +336,14 @@ export class YjsProvider {
       this.apply({ type: "ERROR" });
     };
 
-    ws.onclose = () => {
-      this.apply({ type: "CLOSE" });
+    ws.onclose = (event) => {
+      /* `4003` means access to this board is gone (removed from the workspace,
+         demoted to guest, or left). Reconnecting would be refused at the
+         upgrade, so end the connection deliberately instead of backing off into
+         a handshake that cannot succeed. */
+      this.apply({
+        type: isAccessRevokedClose(event.code) ? "DISCONNECT" : "CLOSE",
+      });
     };
   }
 
