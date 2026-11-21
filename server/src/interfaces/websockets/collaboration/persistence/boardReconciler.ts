@@ -6,6 +6,7 @@ import {
   CardModel,
   ColumnModel,
 } from "../../../../infrastructure/db/mongoose/schemas";
+import { invalidateBoardCache } from "../../../../infrastructure/cache/boardCache";
 import { logger } from "../../../../infrastructure/logging/logger";
 
 import { readBoardSnapshot } from "../yjs/boardSchema";
@@ -219,6 +220,10 @@ class BoardReconciler {
           "Skipping reconciliation prune: document has no columns (possibly unseeded).",
         );
       }
+
+      /* The cached payload carries columns and cards, so a reconciled write
+         re-stales it exactly like an HTTP one does. */
+      await invalidateBoardCache(documentName);
 
       logger.debug(
         {
