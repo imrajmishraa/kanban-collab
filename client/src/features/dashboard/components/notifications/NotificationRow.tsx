@@ -16,10 +16,10 @@ function formatRelative(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
   const minutes = Math.round(diff / 60000);
   if (minutes < 1) return "just now";
-  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 60) return `${minutes}min ago`;
   const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.round(hours / 24)}d ago`;
+  if (hours < 24) return `${hours}hours ago`;
+  return `${Math.round(hours / 24)}days ago`;
 }
 
 /** Two-letter monogram, so a row has an anchor without an image. */
@@ -172,7 +172,7 @@ export function NotificationRow({
             className="absolute right-0 top-full z-10 mt-1 w-40 rounded-lg border border-(--hairline) bg-(--bg-root) p-1 shadow-none"
           >
             {item(
-              "Mark as read",
+              "Mark all as read",
               Tick02Icon,
               () => onMarkRead(notification.id),
               false,

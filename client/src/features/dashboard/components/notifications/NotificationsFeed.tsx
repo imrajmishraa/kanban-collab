@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
@@ -26,6 +26,7 @@ import { cn } from "@/utils/cn";
 import { relativeTime } from "@/lib/relativeTime";
 
 import { notificationKeys, notificationsApi } from "@/features/dashboard";
+import { useNotifications } from "@/features/dashboard/hooks/useNotifications";
 import { useWorkspaces } from "@/hooks/useWorkspaces";
 import { toastError } from "@/lib/toast";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
@@ -130,10 +131,10 @@ export default function NotificationsFeed({
   const [filterOpen, setFilterOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
 
-  const { data, isLoading, isError } = useQuery({
-    queryKey: notificationKeys.all,
-    queryFn: () => notificationsApi.listNotifications(),
-  });
+  /* Five seconds, not the navbar's twenty: the panel is only mounted while it is
+     open, and someone watching the inbox expects a notification that arrives now
+     to appear now. */
+  const { data, isLoading, isError } = useNotifications({ intervalMs: 5_000 });
 
   const refresh = () =>
     void queryClient.invalidateQueries({ queryKey: notificationKeys.all });
@@ -392,7 +393,7 @@ export default function NotificationsFeed({
               role="menu"
               aria-label="Notification actions"
               className="
-                absolute right-0 top-full z-50 mt-2 w-42 overflow-hidden rounded-xl
+                absolute right-0 top-full z-50 mt-2 w-35 overflow-hidden rounded-xl
                 border border-(--hairline) bg-(--bg-surface) p-1.5
                 shadow-[0_18px_50px_-12px_rgba(0,0,0,0.28)]
               "
@@ -404,7 +405,7 @@ export default function NotificationsFeed({
                   setMenuOpen(false);
                   clearAll.mutate();
                 }}
-                className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[12.5px] text-(--text-soft) transition-colors duration-150 hover:bg-(--tint-4) hover:text-(--text-primary)"
+                className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[11px] text-(--text-soft) transition-colors duration-150 hover:bg-(--tint-4) hover:text-(--text-primary)"
               >
                 <HugeiconsIcon
                   icon={FilterMailRemoveIcon}
@@ -422,7 +423,7 @@ export default function NotificationsFeed({
                   setMenuOpen(false);
                   markAllRead.mutate();
                 }}
-                className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[12.5px] text-(--text-soft) transition-colors duration-150 hover:bg-(--tint-4) hover:text-(--text-primary)"
+                className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[11px] text-(--text-soft) transition-colors duration-150 hover:bg-(--tint-4) hover:text-(--text-primary)"
               >
                 <HugeiconsIcon
                   icon={Tick02Icon}
@@ -430,7 +431,7 @@ export default function NotificationsFeed({
                   strokeWidth={1.6}
                   className="shrink-0 text-(--text-secondary)"
                 />
-                Mark as read
+                Mark all as read
               </button>
 
               <button
@@ -440,7 +441,7 @@ export default function NotificationsFeed({
                   setMenuOpen(false);
                   navigate("/account/settings/notifications");
                 }}
-                className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[12.5px] text-(--text-soft) transition-colors duration-150 hover:bg-(--tint-4) hover:text-(--text-primary)"
+                className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[11px] text-(--text-soft) transition-colors duration-150 hover:bg-(--tint-4) hover:text-(--text-primary)"
               >
                 <HugeiconsIcon
                   icon={Settings01Icon}
@@ -456,8 +457,8 @@ export default function NotificationsFeed({
       </div>
 
       {/* Search, and the filter chip beside it. */}
-      <div className="flex shrink-0 items-center gap-2 border-b border-(--hairline) px-3 py-2">
-        <div className="flex h-8 min-w-0 flex-1 items-center gap-2 rounded-lg border border-(--hairline) bg-(--tint-3) px-2.5">
+      <div className="flex shrink-0 items-center gap-2 px-3 py-2">
+        <div className="flex h-8 min-w-0 flex-1 items-center gap-2 rounded-lg border border-(--hairline) px-2.5">
           <HugeiconsIcon
             icon={Search01Icon}
             size={13}
@@ -514,7 +515,7 @@ export default function NotificationsFeed({
               aria-label="Filter notifications"
               aria-multiselectable="true"
               className="
-                absolute right-0 top-full z-50 mt-2 w-52 overflow-hidden
+                absolute right-0 top-full z-50 mt-2 w-45 overflow-hidden
                 rounded-xl border border-(--hairline) bg-(--bg-surface) p-1.5
                 shadow-[0_18px_50px_-12px_rgba(0,0,0,0.28)]
               "
@@ -532,7 +533,7 @@ export default function NotificationsFeed({
                     aria-checked={checked}
                     onClick={() => toggleCategory(option.label)}
                     className={cn(
-                      "flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[12.5px] transition-colors duration-150 hover:bg-(--tint-4) hover:text-(--text-primary)",
+                      "flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[11px] transition-colors duration-150 hover:bg-(--tint-4) hover:text-(--text-primary)",
                       checked ? "text-(--text-primary)" : "text-(--text-soft)",
                     )}
                   >
@@ -575,7 +576,7 @@ export default function NotificationsFeed({
                   <button
                     type="button"
                     onClick={clearFilters}
-                    className="flex w-full cursor-pointer items-center rounded-lg px-2.5 py-2 text-left text-[12.5px] text-(--text-secondary) transition-colors duration-150 hover:bg-(--tint-4) hover:text-(--text-primary)"
+                    className="flex w-full cursor-pointer items-center rounded-lg px-2.5 py-2 text-left text-[11px] text-(--text-secondary) transition-colors duration-150 hover:bg-(--tint-4) hover:text-(--text-primary)"
                   >
                     Clear filters
                   </button>
@@ -610,12 +611,12 @@ export default function NotificationsFeed({
               <HugeiconsIcon icon={Message01Icon} size={17} strokeWidth={1.6} />
             </span>
 
-            <p className="mt-3 text-[12.5px] text-(--text-secondary)">
+            <p className="mt-3 text-[11px] text-(--text-secondary)">
               {emptyLine}
             </p>
           </div>
         ) : (
-          <ul className="divide-y divide-(--hairline)">
+          <ul>
             {rows.map((item) => {
               const workspace = workspaceById.get(item.workspaceId);
 
@@ -626,16 +627,22 @@ export default function NotificationsFeed({
                     onClick={() => openItem(item)}
                     /* Right padding is the menu's room: the trigger sits over
                        it, so the row never runs underneath the button. */
-                    className="flex w-full cursor-pointer items-start gap-2.5 px-3.5 py-3 pr-9 text-left transition-colors duration-200 hover:bg-(--tint-4)"
+                    /* `items-center`: the dot and the avatar sit on the row's
+                       vertical centre rather than being nudged down by a magic
+                       top margin, which is what kept them from lining up with
+                       each other. */
+                    className="flex w-full cursor-pointer items-center gap-1.5 px-1.5 py-3 pr-9 text-left transition-colors duration-200 hover:bg-(--tint-4)"
                   >
                     {/* First in the row, before the avatar: unread is the
                         thing being scanned for, so it takes the left edge.
                         Always rendered, transparent once read, so the avatars
-                        stay on one column down the whole list. */}
+                        stay on one column down the whole list. `ml-0.5` keeps it
+                        off the padding edge, so it reads as centred in its own
+                        gutter rather than glued to the border. */}
                     <span
                       aria-hidden="true"
                       className={cn(
-                        "mt-3 size-1.5 shrink-0 rounded-full",
+                        "size-1 shrink-0 rounded-full",
                         item.isRead ? "bg-transparent" : "bg-(--unread-dot)",
                       )}
                     />
@@ -646,26 +653,26 @@ export default function NotificationsFeed({
                     />
 
                     <span className="min-w-0 flex-1">
-                      <span className="flex items-baseline justify-between gap-2">
-                        <span className="min-w-0 truncate text-[12px] font-medium tracking-tight text-(--text-primary)">
-                          {item.title}
-                        </span>
-
-                        <time
-                          dateTime={item.createdAt}
-                          className="shrink-0 font-mono text-[9px] tabular-nums text-(--text-subtle)"
-                        >
-                          {relativeTime(item.createdAt)}
-                        </time>
+                      <span className="block min-w-0 truncate text-[12px] font-medium tracking-tight text-(--text-primary)">
+                        {item.title}
                       </span>
 
                       <span className="mt-1 block text-[11.5px] leading-5 text-(--text-secondary)">
                         {item.message}
                       </span>
+
+                      {/* Bottom-left, under the message: the row reads top to
+                          bottom as title, then what happened, then when. */}
+                      <time
+                        dateTime={item.createdAt}
+                        className="mt-1.5 block font-mono text-[9px] tabular-nums text-(--text-subtle)"
+                      >
+                        {relativeTime(item.createdAt)}
+                      </time>
                     </span>
                   </button>
 
-                  <div className="absolute right-1.5 top-2">
+                  <div className="absolute right-1.5 top-2 mr-0.5">
                     <NotificationRowMenu
                       isRead={item.isRead}
                       isMuted={isTypeMuted(item.type)}

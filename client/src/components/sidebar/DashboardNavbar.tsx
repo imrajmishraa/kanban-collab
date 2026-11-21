@@ -1,13 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { useQuery } from "@tanstack/react-query";
-
 import { WorkspaceSelector } from "@/features/dashboard";
-import { notificationKeys } from "@/features/dashboard";
+import { useNotifications } from "@/features/dashboard/hooks/useNotifications";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { useSidebarState } from "@/features/dashboard";
-import { notificationsApi } from "@/features/dashboard";
 import { NavbarSearchIcon, NotificationsButton } from "@/features/dashboard";
 import { NotificationsPanel } from "@/features/dashboard";
 
@@ -103,13 +100,9 @@ export default function DashboardNavbar() {
             ? "Notes"
             : null;
 
-  // Lightweight poll for the unread badge. The panel reuses the same key.
-  const { data: notificationsData } = useQuery({
-    queryKey: notificationKeys.all,
-    queryFn: () => notificationsApi.listNotifications(),
-    staleTime: 60_000,
-    refetchOnWindowFocus: false,
-  });
+  /* The badge polls, so a notification that arrives while you are on a board
+     updates the bell without a reload. The panel reuses the same key. */
+  const { data: notificationsData } = useNotifications();
 
   return (
     <>

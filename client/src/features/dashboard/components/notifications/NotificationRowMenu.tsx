@@ -9,11 +9,11 @@ import { createPortal } from "react-dom";
 
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
-  BellDotIcon,
   BellOffIcon,
   FilterMailRemoveIcon,
   MoreHorizontalIcon,
-  NotificationBlock01Icon,
+  BellRingIcon,
+  Tick02Icon,
 } from "@hugeicons/core-free-icons";
 
 import { cn } from "@/utils/cn";
@@ -29,9 +29,9 @@ interface NotificationRowMenuProps {
 }
 
 const ITEM =
-  "flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[12.5px] text-(--text-soft) transition-colors duration-150 hover:bg-(--tint-4) hover:text-(--text-primary) disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-(--text-soft)";
+  "flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[11px] text-(--text-soft) transition-colors duration-150 hover:bg-(--tint-4) hover:text-(--text-primary) disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-(--text-soft)";
 
-const MENU_WIDTH = 168;
+const MENU_WIDTH = 135;
 const ITEM_COUNT = 3;
 
 /**
@@ -132,18 +132,49 @@ export function NotificationRowMenu({
       close(false);
     };
 
-    /* A fixed-position menu does not move with the page, so it would detach from
-       its row on scroll; closing is the honest answer. */
-    const onScroll = () => close(false);
+    /*
+     * Reposition on scroll, do not close.
+     *
+     * Closing on any scroll event — including the one the browser fires when the
+     * first item is focused a frame after opening — made the menu appear and
+     * vanish in the same breath, which reads as "the button does nothing". A
+     * fixed menu has to be re-anchored as its row moves.
+     */
+    let frame = 0;
+
+    const reposition = () => {
+      if (frame) return;
+
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+
+        const trigger = triggerRef.current?.getBoundingClientRect();
+        if (!trigger) return;
+
+        const measured = menuRef.current?.getBoundingClientRect().height;
+        const next = placeMenu({
+          trigger,
+          menu: {
+            width: MENU_WIDTH,
+            height: measured || estimateMenuHeight(ITEM_COUNT),
+          },
+          viewport: { width: window.innerWidth, height: window.innerHeight },
+        });
+
+        setPosition({ top: next.top, left: next.left, side: next.side });
+      });
+    };
 
     document.addEventListener("mousedown", onDown);
-    window.addEventListener("scroll", onScroll, true);
-    window.addEventListener("resize", onScroll);
+    window.addEventListener("scroll", reposition, true);
+    window.addEventListener("resize", reposition);
 
     return () => {
+      if (frame) cancelAnimationFrame(frame);
+
       document.removeEventListener("mousedown", onDown);
-      window.removeEventListener("scroll", onScroll, true);
-      window.removeEventListener("resize", onScroll);
+      window.removeEventListener("scroll", reposition, true);
+      window.removeEventListener("resize", reposition);
     };
   }, [open, close]);
 
@@ -213,6 +244,14 @@ export function NotificationRowMenu({
             ref={menuRef}
             role="menu"
             aria-label="Notification options"
+            /*
+             * The shells that host the feed close themselves on an outside
+             * pointerdown, and a portal is outside their DOM tree by definition.
+             * Without this marker, clicking "Clear" closed the panel before the
+             * click could land on the button — the panel vanished and nothing was
+             * cleared. `NotificationsPanel` looks for this attribute.
+             */
+            data-notification-menu=""
             onKeyDown={onKeyDown}
             style={{
               top: position?.top ?? 0,
@@ -221,7 +260,17 @@ export function NotificationRowMenu({
               /* Hidden until measured, so it cannot flash in the wrong place. */
               visibility: position ? "visible" : "hidden",
             }}
-            className="fixed z-50 overflow-hidden rounded-xl border border-(--hairline) bg-(--bg-surface) p-1.5 shadow-[0_18px_50px_-12px_rgba(0,0,0,0.28)]"
+            /*
+             * `z-[95]`: above the desktop panel (`z-90`) and below the modals and
+             * the search palette (`z-100`).
+             *
+             * It was `z-50`, which is above the phone sheet (`z-40`) — so the menu
+             * worked there and silently painted *behind* the desktop panel, where
+             * clicking the trigger only changed its own background. The panel is
+             * itself a portal, so the two are siblings in the root stacking
+             * context and the higher number wins.
+             */
+            className="fixed z-95 overflow-hidden rounded-xl border border-(--hairline) bg-(--bg-surface) p-1.5 shadow-[0_18px_50px_-12px_rgba(0,0,0,0.28)]"
           >
             <button
               type="button"
@@ -231,7 +280,7 @@ export function NotificationRowMenu({
             >
               <HugeiconsIcon
                 icon={FilterMailRemoveIcon}
-                size={16}
+                size={15}
                 strokeWidth={1.6}
                 className="shrink-0 text-(--text-secondary)"
               />
@@ -245,8 +294,8 @@ export function NotificationRowMenu({
               className={ITEM}
             >
               <HugeiconsIcon
-                icon={isMuted ? BellOffIcon : NotificationBlock01Icon}
-                size={16}
+                icon={isMuted ? BellRingIcon : BellOffIcon}
+                size={15}
                 strokeWidth={1.6}
                 className="shrink-0 text-(--text-secondary)"
               />
@@ -261,8 +310,8 @@ export function NotificationRowMenu({
               className={ITEM}
             >
               <HugeiconsIcon
-                icon={BellDotIcon}
-                size={16}
+                icon={Tick02Icon}
+                size={15}
                 strokeWidth={1.6}
                 className="shrink-0 text-(--text-secondary)"
               />

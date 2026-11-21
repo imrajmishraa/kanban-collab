@@ -23,27 +23,27 @@ describe("relativeTime", () => {
   });
 
   it("spells minutes out", () => {
-    expect(relativeTime(ago(60_000), NOW)).toBe("1 min");
-    expect(relativeTime(ago(2 * 60_000), NOW)).toBe("2 min");
-    expect(relativeTime(ago(59 * 60_000), NOW)).toBe("59 min");
+    expect(relativeTime(ago(60_000), NOW)).toBe("1 min ago");
+    expect(relativeTime(ago(2 * 60_000), NOW)).toBe("2 min ago");
+    expect(relativeTime(ago(59 * 60_000), NOW)).toBe("59 min ago");
   });
 
   it("switches to hours at the boundary", () => {
-    expect(relativeTime(ago(60 * 60_000), NOW)).toBe("1 hr");
-    expect(relativeTime(ago(2 * 60 * 60_000), NOW)).toBe("2 hr");
-    expect(relativeTime(ago(23 * 60 * 60_000), NOW)).toBe("23 hr");
+    expect(relativeTime(ago(60 * 60_000), NOW)).toBe("1 hr ago");
+    expect(relativeTime(ago(2 * 60 * 60_000), NOW)).toBe("2 hr ago");
+    expect(relativeTime(ago(23 * 60 * 60_000), NOW)).toBe("23 hr ago");
   });
 
   it("switches to days, and singulars a single day", () => {
-    expect(relativeTime(ago(24 * 60 * 60_000), NOW)).toBe("1 day");
-    expect(relativeTime(ago(2 * 24 * 60 * 60_000), NOW)).toBe("2 days");
-    expect(relativeTime(ago(30 * 24 * 60 * 60_000), NOW)).toBe("30 days");
+    expect(relativeTime(ago(24 * 60 * 60_000), NOW)).toBe("1 day ago");
+    expect(relativeTime(ago(2 * 24 * 60 * 60_000), NOW)).toBe("2 days ago");
+    expect(relativeTime(ago(30 * 24 * 60 * 60_000), NOW)).toBe("30 days ago");
   });
 
   it("rounds half a unit up rather than showing 0", () => {
     /* 90 minutes is 1.5 hours: "2 hr" beats "1 hr", which would read as a whole
        hour earlier than it was. */
-    expect(relativeTime(ago(90 * 60_000), NOW)).toBe("2 hr");
+    expect(relativeTime(ago(90 * 60_000), NOW)).toBe("2 hr ago");
   });
 
   it("treats a future timestamp as just now", () => {
