@@ -6,6 +6,11 @@ import {
 } from "../../../infrastructure/db/mongoose/schemas";
 
 import {
+  canReadBoard,
+  canWriteBoard,
+} from "../../../application/boards/boardAccess";
+
+import {
   boardAccessDeniedError,
   boardNotFoundError,
 } from "../../../shared/errors/board/board";
@@ -81,13 +86,18 @@ export async function authorize(
 
   const role = member.role;
 
-  // `private` boards are not exposed to guests, even inside the workspace.
-  if (board.visibility === "private" && role === "guest") {
+  /*
+   * One table decides both answers now — `application/boards/boardAccess.ts`.
+   * The inline rule that used to live here (`private` + `guest` → deny) was the
+   * only place in the codebase where visibility meant anything, and the HTTP
+   * read path disagreed with it.
+   */
+  if (!canReadBoard(board.visibility, role)) {
     throw boardAccessDeniedError();
   }
 
   return {
     role,
-    canWrite: role !== "guest",
+    canWrite: canWriteBoard(role),
   };
 }

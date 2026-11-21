@@ -22,7 +22,12 @@ import { Types } from "mongoose";
 import { WorkspaceModel } from "../../infrastructure/db/mongoose/schemas";
 import type { WorkspaceRole } from "../../infrastructure/db/mongoose/schemas";
 
-import { guestCannotModifyBoardError } from "../../shared/errors/board/board";
+import { canManageBoard } from "../boards/boardAccess";
+
+import {
+  boardManageDeniedError,
+  guestCannotModifyBoardError,
+} from "../../shared/errors/board/board";
 import {
   notWorkspaceMemberError,
   workspacePendingDeletionError,
@@ -151,6 +156,29 @@ export async function loadWriterMembership(
 
   if (membership.member.role === "guest") {
     throw guestCannotModifyBoardError();
+  }
+
+  return membership;
+}
+
+/**
+ * `loadActiveMembership` plus "this role may destroy structure".
+ *
+ * Deleting a board takes its columns and cards with it, and a member cannot
+ * undo that. Until this existed, every non-guest could do it, which is why
+ * `admin` and `member` were interchangeable in practice. The rule itself lives
+ * in `application/boards/boardAccess.ts` so the HTTP and WebSocket surfaces
+ * cannot drift apart again.
+ */
+export async function loadManagerMembership(
+  workspaceId: Types.ObjectId | string,
+  userId: string,
+  options: LoadMembershipOptions = {},
+): Promise<ActiveMembership> {
+  const membership = await loadActiveMembership(workspaceId, userId, options);
+
+  if (!canManageBoard(membership.member.role)) {
+    throw boardManageDeniedError();
   }
 
   return membership;

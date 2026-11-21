@@ -5,7 +5,10 @@ import {
   ColumnModel,
   BoardModel,
 } from "../../../../infrastructure/db/mongoose/schemas";
-import { loadWriterMembership } from "../../../../application/workspaces/membership";
+import {
+  loadManagerMembership,
+  loadWriterMembership,
+} from "../../../../application/workspaces/membership";
 import { ApiResponse } from "../../../../shared/utils/ApiResponse";
 import { columnControllerLogger } from "../../../../infrastructure/logging/childLogger";
 import { ApiError } from "../../../../shared/utils/ApiError";
@@ -95,8 +98,8 @@ const deleteColumn = asyncHandler(async (req: AuthenticatedRequest, res) => {
       throw boardNotFoundError();
     }
 
-    // Verify workspace membership
-    await loadWriterMembership(board.workspaceId, userId);
+    /* Same rule as deleting a board: structure is owner/admin work. */
+    await loadManagerMembership(board.workspaceId, userId);
 
     // Refuse to delete a column that still holds cards — clear it first.
     const cardCount = await CardModel.countDocuments({ columnId: column._id });

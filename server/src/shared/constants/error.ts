@@ -107,6 +107,8 @@ export const ERROR_MESSAGE = {
   BOARD_NAME_REQUIRED: "Board name is required.",
   BOARD_LIMIT_REACHED: "Board limit reached for this workspace.",
   GUEST_CANNOT_MODIFY_BOARD: "Guests are not allowed to modify boards.",
+  BOARD_MANAGE_DENIED:
+    "Only workspace owners and admins can delete a board or a column.",
 
   // COLUMN
 
