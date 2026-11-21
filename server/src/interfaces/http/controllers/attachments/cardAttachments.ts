@@ -13,6 +13,7 @@ import { cardNotFoundError } from "../../../../shared/errors/card/card";
 import { notWorkspaceMemberError } from "../../../../shared/errors/workspace/workspace";
 import { assertWorkspaceWritable } from "../../../../application/workspaces/membership";
 import { guestCannotModifyBoardError } from "../../../../shared/errors/board/board";
+import { ENV } from "../../../../config/env";
 
 function requireUserId(req: AuthenticatedRequest): string {
   if (!req.user) {
@@ -69,6 +70,49 @@ function serializeAttachment(attachment: {
   };
 }
 
+/**
+ * An attachment URL must point at this deployment's own file storage.
+ *
+ * The only producer of an attachment URL is the ImageKit upload the client
+ * performs after `GET /attachments/imagekit-auth` hands it the credentials, so
+ * a URL from anywhere else is not a file this app stored. Refusing it stops a
+ * member turning an attachment into a link to a page of their choosing — a
+ * phishing link that carries this app's trust — and it is the second half of
+ * the fix whose first half is the https-only rule in the validator.
+ *
+ * Skipped when ImageKit is not configured: there is nothing to compare
+ * against, and without credentials nothing can be uploaded anyway.
+ */
+function assertAttachmentUrlIsOurs(url: string): void {
+  const endpoint = ENV.IMAGEKIT_URL_ENDPOINT;
+  if (!endpoint) return;
+
+  const base = new URL(endpoint);
+  const basePath = base.pathname.replace(/\/+$/, "");
+
+  let target: URL;
+  try {
+    target = new URL(url);
+  } catch {
+    /* The validator already proved it parses; this is the belt. */
+    throw attachmentUrlNotAllowedError();
+  }
+
+  if (
+    target.host !== base.host ||
+    (basePath !== "" && !target.pathname.startsWith(`${basePath}/`))
+  ) {
+    throw attachmentUrlNotAllowedError();
+  }
+}
+
+function attachmentUrlNotAllowedError(): ApiError {
+  return ApiError.badRequest(
+    "Attachment URL must point at this deployment's file storage.",
+    { code: "ATTACHMENT_URL_NOT_ALLOWED" },
+  );
+}
+
 /** GET /api/v1/cards/:cardId/attachments */
 const listCardAttachments = asyncHandler(
   async (req: AuthenticatedRequest, res) => {
@@ -101,6 +145,8 @@ const addCardAttachment = asyncHandler(
       fileType: string;
       size?: number;
     };
+
+    assertAttachmentUrlIsOurs(url);
 
     const { card, role } = await loadCardForMember(cardId, userId);
 

@@ -5,6 +5,7 @@ import {
   useDeleteAttachment,
   useUploadAttachment,
 } from "@/hooks/useCardAttachments";
+import { isSafeLinkUrl } from "@/lib/safeUrl";
 
 interface CardAttachmentsProps {
   cardId: string;
@@ -93,14 +94,23 @@ export default function CardAttachments({ cardId }: CardAttachmentsProps) {
             className="flex items-center gap-3 rounded-lg border border-(--hairline) bg-(--tint-3) px-3 py-2"
           >
             <div className="min-w-0 flex-1">
-              <a
-                href={attachment.url}
-                target="_blank"
-                rel="noreferrer"
-                className="block truncate font-mono text-[11px] text-(--text-primary) hover:underline"
-              >
-                {attachment.name}
-              </a>
+              {/* A row stored before the server refused non-https URLs can
+                  still hold a `javascript:` address, and this anchor is where
+                  it would fire. Render it as text instead of a link. */}
+              {isSafeLinkUrl(attachment.url) ? (
+                <a
+                  href={attachment.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="block truncate font-mono text-[11px] text-(--text-primary) hover:underline"
+                >
+                  {attachment.name}
+                </a>
+              ) : (
+                <span className="block truncate font-mono text-[11px] text-(--text-primary)">
+                  {attachment.name}
+                </span>
+              )}
               <p className="font-mono text-[10px] text-(--text-muted)">
                 {formatSize(attachment.size)} · {attachment.fileType}
               </p>
