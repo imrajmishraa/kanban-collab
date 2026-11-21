@@ -11,6 +11,7 @@ import {
 } from "./infrastructure/cache/cacheClient";
 import { startCronJobs, stopCronJobs } from "./infrastructure/scheduler/cron";
 import { lifecycleLogger } from "./infrastructure/logging/childLogger";
+import { errorReporter } from "./infrastructure/observability";
 import { app } from "./interfaces/http/app";
 import {
   startWebSocketServer,
@@ -150,6 +151,10 @@ process.once("SIGTERM", () => void shutdown("SIGTERM"));
 process.on("uncaughtException", (error) => {
   lifecycleLogger.fatal({ err: error }, "Uncaught exception — shutting down.");
 
+  /* Last chance to tell anyone: the process is about to die, so this is fired
+     without awaiting. `report` never throws and gives up after three seconds. */
+  void errorReporter.report(error, { source: "uncaughtException" });
+
   // If shutdown is already running, exit immediately — we can't recover.
   if (shuttingDown) process.exit(1);
 
@@ -165,6 +170,8 @@ process.on("unhandledRejection", (reason) => {
     { reason },
     "Unhandled promise rejection — shutting down.",
   );
+
+  void errorReporter.report(reason, { source: "unhandledRejection" });
 
   if (shuttingDown) process.exit(1);
 

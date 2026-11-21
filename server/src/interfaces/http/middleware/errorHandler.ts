@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 
 import { httpLogger } from "../../../infrastructure/logging/childLogger";
+import { errorReporter } from "../../../infrastructure/observability";
 import { normalizeError } from "../../../shared/errors/normalizeError";
 import { ENV } from "../../../config/env";
 
@@ -52,6 +53,17 @@ export function errorHandler(
     httpLogger.warn(logPayload, error.message);
   } else {
     httpLogger.error(logPayload, error.message);
+
+    /* Only server faults. A 401 or a 404 is a normal thing that happened, and
+       forwarding those would bury the failures that matter. */
+    void errorReporter.report(error, {
+      source: "http",
+      method: req.method,
+      url: req.originalUrl,
+      requestId: req.id,
+      statusCode: error.statusCode,
+      code: error.code,
+    });
   }
 
   // ── 4. Build response envelope ────────────────────────────────────────────

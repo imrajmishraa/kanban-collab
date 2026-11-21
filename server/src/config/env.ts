@@ -79,6 +79,15 @@ const envSchema = z.object({
   BCRYPT_ROUNDS: z.coerce.number().int().min(8).max(15).default(12),
 
   // OAuth
+  /*
+   * Error reporting. Both optional and inert when unset: no URL, no traffic.
+   * `ERROR_WEBHOOK_URL` takes a Slack/Discord webhook or any collector that
+   * accepts a JSON POST; `APP_RELEASE` is whatever identifies this deploy
+   * (a git sha is enough) so reports can be grouped by version.
+   */
+  ERROR_WEBHOOK_URL: zOptionalUrl,
+  APP_RELEASE: z.string().optional(),
+
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   GOOGLE_REDIRECT_URI: z.string().url().optional(),
