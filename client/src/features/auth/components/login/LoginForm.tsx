@@ -1,4 +1,4 @@
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,6 +25,7 @@ import {
   FieldError,
 } from "@/features/auth";
 import { CLEAR, FIELD, MARK, PAD } from "../fieldChrome";
+import { oauthFailureMessage } from "../../oauthFailureMessage";
 
 function loginErrorMessage(err: unknown): string {
   if (!(err instanceof ApiClientError)) {
@@ -60,6 +61,33 @@ export function LoginForm() {
   const navigate = useNavigate();
   const location = useLocation();
   const destination = postLoginDestination(location.state);
+
+  /*
+   * A failed provider sign-in arrives here as a query string, because the flow
+   * is a top-level navigation and never comes back through this component.
+   * Nothing used to read it, so the user was returned to a blank login screen
+   * with no idea what went wrong — including when their provider had not
+   * verified the address they were signing in with.
+   *
+   * The ref guards StrictMode's double effect; the replace-navigation clears the
+   * params so a reload does not replay the toast.
+   */
+  const reportedCallbackError = useRef(false);
+
+  useEffect(() => {
+    if (reportedCallbackError.current) return;
+
+    const params = new URLSearchParams(location.search);
+    const error = params.get("error");
+
+    if (!error) return;
+
+    reportedCallbackError.current = true;
+
+    toastError(null, oauthFailureMessage(error, params.get("reason")));
+
+    navigate(location.pathname, { replace: true, state: location.state });
+  }, [location.search, location.pathname, location.state, navigate]);
 
   const emailId = useId();
   const passwordId = useId();

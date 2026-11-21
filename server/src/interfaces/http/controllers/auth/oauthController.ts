@@ -250,9 +250,18 @@ export const oauthCallback = asyncHandler(
     } catch (error) {
       authLogger.error({ err: error, provider }, "OAuth callback failed.");
 
-      // Do not leak provider error text into the redirect URL — the log above
-      // carries the detail.
-      redirectToClient(res, { status: "error", reason: "oauth_failed" });
+      /* Do not leak provider error text into the redirect URL — the log above
+         carries the detail. The one exception is a failure the reader can act
+         on: an address the provider has not verified. It needs its own reason,
+         or the login page can only say "something went wrong", and the
+         account-takeover fix made this an ordinary outcome rather than an
+         impossible one. */
+      const reason =
+        error instanceof ApiError && error.code === "OAUTH_EMAIL_NOT_VERIFIED"
+          ? "email_not_verified"
+          : "oauth_failed";
+
+      redirectToClient(res, { status: "error", reason });
     }
   },
 );
