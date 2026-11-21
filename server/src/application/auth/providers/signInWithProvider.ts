@@ -10,6 +10,7 @@ import {
 import { authLogger } from "../../../infrastructure/logging/childLogger";
 import { oauthEmailNotVerifiedError } from "../../../shared/errors/auth/oauth";
 import type { OAuthProfile } from "../../../infrastructure/auth/providers/types";
+import { decideAccountLink } from "./linkDecision";
 
 export interface SignInWithProviderInput {
   profile: OAuthProfile;
@@ -60,13 +61,31 @@ export async function signInWithProvider(
     }
 
     if (user) {
-      // Link provider to existing account.
-      // Do NOT require emailVerified here — the user already has a verified
-      // account in our DB (they registered via another method). Blocking on
-      // the OAuth provider's emailVerified flag would lock out GitHub users
-      // whose primary email is private/unconfirmed in GitHub's system.
-      // The emailVerified requirement only applies to *new* account creation
-      // (see below) to prevent squatting on someone else's unverified address.
+      /*
+       * Link provider to existing account — but only on evidence.
+       *
+       * The email match alone proves nothing: `register` creates accounts
+       * unverified and nothing verifies an address, so a matching email only
+       * means somebody typed it first. `decideAccountLink` holds the rule and
+       * says why (see its comment); in short, the provider must have verified
+       * the address, and a password that was set without that proof is
+       * dropped along with every session it minted.
+       *
+       * `passwordHash` is `select: false`, so the document does not carry it.
+       * Ask the database whether one exists rather than widening the query and
+       * fighting the projection's type.
+       */
+      const hasPassword = Boolean(
+        await UserModel.exists({
+          _id: user._id,
+          passwordHash: { $exists: true },
+        }),
+      );
+
+      const decision = decideAccountLink(profile, {
+        emailVerified: user.emailVerified,
+        hasPassword,
+      });
 
       const alreadyLinked = user.authProviders.some(
         (p) =>
@@ -88,18 +107,45 @@ export async function signInWithProvider(
         if (!user.fullName && profile.fullName) {
           user.fullName = profile.fullName;
         }
+      }
 
-        await user.save();
+      if (decision.markEmailVerified) {
+        user.emailVerified = true;
+      }
 
-        authLogger.info(
-          { userId: user._id.toString(), provider: profile.provider },
-          "OAuth provider linked to existing account.",
+      if (decision.dropPassword) {
+        /* `set` with `undefined` is an `$unset`, which is the only way to
+           remove the credential — an empty string would still be a hash. */
+        user.set("passwordHash", undefined);
+      }
+
+      await user.save();
+
+      if (decision.revokeSessions) {
+        /* Before the new session is minted, so the caller's own session is
+           not in the set that gets deleted. */
+        const { deletedCount } = await SessionModel.deleteMany({
+          userId: user._id,
+        });
+
+        authLogger.warn(
+          {
+            userId: user._id.toString(),
+            provider: profile.provider,
+            sessionsDeleted: deletedCount,
+          },
+          "OAuth link replaced an unverified password: password dropped and existing sessions revoked.",
         );
       }
+
+      authLogger.info(
+        { userId: user._id.toString(), provider: profile.provider },
+        "OAuth provider linked to existing account.",
+      );
     } else {
       // Create new user. Require a provider-verified email so an unverified
-      // provider address cannot be used to squat an existing owner's email
-      // (the account-linking branch below already requires this).
+      // provider address cannot be used to squat an existing owner's email.
+      // The linking branch above applies the same rule.
       if (!profile.emailVerified) {
         throw oauthEmailNotVerifiedError(profile.provider);
       }
