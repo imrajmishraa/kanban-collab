@@ -1,24 +1,38 @@
-import { useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
+import { createPortal } from "react-dom";
 
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   BellDotIcon,
+  BellOffIcon,
   FilterMailRemoveIcon,
   MoreHorizontalIcon,
   NotificationBlock01Icon,
 } from "@hugeicons/core-free-icons";
 
 import { cn } from "@/utils/cn";
+import { estimateMenuHeight, placeMenu } from "@/lib/menuPlacement";
 
 interface NotificationRowMenuProps {
   isRead: boolean;
+  /** True when this notification's type has its in-app channel switched off. */
+  isMuted: boolean;
   onClear: () => void;
   onMarkRead: () => void;
-  onMute: () => void;
+  onToggleMute: () => void;
 }
 
 const ITEM =
   "flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[12.5px] text-(--text-soft) transition-colors duration-150 hover:bg-(--tint-4) hover:text-(--text-primary) disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-(--text-soft)";
+
+const MENU_WIDTH = 168;
+const ITEM_COUNT = 3;
 
 /**
  * One notification's own actions: clear it, mute its type, mark it read.
@@ -27,59 +41,159 @@ const ITEM =
  * carries its own open state, its own outside-click listener and its own
  * placement. The feed renders one per row.
  *
- * The trigger is a sibling of the row's button, not a child of it: a button
- * inside a button is invalid HTML and the browser would drop the inner one, so
- * the row button ends short of the right edge and this sits over that gap.
+ * Two things are structural rather than cosmetic:
+ *
+ * **It renders into a portal.** The feed is an `overflow-y-auto` container, and
+ * an absolutely positioned child is clipped by it — the old fix flipped the menu
+ * upward using `window.innerHeight * 0.6`, which is the wrong box: a short phone
+ * sheet clips a menu that the viewport would have room for. Portalled to `<body>`
+ * with `position: fixed`, the only geometry that matters is the viewport, and
+ * `placeMenu` does the arithmetic.
+ *
+ * **It behaves like a menu.** `role="menu"` promises arrow-key navigation and a
+ * focus that moves inside, so both are implemented: focus lands on the first
+ * item, ArrowDown/ArrowUp wrap, Home/End jump, Escape closes and returns focus
+ * to the trigger, and Tab closes without trapping.
  */
 export function NotificationRowMenu({
   isRead,
+  isMuted,
   onClear,
   onMarkRead,
-  onMute,
+  onToggleMute,
 }: NotificationRowMenuProps) {
   const [open, setOpen] = useState(false);
-  const [dropUp, setDropUp] = useState(false);
-  const wrapRef = useRef<HTMLDivElement>(null);
+  const [position, setPosition] = useState<{
+    top: number;
+    left: number;
+    side: "top" | "bottom";
+  } | null>(null);
+
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const items = useCallback(
+    () =>
+      Array.from(
+        menuRef.current?.querySelectorAll<HTMLButtonElement>(
+          '[role="menuitem"]:not([disabled])',
+        ) ?? [],
+      ),
+    [],
+  );
+
+  const close = useCallback((restoreFocus = true) => {
+    setOpen(false);
+    setPosition(null);
+    if (restoreFocus) triggerRef.current?.focus();
+  }, []);
+
+  /* Placement is measured, not guessed: the menu's real height is known once it
+     is in the DOM, so the first paint uses an estimate and the second corrects
+     it before the browser paints. */
+  useLayoutEffect(() => {
+    if (!open) return;
+
+    const trigger = triggerRef.current?.getBoundingClientRect();
+    if (!trigger) return;
+
+    const measured = menuRef.current?.getBoundingClientRect().height;
+    const menu = {
+      width: MENU_WIDTH,
+      height: measured || estimateMenuHeight(ITEM_COUNT),
+    };
+
+    const next = placeMenu({
+      trigger,
+      menu,
+      viewport: { width: window.innerWidth, height: window.innerHeight },
+    });
+
+    setPosition({ top: next.top, left: next.left, side: next.side });
+  }, [open]);
+
+  /* Focus the first item as soon as the menu exists. */
+  useEffect(() => {
+    if (!open) return;
+    items()[0]?.focus();
+  }, [open, items]);
 
   useEffect(() => {
     if (!open) return;
 
     const onDown = (event: MouseEvent) => {
-      if (wrapRef.current?.contains(event.target as Node)) return;
-      setOpen(false);
+      const target = event.target as Node;
+
+      /* The menu is in a portal, so it is not inside the wrapper element — both
+         refs have to be checked or the first click inside the menu closes it. */
+      if (menuRef.current?.contains(target)) return;
+      if (triggerRef.current?.contains(target)) return;
+
+      close(false);
     };
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
-    };
+
+    /* A fixed-position menu does not move with the page, so it would detach from
+       its row on scroll; closing is the honest answer. */
+    const onScroll = () => close(false);
 
     document.addEventListener("mousedown", onDown);
-    document.addEventListener("keydown", onKey);
+    window.addEventListener("scroll", onScroll, true);
+    window.addEventListener("resize", onScroll);
+
     return () => {
       document.removeEventListener("mousedown", onDown);
-      document.removeEventListener("keydown", onKey);
+      window.removeEventListener("scroll", onScroll, true);
+      window.removeEventListener("resize", onScroll);
     };
-  }, [open]);
+  }, [open, close]);
 
-  const toggle = () => {
-    /* The feed scrolls and clips what overflows it, so a menu opened downwards
-       from a row near the bottom is cut in half. Open above the row there. */
-    const rect = triggerRef.current?.getBoundingClientRect();
-    setDropUp(rect ? rect.bottom > window.innerHeight * 0.6 : false);
-    setOpen((value) => !value);
+  const onKeyDown = (event: React.KeyboardEvent) => {
+    const focusable = items();
+    const index = focusable.indexOf(
+      document.activeElement as HTMLButtonElement,
+    );
+
+    switch (event.key) {
+      case "Escape":
+        event.preventDefault();
+        close();
+        break;
+      case "ArrowDown":
+        event.preventDefault();
+        focusable[(index + 1) % focusable.length]?.focus();
+        break;
+      case "ArrowUp":
+        event.preventDefault();
+        focusable[(index - 1 + focusable.length) % focusable.length]?.focus();
+        break;
+      case "Home":
+        event.preventDefault();
+        focusable[0]?.focus();
+        break;
+      case "End":
+        event.preventDefault();
+        focusable[focusable.length - 1]?.focus();
+        break;
+      case "Tab":
+        /* Tab leaves the menu; do not trap focus in a list of three actions. */
+        close(false);
+        break;
+      default:
+        break;
+    }
   };
 
   const run = (action: () => void) => {
-    setOpen(false);
+    close();
     action();
   };
 
   return (
-    <div ref={wrapRef} className="relative">
+    <>
       <button
         ref={triggerRef}
         type="button"
-        onClick={toggle}
+        onClick={() => (open ? close() : setOpen(true))}
         aria-expanded={open}
         aria-haspopup="menu"
         aria-label="Notification options"
@@ -93,62 +207,70 @@ export function NotificationRowMenu({
         <HugeiconsIcon icon={MoreHorizontalIcon} size={15} strokeWidth={1.8} />
       </button>
 
-      {open && (
-        <div
-          role="menu"
-          aria-label="Notification options"
-          className={cn(
-            "absolute right-0 z-50 w-42 overflow-hidden rounded-xl border border-(--hairline) bg-(--bg-surface) p-1.5 shadow-[0_18px_50px_-12px_rgba(0,0,0,0.28)]",
-            dropUp ? "bottom-full mb-1" : "top-full mt-1",
-          )}
-        >
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => run(onClear)}
-            className={ITEM}
+      {open &&
+        createPortal(
+          <div
+            ref={menuRef}
+            role="menu"
+            aria-label="Notification options"
+            onKeyDown={onKeyDown}
+            style={{
+              top: position?.top ?? 0,
+              left: position?.left ?? 0,
+              width: MENU_WIDTH,
+              /* Hidden until measured, so it cannot flash in the wrong place. */
+              visibility: position ? "visible" : "hidden",
+            }}
+            className="fixed z-50 overflow-hidden rounded-xl border border-(--hairline) bg-(--bg-surface) p-1.5 shadow-[0_18px_50px_-12px_rgba(0,0,0,0.28)]"
           >
-            <HugeiconsIcon
-              icon={FilterMailRemoveIcon}
-              size={16}
-              strokeWidth={1.6}
-              className="shrink-0 text-(--text-secondary)"
-            />
-            Clear
-          </button>
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => run(onClear)}
+              className={ITEM}
+            >
+              <HugeiconsIcon
+                icon={FilterMailRemoveIcon}
+                size={16}
+                strokeWidth={1.6}
+                className="shrink-0 text-(--text-secondary)"
+              />
+              Clear
+            </button>
 
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => run(onMute)}
-            className={ITEM}
-          >
-            <HugeiconsIcon
-              icon={NotificationBlock01Icon}
-              size={16}
-              strokeWidth={1.6}
-              className="shrink-0 text-(--text-secondary)"
-            />
-            Mute
-          </button>
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => run(onToggleMute)}
+              className={ITEM}
+            >
+              <HugeiconsIcon
+                icon={isMuted ? BellOffIcon : NotificationBlock01Icon}
+                size={16}
+                strokeWidth={1.6}
+                className="shrink-0 text-(--text-secondary)"
+              />
+              {isMuted ? "Unmute" : "Mute"}
+            </button>
 
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => run(onMarkRead)}
-            disabled={isRead}
-            className={ITEM}
-          >
-            <HugeiconsIcon
-              icon={BellDotIcon}
-              size={16}
-              strokeWidth={1.6}
-              className="shrink-0 text-(--text-secondary)"
-            />
-            Mark as read
-          </button>
-        </div>
-      )}
-    </div>
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => run(onMarkRead)}
+              disabled={isRead}
+              className={ITEM}
+            >
+              <HugeiconsIcon
+                icon={BellDotIcon}
+                size={16}
+                strokeWidth={1.6}
+                className="shrink-0 text-(--text-secondary)"
+              />
+              Mark as read
+            </button>
+          </div>,
+          document.body,
+        )}
+    </>
   );
 }

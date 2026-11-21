@@ -32,6 +32,11 @@ import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import type { AppNotification } from "@/types/notification";
 
 import { NotificationRowMenu } from "./NotificationRowMenu";
+import { notificationPreferencesApi } from "@/features/settings/api/notificationPreferencesApi";
+import {
+  notificationPreferenceKeys,
+  useNotificationPreferences,
+} from "@/features/settings/hooks/useNotificationPreferences";
 import { WorkspaceAvatarTile } from "./WorkspaceAvatarTile";
 
 const TABS = ["Inbox", "Unread", "Comments"] as const;
@@ -169,12 +174,35 @@ export default function NotificationsFeed({
     onError: (error) => toastError(error),
   });
 
-  const mute = useMutation({
-    mutationFn: (type: AppNotification["type"]) =>
-      notificationsApi.muteType(type),
-    onSuccess: refresh,
+  /*
+   * Mute and unmute are the same endpoint with a different value, so the menu can
+   * offer whichever one applies. The preferences query is already cached by the
+   * settings screen; reading it here costs no extra request when it is warm.
+   */
+  const { data: preferences } = useNotificationPreferences();
+
+  const setMuted = useMutation({
+    mutationFn: ({
+      type,
+      muted,
+    }: {
+      type: AppNotification["type"];
+      muted: boolean;
+    }) =>
+      notificationPreferencesApi.updatePreferences({
+        preferences: { [type]: { inApp: !muted } },
+      }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: notificationPreferenceKeys.all,
+      });
+      refresh();
+    },
     onError: (error) => toastError(error),
   });
+
+  const isTypeMuted = (type: AppNotification["type"]): boolean =>
+    preferences?.preferences?.[type]?.inApp === false;
 
   const needle = query.trim().toLowerCase();
 
@@ -650,8 +678,14 @@ export default function NotificationsFeed({
                   <div className="absolute right-1.5 top-2">
                     <NotificationRowMenu
                       isRead={item.isRead}
+                      isMuted={isTypeMuted(item.type)}
                       onClear={() => clearOne.mutate(item.id)}
-                      onMute={() => mute.mutate(item.type)}
+                      onToggleMute={() =>
+                        setMuted.mutate({
+                          type: item.type,
+                          muted: !isTypeMuted(item.type),
+                        })
+                      }
                       onMarkRead={() => markRead.mutate(item.id)}
                     />
                   </div>
