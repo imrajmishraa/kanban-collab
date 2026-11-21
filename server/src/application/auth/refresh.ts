@@ -12,7 +12,11 @@ import {
 } from "../../shared/errors/auth/refreshToken";
 import { authLogger } from "../../infrastructure/logging/childLogger";
 
-const GRACE_PERIOD_MS = 30_000;
+import {
+  isRotatable,
+  nextGraceExpiry,
+  rotationOutcome,
+} from "./sessionMachine";
 
 export interface RefreshInput {
   refreshToken: string | undefined;
@@ -37,14 +41,15 @@ export async function refresh(params: RefreshInput): Promise<RefreshResult> {
   const { userId, jti: incomingJti } = decoded;
 
   const now = new Date();
+  /*
+   * Fetch by lineage only — current or previous — and let the machine decide
+   * what the token means. The `$or` used to carry the grace-window check too,
+   * which made the rule invisible: "no session" and "reuse" looked the same.
+   */
   const session = await SessionModel.findOne({
     userId,
-    // Ignore sessions that have already expired (the TTL index can lag).
     expiresAt: { $gt: now },
-    $or: [
-      { jti: incomingJti },
-      { previousJti: incomingJti, previousJtiExpiresAt: { $gt: now } },
-    ],
+    $or: [{ jti: incomingJti }, { previousJti: incomingJti }],
   });
 
   if (!session) {
@@ -71,8 +76,41 @@ export async function refresh(params: RefreshInput): Promise<RefreshResult> {
     throw refreshTokenReuseError();
   }
 
-  if (session.revokedAt) {
+  const outcome = rotationOutcome(session, incomingJti, now);
+
+  if (outcome === "revoked") {
     throw sessionRevokedError();
+  }
+
+  if (outcome === "expired") {
+    throw expiredRefreshTokenError();
+  }
+
+  if (outcome === "reuse") {
+    /* A token we no longer recognise for this session — presented after its
+       grace window, or from two rotations ago. End the session. */
+    await SessionModel.findOneAndUpdate(
+      { _id: session._id, revokedAt: null },
+      { $set: { revokedAt: now } },
+      { projection: { _id: 1 } },
+    );
+
+    authLogger.warn(
+      {
+        userId,
+        incomingJti,
+        sessionId: session._id.toString(),
+        ipAddress,
+        userAgent,
+      },
+      "Refresh token replayed after its grace window — session revoked.",
+    );
+
+    throw refreshTokenReuseError();
+  }
+
+  if (!isRotatable(outcome)) {
+    throw expiredRefreshTokenError();
   }
 
   // No UserModel lookup — user fields come from the session snapshot
@@ -94,7 +132,9 @@ export async function refresh(params: RefreshInput): Promise<RefreshResult> {
       $set: {
         jti: issued.jti,
         previousJti: incomingJti,
-        previousJtiExpiresAt: new Date(Date.now() + GRACE_PERIOD_MS),
+        /* Anchored to the rotation that orphaned the token — a later grace use
+           must not extend it. */
+        previousJtiExpiresAt: nextGraceExpiry(session, outcome, now),
         lastUsedAt: issued.issuedAt,
         expiresAt: issued.expiresAt,
         userAgent,
