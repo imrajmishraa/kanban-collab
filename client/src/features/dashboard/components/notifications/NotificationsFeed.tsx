@@ -457,8 +457,8 @@ export default function NotificationsFeed({
       </div>
 
       {/* Search, and the filter chip beside it. */}
-      <div className="flex shrink-0 items-center gap-2 border-b border-(--hairline) px-3 py-2">
-        <div className="flex h-8 min-w-0 flex-1 items-center gap-2 rounded-lg border border-(--hairline) bg-(--tint-3) px-2.5">
+      <div className="flex shrink-0 items-center gap-2 px-3 py-2">
+        <div className="flex h-8 min-w-0 flex-1 items-center gap-2 rounded-lg border border-(--hairline) px-2.5">
           <HugeiconsIcon
             icon={Search01Icon}
             size={13}
@@ -616,7 +616,7 @@ export default function NotificationsFeed({
             </p>
           </div>
         ) : (
-          <ul className="divide-y divide-(--hairline)">
+          <ul>
             {rows.map((item) => {
               const workspace = workspaceById.get(item.workspaceId);
 
@@ -631,7 +631,7 @@ export default function NotificationsFeed({
                        vertical centre rather than being nudged down by a magic
                        top margin, which is what kept them from lining up with
                        each other. */
-                    className="flex w-full cursor-pointer items-center gap-2.5 px-3.5 py-3 pr-9 text-left transition-colors duration-200 hover:bg-(--tint-4)"
+                    className="flex w-full cursor-pointer items-center gap-1.5 px-1.5 py-3 pr-9 text-left transition-colors duration-200 hover:bg-(--tint-4)"
                   >
                     {/* First in the row, before the avatar: unread is the
                         thing being scanned for, so it takes the left edge.

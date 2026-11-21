@@ -46,6 +46,17 @@ export default function NotificationsPanel({
       if (panelRef.current?.contains(target)) return;
       if (ignoreRef?.current?.contains(target)) return;
 
+      /* A row menu is portalled to `<body>`, so it is not inside `panelRef` even
+         though it belongs to a row. Closing here would unmount the menu between
+         its own pointerdown and click, so the action never ran: the panel
+         disappeared and nothing was cleared. */
+      if (
+        target instanceof Element &&
+        target.closest("[data-notification-menu]")
+      ) {
+        return;
+      }
+
       onClose();
     };
 
@@ -70,9 +81,9 @@ export default function NotificationsPanel({
       role="dialog"
       aria-label="Notifications"
       className="
-        fixed right-0 top-14 mr-5 mb-1 bottom-0 z-90 flex w-90
+        fixed right-0 top-14 mr-4 mb-0.5 bottom-1 z-90 flex w-90
         max-w-[calc(100vw-1rem)] flex-col overflow-hidden rounded-2xl
-        border border-b-0 border-(--hairline) bg-(--bg-root)
+        border border-b border-(--hairline) bg-(--bg-root)
         motion-safe:animate-in motion-safe:slide-in-from-right-2
         motion-safe:fade-in-0 motion-safe:duration-200
       "

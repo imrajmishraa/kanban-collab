@@ -244,6 +244,14 @@ export function NotificationRowMenu({
             ref={menuRef}
             role="menu"
             aria-label="Notification options"
+            /*
+             * The shells that host the feed close themselves on an outside
+             * pointerdown, and a portal is outside their DOM tree by definition.
+             * Without this marker, clicking "Clear" closed the panel before the
+             * click could land on the button — the panel vanished and nothing was
+             * cleared. `NotificationsPanel` looks for this attribute.
+             */
+            data-notification-menu=""
             onKeyDown={onKeyDown}
             style={{
               top: position?.top ?? 0,
