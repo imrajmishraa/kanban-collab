@@ -26,6 +26,9 @@ import "dotenv/config";
  */
 import { NOTIFICATION_TYPES } from "../src/infrastructure/db/mongoose/schemas";
 import type { NotificationType } from "../src/infrastructure/db/mongoose/schemas";
+import type * as connectDbModule from "../src/infrastructure/db/mongoose/dbConnect";
+import type * as notificationModule from "../src/application/notifications/testNotification";
+import type * as schemaModule from "../src/infrastructure/db/mongoose/schemas";
 
 /**
  * A bad flag or a missing value — the user's mistake, printed without a stack.
@@ -137,20 +140,31 @@ function parseArgs(argv: string[]): Args {
 async function main() {
   const args = parseArgs(process.argv.slice(2));
 
-  /* Dynamic, so `--help` and a bad flag do not need a database or a valid
-     environment: `config/env.ts` validates at import time and exits the process. */
+  /*
+   * `require` rather than a static import, because `config/env.ts` validates at
+   * import time and exits the process — a static import would kill `--help` and
+   * every argument error before the user's typo was read.
+   *
+   * `require` rather than `await import()`, because the project compiles with
+   * `module: NodeNext` and no `"type": "module"`: a dynamic `import()` is kept as
+   * a native ESM import, bypasses ts-node's loader, and cannot resolve a `.ts`
+   * path ("Cannot find module …/dbConnect"). `require` goes through ts-node.
+   *
+   * The casts are type-only (`import type` above), so the runtime stays `require`
+   * while the values keep their real types instead of becoming `any`.
+   */
+  /* eslint-disable @typescript-eslint/no-require-imports */
   const { connectDB } =
-    await import("../src/infrastructure/db/mongoose/dbConnect");
-
+    require("../src/infrastructure/db/mongoose/dbConnect") as typeof connectDbModule;
   const { pushTestNotifications } =
-    await import("../src/application/notifications/testNotification");
+    require("../src/application/notifications/testNotification") as typeof notificationModule;
+  const { NotificationModel } =
+    require("../src/infrastructure/db/mongoose/schemas") as typeof schemaModule;
+  /* eslint-enable @typescript-eslint/no-require-imports */
 
   await connectDB();
 
   if (args.list) {
-    const { NotificationModel } =
-      await import("../src/infrastructure/db/mongoose/schemas");
-
     const rows = await NotificationModel.find({})
       .sort({ createdAt: -1 })
       .limit(10)
