@@ -22,6 +22,7 @@ function requireUserId(req: AuthenticatedRequest): string {
 }
 
 import { boardNotFoundError } from "../../../../shared/errors/board/board";
+import { invalidateBoardCache } from "../../../../infrastructure/cache/boardCache";
 import {
   columnNotEmptyError,
   columnNotFoundError,
@@ -48,6 +49,8 @@ const createColumn = asyncHandler(async (req: AuthenticatedRequest, res) => {
       name,
       orderIndex: orderIndex || 0,
     });
+
+    await invalidateBoardCache(board._id.toString());
 
     columnControllerLogger.info(
       {
@@ -110,6 +113,8 @@ const deleteColumn = asyncHandler(async (req: AuthenticatedRequest, res) => {
 
     await column.deleteOne();
 
+    await invalidateBoardCache(board._id.toString());
+
     columnControllerLogger.info(
       { columnId: column._id, boardId: board._id, userId },
       "Column deleted",
@@ -153,6 +158,8 @@ const updateColumn = asyncHandler(async (req: AuthenticatedRequest, res) => {
     if (orderIndex !== undefined) column.orderIndex = orderIndex;
 
     await column.save();
+
+    await invalidateBoardCache(board._id.toString());
 
     columnControllerLogger.info(
       { columnId: column._id, boardId: board._id, userId },

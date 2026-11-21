@@ -20,6 +20,7 @@ function requireUserId(req: AuthenticatedRequest): string {
   return req.user.userId;
 }
 import { boardNotFoundError } from "../../../../shared/errors/board/board";
+import { invalidateBoardCache } from "../../../../infrastructure/cache/boardCache";
 import { cardNotFoundError } from "../../../../shared/errors/card/card";
 import { columnNotFoundError } from "../../../../shared/errors/column/column";
 
@@ -78,6 +79,8 @@ const createCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
       actionType: "CARD_CREATE",
       details: { cardId: card._id, cardTitle: card.title },
     });
+
+    await invalidateBoardCache(String(boardId));
 
     cardControllerLogger.info(
       {
@@ -212,6 +215,8 @@ const updateCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
       },
     });
 
+    await invalidateBoardCache(board._id.toString());
+
     cardControllerLogger.info(
       {
         cardId: card._id,
@@ -293,6 +298,8 @@ const moveCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
       },
     });
 
+    await invalidateBoardCache(board._id.toString());
+
     cardControllerLogger.info(
       {
         cardId: card._id,
@@ -340,6 +347,8 @@ const deleteCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
     await loadWriterMembership(board.workspaceId, userId);
 
     await card.deleteOne();
+
+    await invalidateBoardCache(board._id.toString());
 
     cardControllerLogger.info(
       { cardId: card._id, boardId: board._id, userId },

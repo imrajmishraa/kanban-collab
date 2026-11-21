@@ -19,7 +19,11 @@ import { ApiResponse } from "../../../../shared/utils/ApiResponse";
 import { ApiError } from "../../../../shared/utils/ApiError";
 import { Types } from "mongoose";
 
-import { getCacheClient } from "../../../../infrastructure/cache/cacheClient";
+import {
+  invalidateBoardCache,
+  readBoardCache,
+  writeBoardCache,
+} from "../../../../infrastructure/cache/boardCache";
 import { boardControllerLogger } from "../../../../infrastructure/logging/childLogger";
 import {
   notWorkspaceMemberError,
@@ -321,15 +325,7 @@ const updateBoard = asyncHandler(async (req: AuthenticatedRequest, res) => {
     }
 
     // Invalidate the cached board-details payload so the next read is fresh.
-    try {
-      const cache = await getCacheClient();
-      await cache.del(`board:${board._id}`);
-    } catch (err) {
-      boardControllerLogger.warn(
-        { err, boardId: board._id },
-        "Board cache invalidate failed",
-      );
-    }
+    await invalidateBoardCache(board._id.toString());
 
     boardControllerLogger.info(
       {
@@ -393,16 +389,7 @@ const getBoardDetails = asyncHandler(async (req: AuthenticatedRequest, res) => {
   }
 
   // 3. Cache — safe now that membership is verified.
-  const cacheKey = `board:${boardId}`;
-
-  const cache = await getCacheClient();
-
-  let cached: string | null = null;
-  try {
-    cached = await cache.get(cacheKey);
-  } catch (err) {
-    boardControllerLogger.warn({ err, boardId }, "Board cache read failed");
-  }
+  const cached = await readBoardCache(String(boardId));
 
   if (cached) {
     return res.status(200).json(JSON.parse(cached));
@@ -474,11 +461,8 @@ const getBoardDetails = asyncHandler(async (req: AuthenticatedRequest, res) => {
     },
   });
 
-  try {
-    await cache.setEx(cacheKey, 60, JSON.stringify(response));
-  } catch (err) {
-    boardControllerLogger.warn({ err, boardId }, "Board cache write failed");
-  }
+  await writeBoardCache(String(boardId), JSON.stringify(response));
+
   return res.status(200).json(response);
 });
 
@@ -655,15 +639,7 @@ const deleteBoard = asyncHandler(async (req: AuthenticatedRequest, res) => {
     await board.deleteOne();
 
     // Drop the cached details payload.
-    try {
-      const cache = await getCacheClient();
-      await cache.del(`board:${board._id}`);
-    } catch (err) {
-      boardControllerLogger.warn(
-        { err, boardId: board._id },
-        "Board cache invalidate failed",
-      );
-    }
+    await invalidateBoardCache(board._id.toString());
 
     boardControllerLogger.info(
       { boardId: board._id, workspaceId: board.workspaceId, userId },
