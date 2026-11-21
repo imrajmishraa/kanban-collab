@@ -393,7 +393,7 @@ export default function NotificationsFeed({
               role="menu"
               aria-label="Notification actions"
               className="
-                absolute right-0 top-full z-50 mt-2 w-42 overflow-hidden rounded-xl
+                absolute right-0 top-full z-50 mt-2 w-35 overflow-hidden rounded-xl
                 border border-(--hairline) bg-(--bg-surface) p-1.5
                 shadow-[0_18px_50px_-12px_rgba(0,0,0,0.28)]
               "
@@ -405,7 +405,7 @@ export default function NotificationsFeed({
                   setMenuOpen(false);
                   clearAll.mutate();
                 }}
-                className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[12.5px] text-(--text-soft) transition-colors duration-150 hover:bg-(--tint-4) hover:text-(--text-primary)"
+                className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[11px] text-(--text-soft) transition-colors duration-150 hover:bg-(--tint-4) hover:text-(--text-primary)"
               >
                 <HugeiconsIcon
                   icon={FilterMailRemoveIcon}
@@ -423,7 +423,7 @@ export default function NotificationsFeed({
                   setMenuOpen(false);
                   markAllRead.mutate();
                 }}
-                className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[12.5px] text-(--text-soft) transition-colors duration-150 hover:bg-(--tint-4) hover:text-(--text-primary)"
+                className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[11px] text-(--text-soft) transition-colors duration-150 hover:bg-(--tint-4) hover:text-(--text-primary)"
               >
                 <HugeiconsIcon
                   icon={Tick02Icon}
@@ -431,7 +431,7 @@ export default function NotificationsFeed({
                   strokeWidth={1.6}
                   className="shrink-0 text-(--text-secondary)"
                 />
-                Mark as read
+                Mark all as read
               </button>
 
               <button
@@ -441,7 +441,7 @@ export default function NotificationsFeed({
                   setMenuOpen(false);
                   navigate("/account/settings/notifications");
                 }}
-                className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[12.5px] text-(--text-soft) transition-colors duration-150 hover:bg-(--tint-4) hover:text-(--text-primary)"
+                className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[11px] text-(--text-soft) transition-colors duration-150 hover:bg-(--tint-4) hover:text-(--text-primary)"
               >
                 <HugeiconsIcon
                   icon={Settings01Icon}
@@ -515,7 +515,7 @@ export default function NotificationsFeed({
               aria-label="Filter notifications"
               aria-multiselectable="true"
               className="
-                absolute right-0 top-full z-50 mt-2 w-52 overflow-hidden
+                absolute right-0 top-full z-50 mt-2 w-45 overflow-hidden
                 rounded-xl border border-(--hairline) bg-(--bg-surface) p-1.5
                 shadow-[0_18px_50px_-12px_rgba(0,0,0,0.28)]
               "
@@ -533,7 +533,7 @@ export default function NotificationsFeed({
                     aria-checked={checked}
                     onClick={() => toggleCategory(option.label)}
                     className={cn(
-                      "flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[12.5px] transition-colors duration-150 hover:bg-(--tint-4) hover:text-(--text-primary)",
+                      "flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[11px] transition-colors duration-150 hover:bg-(--tint-4) hover:text-(--text-primary)",
                       checked ? "text-(--text-primary)" : "text-(--text-soft)",
                     )}
                   >
@@ -576,7 +576,7 @@ export default function NotificationsFeed({
                   <button
                     type="button"
                     onClick={clearFilters}
-                    className="flex w-full cursor-pointer items-center rounded-lg px-2.5 py-2 text-left text-[12.5px] text-(--text-secondary) transition-colors duration-150 hover:bg-(--tint-4) hover:text-(--text-primary)"
+                    className="flex w-full cursor-pointer items-center rounded-lg px-2.5 py-2 text-left text-[11px] text-(--text-secondary) transition-colors duration-150 hover:bg-(--tint-4) hover:text-(--text-primary)"
                   >
                     Clear filters
                   </button>
@@ -611,7 +611,7 @@ export default function NotificationsFeed({
               <HugeiconsIcon icon={Message01Icon} size={17} strokeWidth={1.6} />
             </span>
 
-            <p className="mt-3 text-[12.5px] text-(--text-secondary)">
+            <p className="mt-3 text-[11px] text-(--text-secondary)">
               {emptyLine}
             </p>
           </div>
@@ -642,7 +642,7 @@ export default function NotificationsFeed({
                     <span
                       aria-hidden="true"
                       className={cn(
-                        "ml-0.5 size-1 shrink-0 rounded-full",
+                        "size-1 shrink-0 rounded-full",
                         item.isRead ? "bg-transparent" : "bg-(--unread-dot)",
                       )}
                     />
@@ -672,7 +672,7 @@ export default function NotificationsFeed({
                     </span>
                   </button>
 
-                  <div className="absolute right-1.5 top-2">
+                  <div className="absolute right-1.5 top-2 mr-0.5">
                     <NotificationRowMenu
                       isRead={item.isRead}
                       isMuted={isTypeMuted(item.type)}

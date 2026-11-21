@@ -13,7 +13,7 @@ import {
   FilterMailRemoveIcon,
   MoreHorizontalIcon,
   BellRingIcon,
-  CheckmarkBadge03Icon,
+  Tick02Icon,
 } from "@hugeicons/core-free-icons";
 
 import { cn } from "@/utils/cn";
@@ -252,7 +252,17 @@ export function NotificationRowMenu({
               /* Hidden until measured, so it cannot flash in the wrong place. */
               visibility: position ? "visible" : "hidden",
             }}
-            className="fixed z-50 overflow-hidden rounded-xl border border-(--hairline) bg-(--bg-surface) p-1.5 shadow-[0_18px_50px_-12px_rgba(0,0,0,0.28)]"
+            /*
+             * `z-[95]`: above the desktop panel (`z-90`) and below the modals and
+             * the search palette (`z-100`).
+             *
+             * It was `z-50`, which is above the phone sheet (`z-40`) — so the menu
+             * worked there and silently painted *behind* the desktop panel, where
+             * clicking the trigger only changed its own background. The panel is
+             * itself a portal, so the two are siblings in the root stacking
+             * context and the higher number wins.
+             */
+            className="fixed z-95 overflow-hidden rounded-xl border border-(--hairline) bg-(--bg-surface) p-1.5 shadow-[0_18px_50px_-12px_rgba(0,0,0,0.28)]"
           >
             <button
               type="button"
@@ -292,7 +302,7 @@ export function NotificationRowMenu({
               className={ITEM}
             >
               <HugeiconsIcon
-                icon={CheckmarkBadge03Icon}
+                icon={Tick02Icon}
                 size={15}
                 strokeWidth={1.6}
                 className="shrink-0 text-(--text-secondary)"
