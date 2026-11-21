@@ -328,12 +328,19 @@ components:
     width: 256px
     borderColor: '{colors.hairline}'
   toast:
-    backgroundColor: '{colors.bg-root}'
+    backgroundColor: '{colors.bg-elevated}'
     textColor: '{colors.text-primary}'
-    typography: '{typography.body-sm}'
+    typography: '{typography.body-md}'
     rounded: '{rounded.xl}'
-    padding: 12px 16px
-    borderColor: '{colors.hairline-strong}'
+    padding: 16px
+    borderColor: '{colors.hairline}'
+  toast-auth:
+    backgroundColor: '{colors.auth}'
+    textColor: '{colors.auth-ink}'
+    typography: '{typography.body-md}'
+    rounded: '{rounded.xl}'
+    padding: 16px
+    borderColor: '{colors.auth}'
   skeleton:
     backgroundColor: '{colors.tint-6}'
     rounded: '{rounded.md}'
@@ -409,13 +416,45 @@ The recipes in the front matter are the contract. A few rules sit behind them.
 
 **Every icon-only control carries `aria-label` plus a tooltip with the same string.** The tooltip is not decoration; it is the label made visible.
 
-**Floating surfaces are the page colour.** Popovers, menus, dialogs and toasts sit on `--bg-root` and are separated by a hairline. `--bg-elevated` exists but is not used for them: a grey panel on a black page reads as a different material rather than a layer.
+**Floating surfaces are the page colour.** Popovers, menus and dialogs sit on `--bg-root` and are separated by a hairline. `--bg-elevated` exists but is not used for them: a grey panel on a black page reads as a different material rather than a layer.
+
+**Toasts are the exception, and it is deliberate.** A toast arrives over content that is already in motion, so it has to read as a layer rather than as another page: `--bg-elevated` with five percent of the ink as a gradient across the top edge, and a hairline that is one step stronger than the card's. The gradient is what separates a panel from a slab at this size.
 
 **Fields do not glow.** Focus firms the hairline from `--hairline` to `--hairline-strong` and nothing else — no orange halo, no ring. A label sits above at `text-sm font-medium`, a hint below at 11px muted, and an error replaces the hint in `--danger` with a `--danger` edge on the field.
 
 **The active segment is the only filled control.** In a segmented control the selected option takes `--accent-fill` with `--accent` text — dark brown with cream, never orange.
 
 **Chips keep their colour as text.** A label chip is a neutral `--tint-4` fill, a hairline edge, mono uppercase text. The card's identity colour is the text colour, not the background.
+
+## Toasts
+
+A toast is the one surface with variants, because it carries a different job
+depending on why it appeared. `components/toaster/Toaster.tsx` takes them as
+props; the tables that back them live beside it in `toasterVariants.ts`.
+
+**Shape** — `default` `{rounded.xl}` (the card radius), `sharp` 4px, `soft` 16px,
+`pill` full, `card` 20px, `glass` 16px plus a blur. Only `glass` blurs.
+
+**Size** — the type scale inside the bubble: `sm` 12/11px, `md` 13/12px (the
+default), `lg` 15/13px. The description is `--text-muted` at every size; a
+description that competes with the title is a paragraph, and a toast is not a
+place for one.
+
+**Tone** — the surface. `auto` is the elevated panel above. `brand`, `success`
+and `danger` fill with their token and take `--auth-ink` for text, which is why
+that ink exists as a token rather than as white in a class. `neutral` is the flat
+elevated surface with no gradient.
+
+**The auth surface** is the one tone with a name of its own: `--auth`, a blue
+that belongs to neither the accent nor the status set. It marks a moment rather
+than a result — signing in, finishing onboarding — so it fills the whole toast
+and dismisses faster than a success does.
+
+**The dismiss button sits inside the bubble.** Sonner anchors it to the outside
+corner by default, floating on the page; here it is a flex child, so it is
+centred for any content height, and ordered last so it stays at the right edge.
+24px, `{rounded.md}`, no fill, no border: the glyph is the affordance, and the
+hover tint is the only feedback.
 
 ## Accessibility
 
