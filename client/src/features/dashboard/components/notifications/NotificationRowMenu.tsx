@@ -9,11 +9,11 @@ import { createPortal } from "react-dom";
 
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
-  BellDotIcon,
   BellOffIcon,
   FilterMailRemoveIcon,
   MoreHorizontalIcon,
-  NotificationBlock01Icon,
+  BellRingIcon,
+  CheckmarkBadge03Icon,
 } from "@hugeicons/core-free-icons";
 
 import { cn } from "@/utils/cn";
@@ -29,9 +29,9 @@ interface NotificationRowMenuProps {
 }
 
 const ITEM =
-  "flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[12.5px] text-(--text-soft) transition-colors duration-150 hover:bg-(--tint-4) hover:text-(--text-primary) disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-(--text-soft)";
+  "flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[11px] text-(--text-soft) transition-colors duration-150 hover:bg-(--tint-4) hover:text-(--text-primary) disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-(--text-soft)";
 
-const MENU_WIDTH = 168;
+const MENU_WIDTH = 135;
 const ITEM_COUNT = 3;
 
 /**
@@ -135,11 +135,10 @@ export function NotificationRowMenu({
     /*
      * Reposition on scroll, do not close.
      *
-     * The first version closed on any scroll event — including the one the
-     * browser fires when the first item is focused a frame after opening. That
-     * made the menu appear and vanish in the same breath, which read as "the
-     * button does nothing". A fixed menu has to be re-anchored as the row moves;
-     * closing it was the wrong instinct.
+     * Closing on any scroll event — including the one the browser fires when the
+     * first item is focused a frame after opening — made the menu appear and
+     * vanish in the same breath, which reads as "the button does nothing". A
+     * fixed menu has to be re-anchored as its row moves.
      */
     let frame = 0;
 
@@ -263,7 +262,7 @@ export function NotificationRowMenu({
             >
               <HugeiconsIcon
                 icon={FilterMailRemoveIcon}
-                size={16}
+                size={15}
                 strokeWidth={1.6}
                 className="shrink-0 text-(--text-secondary)"
               />
@@ -277,8 +276,8 @@ export function NotificationRowMenu({
               className={ITEM}
             >
               <HugeiconsIcon
-                icon={isMuted ? BellOffIcon : NotificationBlock01Icon}
-                size={16}
+                icon={isMuted ? BellRingIcon : BellOffIcon}
+                size={15}
                 strokeWidth={1.6}
                 className="shrink-0 text-(--text-secondary)"
               />
@@ -293,8 +292,8 @@ export function NotificationRowMenu({
               className={ITEM}
             >
               <HugeiconsIcon
-                icon={BellDotIcon}
-                size={16}
+                icon={CheckmarkBadge03Icon}
+                size={15}
                 strokeWidth={1.6}
                 className="shrink-0 text-(--text-secondary)"
               />

@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-import { useQuery } from "@tanstack/react-query";
-
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   BellMinusIcon,
@@ -17,7 +15,7 @@ import KanbanIcon from "@/assets/KanbanIcon";
 import { Tooltip } from "@/components/Tooltips/ToolTip";
 import { cn } from "@/utils/cn";
 
-import { notificationKeys, notificationsApi } from "@/features/dashboard";
+import { useNotifications } from "@/features/dashboard/hooks/useNotifications";
 import { useSearchStore } from "@/features/search";
 
 interface SidebarMobileHeaderProps {
@@ -56,13 +54,9 @@ export default function SidebarMobileHeader({
 
   const [scrolled, setScrolled] = useState(false);
 
-  /* Same key as the desktop navbar, so the badge is one cached request. */
-  const { data } = useQuery({
-    queryKey: notificationKeys.all,
-    queryFn: () => notificationsApi.listNotifications(),
-    staleTime: 60_000,
-    refetchOnWindowFocus: false,
-  });
+  /* Same key as the desktop navbar, so the badge is one cached request — and the
+     same poll, so both badges age at the same rate. */
+  const { data } = useNotifications();
 
   const unreadCount = data?.unreadCount ?? 0;
 

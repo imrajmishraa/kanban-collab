@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
@@ -26,6 +26,7 @@ import { cn } from "@/utils/cn";
 import { relativeTime } from "@/lib/relativeTime";
 
 import { notificationKeys, notificationsApi } from "@/features/dashboard";
+import { useNotifications } from "@/features/dashboard/hooks/useNotifications";
 import { useWorkspaces } from "@/hooks/useWorkspaces";
 import { toastError } from "@/lib/toast";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
@@ -130,10 +131,10 @@ export default function NotificationsFeed({
   const [filterOpen, setFilterOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
 
-  const { data, isLoading, isError } = useQuery({
-    queryKey: notificationKeys.all,
-    queryFn: () => notificationsApi.listNotifications(),
-  });
+  /* Five seconds, not the navbar's twenty: the panel is only mounted while it is
+     open, and someone watching the inbox expects a notification that arrives now
+     to appear now. */
+  const { data, isLoading, isError } = useNotifications({ intervalMs: 5_000 });
 
   const refresh = () =>
     void queryClient.invalidateQueries({ queryKey: notificationKeys.all });
