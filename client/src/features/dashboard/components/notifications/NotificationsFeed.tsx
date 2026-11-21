@@ -23,6 +23,7 @@ import {
 } from "@hugeicons/core-free-icons";
 
 import { cn } from "@/utils/cn";
+import { relativeTime } from "@/lib/relativeTime";
 
 import { notificationKeys, notificationsApi } from "@/features/dashboard";
 import { useWorkspaces } from "@/hooks/useWorkspaces";
@@ -32,6 +33,11 @@ import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import type { AppNotification } from "@/types/notification";
 
 import { NotificationRowMenu } from "./NotificationRowMenu";
+import { notificationPreferencesApi } from "@/features/settings/api/notificationPreferencesApi";
+import {
+  notificationPreferenceKeys,
+  useNotificationPreferences,
+} from "@/features/settings/hooks/useNotificationPreferences";
 import { WorkspaceAvatarTile } from "./WorkspaceAvatarTile";
 
 const TABS = ["Inbox", "Unread", "Comments"] as const;
@@ -83,19 +89,6 @@ function inCategory(
     default:
       return true;
   }
-}
-
-function relativeTime(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  const minutes = Math.round(diff / 60_000);
-
-  if (minutes < 1) return "just now";
-  if (minutes < 60) return `${minutes}m`;
-
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours}h`;
-
-  return `${Math.round(hours / 24)}d`;
 }
 
 interface NotificationsFeedProps {
@@ -169,12 +162,35 @@ export default function NotificationsFeed({
     onError: (error) => toastError(error),
   });
 
-  const mute = useMutation({
-    mutationFn: (type: AppNotification["type"]) =>
-      notificationsApi.muteType(type),
-    onSuccess: refresh,
+  /*
+   * Mute and unmute are the same endpoint with a different value, so the menu can
+   * offer whichever one applies. The preferences query is already cached by the
+   * settings screen; reading it here costs no extra request when it is warm.
+   */
+  const { data: preferences } = useNotificationPreferences();
+
+  const setMuted = useMutation({
+    mutationFn: ({
+      type,
+      muted,
+    }: {
+      type: AppNotification["type"];
+      muted: boolean;
+    }) =>
+      notificationPreferencesApi.updatePreferences({
+        preferences: { [type]: { inApp: !muted } },
+      }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: notificationPreferenceKeys.all,
+      });
+      refresh();
+    },
     onError: (error) => toastError(error),
   });
+
+  const isTypeMuted = (type: AppNotification["type"]): boolean =>
+    preferences?.preferences?.[type]?.inApp === false;
 
   const needle = query.trim().toLowerCase();
 
@@ -612,19 +628,21 @@ export default function NotificationsFeed({
                        it, so the row never runs underneath the button. */
                     className="flex w-full cursor-pointer items-start gap-2.5 px-3.5 py-3 pr-9 text-left transition-colors duration-200 hover:bg-(--tint-4)"
                   >
-                    <WorkspaceAvatarTile
-                      name={workspace?.name ?? null}
-                      imageUrl={workspace?.avatarUrl ?? null}
-                    />
-
-                    {/* Always rendered, transparent once read: the title stays
-                        on one left edge down the whole list. */}
+                    {/* First in the row, before the avatar: unread is the
+                        thing being scanned for, so it takes the left edge.
+                        Always rendered, transparent once read, so the avatars
+                        stay on one column down the whole list. */}
                     <span
                       aria-hidden="true"
                       className={cn(
-                        "mt-2 size-1.5 shrink-0 rounded-full",
+                        "mt-3 size-1.5 shrink-0 rounded-full",
                         item.isRead ? "bg-transparent" : "bg-(--unread-dot)",
                       )}
+                    />
+
+                    <WorkspaceAvatarTile
+                      name={workspace?.name ?? null}
+                      imageUrl={workspace?.avatarUrl ?? null}
                     />
 
                     <span className="min-w-0 flex-1">
@@ -650,8 +668,14 @@ export default function NotificationsFeed({
                   <div className="absolute right-1.5 top-2">
                     <NotificationRowMenu
                       isRead={item.isRead}
+                      isMuted={isTypeMuted(item.type)}
                       onClear={() => clearOne.mutate(item.id)}
-                      onMute={() => mute.mutate(item.type)}
+                      onToggleMute={() =>
+                        setMuted.mutate({
+                          type: item.type,
+                          muted: !isTypeMuted(item.type),
+                        })
+                      }
                       onMarkRead={() => markRead.mutate(item.id)}
                     />
                   </div>
