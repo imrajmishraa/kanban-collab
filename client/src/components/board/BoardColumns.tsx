@@ -25,6 +25,8 @@ interface BoardColumnsProps {
   onEditColumn: (columnId: string) => void;
   onDeleteColumn: (columnId: string) => void;
   onClearColumn: (columnId: string) => void;
+  /** Mirrors the server's manage tier — members keep writes, not deletes. */
+  canDeleteColumn?: boolean;
 }
 
 export default function BoardColumns({
@@ -46,6 +48,7 @@ export default function BoardColumns({
   onEditColumn,
   onDeleteColumn,
   onClearColumn,
+  canDeleteColumn = true,
 }: BoardColumnsProps) {
   return (
     <div className="h-full overflow-x-auto overflow-y-hidden">
@@ -72,6 +75,7 @@ export default function BoardColumns({
             onEditColumn={onEditColumn}
             onDeleteColumn={onDeleteColumn}
             onClearColumn={onClearColumn}
+            canDeleteColumn={canDeleteColumn}
           />
         ))}
 

@@ -33,6 +33,8 @@ interface BoardColumnProps {
   onDropColumn: (columnId: string, index: number) => void;
   onEditColumn: (columnId: string) => void;
   onDeleteColumn: (columnId: string) => void;
+  /** False for roles that may write but not destroy structure (members). */
+  canDeleteColumn?: boolean;
   onClearColumn: (columnId: string) => void;
 }
 
@@ -55,6 +57,7 @@ export default function BoardColumn({
   onDropColumn,
   onEditColumn,
   onDeleteColumn,
+  canDeleteColumn = true,
   onClearColumn,
 }: BoardColumnProps) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -174,12 +177,13 @@ export default function BoardColumn({
               {menuItem("Clear cards", Delete02Icon, () =>
                 onClearColumn(column.id),
               )}
-              {menuItem(
-                "Delete column",
-                Delete02Icon,
-                () => onDeleteColumn(column.id),
-                true,
-              )}
+              {canDeleteColumn &&
+                menuItem(
+                  "Delete column",
+                  Delete02Icon,
+                  () => onDeleteColumn(column.id),
+                  true,
+                )}
             </div>
           )}
         </div>
