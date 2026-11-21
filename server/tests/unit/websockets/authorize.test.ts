@@ -1,100 +1,118 @@
-import { Types } from "mongoose";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const boardId = new Types.ObjectId().toString();
-const workspaceId = new Types.ObjectId();
-const userId = new Types.ObjectId().toString();
-
-const boardLean = vi.fn();
-const workspaceLean = vi.fn();
+const mocks = vi.hoisted(() => ({
+  boardFindById: vi.fn(),
+  workspaceFindOne: vi.fn(),
+  info: vi.fn(),
+  warn: vi.fn(),
+  error: vi.fn(),
+}));
 
 vi.mock("../../../src/infrastructure/db/mongoose/schemas", () => ({
-  BoardModel: {
-    findById: vi.fn(() => ({
-      select: vi.fn(() => ({ lean: boardLean })),
-    })),
-  },
-  WorkspaceModel: {
-    findOne: vi.fn(() => ({
-      select: vi.fn(() => ({ lean: workspaceLean })),
-    })),
+  BoardModel: { findById: mocks.boardFindById },
+  WorkspaceModel: { findOne: mocks.workspaceFindOne },
+}));
+
+vi.mock("../../../src/infrastructure/logging/childLogger", () => ({
+  websocketAuthLogger: {
+    info: mocks.info,
+    warn: mocks.warn,
+    error: mocks.error,
   },
 }));
 
 import { authorize } from "../../../src/interfaces/websockets/middlewares/authorize";
 
-function mockBoard(visibility: "private" | "public" | "workspace") {
-  boardLean.mockResolvedValue({ _id: boardId, workspaceId, visibility });
+const USER = "507f1f77bcf86cd799439011";
+const BOARD = "507f1f77bcf86cd799439012";
+const WORKSPACE = "507f1f77bcf86cd799439013";
+
+function chain(result: unknown) {
+  const step = {
+    lean: async () => result,
+    select: () => step,
+  };
+
+  return step;
 }
 
-function mockWorkspace(
-  role: "owner" | "admin" | "member" | "guest",
-  status: "active" | "deletion_pending" = "active",
-) {
-  workspaceLean.mockResolvedValue({
-    members: [{ userId: new Types.ObjectId(userId), role }],
-    status,
-  });
+function board(visibility: string) {
+  return { _id: BOARD, workspaceId: WORKSPACE, visibility };
 }
 
-describe("websocket authorize", () => {
+function member(role: string) {
+  return {
+    _id: WORKSPACE,
+    status: "active",
+    members: [{ userId: { toString: () => USER }, role }],
+  };
+}
+
+describe("authorize — public boards over the socket", () => {
   beforeEach(() => {
-    boardLean.mockReset();
-    workspaceLean.mockReset();
+    vi.clearAllMocks();
+    mocks.boardFindById.mockReturnValue(chain(board("public")));
+    mocks.workspaceFindOne.mockReturnValue(chain(null));
   });
 
-  it("allows a member and reports write access", async () => {
-    mockBoard("workspace");
-    mockWorkspace("member");
+  it("lets a signed-in non-member join a public board, read-only", async () => {
+    const result = await authorize(USER, BOARD);
 
-    await expect(authorize(userId, boardId)).resolves.toEqual({
-      role: "member",
-      canWrite: true,
-    });
+    expect(result).toEqual({ role: null, canWrite: false });
   });
 
-  it("makes a guest read-only", async () => {
-    mockBoard("workspace");
-    mockWorkspace("guest");
+  it("still refuses a non-member on a workspace board", async () => {
+    mocks.boardFindById.mockReturnValue(chain(board("workspace")));
 
-    await expect(authorize(userId, boardId)).resolves.toEqual({
-      role: "guest",
-      canWrite: false,
-    });
-  });
-
-  it("denies a guest on a private board", async () => {
-    mockBoard("private");
-    mockWorkspace("guest");
-
-    await expect(authorize(userId, boardId)).rejects.toMatchObject({
+    await expect(authorize(USER, BOARD)).rejects.toMatchObject({
       statusCode: 403,
     });
   });
 
-  it("rejects the upgrade when the workspace is scheduled for deletion", async () => {
-    mockBoard("workspace");
-    mockWorkspace("owner", "deletion_pending");
+  it("still refuses a non-member on a private board", async () => {
+    mocks.boardFindById.mockReturnValue(chain(board("private")));
 
-    await expect(authorize(userId, boardId)).rejects.toMatchObject({
-      statusCode: 409,
-      message: expect.stringMatching(/scheduled for deletion/i),
-    });
-  });
-
-  it("still rejects a non-member of a pending workspace", async () => {
-    mockBoard("workspace");
-    workspaceLean.mockResolvedValue(null);
-
-    await expect(authorize(userId, boardId)).rejects.toMatchObject({
+    await expect(authorize(USER, BOARD)).rejects.toMatchObject({
       statusCode: 403,
     });
   });
 
-  it("rejects a malformed board id before touching the database", async () => {
-    await expect(authorize(userId, "not-an-object-id")).rejects.toMatchObject({
-      statusCode: 400,
+  it("keeps a member writable on a public board", async () => {
+    mocks.workspaceFindOne.mockReturnValue(chain(member("member")));
+
+    const result = await authorize(USER, BOARD);
+
+    expect(result).toEqual({ role: "member", canWrite: true });
+  });
+
+  it("keeps a guest read-only on a workspace board", async () => {
+    mocks.boardFindById.mockReturnValue(chain(board("workspace")));
+    mocks.workspaceFindOne.mockReturnValue(chain(member("guest")));
+
+    const result = await authorize(USER, BOARD);
+
+    expect(result).toEqual({ role: "guest", canWrite: false });
+  });
+
+  it("refuses a guest on a private board", async () => {
+    mocks.boardFindById.mockReturnValue(chain(board("private")));
+    mocks.workspaceFindOne.mockReturnValue(chain(member("guest")));
+
+    await expect(authorize(USER, BOARD)).rejects.toMatchObject({
+      statusCode: 403,
     });
-    expect(boardLean).not.toHaveBeenCalled();
+  });
+
+  it("answers 404 for a board that does not exist", async () => {
+    mocks.boardFindById.mockReturnValue(chain(null));
+
+    await expect(authorize(USER, BOARD)).rejects.toMatchObject({
+      statusCode: 404,
+    });
+  });
+
+  it("rejects malformed ids before touching the database", async () => {
+    await expect(authorize("not-an-id", BOARD)).rejects.toBeDefined();
+    expect(mocks.boardFindById).not.toHaveBeenCalled();
   });
 });

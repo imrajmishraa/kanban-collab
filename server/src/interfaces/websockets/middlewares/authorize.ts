@@ -23,8 +23,11 @@ import {
 import { invalidObjectIdError } from "../../../shared/errors/handler/generic";
 
 export interface BoardAuthorization {
-  /** The caller's role in the board's workspace. */
-  role: string;
+  /**
+   * The caller's role in the board's workspace, or `null` for someone who is
+   * not in it at all and is reading a public board.
+   */
+  role: string | null;
   /** False for read-only roles (guests) — they must not mutate the document. */
   canWrite: boolean;
 }
@@ -35,7 +38,8 @@ export interface BoardAuthorization {
  * Enforces, in order:
  *   1. The ids are valid ObjectIds.
  *   2. The board exists.
- *   3. The user is a member of the board's workspace.
+ *   3. The user is a member of the board's workspace, **or** the board is
+ *      `public` — in which case the connection is read-only.
  *   4. The workspace is not scheduled for deletion (it would be read-only).
  *   5. The board's visibility allows this role — a `private` board is not
  *      exposed to `guest` members.
@@ -66,7 +70,22 @@ export async function authorize(
     .select("members.userId members.role status")
     .lean();
 
+  /*
+   * Not a member. That used to be the end of it, which meant the public link
+   * opened a page the socket then refused — the reader got a snapshot and no
+   * cursors, no card moves, no sign that anyone else was there.
+   *
+   * A public board is now readable over the socket too, read-only: the caller
+   * still needs an account (`authenticate` runs first), they just do not need to
+   * be in the workspace. Anonymous viewers stay on the HTTP read, because the
+   * socket's presence list is keyed by user id and inventing one would put
+   * fictional people in front of real ones.
+   */
   if (!workspace) {
+    if (canReadBoard(board.visibility, null)) {
+      return { role: null, canWrite: false };
+    }
+
     throw notWorkspaceMemberError();
   }
 
