@@ -2,6 +2,8 @@ import { useRef, useState } from "react";
 
 import { cn } from "@/utils/cn";
 
+import { Tooltip } from "@/components/Tooltips/ToolTip";
+
 import { RAIL, clampWidth, snapZone } from "@/features/dashboard";
 
 interface RailResizeHandleProps {
@@ -12,6 +14,8 @@ interface RailResizeHandleProps {
   onWidth: (width: number) => void;
   /** The drag went below MID: snap to the icon rail. */
   onCollapse: () => void;
+  /** Double-click while collapsed: come back out at the default width. */
+  onExpand: () => void;
   /** Pulling past the minimum means "get this out of my way". */
   onHide: () => void;
   /** Dragging from hover/collapsed promotes the rail to open. */
@@ -34,6 +38,7 @@ export default function RailResizeHandle({
   width,
   onWidth,
   onCollapse,
+  onExpand,
   onHide,
   onResizeStart,
   onResizeEnd,
@@ -91,6 +96,11 @@ export default function RailResizeHandle({
     }
 
     setBelowMid(false);
+
+    /* Coming out of collapsed or hover: the first move into the expanded range
+       is what promotes the rail, so the drag and the mode change together. */
+    if (renderedWidth <= RAIL.MIN) onExpand();
+
     onWidth(clampWidth(raw));
   };
 
@@ -122,38 +132,65 @@ export default function RailResizeHandle({
     onWidth(clampWidth(next));
   };
 
+  /* Collapsed, the divider is the only way back out by pointer — so it says so,
+     and it opens on a double-click. A single click does nothing: it is far too
+     easy to hit the border while aiming at the rail. */
+  const isCollapsed = renderedWidth <= RAIL.MIN;
+
   return (
-    <button
-      type="button"
-      role="separator"
-      aria-orientation="vertical"
-      aria-controls="app-rail"
-      aria-label="Resize sidebar"
-      aria-valuemin={RAIL.MID}
-      aria-valuemax={RAIL.MAX}
-      aria-valuenow={width}
-      aria-valuetext={`${width} pixels`}
-      tabIndex={0}
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={endDrag}
-      onPointerCancel={endDrag}
-      /* Belt and braces: a click can be synthesised even when the pointer moved. */
-      onClick={(event) => event.stopPropagation()}
-      onDoubleClick={() => onWidth(RAIL.DEFAULT)}
-      onKeyDown={onKeyDown}
-      /* Inline, not a utility: `base.css` sets `cursor: pointer` on `button`
-         unlayered, and unlayered CSS beats every Tailwind `@layer utilities`
-         class regardless of specificity. Without this the divider shows a hand. */
-      style={{ cursor: "col-resize" }}
-      className={cn(
-        "absolute inset-y-0 right-0 z-50 w-4 translate-x-1/2",
-        "cursor-col-resize touch-none border-0 bg-transparent p-0",
-        "after:absolute after:inset-y-0 after:left-1/2 after:w-0.5 after:-translate-x-1/2",
-        "after:bg-transparent after:transition-colors",
-        "hover:after:bg-(--link) focus-visible:after:bg-(--link)",
-        (atLimit || belowMid) && "after:bg-(--warning)",
-      )}
-    />
+    /* The positioning lives on the tooltip's anchor, and the button fills it, so
+       the bubble is anchored to the divider itself. `disabled` while dragging:
+       a tooltip appearing mid-drag is noise. */
+    <Tooltip
+      label={
+        isCollapsed
+          ? "Double-click to expand"
+          : "Drag to resize"
+      }
+      side="right"
+      shape="solid"
+      size="md"
+      gap={8}
+      disabled={dragging}
+      className="absolute inset-y-0 right-0 z-50 w-4 translate-x-1/2"
+    >
+      <button
+        type="button"
+        role="separator"
+        aria-orientation="vertical"
+        aria-controls="app-rail"
+        aria-label={isCollapsed ? "Expand sidebar" : "Resize sidebar"}
+        aria-valuemin={RAIL.MID}
+        aria-valuemax={RAIL.MAX}
+        aria-valuenow={width}
+        aria-valuetext={`${width} pixels`}
+        tabIndex={0}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+        /* Belt and braces: a click can be synthesised even when the pointer
+           moved, and it must not reach the rail's own click-to-expand. */
+        onClick={(event) => event.stopPropagation()}
+        onDoubleClick={() => {
+          /* Collapsed → come back out at the default width. Expanded → reset to
+             it. A single click deliberately does nothing. */
+          if (isCollapsed) onExpand();
+          onWidth(RAIL.DEFAULT);
+        }}
+        onKeyDown={onKeyDown}
+        /* Inline, not a utility: `base.css` sets `cursor: pointer` on `button`
+           unlayered, and unlayered CSS beats every Tailwind `@layer utilities`
+           class regardless of specificity. Without this the divider shows a hand. */
+        style={{ cursor: "col-resize" }}
+        className={cn(
+          "h-full w-full cursor-col-resize touch-none border-0 bg-transparent p-0",
+          "after:absolute after:inset-y-0 after:left-1/2 after:w-0.5 after:-translate-x-1/2",
+          "after:bg-transparent after:transition-colors",
+          "hover:after:bg-(--link) focus-visible:after:bg-(--link)",
+          (atLimit || belowMid) && "after:bg-(--warning)",
+        )}
+      />
+    </Tooltip>
   );
 }

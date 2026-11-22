@@ -216,14 +216,14 @@ export default function DashboardSidebar({ onToggle }: DashboardSidebarProps) {
             onWidth={setWidth}
             /* Below MID the drag snaps to the icon rail instead of sliding. */
             onCollapse={() => useSidebarState.getState().collapse()}
+            /* Double-click while collapsed: back out at the default width. */
+            onExpand={() => useSidebarState.getState().expand()}
             onHide={hide}
-            onResizeStart={(fromWidth) => {
-              /* Dragging out of hover or collapsed means the reader wants the
-                 rail open at what they can see. */
-              setHovering(false);
-              setWidth(fromWidth);
-              if (mode !== "open") useSidebarState.getState().expand();
-            }}
+            /* Touching the divider must change nothing: a press that never
+               becomes a drag has to be a no-op, or the rail opens the moment you
+               aim at the border. The rail is promoted only once the pointer
+               actually moves into the expanded range. */
+            onResizeStart={() => setHovering(false)}
             onResizeEnd={() => setHovering(false)}
           />
         )}
