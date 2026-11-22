@@ -16,6 +16,12 @@ interface BoardCardItemProps {
   onDragStart: (card: BoardCard, event: DragEvent<HTMLElement>) => void;
   onDragEnd: () => void;
   onDragOverCard: (columnId: string, index: number) => void;
+  /**
+   * Move the card one column left or right. Dragging never fires from a finger,
+   * and there was no keyboard path at all — so the card's column could not be
+   * changed on a phone, or by anybody who does not use a mouse.
+   */
+  onKeyboardMove?: (card: BoardCard, direction: "left" | "right") => void;
 }
 
 export default function BoardCardItem({
@@ -26,6 +32,7 @@ export default function BoardCardItem({
   onDragStart,
   onDragEnd,
   onDragOverCard,
+  onKeyboardMove,
 }: BoardCardItemProps) {
   const totalChecks = card.checklists.length;
   const doneChecks = card.checklists.filter((c) => c.isCompleted).length;
@@ -45,6 +52,24 @@ export default function BoardCardItem({
         onDragOverCard(card.columnId, card.orderIndex);
       }}
       onClick={() => onOpen(card)}
+      /* Reachable and operable without a mouse: Enter or Space opens the card,
+         Alt+Arrow moves it to the neighbouring column. */
+      tabIndex={0}
+      role="button"
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onOpen(card);
+          return;
+        }
+
+        if (!event.altKey || !onKeyboardMove) return;
+
+        if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+          event.preventDefault();
+          onKeyboardMove(card, event.key === "ArrowLeft" ? "left" : "right");
+        }
+      }}
       className={[
         "group/card cursor-pointer rounded-lg border border-(--hairline) bg-(--tint-3) p-3 text-left",
         "transition-colors duration-200 hover:border-(--hairline-strong) hover:bg-(--tint-6)",

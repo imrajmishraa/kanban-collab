@@ -21,6 +21,8 @@ interface BoardColumnsProps {
   onDragEndCard: () => void;
   onDragOverCard: (columnId: string, index: number) => void;
   onDragOverColumn: (columnId: string, count: number) => void;
+  /** Alt+Arrow on a focused card: move it to the neighbouring column. */
+  onKeyboardMove?: (card: BoardCard, direction: "left" | "right") => void;
   onDropColumn: (columnId: string, index: number) => void;
   onEditColumn: (columnId: string) => void;
   onDeleteColumn: (columnId: string) => void;
@@ -44,6 +46,7 @@ export default function BoardColumns({
   onDragEndCard,
   onDragOverCard,
   onDragOverColumn,
+  onKeyboardMove,
   onDropColumn,
   onEditColumn,
   onDeleteColumn,
@@ -75,6 +78,7 @@ export default function BoardColumns({
             onEditColumn={onEditColumn}
             onDeleteColumn={onDeleteColumn}
             onClearColumn={onClearColumn}
+            onKeyboardMove={onKeyboardMove}
             canDeleteColumn={canDeleteColumn}
           />
         ))}

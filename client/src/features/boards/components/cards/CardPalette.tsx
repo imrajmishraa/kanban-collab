@@ -30,6 +30,11 @@ interface CardPaletteProps {
   onDelete?: (cardId: string) => void;
   /** Hides the card without deleting it; reversible from "Archived cards". */
   onArchive?: (cardId: string) => void;
+  /**
+   * Move the open card to another column. The only other way is dragging, which
+   * no touch browser fires — without this a phone cannot change a column.
+   */
+  onMove?: (cardId: string, columnId: string) => void;
   onClose: () => void;
 }
 
@@ -53,6 +58,7 @@ export default function CardPalette({
   onSave,
   onDelete,
   onArchive,
+  onMove,
   onClose,
 }: CardPaletteProps) {
   const [query, setQuery] = useState("");
@@ -380,6 +386,30 @@ export default function CardPalette({
                       addLabel={addLabel}
                       toggleMember={toggleMember}
                     />
+
+                    {/* The only other way to change a card's column is dragging,
+                        which no touch browser fires. */}
+                    {onMove && (
+                      <label className="mt-3 flex items-center gap-2 border-t border-(--hairline) pt-3">
+                        <span className="text-[10px] uppercase tracking-wider text-(--text-soft)">
+                          Column
+                        </span>
+                        <select
+                          value={draft.columnId}
+                          onChange={(event) => {
+                            onMove(draft.id, event.target.value);
+                            onClose();
+                          }}
+                          className="min-h-9 flex-1 cursor-pointer rounded-lg border border-(--hairline) bg-(--tint-3) px-2 text-[12px] text-(--text-primary) outline-hidden focus-visible:ring-2 focus-visible:ring-(--brand)/40"
+                        >
+                          {columns.map((column) => (
+                            <option key={column.id} value={column.id}>
+                              {column.name}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    )}
                   </div>
                 </div>
 
