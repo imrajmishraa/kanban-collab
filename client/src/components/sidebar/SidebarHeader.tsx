@@ -2,7 +2,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import {
   MousePointerBanIcon,
   SidebarLeftIcon,
-  LayoutLeftIcon,
+  LayoutAlignLeftIcon,
 } from "@hugeicons/core-free-icons";
 import { useNavigate } from "react-router-dom";
 
@@ -39,8 +39,8 @@ const SidebarHeader = ({
     return (
       <div className="group/expand relative flex h-14 shrink-0 items-center justify-center">
         <Tooltip
-          label="Expand"
-          highlight={isMac ? "⌘B" : "Ctrl B"}
+          label="Hide"
+          highlight={isMac ? "⌘ ⇧ B" : "Ctrl ⇧ B"}
           side="right"
           shape="solid"
           size="md"
@@ -50,14 +50,13 @@ const SidebarHeader = ({
             type="button"
             onClick={(event) => {
               event.stopPropagation();
-              onToggle();
+              setMode("hidden");
             }}
-            aria-label="Expand sidebar"
+            aria-label="Hide sidebar"
             className="
-            group relative flex size-10 cursor-pointer
+            group relative flex size-8 cursor-pointer
             items-center justify-center
-            rounded-full
-            bg-(--tint-2)
+            hover:rounded-lg
             transition-colors
             hover:bg-(--bg-hover)
           "
@@ -72,7 +71,9 @@ const SidebarHeader = ({
             {/* Hover hint, hidden normally, visible on hover: a pointer when
                 the rail opens by hovering, an arrow when it opens on click. */}
             <HugeiconsIcon
-              icon={mode === "hover" ? MousePointerBanIcon : LayoutLeftIcon}
+              icon={
+                mode === "hover" ? MousePointerBanIcon : LayoutAlignLeftIcon
+              }
               size={16}
               strokeWidth={1.8}
               className="
@@ -122,7 +123,7 @@ const SidebarHeader = ({
               icon={
                 <HugeiconsIcon
                   icon={MousePointerBanIcon}
-                  size={15}
+                  size={18}
                   strokeWidth={1.6}
                 />
               }
@@ -141,7 +142,7 @@ const SidebarHeader = ({
               icon={
                 <HugeiconsIcon
                   icon={SidebarLeftIcon}
-                  size={15}
+                  size={18}
                   strokeWidth={1.6}
                 />
               }
@@ -169,7 +170,7 @@ function HeaderIconButton({
           e.stopPropagation();
           onClick();
         }}
-        className="flex size-8 cursor-pointer items-center justify-center rounded-full text-(--text-muted) transition-colors hover:bg-(--bg-hover) hover:text-(--text-primary)"
+        className="flex size-8 cursor-pointer items-center justify-center rounded-lg text-(--text-muted) transition-colors hover:bg-(--bg-hover) hover:text-(--text-primary)"
       >
         {icon}
       </button>

@@ -65,7 +65,7 @@ export default function RailResizeHandle({
     moving &&
     (belowMid ||
       width === RAIL.MIN ||
-      width === RAIL.MID ||
+      width === RAIL.MIN ||
       width === RAIL.DEFAULT ||
       width === RAIL.MAX);
 
@@ -193,7 +193,7 @@ export default function RailResizeHandle({
         : event.key === "ArrowLeft"
           ? width - step
           : event.key === "Home"
-            ? RAIL.MID
+            ? RAIL.MIN
             : event.key === "End"
               ? RAIL.MAX
               : null;
@@ -214,7 +214,7 @@ export default function RailResizeHandle({
        the bubble is anchored to the divider itself. `disabled` while dragging:
        a tooltip appearing mid-drag is noise. */
     <Tooltip
-      label={isCollapsed ? "Double-click to expand" : "Drag to resize"}
+      label={isCollapsed ? "Double-click to hide" : "Drag to resize"}
       side="right"
       shape="solid"
       size="md"
@@ -230,7 +230,7 @@ export default function RailResizeHandle({
         aria-orientation="vertical"
         aria-controls="app-rail"
         aria-label={isCollapsed ? "Expand sidebar" : "Resize sidebar"}
-        aria-valuemin={RAIL.MID}
+        aria-valuemin={RAIL.MIN}
         aria-valuemax={RAIL.MAX}
         aria-valuenow={width}
         aria-valuetext={`${width} pixels`}
@@ -243,10 +243,10 @@ export default function RailResizeHandle({
            moved, and it must not reach the rail's own click-to-expand. */
         onClick={(event) => event.stopPropagation()}
         onDoubleClick={() => {
-          /* Collapsed → come back out at the default width. Expanded → reset to
-             it. A single click deliberately does nothing. */
-          if (isCollapsed) onExpand();
-          onWidth(RAIL.DEFAULT);
+          /* Double-click puts the rail away — the same place a long pull-left
+             reaches, without having to drag for it. A single click deliberately
+             does nothing: the border is far too easy to hit by accident. */
+          onHide();
         }}
         onKeyDown={onKeyDown}
         /* Inline, not a utility: `base.css` sets `cursor: pointer` on `button`

@@ -1,7 +1,6 @@
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ArrowRight01Icon,
-  BellMinusIcon,
   BellRingIcon,
   DashboardSquare02Icon,
   Search01Icon,
@@ -30,9 +29,9 @@ export function NavbarSearchIcon() {
           type="button"
           onClick={() => openSearch()}
           aria-label="Search"
-          className="relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-(--hairline) bg-(--tint-4) text-(--text-secondary) transition-colors duration-200 hover:border-(--hairline-strong) hover:bg-(--tint-8) hover:text-(--text-primary)"
+          className="relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg hover:bg-(--bg-hover) text-(--text-primary)"
         >
-          <HugeiconsIcon icon={Search01Icon} size={16} strokeWidth={1.6} />
+          <HugeiconsIcon icon={Search01Icon} size={18} strokeWidth={1.6} />
         </button>
       </Tooltip>
     </div>
@@ -98,15 +97,15 @@ export function NotificationsButton({
               ? `Notifications (${unreadCount} unread)`
               : "Notifications"
         }
-        className="relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-(--hairline) bg-(--tint-4) text-(--text-secondary) transition-colors duration-200 hover:border-(--hairline-strong) hover:bg-(--tint-8) hover:text-(--text-primary)"
+        className={[
+          "relative flex h-9 w-9 cursor-pointer items-center justify-center",
+          "rounded-lg hover:bg-(--bg-hover) hover:text-(--text-primary)",
+          isOpen ? "bg-(--tint-6)" : null,
+        ].join(" ")}
       >
         {/* Open, the bell becomes a bell-minus: the panel is up, so the
             button's job is now to put it away. */}
-        <HugeiconsIcon
-          icon={isOpen ? BellMinusIcon : BellRingIcon}
-          size={16}
-          strokeWidth={1.6}
-        />
+        <HugeiconsIcon icon={BellRingIcon} size={18} strokeWidth={1.6} />
         {unreadCount > 0 && (
           <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-(--accent) px-1 font-mono text-[9px] font-semibold leading-none text-(--solid-text)">
             {unreadCount > 9 ? "9+" : unreadCount}

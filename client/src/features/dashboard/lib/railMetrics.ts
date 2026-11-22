@@ -13,7 +13,7 @@ export const RAIL = {
   /** Collapsed icon rail — the lowest stop that still shows the nav. */
   MIN: 72,
   /** Narrowest *expanded* rail. A drag below this snaps to MIN. */
-  MID: 200,
+  MID: 240,
   /** First run, the double-click reset, and what hover opens at. */
   DEFAULT: 288,
   /** Widest. Past this the rail eats the board. */
