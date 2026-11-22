@@ -14,6 +14,7 @@ export { default as DashboardError } from "./components/main/DashboardError";
 export { default as DashboardHeader } from "./components/main/DashboardHeader";
 export { default as DashboardOverview } from "./components/main/DashboardOverview";
 export { default as WorkspaceSection } from "./components/main/WorkspaceSection";
+export { default as NotificationsFeed } from "./components/notifications/NotificationsFeed";
 export { default as NotificationsPanel } from "./components/notifications/NotificationsPanel";
 export { notificationKeys } from "./components/notifications/index";
 export { SearchInputRow } from "./components/search/SearchInputRow";

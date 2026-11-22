@@ -7,10 +7,12 @@ const DashboardSidebar = lazy(
 const DashboardNavbar = lazy(
   () => import("@components/sidebar/DashboardNavbar"),
 );
+const RightPanel = lazy(() => import("@components/layout/RightPanel"));
 
 import { NewWorkspaceDialogProvider } from "@/components/dashboard/workspace/create/NewWorkspaceDialogProvider";
 
 import { useSidebarState } from "@/features/dashboard/stores/sidebarState";
+import { useRightPanel } from "@/stores/rightPanel";
 import { useSearchStore } from "@/features/search/stores/searchStore";
 import { useEnsureActiveWorkspace } from "@/hooks/useEnsureActiveWorkspace";
 import { useSyncSavedBoards } from "@/hooks/useSyncSavedBoards";
@@ -31,6 +33,11 @@ export default function AppLayout() {
      the pointer is on the rail the outlet gets a little breathing room back. */
   const sidebarMode = useSidebarState((s) => s.mode);
   const railOverPage = sidebarMode === "hover";
+
+  /* Off by default (`stores/rightPanel.ts`), so an existing reader's layout is
+     unchanged until they choose a column in Settings → Appearance. The panel
+     itself only exists from `lg:` up; below that it renders nothing. */
+  const rightPanelOpen = useRightPanel((s) => s.mode) !== "off";
 
   const searchOpen = useSearchStore((s) => s.open);
   const openSearch = useSearchStore((s) => s.openSearch);
@@ -93,9 +100,13 @@ export default function AppLayout() {
                scrolling has to be declared here for anything that calls
                scrollTo / scrollIntoView inside the shell. */
             "flex h-screen flex-col overflow-y-auto scroll-smooth",
-            "transition-[margin-left,padding] duration-200 ease-out",
+            "transition-[margin-left,margin-right,padding] duration-200 ease-out",
             "ml-0 pt-14 md:pt-0",
             collapsed ? "md:ml-18" : "md:ml-64",
+            /* Same 360px the panel reserves (`w-90`), so the board is never
+               half-covered. Below `lg` the panel is not rendered and this
+               class does nothing. */
+            rightPanelOpen && "lg:mr-90",
             /* Same 200ms as the rail's own slide, so the two move together. */
             railOverPage && "md:px-8 md:ml-4",
           ].join(" ")}
@@ -105,6 +116,12 @@ export default function AppLayout() {
             <Outlet />
           </div>
         </main>
+
+        {rightPanelOpen && (
+          <Suspense fallback={null}>
+            <RightPanel />
+          </Suspense>
+        )}
 
         {/* Mounted only while open — lazy() downloads the chunk on
             first open; after that it is cached in memory. */}
