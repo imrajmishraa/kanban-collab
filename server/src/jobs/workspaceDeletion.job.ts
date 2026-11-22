@@ -1,4 +1,5 @@
 import { permanentlyDeleteWorkspace } from "../application/workspaces/permanentlyDeleteWorkspace";
+import { repairWorkspaceOwnerIds } from "../application/workspaces/ownerIdRepair";
 import { WorkspaceModel } from "../infrastructure/db/mongoose/schemas";
 import { workspaceCleanupJobLogger as log } from "../infrastructure/logging/childLogger";
 
@@ -20,6 +21,20 @@ export async function workspaceDeletionJob(): Promise<void> {
   const startedAt = Date.now();
 
   log.info("Workspace deletion job started.");
+
+  /* Runs before the deletes: a workspace whose `ownerId` names somebody who has
+     left is repaired here, so the field never drifts far. Cheap and idempotent —
+     it reads ids and roles and only writes rows that are actually wrong. */
+  try {
+    const repair = await repairWorkspaceOwnerIds();
+
+    if (repair.repaired > 0 || repair.ownerless > 0) {
+      log.info(repair, "Workspace ownerId repair finished.");
+    }
+  } catch (error) {
+    /* Never block the deletions on the repair. */
+    log.error({ err: error }, "Workspace ownerId repair failed.");
+  }
 
   let scanned = 0;
   let deleted = 0;

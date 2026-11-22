@@ -103,6 +103,24 @@ describe("revokeWorkspaceSockets", () => {
     expect(otherWorkspace.socket.close).not.toHaveBeenCalled();
   });
 
+  it("ends the socket on removal but only changes it on a role change", async () => {
+    mocks.boardFind.mockReturnValue(
+      chain([{ _id: { toString: () => BOARD_A } }]),
+    );
+
+    const removed = connection("c1", USER_ID, BOARD_A);
+    mocks.getUserConnections.mockReturnValue([removed]);
+
+    await revokeWorkspaceSockets(USER_ID, WORKSPACE_ID, "member_removed");
+    expect(removed.socket.close).toHaveBeenCalledWith(4003, "member_removed");
+
+    const demoted = connection("c2", USER_ID, BOARD_A);
+    mocks.getUserConnections.mockReturnValue([demoted]);
+
+    await revokeWorkspaceSockets(USER_ID, WORKSPACE_ID, "role_changed");
+    expect(demoted.socket.close).toHaveBeenCalledWith(4006, "role_changed");
+  });
+
   it("returns 0 without touching the registry when the workspace has no boards", async () => {
     mocks.boardFind.mockReturnValue(chain([]));
 
@@ -167,7 +185,9 @@ describe("revokeGuestSocketsOnBoard", () => {
     const closed = await revokeGuestSocketsOnBoard(BOARD_A, WORKSPACE_ID);
 
     expect(closed).toBe(1);
-    expect(guest.socket.close).toHaveBeenCalledWith(4003, "board_made_private");
+    /* 4006, not 4003: access changed, so the socket reconnects against the
+       board's new visibility instead of giving up. */
+    expect(guest.socket.close).toHaveBeenCalledWith(4006, "board_made_private");
     expect(member.socket.close).not.toHaveBeenCalled();
   });
 

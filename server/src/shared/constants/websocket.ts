@@ -57,6 +57,16 @@ export const WS_CLOSE_CODE = {
   // ── Application-specific (4000–4999) ─────────────────────────────────────
   UNAUTHORIZED: 4001,
   FORBIDDEN: 4003,
+  /**
+   * Access changed rather than ended — a demotion, a promotion, or a board that
+   * just became private. The client reconnects and the upgrade authorises it
+   * against the new role; sending FORBIDDEN here told the client to give up on
+   * a socket it was still entitled to.
+   *
+   * 4006, not 4005: `HEARTBEAT_TIMEOUT` already holds 4005, and reusing it would
+   * have made a dead socket indistinguishable from a demotion.
+   */
+  ACCESS_CHANGED: 4006,
   SESSION_EXPIRED: 4004,
   HEARTBEAT_TIMEOUT: 4005,
   RATE_LIMITED: 4008,
@@ -118,6 +128,7 @@ export const WS_CLOSE_REASON: Record<WsCloseCode, string> = {
 
   [WS_CLOSE_CODE.UNAUTHORIZED]: "Unauthorized",
   [WS_CLOSE_CODE.FORBIDDEN]: "Forbidden",
+  [WS_CLOSE_CODE.ACCESS_CHANGED]: "Access changed — reconnect",
   [WS_CLOSE_CODE.SESSION_EXPIRED]: "Session expired — reconnect required",
   [WS_CLOSE_CODE.HEARTBEAT_TIMEOUT]: "Heartbeat timeout",
   [WS_CLOSE_CODE.RATE_LIMITED]: "Rate limited",
