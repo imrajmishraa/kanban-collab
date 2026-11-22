@@ -43,6 +43,14 @@ interface TokenPayload {
   error_description?: string;
 }
 
+/**
+ * How long a provider gets before the request is abandoned.
+ *
+ * Without it a stuck connection holds the request (and its socket) until the
+ * platform gives up, which on a serverless host is the whole invocation budget.
+ */
+const PROVIDER_TIMEOUT_MS = 8_000;
+
 export class GithubProvider implements OAuthProvider {
   readonly name = "github" as const;
 
@@ -65,6 +73,7 @@ export class GithubProvider implements OAuthProvider {
     try {
       const response = await fetch(GITHUB_CONFIG.tokenUrl, {
         method: "POST",
+        signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
         headers: {
           accept: "application/json",
           "content-type": "application/json",
@@ -111,7 +120,10 @@ export class GithubProvider implements OAuthProvider {
     let user: GithubUser;
 
     try {
-      const response = await fetch(GITHUB_CONFIG.userUrl, { headers });
+      const response = await fetch(GITHUB_CONFIG.userUrl, {
+        headers,
+        signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
+      });
 
       if (!response.ok) {
         throw new Error(`GET /user returned HTTP ${response.status}`);
@@ -130,7 +142,10 @@ export class GithubProvider implements OAuthProvider {
        `user:email` scope; a token without it gets a 404 here, which must not
        fail a sign-in that already has a profile. */
     try {
-      const response = await fetch(GITHUB_CONFIG.emailsUrl, { headers });
+      const response = await fetch(GITHUB_CONFIG.emailsUrl, {
+        headers,
+        signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
+      });
 
       if (!response.ok) {
         throw new Error(`GET /user/emails returned HTTP ${response.status}`);

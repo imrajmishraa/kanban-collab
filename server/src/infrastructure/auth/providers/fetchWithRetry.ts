@@ -1,5 +1,13 @@
 import { setTimeout as sleep } from "node:timers/promises";
 
+/**
+ * How long a provider gets before the request is abandoned.
+ *
+ * Without it a stuck connection holds the request (and its socket) until the
+ * platform gives up, which on a serverless host is the whole invocation budget.
+ */
+const PROVIDER_TIMEOUT_MS = 8_000;
+
 export interface FetchWithRetryOptions extends RequestInit {
   retries?: number;
   backoffMs?: number;
@@ -19,7 +27,10 @@ export async function fetchWithRetry(
 
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
-      const res = await fetch(url, fetchOptions);
+      const res = await fetch(url, {
+        ...fetchOptions,
+        signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
+      });
 
       // Return immediately if successful or client-side error (4xx should not be retried)
       if (res.ok || (res.status >= 400 && res.status < 500)) {
