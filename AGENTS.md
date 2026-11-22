@@ -5,6 +5,12 @@ before touching code. For architecture and API detail, read `docs/` — this fil
 does not repeat it, it records the constraints that are not obvious from the
 tree and that have already caused production incidents.
 
+For **what a change may look like** — its size, the files it may touch, which
+layer may import which, and the rules for mobile / tablet / desktop — read
+[`docs/change-rules.md`](docs/change-rules.md). Three of its gates are scripts
+(`lint:surface`, `lint:layers`, `scripts/check-change-budget.mjs`), so they are
+not advice; they fail the build.
+
 ## What this is
 
 Kanban-Collab: a real-time collaborative task board.
@@ -209,10 +215,16 @@ dynamic utilities. Do not "fix" these into v3 forms (`bg-[var(--bg-root)]`,
 
 ## Definition of done
 
-1. `npm run check` passes in every package you touched.
-2. `npm run build` succeeds for `server/` (it is what ships).
-3. No new ESM-only dependency (constraint 1).
-4. If you changed a documented behaviour, update the matching file in `docs/`.
+1. `npm run check` passes in every package you touched — that now includes
+   `lint:surface --strict` (client) and `lint:layers --strict` (server).
+2. `node scripts/check-change-budget.mjs` is within budget, or the commit
+   carries a `Change-Budget-Exception:` trailer explaining why it cannot be
+   split.
+3. `npm run build` succeeds for `server/` (it is what ships).
+4. No new ESM-only dependency (constraint 1).
+5. If you changed a documented behaviour, update the matching file in `docs/`.
+6. No baseline file was edited to make a new change pass
+   (`docs/change-rules.md` § 1).
 
 ## Known noise — do not chase these
 

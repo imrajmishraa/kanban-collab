@@ -55,6 +55,11 @@ jobs:
             ci:
               - '.github/workflows/**'
               - 'docker-compose*.yml'
+              # The rule scripts and their baselines are gates, so a change to
+              # one of them has to re-run both sides' checks.
+              - 'scripts/**'
+              - 'client/scripts/**'
+              - 'server/scripts/**'
 
   server:
     name: Server
@@ -90,6 +95,7 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint
       - run: npm run format:check
+      - run: npm run lint:layers -- --strict
       - run: npm test
       - run: npm run build
 
@@ -121,8 +127,34 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint
       - run: npm run format:check
+      - run: npm run lint:paths -- --strict
+      - run: npm run lint:surface -- --strict
       - run: npm test
       - run: npm run build
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Change budget — docs/change-rules.md § 1.
+  #
+  # Pull requests only: on a push to main the diff is already merged, and the
+  # budget is a review tool, not a deployment gate.
+  # ───────────────────────────────────────────────────────────────────────────
+
+  budget:
+    name: Change budget
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # The budget diffs against the merge base, which needs history.
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 26
+      - name: Check the diff against docs/change-rules.md
+        env:
+          GITHUB_BASE_REF: ${{ github.base_ref }}
+        run: node scripts/check-change-budget.mjs --strict
 
   # ───────────────────────────────────────────────────────────────────────────
   # Single required check.
@@ -137,7 +169,7 @@ jobs:
 
   ci-gate:
     name: CI gate
-    needs: [changes, server, client]
+    needs: [changes, server, client, budget]
     if: always()
     runs-on: ubuntu-latest
     steps:
