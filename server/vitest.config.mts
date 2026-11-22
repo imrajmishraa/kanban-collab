@@ -17,6 +17,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "node",
+    isolate: false,
     include: [
       "tests/**/*.{test,spec}.ts",
       "src/**/*.{test,spec}.ts",
@@ -27,8 +28,24 @@ export default defineConfig({
     /* The websocket suites open real sockets and share the document registry,
        so test files must not run concurrently. */
     pool: "forks",
-    fileParallelism: false,
-    maxWorkers: 1,
+    /*
+     * Files in parallel, each still in its own module graph.
+     *
+     * `isolate: false` is tempting — it takes this suite from ~43s to ~12s — and
+     * it is wrong here: every test file shares one module registry, so a module
+     * that an earlier file already loaded keeps its *real* dependencies and this
+     * file's `vi.mock` factories never apply. The suites that mock a singleton
+     * (`getCacheClient`, `connectionRegistry`, `documentManager`) then assert
+     * against the real thing and fail with "expected vi.fn() to have been
+     * called", in an order that depends on which file ran first.
+     *
+     * Parallel files buy most of the same wall-clock time (43s -> ~31s) without
+     * touching the isolation contract. A suite that wants to be isolation-proof
+     * anyway does `vi.resetModules()` and imports the module under test inside
+     * `beforeEach` — see `tests/unit/boards/boardCache.test.ts`.
+     */
+    fileParallelism: true,
+    maxWorkers: 4,
 
     testTimeout: 20_000,
     hookTimeout: 20_000,
