@@ -10,6 +10,17 @@ import { boardKeys } from "@/hooks/useBoards";
 interface ArchivedCardsDialogProps {
   boardId: string;
   onClose: () => void;
+  /**
+   * How to restore a card. The board passes the live path when its document is
+   * connected (`docApi.updateCard(id, { isArchived: false })`) and the REST
+   * mutation otherwise.
+   *
+   * This matters: the archive itself goes through the document, so a restore
+   * that only wrote to Mongo left `isArchived: true` in the CRDT and the next
+   * reconcile archived the card again. Defaults to REST so the dialog still
+   * works on its own.
+   */
+  onRestore?: (cardId: string) => void;
 }
 
 /**
@@ -22,6 +33,7 @@ interface ArchivedCardsDialogProps {
 export function ArchivedCardsDialog({
   boardId,
   onClose,
+  onRestore,
 }: ArchivedCardsDialogProps) {
   const queryClient = useQueryClient();
   const [message, setMessage] = useState<string | null>(null);
@@ -33,8 +45,17 @@ export function ArchivedCardsDialog({
   });
 
   const restore = useMutation({
-    mutationFn: (cardId: string) =>
-      cardApi.updateCard(cardId, { isArchived: false }),
+    mutationFn: (cardId: string) => {
+      if (onRestore) {
+        onRestore(cardId);
+
+        return Promise.resolve();
+      }
+
+      return cardApi
+        .updateCard(cardId, { isArchived: false })
+        .then(() => undefined);
+    },
     onSuccess: () => {
       setMessage("Card restored to its column.");
       void queryClient.invalidateQueries({

@@ -10,6 +10,7 @@ import { invalidateBoardCache } from "../../../../infrastructure/cache/boardCach
 import { logger } from "../../../../infrastructure/logging/logger";
 
 import { readBoardSnapshot } from "../yjs/boardSchema";
+import { pruneFilters } from "./pruneFilters";
 
 /**
  * Yjs → MongoDB reconciliation (T6).
@@ -204,16 +205,14 @@ class BoardReconciler {
        *    about, so cards in columns absent from the CRDT are left untouched.
        */
       if (liveColumnIds.length > 0) {
-        await ColumnModel.deleteMany({
-          boardId: boardObjectId,
-          _id: { $nin: liveColumnIds },
-        });
+        /* The grace window is part of the filter, not a check before it: a row
+           written in the last minute may be an HTTP write still on its way into
+           the document, and pruning it would delete the thing we just created. */
+        const filters = pruneFilters(boardObjectId, liveColumnIds, liveCardIds);
 
-        await CardModel.deleteMany({
-          boardId: boardObjectId,
-          columnId: { $in: liveColumnIds },
-          _id: { $nin: liveCardIds },
-        });
+        await ColumnModel.deleteMany(filters.columns);
+
+        await CardModel.deleteMany(filters.cards);
       } else {
         logger.warn(
           { boardId: documentName },
