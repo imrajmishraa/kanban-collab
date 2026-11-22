@@ -129,7 +129,7 @@ export default function AppLayout() {
             "ml-0 pt-14 md:pt-0",
             /* What the rail reserves, in one variable — the navbar offsets
                against the same one. */
-            "md:ml-[var(--rail-width)]",
+            "md:ml-(--rail-width)",
             /* Same 360px the panel reserves (`w-90`), so the board is never
                half-covered. Below `lg` the panel is not rendered and this
                class does nothing. */

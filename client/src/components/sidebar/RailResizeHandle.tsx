@@ -120,14 +120,18 @@ export default function RailResizeHandle({
       onPointerCancel={endDrag}
       onDoubleClick={() => onWidth(RAIL.DEFAULT)}
       onKeyDown={onKeyDown}
+      /* Inline, not a utility: `base.css` sets `cursor: pointer` on `button`
+         unlayered, and unlayered CSS beats every Tailwind `@layer utilities`
+         class regardless of specificity. Without this the divider shows a hand. */
+      style={{ cursor: "col-resize" }}
       className={cn(
         "absolute inset-y-0 right-0 z-50 w-4 translate-x-1/2",
         "cursor-col-resize touch-none border-0 bg-transparent p-0",
         "after:absolute after:inset-y-0 after:left-1/2 after:w-0.5 after:-translate-x-1/2",
         "after:bg-transparent after:transition-colors",
-        "hover:after:bg-(--brand) focus-visible:after:bg-(--brand)",
-        atLimit && "after:bg-(--warn)",
-        pastMin && "after:bg-(--warn)",
+        "hover:after:bg-(--link) focus-visible:after:bg-(--link)",
+        atLimit && "after:bg-(--warning)",
+        pastMin && "after:bg-(--warning)",
       )}
     />
   );
