@@ -227,6 +227,17 @@ export default function DashboardSidebar({ onToggle }: DashboardSidebarProps) {
             onResizeStart={() => {
               setHovering(false);
               setResizing(true);
+
+              /*
+               * A drag is a deliberate resize, so hover mode has to become open
+               * — otherwise the rail keeps rendering as a hover overlay, the
+               * pointer leaves, and the width only ever changes while the cursor
+               * is over the rail. Collapsed is *not* promoted here: a press that
+               * never becomes a drag must stay a no-op.
+               */
+              if (useSidebarState.getState().mode === "hover") {
+                useSidebarState.getState().expand();
+              }
             }}
             onResizeEnd={() => {
               setHovering(false);

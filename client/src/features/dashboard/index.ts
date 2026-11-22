@@ -36,9 +36,11 @@ export type { SidebarMode } from "./stores/sidebarState";
 export { useRailLayout, useViewportWidth } from "./hooks/useRailLayout";
 export {
   RAIL,
+  RAIL_STOPS,
   clampWidth,
   computeRail,
   requiredViewport,
+  snapWidth,
   snapZone,
 } from "./lib/railMetrics";
 export type { RailZone } from "./lib/railMetrics";

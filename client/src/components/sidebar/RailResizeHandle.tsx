@@ -1,10 +1,10 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { cn } from "@/utils/cn";
 
 import { Tooltip } from "@/components/Tooltips/ToolTip";
 
-import { RAIL, clampWidth, snapZone } from "@/features/dashboard";
+import { RAIL, clampWidth, snapWidth, snapZone } from "@/features/dashboard";
 
 interface RailResizeHandleProps {
   /** The width on screen right now — which is not always the stored width. */
@@ -50,7 +50,21 @@ export default function RailResizeHandle({
   const startX = useRef(0);
   const startWidth = useRef(0);
 
-  const atLimit = dragging && (width === RAIL.MID || width === RAIL.MAX);
+  /*
+   * Amber means "you are sitting on a stop".
+   *
+   * All four count — MAX, DEFAULT, MID and the collapsed icon rail — because they
+   * are the places a drag can come to rest, and the line is the only feedback that
+   * it has. It is not shown for the whole collapsed stretch, only on the stop
+   * itself, so it does not flicker while the pointer is still moving.
+   */
+  const atStop =
+    dragging &&
+    (belowMid ||
+      width === RAIL.MIN ||
+      width === RAIL.MID ||
+      width === RAIL.DEFAULT ||
+      width === RAIL.MAX);
 
   const onPointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
     /* The rail itself is a click target while collapsed (click it to expand),
@@ -91,6 +105,20 @@ export default function RailResizeHandle({
     }
 
     if (zone === "collapsed") {
+      /*
+       * Rebase the drag on the collapsed stop.
+       *
+       * Without this the hide target was unreachable: the origin stayed at the
+       * width the drag began at, so pulling left was measured against e.g. 288
+       * and MIN - HIDE_SLOP sat 300-odd px away — further than the pointer can
+       * travel before it hits the edge of the screen. From here a further
+       * HIDE_SLOP px of hand movement is exactly that.
+       */
+      if (!belowMid) {
+        startX.current = event.clientX;
+        startWidth.current = RAIL.MIN;
+      }
+
       setBelowMid(true);
       onCollapse();
       return;
@@ -100,9 +128,12 @@ export default function RailResizeHandle({
 
     /* Coming out of collapsed or hover: the first move into the expanded range
        is what promotes the rail, so the drag and the mode change together. */
-    if (renderedWidth <= RAIL.MIN) onExpand();
+    if (renderedWidth <= RAIL.MIN || belowMid) onExpand();
 
-    onWidth(clampWidth(raw));
+    /* Magnetic stops: MID, DEFAULT and MAX hold the width for SNAP_TOLERANCE px
+       before it moves on, so the drag pauses at each one instead of sliding
+       through. */
+    onWidth(snapWidth(raw));
   };
 
   const endDrag = () => {
@@ -112,6 +143,19 @@ export default function RailResizeHandle({
     setBelowMid(false);
     onResizeEnd();
   };
+
+  /* A drag can end without a pointerup on this element — the rail can be hidden
+     mid-gesture, the pointer can be cancelled. Either way the transient state has
+     to be cleared, or the amber line stays on. The callback goes through a ref:
+     it is an inline arrow in the parent, so a dependency on it would fire this
+     cleanup on every render. */
+  const endRef = useRef(onResizeEnd);
+
+  useEffect(() => {
+    endRef.current = onResizeEnd;
+  }, [onResizeEnd]);
+
+  useEffect(() => () => endRef.current(), []);
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
     const step = event.shiftKey ? 32 : 8;
@@ -187,7 +231,7 @@ export default function RailResizeHandle({
           "after:absolute after:inset-y-0 after:left-1/2 after:w-0.5 after:-translate-x-1/2",
           "after:bg-transparent after:transition-colors",
           "hover:after:bg-(--link) focus-visible:after:bg-(--link)",
-          (atLimit || belowMid) && "after:bg-(--warning)",
+          atStop && "after:bg-(--warning)",
         )}
       />
     </Tooltip>

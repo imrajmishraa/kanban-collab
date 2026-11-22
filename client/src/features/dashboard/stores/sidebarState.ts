@@ -112,6 +112,14 @@ export const useSidebarState = create<SidebarState>()(
 
       hide: () => set({ mode: "hidden", collapsed: true, hovering: false }),
 
+      /*
+       * The one toggle: ⌘B, and the navbar button while the rail is hidden.
+       *
+       * It has to mean the same thing everywhere — "the sidebar is in the way, or
+       * it is not". Pressing it with the rail collapsed used to be a no-op, which
+       * reads as a broken shortcut, so collapsed now opens: the three states a
+       * reader can be in all answer sensibly, and it is never a dead key.
+       */
       toggleHidden: () => {
         const { mode, lastVisible } = get();
 
@@ -120,6 +128,16 @@ export const useSidebarState = create<SidebarState>()(
             mode: lastVisible,
             collapsed: lastVisible !== "open",
             hovering: false,
+          });
+          return;
+        }
+
+        if (mode === "collapsed") {
+          set({
+            mode: "open",
+            collapsed: false,
+            hovering: false,
+            lastVisible: "open",
           });
           return;
         }

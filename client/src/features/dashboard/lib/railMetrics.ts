@@ -21,11 +21,19 @@ export const RAIL = {
   /** Horizontal space the page needs beside the rail. */
   GUTTER: 329,
   /**
-   * Below this, mid-drag, the rail leaves the page entirely. It is a little
-   * past MIN so that reaching collapsed does not immediately hide it — you have
-   * to mean it.
+   * How far past MIN a drag must go before the rail leaves the page.
+   *
+   * Measured from MIN, and the drag origin is rebased when it collapses (see
+   * the handle), so this is a real 32px pull past the icon rail rather than a
+   * target that only exists if the whole drag started at MIN.
    */
-  HIDE_BELOW: 36,
+  HIDE_SLOP: 32,
+  /**
+   * Magnetic stops: within this many px of a stop the width sticks to it, and
+   * the pointer has to travel past the tolerance to move on. That is what makes
+   * the rail pause at DEFAULT, MID and MAX instead of sliding through them.
+   */
+  SNAP_TOLERANCE: 10,
   /**
    * How much of the pointer's travel the divider takes.
    *
@@ -56,10 +64,31 @@ export type RailZone = "expanded" | "collapsed" | "hidden";
  * icon rail, and a deliberate pull past that takes it off the page.
  */
 export function snapZone(rawWidth: number): RailZone {
-  if (rawWidth < RAIL.HIDE_BELOW) return "hidden";
+  if (rawWidth < RAIL.MIN - RAIL.HIDE_SLOP) return "hidden";
   if (rawWidth < RAIL.MID) return "collapsed";
 
   return "expanded";
+}
+
+/** The widths a drag should come to rest at, narrowest first. */
+export const RAIL_STOPS = [RAIL.MID, RAIL.DEFAULT, RAIL.MAX] as const;
+
+/**
+ * The width a drag at `rawWidth` should actually use.
+ *
+ * Within `SNAP_TOLERANCE` of a stop the width is pinned to it, so the rail comes
+ * to rest at MID, DEFAULT and MAX and only moves on once the pointer has cleared
+ * the magnet. Between stops it follows the pointer.
+ */
+export function snapWidth(
+  rawWidth: number,
+  tolerance: number = RAIL.SNAP_TOLERANCE,
+): number {
+  for (const stop of RAIL_STOPS) {
+    if (Math.abs(rawWidth - stop) <= tolerance) return stop;
+  }
+
+  return clampWidth(rawWidth);
 }
 
 /**

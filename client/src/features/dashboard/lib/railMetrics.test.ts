@@ -5,6 +5,7 @@ import {
   clampWidth,
   computeRail,
   requiredViewport,
+  snapWidth,
   snapZone,
 } from "./railMetrics";
 
@@ -37,12 +38,42 @@ describe("snapZone", () => {
   it("snaps to collapsed anywhere below MID", () => {
     expect(snapZone(RAIL.MID - 1)).toBe("collapsed");
     expect(snapZone(RAIL.MIN)).toBe("collapsed");
-    expect(snapZone(RAIL.HIDE_BELOW)).toBe("collapsed");
   });
 
-  it("hides only when the pull goes past the collapsed rail", () => {
-    expect(snapZone(RAIL.HIDE_BELOW - 1)).toBe("hidden");
+  it("hides only when the pull goes HIDE_SLOP past the collapsed rail", () => {
+    /* Measured from MIN, and the handle rebases the drag on the collapsed stop
+       so this is reachable with a real 32px pull. */
+    expect(snapZone(RAIL.MIN - RAIL.HIDE_SLOP)).toBe("collapsed");
+    expect(snapZone(RAIL.MIN - RAIL.HIDE_SLOP - 1)).toBe("hidden");
     expect(snapZone(0)).toBe("hidden");
+  });
+});
+
+describe("snapWidth", () => {
+  it("comes to rest exactly on each stop", () => {
+    expect(snapWidth(RAIL.MID + 4)).toBe(RAIL.MID);
+    expect(snapWidth(RAIL.DEFAULT - 6)).toBe(RAIL.DEFAULT);
+    expect(snapWidth(RAIL.MAX - 3)).toBe(RAIL.MAX);
+  });
+
+  it("moves on once the pointer clears the magnet", () => {
+    expect(snapWidth(RAIL.DEFAULT + RAIL.SNAP_TOLERANCE + 1)).toBe(
+      RAIL.DEFAULT + RAIL.SNAP_TOLERANCE + 1,
+    );
+    expect(snapWidth(RAIL.MID + RAIL.SNAP_TOLERANCE + 1)).toBe(
+      RAIL.MID + RAIL.SNAP_TOLERANCE + 1,
+    );
+  });
+
+  it("never renders narrower than MID while expanded", () => {
+    /* Below MID there is no expanded width to show — that is the collapsed
+       zone, and the handle asks `snapZone` before it ever asks for a width. */
+    expect(snapWidth(RAIL.MID - RAIL.SNAP_TOLERANCE - 1)).toBe(RAIL.MID);
+  });
+
+  it("still clamps between stops", () => {
+    expect(snapWidth(1_000)).toBe(RAIL.MAX);
+    expect(snapWidth(RAIL.MID + 40)).toBe(RAIL.MID + 40);
   });
 });
 

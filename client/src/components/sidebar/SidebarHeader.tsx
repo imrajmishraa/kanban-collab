@@ -22,6 +22,10 @@ interface SidebarHeaderProps {
   mode?: SidebarMode;
 }
 
+const isMac =
+  typeof navigator !== "undefined" &&
+  /Mac|iPhone|iPad|iPod/.test(navigator.platform);
+
 const SidebarHeader = ({
   collapsed,
   onToggle,
@@ -34,7 +38,14 @@ const SidebarHeader = ({
   if (collapsed) {
     return (
       <div className="group/expand relative flex h-14 shrink-0 items-center justify-center">
-        <Tooltip label="Expand" side="right" shape="solid" size="md" gap={10}>
+        <Tooltip
+          label="Expand"
+          highlight={isMac ? "⌘B" : "Ctrl B"}
+          side="right"
+          shape="solid"
+          size="md"
+          gap={10}
+        >
           <button
             type="button"
             onClick={(event) => {
@@ -119,7 +130,13 @@ const SidebarHeader = ({
             />
           </Tooltip>
         ) : (
-          <Tooltip label="Collapse" side="bottom" shape="solid" size="md">
+          <Tooltip
+            label="Collapse"
+            highlight={isMac ? "⌘B" : "Ctrl B"}
+            side="bottom"
+            shape="solid"
+            size="md"
+          >
             <HeaderIconButton
               icon={
                 <HugeiconsIcon

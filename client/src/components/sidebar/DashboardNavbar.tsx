@@ -11,6 +11,10 @@ import { Tooltip } from "@/components/Tooltips/ToolTip";
 import { LayoutLeftIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
+const isMac =
+  typeof navigator !== "undefined" &&
+  /Mac|iPhone|iPad|iPod/.test(navigator.platform);
+
 export default function DashboardNavbar() {
   const sentinelRef = useRef<HTMLDivElement>(null);
   const bellRef = useRef<HTMLDivElement>(null);
@@ -132,7 +136,13 @@ export default function DashboardNavbar() {
         ].join(" ")}
       >
         {showRailToggle && (
-          <Tooltip label="Show sidebar" side="bottom" shape="solid" size="md">
+          <Tooltip
+            label="Show sidebar"
+            highlight={isMac ? "⌘B" : "Ctrl B"}
+            side="bottom"
+            shape="solid"
+            size="md"
+          >
             <button
               type="button"
               onClick={toggleHidden}
