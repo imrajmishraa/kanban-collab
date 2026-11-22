@@ -24,6 +24,12 @@ function requireUserId(req: AuthenticatedRequest): string {
 import { boardNotFoundError } from "../../../../shared/errors/board/board";
 import { invalidateBoardCache } from "../../../../infrastructure/cache/boardCache";
 import {
+  applyToBoardDoc,
+  removeColumnRecord,
+  upsertColumnRecord,
+} from "../../../websockets/collaboration/yjs/boardWriteThrough";
+import { toColumnRecord } from "../../../websockets/collaboration/yjs/cardRecordMapper";
+import {
   columnNotEmptyError,
   columnNotFoundError,
 } from "../../../../shared/errors/column/column";
@@ -51,6 +57,12 @@ const createColumn = asyncHandler(async (req: AuthenticatedRequest, res) => {
     });
 
     await invalidateBoardCache(board._id.toString());
+
+    /* Same reason as the card paths: the reconciler prunes what the live
+       document does not know about. */
+    applyToBoardDoc(board._id.toString(), (doc) => {
+      upsertColumnRecord(doc, toColumnRecord(column));
+    });
 
     columnControllerLogger.info(
       {
@@ -115,6 +127,10 @@ const deleteColumn = asyncHandler(async (req: AuthenticatedRequest, res) => {
 
     await invalidateBoardCache(board._id.toString());
 
+    applyToBoardDoc(board._id.toString(), (doc) => {
+      removeColumnRecord(doc, column._id.toString());
+    });
+
     columnControllerLogger.info(
       { columnId: column._id, boardId: board._id, userId },
       "Column deleted",
@@ -160,6 +176,10 @@ const updateColumn = asyncHandler(async (req: AuthenticatedRequest, res) => {
     await column.save();
 
     await invalidateBoardCache(board._id.toString());
+
+    applyToBoardDoc(board._id.toString(), (doc) => {
+      upsertColumnRecord(doc, toColumnRecord(column));
+    });
 
     columnControllerLogger.info(
       { columnId: column._id, boardId: board._id, userId },

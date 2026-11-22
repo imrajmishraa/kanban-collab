@@ -24,6 +24,13 @@ function requireUserId(req: AuthenticatedRequest): string {
 }
 import { boardNotFoundError } from "../../../../shared/errors/board/board";
 import { invalidateBoardCache } from "../../../../infrastructure/cache/boardCache";
+import {
+  applyToBoardDoc,
+  moveCardRecord,
+  removeCardRecord,
+  upsertCardRecord,
+} from "../../../websockets/collaboration/yjs/boardWriteThrough";
+import { toCardRecord } from "../../../websockets/collaboration/yjs/cardRecordMapper";
 import { unknownCardMembers } from "../../../../application/cards/cardMembers";
 import { invalidCardMembersError } from "../../../../shared/errors/card/card";
 import { cardNotFoundError } from "../../../../shared/errors/card/card";
@@ -115,6 +122,15 @@ const createCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
     });
 
     await invalidateBoardCache(String(boardId));
+
+    /* The board may be open somewhere. The reconciler projects this document
+       onto Mongo and prunes what it does not know, so a Mongo-only write is a
+       row waiting to be deleted — write it into the document too, when there is
+       one. Returns false (and does nothing) when nobody is live or the document
+       has not been seeded. */
+    applyToBoardDoc(board._id.toString(), (doc) => {
+      upsertCardRecord(doc, toCardRecord(card));
+    });
 
     cardControllerLogger.info(
       {
@@ -253,6 +269,10 @@ const updateCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
 
     await invalidateBoardCache(board._id.toString());
 
+    applyToBoardDoc(board._id.toString(), (doc) => {
+      upsertCardRecord(doc, toCardRecord(card));
+    });
+
     cardControllerLogger.info(
       {
         cardId: card._id,
@@ -336,10 +356,21 @@ const moveCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
 
     await invalidateBoardCache(board._id.toString());
 
+    /* One transaction: the card leaves whichever column listed it and lands in
+       the target at the requested index. */
+    applyToBoardDoc(board._id.toString(), (doc) => {
+      moveCardRecord(
+        doc,
+        card._id.toString(),
+        targetColumnId,
+        card.orderIndex ?? 0,
+      );
+    });
+
     cardControllerLogger.info(
       {
         cardId: card._id,
-        boardId: req.params,
+        boardId: board._id,
         sourceColumnId: sourceCol,
         targetColumnId: targetColumnId,
         userId,
@@ -385,6 +416,10 @@ const deleteCard = asyncHandler(async (req: AuthenticatedRequest, res) => {
     await card.deleteOne();
 
     await invalidateBoardCache(board._id.toString());
+
+    applyToBoardDoc(board._id.toString(), (doc) => {
+      removeCardRecord(doc, card._id.toString());
+    });
 
     cardControllerLogger.info(
       { cardId: card._id, boardId: board._id, userId },
