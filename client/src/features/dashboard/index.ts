@@ -33,6 +33,14 @@ export { useDashboard } from "./hooks/useDashboard";
 export { usePinnedBoards } from "./stores/pinnedBoards";
 export { useSidebarState } from "./stores/sidebarState";
 export type { SidebarMode } from "./stores/sidebarState";
+export { useRailLayout, useViewportWidth } from "./hooks/useRailLayout";
+export {
+  RAIL,
+  clampWidth,
+  computeRail,
+  requiredViewport,
+} from "./lib/railMetrics";
+export type { RailLayout } from "./lib/railMetrics";
 
 export { formatDay } from "./components/search/formatDay";
 export type { PaletteRow, Scope } from "./components/search/types";

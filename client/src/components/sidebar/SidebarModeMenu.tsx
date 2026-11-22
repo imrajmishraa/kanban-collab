@@ -3,6 +3,7 @@ import {
   Cursor02Icon,
   PanelLeftCloseIcon,
   PanelLeftOpenIcon,
+  SidebarLeftIcon,
 } from "@hugeicons/core-free-icons";
 
 import type { SidebarMode } from "@/features/dashboard";
@@ -21,6 +22,7 @@ const MODES: Array<{
   { mode: "open", label: "Expanded", icon: PanelLeftCloseIcon },
   { mode: "collapsed", label: "Collapsed", icon: PanelLeftOpenIcon },
   { mode: "hover", label: "Hover", icon: Cursor02Icon },
+  { mode: "hidden", label: "Hidden", icon: SidebarLeftIcon },
 ];
 
 function SidebarModeMenu({ mode, onSelect }: SidebarModeMenuProps) {

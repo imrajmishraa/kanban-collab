@@ -7,6 +7,9 @@ import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { useSidebarState } from "@/features/dashboard";
 import { NavbarSearchIcon, NotificationsButton } from "@/features/dashboard";
 import { NotificationsPanel } from "@/features/dashboard";
+import { Tooltip } from "@/components/Tooltips/ToolTip";
+import { SidebarLeftIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 
 export default function DashboardNavbar() {
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -34,7 +37,15 @@ export default function DashboardNavbar() {
     clearActiveWorkspace,
   } = useActiveWorkspace();
 
-  const sidebarCollapsed = useSidebarState((s) => s.collapsed);
+  const sidebarMode = useSidebarState((s) => s.mode);
+  const toggleHidden = useSidebarState((s) => s.toggleHidden);
+
+  /*
+   * The rail has no way back once it is hidden, so the toggle appears here —
+   * and only here, and only while it is hidden. With the rail on screen the
+   * rail's own header is the control, and a second one would be noise.
+   */
+  const showRailToggle = sidebarMode === "hidden";
 
   /*
    * With nothing selected there is no workspace to scope the breadcrumb to, so
@@ -114,10 +125,27 @@ export default function DashboardNavbar() {
           "items-center gap-2 px-5 ",
           "transition-[left,background-color] duration-200",
           "border-b border-(--hairline)",
-          sidebarCollapsed ? "left-18" : "left-64",
+          /* Same variable the layout reserves, so the navbar follows the rail
+             at any width instead of two fixed offsets. */
+          "md:left-[var(--rail-width)]",
           scrolled ? "bg-(--bg-root)/85 backdrop-blur-md" : "bg-transparent",
         ].join(" ")}
       >
+        {showRailToggle && (
+          <Tooltip label="Show sidebar" side="bottom" shape="solid" size="md">
+            <button
+              type="button"
+              onClick={toggleHidden}
+              aria-label="Show sidebar"
+              aria-controls="app-rail"
+              aria-keyshortcuts="Meta+B Control+B"
+              className="grid size-9 shrink-0 cursor-pointer place-items-center rounded-lg text-(--text-muted) transition-colors hover:bg-(--bg-hover) hover:text-(--text-primary)"
+            >
+              <HugeiconsIcon icon={SidebarLeftIcon} size={18} />
+            </button>
+          </Tooltip>
+        )}
+
         <nav
           aria-label="Breadcrumb"
           className="flex min-w-0 items-center gap-0.5"
