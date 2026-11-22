@@ -1,5 +1,7 @@
 import * as Y from "yjs";
 
+import { canDecodeYjsUpdate } from "./yjsUpdateCodec";
+
 import { logger } from "../../../../infrastructure/logging/logger";
 import { websocketConfig } from "../../../../config/websocket";
 import { YjsUpdateModel } from "../../../../infrastructure/db/mongoose/schemas";
@@ -31,9 +33,33 @@ export class MongoPersistence implements DocumentPersistence {
       }).lean();
 
       if (persisted?.update) {
-        Y.applyUpdate(document, persisted.update);
+        if (!canDecodeYjsUpdate(persisted.update)) {
+          /*
+           * The stored blob is not a readable update — truncated, or written in
+           * some other shape. Applying it throws, and rethrowing (the rule for a
+           * database failure) would make the board impossible to open, on every
+           * reconnect: the client retries, the load fails again.
+           *
+           * So the row is quarantined instead. Nothing readable is lost — the
+           * blob cannot be applied by anything — and Mongo still holds the
+           * projection, which the client seeds the document from on open. The
+           * log line is loud because this is data that had to be thrown away.
+           */
+          await YjsUpdateModel.deleteOne({ docName: documentName });
 
-        logger.info({ documentName }, "Loaded Yjs document from MongoDB.");
+          logger.error(
+            {
+              documentName,
+              bytes: persisted.update.length,
+              quarantined: true,
+            },
+            "Stored Yjs update is unreadable — row quarantined, board will re-seed from MongoDB.",
+          );
+        } else {
+          Y.applyUpdate(document, persisted.update);
+
+          logger.info({ documentName }, "Loaded Yjs document from MongoDB.");
+        }
       } else {
         logger.info({ documentName }, "Created new Yjs document.");
       }
