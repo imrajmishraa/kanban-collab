@@ -11,6 +11,8 @@ export interface StartOAuthFlowInput {
 export interface StartOAuthFlowResult {
   authorizeUrl: string;
   stateToken: string;
+  /** Goes into the binding cookie; see `stateMatchesBrowser`. */
+  stateNonce: string;
 }
 
 /**
@@ -27,7 +29,7 @@ export function startOAuthFlow(
 
   const rememberMe = Boolean(input.rememberMe);
 
-  const stateToken = createStateToken({
+  const { token: stateToken, nonce } = createStateToken({
     provider: input.providerName,
     rememberMe,
   });
@@ -35,5 +37,6 @@ export function startOAuthFlow(
   return {
     authorizeUrl: provider.getAuthorizeUrl({ state: stateToken }),
     stateToken,
+    stateNonce: nonce,
   };
 }

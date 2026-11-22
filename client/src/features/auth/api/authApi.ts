@@ -68,3 +68,25 @@ export function refreshRequest(): Promise<ApiResponse<RefreshResponse>> {
 
   return refreshPromise;
 }
+
+/* ── Password recovery ─────────────────────────────────────── */
+
+/**
+ * Ask for a reset code.
+ *
+ * The server answers 202 whether or not the address has an account, so the form
+ * cannot use the response to tell the user which it was — and neither can an
+ * attacker.
+ */
+export async function forgotPasswordRequest(email: string): Promise<void> {
+  await apiClient.post("/auth/forgot-password", { email });
+}
+
+/** Set a new password with the six-digit code. Every session is revoked. */
+export async function resetPasswordRequest(payload: {
+  email: string;
+  code: string;
+  password: string;
+}): Promise<void> {
+  await apiClient.post("/auth/reset-password", payload);
+}

@@ -855,6 +855,49 @@ NoteSchema.index({ userId: 1, updatedAt: -1 });
 
 export const NoteModel: Model<INote> = model<INote>("Note", NoteSchema);
 
+// PASSWORD RESET
+
+/**
+ * A six-digit code that lets one account set a new password once.
+ *
+ * Stored hashed, so a database read cannot be replayed as a reset. The TTL index
+ * is the expiry — Mongo removes the row, and the query filters on `expiresAt`
+ * anyway, because the TTL monitor runs about once a minute and a stale code must
+ * not outlive its window by that much.
+ */
+export interface IPasswordReset {
+  userId: Types.ObjectId;
+  codeHash: string;
+  attempts: number;
+  expiresAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const PasswordResetSchema = new Schema<IPasswordReset>(
+  {
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
+    codeHash: { type: String, required: true },
+    /* Five wrong guesses and the code is dead — six digits is only a million
+       combinations, and an unthrottled endpoint would walk them. */
+    attempts: { type: Number, default: 0 },
+    expiresAt: { type: Date, required: true },
+  },
+  { timestamps: true },
+);
+
+PasswordResetSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+
+export const PasswordResetModel: Model<IPasswordReset> = model<IPasswordReset>(
+  "PasswordReset",
+  PasswordResetSchema,
+);
+
 // MODELS AGGREGATOR
 
 export const models = {
@@ -870,4 +913,5 @@ export const models = {
   Notification: NotificationModel,
   NotificationPreference: NotificationPreferenceModel,
   Note: NoteModel,
+  PasswordReset: PasswordResetModel,
 } as const;

@@ -25,7 +25,7 @@ import { invalidOAuthStateError } from "../../../shared/errors/auth/oauth";
  * provider's, not ours. The TTL below bounds it further.
  */
 // 15-minute TTL to comfortably accommodate slower user consent decisions.
-const STATE_TTL_MS = 15 * 60 * 1000;
+export const STATE_TTL_MS = 15 * 60 * 1000;
 // Allow up to 60s clock drift between distributed servers/containers.
 const CLOCK_SKEW_TOLERANCE_MS = 60 * 1000;
 
@@ -60,13 +60,25 @@ function sign(encodedPayload: string): string {
     .digest("base64url");
 }
 
+export interface CreatedState {
+  token: string;
+  /**
+   * The nonce inside the token, returned so the caller can also put it in a
+   * cookie. The token alone is portable — anybody who reads it can replay it —
+   * so the cookie is what ties the round trip to one browser.
+   */
+  nonce: string;
+}
+
 export function createStateToken(input: {
   provider: string;
   rememberMe: boolean;
-}): string {
+}): CreatedState {
+  const nonce = crypto.randomBytes(16).toString("base64url");
+
   const payload: StatePayload = {
     p: input.provider,
-    n: crypto.randomBytes(16).toString("base64url"),
+    n: nonce,
     t: Date.now(),
     r: input.rememberMe ? 1 : 0,
   };
@@ -75,7 +87,7 @@ export function createStateToken(input: {
     "base64url",
   );
 
-  return `${encoded}.${sign(encoded)}`;
+  return { token: `${encoded}.${sign(encoded)}`, nonce };
 }
 
 /**
@@ -87,7 +99,7 @@ export function createStateToken(input: {
 export function verifyStateToken(
   token: string,
   expectedProvider: string,
-): { rememberMe: boolean } {
+): { rememberMe: boolean; nonce: string } {
   const parts = token.split(".");
 
   if (parts.length !== 2) throw invalidOAuthStateError("malformed");
@@ -123,7 +135,7 @@ export function verifyStateToken(
     throw invalidOAuthStateError("unparseable");
   }
 
-  const { p, t, r } = payload as Partial<StatePayload>;
+  const { p, t, r, n } = payload as Partial<StatePayload>;
 
   if (typeof p !== "string" || p !== expectedProvider) {
     throw invalidOAuthStateError("provider_mismatch");
@@ -140,5 +152,29 @@ export function verifyStateToken(
     throw invalidOAuthStateError(age > STATE_TTL_MS ? "expired" : "future");
   }
 
-  return { rememberMe: r === 1 };
+  if (typeof n !== "string" || n.length === 0) {
+    throw invalidOAuthStateError("missing_nonce");
+  }
+
+  return { rememberMe: r === 1, nonce: n };
+}
+
+/**
+ * Does the state belong to the browser that presented it?
+ *
+ * The signed token says "this flow was minted by our server"; it says nothing
+ * about *whose browser* is finishing it. An attacker who starts a flow, keeps
+ * the `code`+`state` pair and sends the callback URL to somebody else gets that
+ * person signed into the attacker's account — the classic login CSRF. The
+ * nonce is written to a cookie when the flow starts, so a state that arrives
+ * without its matching cookie did not start here.
+ *
+ * Both halves are base64url of 16 random bytes, so a plain comparison is fine —
+ * the value is not a secret being guessed, it is a value being matched.
+ */
+export function stateMatchesBrowser(
+  stateNonce: string,
+  cookieNonce: string | undefined,
+): boolean {
+  return cookieNonce !== undefined && cookieNonce === stateNonce;
 }

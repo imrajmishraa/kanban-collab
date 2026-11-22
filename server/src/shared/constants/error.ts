@@ -130,6 +130,10 @@ export const ERROR_MESSAGE = {
   CARD_MEMBERS_NOT_IN_WORKSPACE:
     "Every assignee must be a member of this workspace.",
 
+  PASSWORD_RESET_CODE_INVALID:
+    "That code is not valid. It may have expired — request a new one.",
+  PASSWORD_RESET_TOO_MANY_ATTEMPTS: "Too many wrong codes. Request a new one.",
+
   // COMMENT
 
   COMMENT_NOT_FOUND: "Comment not found.",
