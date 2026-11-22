@@ -1,4 +1,15 @@
 #!/usr/bin/env node
+/// <reference types="node" />
+// `scripts/` sits outside `tsconfig.json`'s `include`, so the editor checks this
+// file on its own. With no `types: ["node"]` in that project, `process` resolves
+// to nothing and is reported as an error — while `console` and `URL` work,
+// because those come from the DOM lib. This one line gives the file the globals
+// the runtime actually has, without pulling `scripts/` into the build.
+/* global console, process, URL */
+// The same three globals, declared for ESLint. The flat config applies
+// `js.configs.recommended` (and therefore `no-undef`) to `.mjs` files, and its
+// `**/*.js` ignore does not match this extension, so without this line
+// `npm run lint` fails on a script that runs perfectly well.
 /**
  * Server structure rules — the layering `AGENTS.md` describes, made mechanical.
  *
@@ -32,7 +43,13 @@ const BASELINE_FILE = resolve(
  * lower one, or `shared`/`config` — never upward. `interfaces` sits on top
  * because it is what the outside world talks to.
  */
-const LAYERS = ["shared", "config", "infrastructure", "application", "interfaces"];
+const LAYERS = [
+  "shared",
+  "config",
+  "infrastructure",
+  "application",
+  "interfaces",
+];
 
 /** Line budgets per area. A controller past 400 lines is several controllers. */
 const BUDGETS = [
