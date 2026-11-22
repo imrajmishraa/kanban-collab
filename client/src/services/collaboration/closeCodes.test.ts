@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  isAccessChangedClose,
   isAccessRevokedClose,
   WS_CLOSE_CODE_ACCESS_REVOKED,
 } from "./closeCodes";
@@ -22,5 +23,17 @@ describe("isAccessRevokedClose", () => {
   it("keeps reconnecting on codes a token refresh can fix", () => {
     expect(isAccessRevokedClose(4001)).toBe(false);
     expect(isAccessRevokedClose(4004)).toBe(false);
+  });
+
+  it("reconnects on 4006 — access changed, the socket did not end", () => {
+    /* A demotion or a board becoming private. Sending 4003 here used to kill
+       live editing until the page was reloaded. */
+    expect(isAccessRevokedClose(4006)).toBe(false);
+    expect(isAccessChangedClose(4006)).toBe(true);
+  });
+
+  it("keeps 4003 terminal and does not confuse it with 4006", () => {
+    expect(isAccessRevokedClose(4003)).toBe(true);
+    expect(isAccessChangedClose(4003)).toBe(false);
   });
 });

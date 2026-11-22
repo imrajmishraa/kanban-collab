@@ -13,7 +13,20 @@
  */
 export const WS_CLOSE_CODE_ACCESS_REVOKED = 4003;
 
+/**
+ * Access changed rather than ended: a demotion, a promotion, or a board that
+ * just became private. The socket is still entitled to exist — it just has to be
+ * authorised against the new role — so it reconnects. Sending `4003` for these
+ * killed live editing until a reload.
+ */
+export const WS_CLOSE_CODE_ACCESS_CHANGED = 4006;
+
 /** True when the socket should stay closed instead of reconnecting. */
 export function isAccessRevokedClose(code: number): boolean {
   return code === WS_CLOSE_CODE_ACCESS_REVOKED;
+}
+
+/** True when the socket should come back with the access it now has. */
+export function isAccessChangedClose(code: number): boolean {
+  return code === WS_CLOSE_CODE_ACCESS_CHANGED;
 }

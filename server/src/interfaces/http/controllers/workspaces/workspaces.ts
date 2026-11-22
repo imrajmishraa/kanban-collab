@@ -5,6 +5,53 @@ import { ApiResponse } from "../../../../shared/utils/ApiResponse";
 import { ApiError } from "../../../../shared/utils/ApiError";
 import type { AuthenticatedRequest } from "../../middleware/auth.middleware";
 
+/**
+ * "This caller owns the workspace" — by role, not by the denormalised pointer.
+ *
+ * `ownerId` is written once, at creation, and nothing kept it in step with
+ * `members[].role`. So the moment anybody changed roles the two disagreed, in
+ * both directions: a demoted owner kept the right to delete, and a real owner
+ * lost it. The role is the source of truth everywhere else in the codebase.
+ */
+const asOwner = (userId: Types.ObjectId) => ({
+  members: { $elemMatch: { userId, role: "owner" as const } },
+});
+/**
+ * Keep `ownerId` pointing at somebody who is still an owner.
+ *
+ * Called after the membership write. The role is the permission (see `asOwner`),
+ * but `ownerId` is still read for display and by older rows, so it must not name
+ * a person who has left, been removed or been demoted. A workspace can never be
+ * left without an owner — every caller checks `ownerCount` first — so this is
+ * "point it at the survivor", not "decide who owns it".
+ */
+async function resyncOwnerId(workspace: {
+  ownerId: Types.ObjectId;
+  members: Array<{ userId: Types.ObjectId; role: string }>;
+  save: () => Promise<unknown>;
+}): Promise<boolean> {
+  const stillOwner = workspace.members.some(
+    (member) =>
+      member.userId.equals(workspace.ownerId) && member.role === "owner",
+  );
+
+  if (stillOwner) {
+    return false;
+  }
+
+  const next = workspace.members.find((member) => member.role === "owner");
+
+  if (!next) {
+    /* Refused by the callers, but never write a workspace with no owner. */
+    return false;
+  }
+
+  workspace.ownerId = next.userId;
+  await workspace.save();
+
+  return true;
+}
+
 /** Guard instead of `req.user!` — see the dashboard controller for rationale. */
 function requireUserId(req: AuthenticatedRequest): string {
   if (!req.user) {
@@ -168,7 +215,7 @@ const deleteWorkspace = asyncHandler(async (req: AuthenticatedRequest, res) => {
   const workspace = await WorkspaceModel.findOneAndUpdate(
     {
       _id: workspaceId,
-      ownerId: userObjectId,
+      ...asOwner(userObjectId),
       status: "active",
     },
     { $set: planned.patch },
@@ -181,7 +228,12 @@ const deleteWorkspace = asyncHandler(async (req: AuthenticatedRequest, res) => {
     if (!existing) {
       throw workspaceNotFoundError();
     }
-    if (!existing.ownerId.equals(userObjectId)) {
+
+    const isOwner = existing.members.some(
+      (member) => member.userId.equals(userObjectId) && member.role === "owner",
+    );
+
+    if (!isOwner) {
       throw cannotDeleteWorkspaceError();
     }
     if (existing.status === "deletion_pending") {
@@ -237,7 +289,11 @@ const cancelWorkspaceDeletion = asyncHandler(
       throw workspaceNotFoundError();
     }
 
-    if (!existing.ownerId.equals(userObjectId)) {
+    const isOwner = existing.members.some(
+      (member) => member.userId.equals(userObjectId) && member.role === "owner",
+    );
+
+    if (!isOwner) {
       throw cannotDeleteWorkspaceError();
     }
 
@@ -600,6 +656,9 @@ const updateWorkspaceMemberRole = asyncHandler(
     target.role = role;
     await workspace.save();
 
+    /* A demoted owner must not stay the workspace's `ownerId`. */
+    await resyncOwnerId(workspace);
+
     /* A role change can widen or narrow what this person may read, and the
        socket was authorised against the old role. Close it and let the client
        re-upgrade against the new one. */
@@ -655,13 +714,15 @@ const removeWorkspaceMember = asyncHandler(
     );
     await workspace.save();
 
+    const ownerIdMoved = await resyncOwnerId(workspace);
+
     /* Membership was the only thing the socket was authorised against, and it
        is gone. Without this the removed member keeps the live document, the
        presence list and every subsequent update until they reload. */
     await revokeWorkspaceSockets(memberId, workspaceId, "member_removed");
 
     workspaceControllerLogger.info(
-      { workspaceId, userId, memberId },
+      { workspaceId, userId, memberId, ownerIdMoved },
       "Workspace member removed",
     );
 
@@ -703,6 +764,9 @@ const leaveWorkspace = asyncHandler(async (req: AuthenticatedRequest, res) => {
     (m) => m.userId.toString() !== userId,
   );
   await workspace.save();
+
+  /* If the person leaving was the `ownerId`, point it at a survivor. */
+  await resyncOwnerId(workspace);
 
   /* Their own session, on the boards of a workspace they just left. */
   await revokeWorkspaceSockets(userId, workspaceId, "member_left");

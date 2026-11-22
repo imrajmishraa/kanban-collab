@@ -26,6 +26,19 @@ import { connectionRegistry } from "./connectionRegistry";
  * written, and an unreachable registry must not turn that into a 500. The stale
  * socket then lives until it closes on its own.
  */
+/**
+ * Removal ends the session; a role change only changes what it may do.
+ *
+ * Both used to close with `FORBIDDEN`, which the client treats as terminal — so
+ * a promoted or demoted member lost live editing until they reloaded, with no
+ * explanation, while still being entitled to the board.
+ */
+function closeCodeFor(reason: AccessRevocationReason): number {
+  return reason === "role_changed" || reason === "board_made_private"
+    ? WS_CLOSE_CODE.ACCESS_CHANGED
+    : WS_CLOSE_CODE.FORBIDDEN;
+}
+
 export type AccessRevocationReason =
   "member_removed" | "member_left" | "role_changed" | "board_made_private";
 
@@ -55,7 +68,7 @@ export async function revokeWorkspaceSockets(
 
     for (const connection of revoked) {
       try {
-        connection.socket.close(WS_CLOSE_CODE.FORBIDDEN, reason);
+        connection.socket.close(closeCodeFor(reason), reason);
       } catch (error) {
         websocketLogger.warn(
           {
@@ -133,7 +146,10 @@ export async function revokeGuestSocketsOnBoard(
 
     for (const connection of revoked) {
       try {
-        connection.socket.close(WS_CLOSE_CODE.FORBIDDEN, "board_made_private");
+        connection.socket.close(
+          closeCodeFor("board_made_private"),
+          "board_made_private",
+        );
       } catch (error) {
         websocketLogger.warn(
           { err: error, boardId, connectionId: connection.id },

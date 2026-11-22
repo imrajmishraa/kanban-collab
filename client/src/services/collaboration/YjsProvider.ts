@@ -39,6 +39,7 @@ import {
 import { ORIGIN_REDIS, ORIGIN_REMOTE } from "./origins";
 import { WS_AUTH_SUBPROTOCOL } from "./buildWsUrl";
 import { isAccessRevokedClose } from "./closeCodes";
+import { toastError } from "@/lib/toast";
 import {
   CollaborationMessage,
   applySyncMessage,
@@ -337,10 +338,20 @@ export class YjsProvider {
     };
 
     ws.onclose = (event) => {
-      /* `4003` means access to this board is gone (removed from the workspace,
-         demoted to guest, or left). Reconnecting would be refused at the
-         upgrade, so end the connection deliberately instead of backing off into
-         a handshake that cannot succeed. */
+      /*
+       * `4003` means access to this board is gone — removed from the workspace,
+       * or left. Reconnecting would be refused at the upgrade, so the connection
+       * ends deliberately, and the reader is told why instead of watching a
+       * board that quietly stops updating.
+       *
+       * `4006` is the other half: access *changed* (demoted, promoted, or the
+       * board became private). The socket is still entitled to exist, so it
+       * reconnects and the upgrade authorises it against the new role.
+       */
+      if (isAccessRevokedClose(event.code)) {
+        toastError(null, "Your access to this board was removed.");
+      }
+
       this.apply({
         type: isAccessRevokedClose(event.code) ? "DISCONNECT" : "CLOSE",
       });
