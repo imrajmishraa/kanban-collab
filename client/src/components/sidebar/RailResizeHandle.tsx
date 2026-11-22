@@ -153,7 +153,9 @@ export default function RailResizeHandle({
       size="md"
       gap={8}
       disabled={dragging}
-      className="absolute inset-y-0 right-0 z-50 w-4 translate-x-1/2"
+      /* `rail-handle` is what `components.css` targets to take the divider off
+         the page while a dialog is open — the anchor and the bubble with it. */
+      className="rail-handle absolute inset-y-0 right-0 z-50 w-4 translate-x-1/2"
     >
       <button
         type="button"
