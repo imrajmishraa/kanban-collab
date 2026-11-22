@@ -30,6 +30,8 @@ interface BoardColumnProps {
   onDragEndCard: () => void;
   onDragOverCard: (columnId: string, index: number) => void;
   onDragOverColumn: (columnId: string, count: number) => void;
+  /** Alt+Arrow on a focused card: move it to the neighbouring column. */
+  onKeyboardMove?: (card: BoardCard, direction: "left" | "right") => void;
   onDropColumn: (columnId: string, index: number) => void;
   onEditColumn: (columnId: string) => void;
   onDeleteColumn: (columnId: string) => void;
@@ -59,6 +61,7 @@ export default function BoardColumn({
   onDeleteColumn,
   canDeleteColumn = true,
   onClearColumn,
+  onKeyboardMove,
 }: BoardColumnProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
@@ -203,6 +206,7 @@ export default function BoardColumn({
                 onDragStart={onDragStartCard}
                 onDragEnd={onDragEndCard}
                 onDragOverCard={onDragOverCard}
+                onKeyboardMove={onKeyboardMove}
               />
             ))
           ) : (

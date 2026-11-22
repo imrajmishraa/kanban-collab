@@ -21,6 +21,7 @@ import {
   boardDragReducer,
   resolveDrop,
 } from "@/features/boards/utils/boardDrag";
+import { neighbourColumnId } from "@/features/boards/utils/columnNeighbour";
 import ConfirmDialog from "@/components/dialog/ConfirmDialog";
 import { AddColumnDialog, EditColumnDialog } from "@/features/workspaces";
 
@@ -222,6 +223,21 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
       targetColumnId: toColumnId,
       targetOrderIndex: toIndex,
     });
+  };
+
+  /**
+   * Alt+Arrow on a focused card.
+   *
+   * The keyboard half of "move this card": the same `moveCard` the drag path
+   * uses, aimed at the neighbouring column, so a phone with a keyboard — and
+   * anybody who cannot drag — can still change a card's column.
+   */
+  const handleKeyboardMove = (card: BoardCard, direction: "left" | "right") => {
+    const target = neighbourColumnId(state.columns, card.columnId, direction);
+
+    if (!target) return;
+
+    moveCard(card.id, target, 0);
   };
 
   const handleUpdateCard = (updated: BoardCard) => {
@@ -504,6 +520,7 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
               onDeleteColumn={handleDeleteColumn}
               onClearColumn={clearColumn}
               canDeleteColumn={canManage}
+              onKeyboardMove={handleKeyboardMove}
             />
           ) : (
             <BoardListView columns={visibleColumns} onOpenCard={openCard} />
@@ -520,6 +537,7 @@ export default function BoardView({ board, boardId }: BoardViewProps) {
           onSave={(card) => handleUpdateCard(card)}
           onArchive={handleArchiveCard}
           onDelete={handleDeleteCard}
+          onMove={(cardId, columnId) => moveCard(cardId, columnId, 0)}
           onClose={closeCard}
         />
       )}
