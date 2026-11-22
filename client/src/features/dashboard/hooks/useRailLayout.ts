@@ -14,9 +14,10 @@ export function useRailLayout(): RailLayout {
   const mode = useSidebarState((state) => state.mode);
   const width = useSidebarState((state) => state.width);
   const hovering = useSidebarState((state) => state.hovering);
+  const resizing = useSidebarState((state) => state.resizing);
   const viewportWidth = useViewportWidth();
 
-  return computeRail({ mode, width, hovering, viewportWidth });
+  return computeRail({ mode, width, hovering, viewportWidth, resizing });
 }
 
 /** Live `window.innerWidth`, so the rail can react to a resize. */

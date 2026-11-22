@@ -31,6 +31,7 @@ function warmSearchModal() {
 export default function AppLayout() {
   const toggleSidebar = useSidebarState((s) => s.toggleCollapsed);
   const toggleHidden = useSidebarState((s) => s.toggleHidden);
+  const hide = useSidebarState((s) => s.hide);
 
   /*
    * The rail's width is data now, not two Tailwind classes. One computation
@@ -80,20 +81,27 @@ export default function AppLayout() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [openSearch]);
 
-  /* ⌘B / Ctrl+B — collapse or bring the rail back, from anywhere. */
+  /*
+   * ⌘B / Ctrl+B — collapse or bring the rail back, from anywhere.
+   * ⌘⇧B / Ctrl+Shift+B — put it away entirely. The two are one gesture apart on
+   * purpose: the plain one is used constantly, the shifted one is the "get this
+   * out of my way" version, and both are reversible.
+   */
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       const mod = event.metaKey || event.ctrlKey;
 
-      if (!mod || event.shiftKey || event.key.toLowerCase() !== "b") return;
+      if (!mod || event.key.toLowerCase() !== "b") return;
 
       event.preventDefault();
-      toggleHidden();
+
+      if (event.shiftKey) hide();
+      else toggleHidden();
     };
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [toggleHidden]);
+  }, [toggleHidden, hide]);
 
   // Prefetch the search chunk during idle time.
   // Fallback to a 2s timeout on browsers without requestIdleCallback.

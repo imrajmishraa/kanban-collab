@@ -186,6 +186,24 @@ describe("computeRail", () => {
     expect(layout.railWidth).toBe(RAIL.MIN);
   });
 
+  it("a drag overrides the mode: the width follows the pointer in any state", () => {
+    /* The bug that came back twice: dragging from hover left the mode alone and
+       the rail kept rendering as an overlay, so the drag looked dead. */
+    const hoveringDrag = at({
+      mode: "hover",
+      hovering: false,
+      width: 300,
+      resizing: true,
+    });
+
+    expect(hoveringDrag.railWidth).toBe(300);
+    expect(hoveringDrag.reserved).toBe(300);
+
+    const collapsedDrag = at({ mode: "collapsed", resizing: true, width: 250 });
+
+    expect(collapsedDrag.railWidth).toBe(250);
+  });
+
   it("clamps a hostile stored width before using it", () => {
     expect(at({ width: 900 }).railWidth).toBe(RAIL.MAX);
     /* A stored 4 is an expanded width, so it clamps to MID — the rail never

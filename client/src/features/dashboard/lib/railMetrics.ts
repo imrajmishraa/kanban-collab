@@ -104,6 +104,8 @@ export interface RailLayoutInput {
   width: number;
   hovering: boolean;
   viewportWidth: number;
+  /** A drag is in progress. The rail follows the pointer whatever the mode is. */
+  resizing?: boolean;
 }
 
 export interface RailLayout {
@@ -134,6 +136,7 @@ export function computeRail({
   width,
   hovering,
   viewportWidth,
+  resizing = false,
 }: RailLayoutInput): RailLayout {
   const clamped = clampWidth(width);
   const required = requiredViewport(clamped);
@@ -148,7 +151,19 @@ export function computeRail({
 
   let railWidth: number;
 
-  if (hidden) railWidth = 0;
+  /*
+   * While the divider is being dragged the width is the drag's business, not the
+   * mode's.
+   *
+   * This is the fix for a bug that came back twice: dragging from `hover` left the
+   * mode alone for a moment (or a hover timer re-set it), the rail kept rendering
+   * as an overlay at the stored width, and the drag appeared to do nothing until
+   * the pointer happened to be over the rail. A drag now renders the rail at the
+   * width being dragged, in every mode, and reserves that width so the page
+   * follows instead of sitting still.
+   */
+  if (resizing) railWidth = clamped;
+  else if (hidden) railWidth = 0;
   else if (hoverOpen || expanded) railWidth = clamped;
   else railWidth = RAIL.MIN;
 
@@ -161,7 +176,11 @@ export function computeRail({
    * dropped from 72 to 0 the moment the pointer arrived. In hover mode the
    * layout is therefore pinned to the icon rail, and only the rail itself grows.
    */
-  const reserved = mode === "hover" ? RAIL.MIN : railWidth;
+  const reserved = resizing
+    ? railWidth
+    : mode === "hover"
+      ? RAIL.MIN
+      : railWidth;
 
   return {
     width: clamped,
