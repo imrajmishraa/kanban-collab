@@ -1,6 +1,7 @@
 {
   "server/env-outside-config|infrastructure/scheduler/cron.ts": 2,
   "server/size|interfaces/http/controllers/boards/boards.ts": 1,
+  "server/size|interfaces/http/controllers/cards/cards.ts": 1,
   "server/size|interfaces/http/controllers/comments/comments.ts": 1,
   "server/size|interfaces/http/controllers/workspaces/workspaces.ts": 1,
   "server/size|interfaces/websockets/collaboration/yjs/documentManager.ts": 1

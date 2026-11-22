@@ -48,7 +48,8 @@ const BUDGET = {
  * Exempt from the line budget: tests are long by nature, and config/data tables
  * are a list, not logic. Everything else answers to the budget.
  */
-const SIZE_EXEMPT = /\.test\.tsx?$|(^|\/)(navConfig|config|[a-zA-Z]+Config)\.ts$/;
+const SIZE_EXEMPT =
+  /\.test\.tsx?$|(^|\/)(navConfig|config|[a-zA-Z]+Config)\.ts$/;
 
 const strict = process.argv.includes("--strict");
 const writeBaseline = process.argv.includes("--write-baseline");
@@ -144,9 +145,10 @@ for (const file of files) {
       /opacity-0/.test(chunk) &&
       /(group-hover:|[^:]hover:opacity-100)/.test(chunk);
 
-    const hasFocusPath = /(group-focus-within:|group-focus:|focus-within:|focus:opacity-100)/.test(
-      chunk,
-    );
+    const hasFocusPath =
+      /(group-focus-within:|group-focus:|focus-within:|focus:opacity-100)/.test(
+        chunk,
+      );
 
     if (hiddenUntilHover && !hasFocusPath) {
       report(
@@ -159,12 +161,12 @@ for (const file of files) {
   }
 
   /* 4. no tablet step — advisory, not a gate
-     *
-     * `grid lg:grid-cols-3` is idiomatic mobile-first and fine. What is worth a
-     * second look is a single column that jumps straight to four or more at
-     * `lg:` with nothing in between: that is the shape that squeezes at 768px.
-     * This is a `warn` because only a human can tell whether it actually breaks.
-     */
+   *
+   * `grid lg:grid-cols-3` is idiomatic mobile-first and fine. What is worth a
+   * second look is a single column that jumps straight to four or more at
+   * `lg:` with nothing in between: that is the shape that squeezes at 768px.
+   * This is a `warn` because only a human can tell whether it actually breaks.
+   */
   for (const { chunk, offset } of classChunks(file.text)) {
     const wide = /(lg|xl):grid-cols-[4-9]/.test(chunk);
     const hasMiddle = /(sm|md):grid-cols-/.test(chunk);
@@ -351,9 +353,7 @@ if (fresh.length > 0) {
 const warnings = findings.filter((finding) => finding.severity === "warn");
 
 if (warnings.length > 0) {
-  console.log(
-    `\nwarn (report only, does not fail): ${byRule(warnings)}`,
-  );
+  console.log(`\nwarn (report only, does not fail): ${byRule(warnings)}`);
 }
 
 if (fresh.length > 0 && strict) {

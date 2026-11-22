@@ -127,6 +127,7 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint
       - run: npm run format:check
+      - run: npm run lint:colors -- --strict
       - run: npm run lint:paths -- --strict
       - run: npm run lint:surface -- --strict
       - run: npm test

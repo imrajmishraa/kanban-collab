@@ -21,19 +21,26 @@ records what a change may *look like*.
 | Gate | Command | Budget | Catches |
 |---|---|---|---|
 | Change size | `node scripts/check-change-budget.mjs --strict` | 15 files · 600 added lines · 2 areas | PRs too large to review or revert |
+| Format | `npm run format:check` (both packages, incl. `scripts/**`) | — | unformatted code, including the rule scripts themselves |
 | Client structure | `client/npm run lint:paths -- --strict` | — | files in the wrong place, imports crossing a feature boundary |
 | Client surfaces | `client/npm run lint:surface -- --strict` | `.tsx` 400 · `.ts` 300 lines | hover-only controls, `100vh`, missing safe-area, drag-only, oversized components |
 | Server structure | `server/npm run lint:layers -- --strict` | controller 400 · websocket 500 · use case 400 · shared 300 lines | upward imports, `console`, `process.env` outside `config/env.ts`, raw `ApiError` in controllers |
-| Tokens | `client/npm run lint:colors` | — | colours that bypass the design tokens |
+| Tokens | `client/npm run lint:colors -- --strict` | — | colours that bypass the design tokens |
 
 `npm run check` in each package runs the relevant ones. CI runs them again; a
 green `tsc` does not mean the PR passes.
 
 ### The baseline files
 
-`client/scripts/surface-baseline.json` and `server/scripts/layers-baseline.json`
-are **debt ledgers**. Each entry is a finding that exists today and is tolerated;
-anything not in the ledger fails the build.
+`client/scripts/surface-baseline.json`, `client/scripts/theme-colors-baseline.json`
+and `server/scripts/layers-baseline.json` are **debt ledgers**. Each entry is a
+finding that exists today and is tolerated; anything not in the ledger fails the
+build. `lint:colors` had been written but never wired in, so twenty raw colours
+had accumulated in the docs and marketing surfaces — recording them is what let
+the gate be switched on at all.
+
+`format:check` covers `scripts/**` in both packages. It did not, which is how a
+misformatted rule script reached a pull request while every check was green.
 
 - The ledger only shrinks. Fixing a finding means deleting its entry in the same
   PR.
