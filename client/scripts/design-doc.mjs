@@ -68,7 +68,9 @@ const light = tokensOf(block(".light"));
 const theme = tokensOf(block("@theme"));
 
 if (dark.size === 0) {
-  console.error("no tokens found in :root — is src/index.css where I think it is?");
+  console.error(
+    "no tokens found in :root — is src/index.css where I think it is?",
+  );
   process.exit(1);
 }
 
@@ -86,10 +88,9 @@ function readSection(source, key) {
   const endRel = rest.search(/^[a-z]/m);
   const bodyEnd = endRel === -1 ? source.length : bodyStart + endRel;
   const body = source.slice(bodyStart, bodyEnd);
-  const entries = [...body.matchAll(/^ {2}([a-z0-9-]+):\s*(.*)$/gm)].map((m) => [
-    m[1],
-    m[2].trim(),
-  ]);
+  const entries = [...body.matchAll(/^ {2}([a-z0-9-]+):\s*(.*)$/gm)].map(
+    (m) => [m[1], m[2].trim()],
+  );
   // start points at the key itself; end at the first character of the next one
   return { start: at + 1, end: bodyEnd, entries };
 }
@@ -100,7 +101,9 @@ const quote = (value) => `'${value.replace(/'/g, "''")}'`;
 function renderSection(key, source, changes) {
   const entries = source ? source.entries.map(([name]) => name) : [];
   const names = [
-    ...entries.filter((name) => dark.has(name) || (key === "light" && light.has(name))),
+    ...entries.filter(
+      (name) => dark.has(name) || (key === "light" && light.has(name)),
+    ),
     ...[...dark.keys()].filter((name) => !entries.includes(name)).sort(),
   ];
   const unique = [...new Set(names)].filter((name) =>
@@ -119,11 +122,13 @@ function renderSection(key, source, changes) {
   if (source) {
     for (const [name] of source.entries) {
       const exists = key === "light" ? light.has(name) : dark.has(name);
-      if (!exists) changes.push(`${key}.${name}: removed (no longer in the stylesheet)`);
+      if (!exists)
+        changes.push(`${key}.${name}: removed (no longer in the stylesheet)`);
     }
   }
   for (const name of unique) {
-    if (!source?.entries.some(([n]) => n === name)) changes.push(`${key}.${name}: added`);
+    if (!source?.entries.some(([n]) => n === name))
+      changes.push(`${key}.${name}: added`);
   }
 
   return `${key}:\n${lines.join("\n")}\n`;

@@ -1,0 +1,20 @@
+{
+  "components/docs/DocsPagination.tsx|text-blue-500": 2,
+  "components/docs/DocsSearch.tsx|ring-blue-500": 1,
+  "components/docs/DocsSidebarLeft.tsx|bg-blue-400/30": 1,
+  "components/docs/DocsSidebarLeft.tsx|text-blue-500": 1,
+  "components/docs/DocsSidebarRight.tsx|text-blue-500": 1,
+  "features/marketing/components/features/FeaturesCTA.tsx|border-white/12": 1,
+  "features/marketing/components/features/FeaturesCTA.tsx|border-white/10": 1,
+  "features/marketing/components/features/FeaturesCTA.tsx|border-white/20": 1,
+  "features/marketing/components/features/FeaturesCTA.tsx|border-white/4": 1,
+  "features/marketing/components/home/HomeHeroPreview.tsx|border-[#FFB300]": 1,
+  "features/marketing/components/home/HomeHeroPreview.tsx|bg-[#FFF1B7]": 1,
+  "features/marketing/components/home/HomeHeroPreview.tsx|text-[#483300]": 1,
+  "features/marketing/components/home/HomeHeroPreview.tsx|border-[#e5e5e5]": 1,
+  "features/marketing/components/home/HomeHeroPreview.tsx|text-[#141812]": 2,
+  "features/marketing/components/home/HomeHeroPreview.tsx|bg-[#f4f4f3]": 1,
+  "features/marketing/components/home/HomeHeroPreview.tsx|text-[#646a61]": 1,
+  "pages/docs/docsTypography.ts|text-blue-500": 1,
+  "pages/docs/docsTypography.ts|text-blue-400": 1
+}

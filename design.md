@@ -34,6 +34,7 @@ colors:
   brand-active: '#e95725'
   brand-muted: 'rgba(255, 107, 53, 0.1)'
   brand-border: 'rgba(255, 107, 53, 0.3)'
+  link: '#3b82f6'
   text-primary: 'rgb(245, 245, 245)'
   text-soft: 'rgb(210, 204, 204)'
   text-secondary: 'rgb(175, 175, 175)'
@@ -107,6 +108,7 @@ light:
   danger: '#be123c'
   auth: '#1d4ed8'
   auth-ink: '#ffffff'
+  link: '#2563eb'
   unread-dot: 'rgb(59, 130, 246)'
 typography:
   font-ui:

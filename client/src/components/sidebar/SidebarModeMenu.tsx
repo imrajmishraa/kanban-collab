@@ -1,8 +1,10 @@
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Cursor02Icon,
-  PanelLeftCloseIcon,
-  PanelLeftOpenIcon,
+  CursorInWindowIcon,
+  LayoutAlignLeftIcon,
+  LayoutLeftIcon,
+  SidebarLeftIcon,
 } from "@hugeicons/core-free-icons";
 
 import type { SidebarMode } from "@/features/dashboard";
@@ -18,9 +20,10 @@ const MODES: Array<{
   label: string;
   icon: typeof Cursor02Icon;
 }> = [
-  { mode: "open", label: "Expanded", icon: PanelLeftCloseIcon },
-  { mode: "collapsed", label: "Collapsed", icon: PanelLeftOpenIcon },
-  { mode: "hover", label: "Hover", icon: Cursor02Icon },
+  { mode: "open", label: "Expanded", icon: LayoutLeftIcon },
+  { mode: "collapsed", label: "Collapsed", icon: SidebarLeftIcon },
+  { mode: "hover", label: "Hover", icon: CursorInWindowIcon },
+  { mode: "hidden", label: "Hidden", icon: LayoutAlignLeftIcon },
 ];
 
 function SidebarModeMenu({ mode, onSelect }: SidebarModeMenuProps) {

@@ -16,7 +16,8 @@ import SidebarNotifications from "@/components/sidebar/SidebarNotifications";
 import { useWorkspaces } from "@/hooks/useWorkspaces";
 import { useBoards, boardKeys, BOARDS_LIST_LIMIT } from "@/hooks/useBoards";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
-import { useSidebarState } from "@/features/dashboard/stores/sidebarState";
+import { RAIL, useRailLayout, useSidebarState } from "@/features/dashboard";
+import RailResizeHandle from "./RailResizeHandle";
 import { useAuth } from "@/hooks/useAuth";
 import { boardApi } from "@/features/boards";
 import { useQueryClient } from "@tanstack/react-query";
@@ -25,14 +26,10 @@ import { ShareBoardDialog } from "./ShareBoardDialog";
 import ConfirmDialog from "@/components/dialog/ConfirmDialog";
 
 interface DashboardSidebarProps {
-  collapsed: boolean;
   onToggle: () => void;
 }
 
-export default function DashboardSidebar({
-  collapsed,
-  onToggle,
-}: DashboardSidebarProps) {
+export default function DashboardSidebar({ onToggle }: DashboardSidebarProps) {
   const { user, logout } = useAuth();
   const { boardsOpen, toggleBoards, openBoards } = useSidebarState();
   const queryClient = useQueryClient();
@@ -40,14 +37,22 @@ export default function DashboardSidebar({
   /* Hover mode: the rail stays narrow and opens over the page while the
      pointer is inside it. */
   const mode = useSidebarState((state) => state.mode);
-  const hovering = useSidebarState((state) => state.hovering);
   const setHovering = useSidebarState((state) => state.setHovering);
+  const setWidth = useSidebarState((state) => state.setWidth);
+  const hide = useSidebarState((state) => state.hide);
+  const setResizing = useSidebarState((state) => state.setResizing);
 
-  const open = !collapsed || (mode === "hover" && hovering);
+  /* One computation decides the width; `AppLayout` reads the same one so the
+     page reserves exactly what the rail takes. */
+  const layout = useRailLayout();
+  const { railWidth } = layout;
+
+  /* Labels only fit above the icon rail. */
+  const open = railWidth > RAIL.MIN;
 
   /* Expanded over the page rather than beside it: that is the only case where
      the rail needs to read as a layer. */
-  const floating = mode === "hover" && open;
+  const floating = layout.hoverOpen;
 
   /* A pointer crossing the edge should not slam the rail shut, so the close is
      delayed just long enough to move between the rail and a panel beside it. */
@@ -153,14 +158,20 @@ export default function DashboardSidebar({
   return (
     <>
       <aside
+        id="app-rail"
+        /* A zero-width rail is not "invisible": it needs `overflow-visible`
+           for its own panels, so at width 0 it would keep painting them. Take
+           it off the page instead of just narrowing it. */
+        hidden={railWidth === 0}
         onClick={!open ? onToggle : undefined}
         onMouseEnter={onRailEnter}
         onMouseLeave={onRailLeave}
+        style={{ width: railWidth }}
         className={[
           /* Visible, not hidden: the rail's own panels are wider than the rail
              and open beside it, over the page. The nav clips itself, so only
              those panels escape. */
-          "fixed left-0 top-0 hidden h-screen flex-col overflow-visible",
+          "fixed left-0 top-0 hidden h-dvh flex-col overflow-visible",
           /* The navbar is z-50 and keeps its collapsed offset, so a rail that
              floats over the page has to sit above it or the two overlap. */
           floating ? "z-60" : "z-40",
@@ -168,7 +179,6 @@ export default function DashboardSidebar({
           "transition-[width,border-color] duration-200 ease-out",
           "motion-reduce:transition-none",
           "md:flex",
-          open ? "w-64" : "w-18",
         ].join(" ")}
       >
         <div className="shrink-0">
@@ -197,6 +207,44 @@ export default function DashboardSidebar({
             }}
           />
         </div>
+
+        {/* The divider lives inside the rail so it follows the width, but sits
+            on the border itself. */}
+        {railWidth > 0 && (
+          <RailResizeHandle
+            renderedWidth={railWidth}
+            width={layout.width}
+            onWidth={setWidth}
+            /* Below MID the drag snaps to the icon rail instead of sliding. */
+            onCollapse={() => useSidebarState.getState().collapse()}
+            /* Double-click while collapsed: back out at the default width. */
+            onExpand={() => useSidebarState.getState().expand()}
+            onHide={hide}
+            /* Touching the divider must change nothing: a press that never
+               becomes a drag has to be a no-op, or the rail opens the moment you
+               aim at the border. The rail is promoted only once the pointer
+               actually moves into the expanded range. */
+            onResizeStart={() => {
+              setHovering(false);
+              setResizing(true);
+
+              /*
+               * A drag is a deliberate resize, so hover mode has to become open
+               * — otherwise the rail keeps rendering as a hover overlay, the
+               * pointer leaves, and the width only ever changes while the cursor
+               * is over the rail. Collapsed is *not* promoted here: a press that
+               * never becomes a drag must stay a no-op.
+               */
+              if (useSidebarState.getState().mode === "hover") {
+                useSidebarState.getState().expand();
+              }
+            }}
+            onResizeEnd={() => {
+              setHovering(false);
+              setResizing(false);
+            }}
+          />
+        )}
 
         {/* mt-auto keeps the strip at the bottom of the column even if a
             sibling above it refuses to shrink. */}

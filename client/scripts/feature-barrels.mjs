@@ -32,8 +32,7 @@ const ALIASES = [
 
 /* A specifier and the clause in front of it. The clause is kept verbatim except
    for a default import, which the barrel exposes as a named export. */
-const IMPORT =
-  /import\s+(type\s+)?([\s\S]*?)\s+from\s+(["'])([^"']+)\3;?/g;
+const IMPORT = /import\s+(type\s+)?([\s\S]*?)\s+from\s+(["'])([^"']+)\3;?/g;
 
 function walk(dir, out = []) {
   for (const entry of readdirSync(dir)) {
@@ -145,17 +144,30 @@ for (const feature of [...publicSurface.keys()].sort()) {
     " */",
   ];
   for (const file of [...surface.keys()].sort()) {
-    const relPath = rel(file).slice(`features/${feature}/`.length).replace(/\.tsx?$/, "");
+    const relPath = rel(file)
+      .slice(`features/${feature}/`.length)
+      .replace(/\.tsx?$/, "");
     const names = [...surface.get(file)];
-    const values = names.filter((n) => n.startsWith("value:")).map((n) => n.slice(6)).sort();
-    const defaults = names.filter((n) => n.startsWith("default:")).map((n) => n.slice(8)).sort();
-    const types = names.filter((n) => n.startsWith("type:")).map((n) => n.slice(5)).sort();
-    if (values.length) lines.push(`export { ${values.join(", ")} } from "./${relPath}";`);
+    const values = names
+      .filter((n) => n.startsWith("value:"))
+      .map((n) => n.slice(6))
+      .sort();
+    const defaults = names
+      .filter((n) => n.startsWith("default:"))
+      .map((n) => n.slice(8))
+      .sort();
+    const types = names
+      .filter((n) => n.startsWith("type:"))
+      .map((n) => n.slice(5))
+      .sort();
+    if (values.length)
+      lines.push(`export { ${values.join(", ")} } from "./${relPath}";`);
     // A default export has no name of its own; the barrel gives it one.
     for (const name of defaults) {
       lines.push(`export { default as ${name} } from "./${relPath}";`);
     }
-    if (types.length) lines.push(`export type { ${types.join(", ")} } from "./${relPath}";`);
+    if (types.length)
+      lines.push(`export type { ${types.join(", ")} } from "./${relPath}";`);
   }
   const out = join(ROOT, "features", feature, "index.ts");
   if (!dryRun) writeFileSync(out, `${lines.join("\n")}\n`);
@@ -189,7 +201,9 @@ for (const [file, items] of byFile) {
       const replaced =
         clauseAt === -1
           ? head
-          : head.slice(0, clauseAt) + `{ ${local} }` + head.slice(clauseAt + clause.length);
+          : head.slice(0, clauseAt) +
+            `{ ${local} }` +
+            head.slice(clauseAt + clause.length);
       source = replaced + next + source.slice(at + anchor.length);
     }
     flipped += 1;

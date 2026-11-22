@@ -7,6 +7,7 @@ import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { useAuth } from "@/hooks/useAuth";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { NotificationPreferences } from "@/features/dashboard";
+import { RIGHT_PANEL_MODES, useRightPanel } from "@/stores/rightPanel";
 
 function SettingsPage() {
   const { user } = useAuth();
@@ -17,6 +18,11 @@ function SettingsPage() {
 
   const { data: workspace } = useWorkspace(activeWorkspaceId);
   const deletionPending = workspace?.status === "deletion_pending";
+
+  /* Layout, not workspace data: this is stored per browser and applies to every
+     workspace the reader opens. */
+  const rightPanelMode = useRightPanel((state) => state.mode);
+  const setRightPanelMode = useRightPanel((state) => state.setMode);
 
   const deleteWorkspace = useMutation({
     mutationFn: (workspaceId: string) =>
@@ -139,6 +145,54 @@ function SettingsPage() {
               {message}
             </p>
           )}
+        </section>
+
+        {/* Layout */}
+        <section className="mt-6 rounded-xl border border-(--border) bg-(--tint-3) p-5">
+          <h2 className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-(--text-muted)">
+            Appearance
+          </h2>
+
+          <p className="mt-3 max-w-prose font-mono text-[12px] leading-relaxed text-(--text-secondary)">
+            The right column is off by default. The bell in the navbar opens the
+            same inbox as it always has; turning the column on gives it a
+            permanent home from 1024px up. This is a per-browser preference, not
+            a workspace setting.
+          </p>
+
+          <div
+            role="radiogroup"
+            aria-label="Right column"
+            className="mt-4 grid gap-2 sm:grid-cols-2"
+          >
+            {RIGHT_PANEL_MODES.map((option) => {
+              const checked = option.mode === rightPanelMode;
+
+              return (
+                <button
+                  key={option.mode}
+                  type="button"
+                  role="radio"
+                  aria-checked={checked}
+                  onClick={() => setRightPanelMode(option.mode)}
+                  className={[
+                    "rounded-lg border p-3 text-left transition-colors",
+                    "focus-visible:outline-2 focus-visible:outline-(--brand)",
+                    checked
+                      ? "border-(--brand) bg-(--bg-hover)"
+                      : "border-(--border) hover:bg-(--bg-hover)",
+                  ].join(" ")}
+                >
+                  <span className="block font-mono text-[12px] text-(--text-primary)">
+                    {option.label}
+                  </span>
+                  <span className="mt-1 block font-mono text-[11px] leading-relaxed text-(--text-muted)">
+                    {option.description}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </section>
 
         <NotificationPreferences />

@@ -2,6 +2,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import {
   MousePointerBanIcon,
   SidebarLeftIcon,
+  LayoutLeftIcon,
 } from "@hugeicons/core-free-icons";
 import { useNavigate } from "react-router-dom";
 
@@ -21,6 +22,10 @@ interface SidebarHeaderProps {
   mode?: SidebarMode;
 }
 
+const isMac =
+  typeof navigator !== "undefined" &&
+  /Mac|iPhone|iPad|iPod/.test(navigator.platform);
+
 const SidebarHeader = ({
   collapsed,
   onToggle,
@@ -33,7 +38,14 @@ const SidebarHeader = ({
   if (collapsed) {
     return (
       <div className="group/expand relative flex h-14 shrink-0 items-center justify-center">
-        <Tooltip label="Expand" side="right" shape="solid" size="md" gap={10}>
+        <Tooltip
+          label="Expand"
+          highlight={isMac ? "⌘B" : "Ctrl B"}
+          side="right"
+          shape="solid"
+          size="md"
+          gap={10}
+        >
           <button
             type="button"
             onClick={(event) => {
@@ -60,7 +72,7 @@ const SidebarHeader = ({
             {/* Hover hint, hidden normally, visible on hover: a pointer when
                 the rail opens by hovering, an arrow when it opens on click. */}
             <HugeiconsIcon
-              icon={mode === "hover" ? MousePointerBanIcon : SidebarLeftIcon}
+              icon={mode === "hover" ? MousePointerBanIcon : LayoutLeftIcon}
               size={16}
               strokeWidth={1.8}
               className="
@@ -118,7 +130,13 @@ const SidebarHeader = ({
             />
           </Tooltip>
         ) : (
-          <Tooltip label="Collapse" side="bottom" shape="solid" size="md">
+          <Tooltip
+            label="Collapse"
+            highlight={isMac ? "⌘B" : "Ctrl B"}
+            side="bottom"
+            shape="solid"
+            size="md"
+          >
             <HeaderIconButton
               icon={
                 <HugeiconsIcon

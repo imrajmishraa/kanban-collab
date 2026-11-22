@@ -40,6 +40,8 @@
   --brand-active: #e95725;
   --brand-muted: rgba(255, 107, 53, 0.1);
   --brand-border: rgba(255, 107, 53, 0.3);
+  /* Focus/selection blue — the one the docs already use as blue-500. */
+  --link: #3b82f6;
 
   --text-primary: rgb(245, 245, 245);
   --text-soft: rgb(210, 204, 204);
@@ -140,6 +142,7 @@
   --brand-active: #7c2d12;
   --brand-muted: rgba(194, 65, 12, 0.1);
   --brand-border: rgba(194, 65, 12, 0.32);
+  --link: #2563eb;
 
   --text-primary: rgb(26, 26, 26);
   --text-soft: rgb(56, 56, 56);

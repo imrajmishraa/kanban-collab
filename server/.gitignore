@@ -1,5 +1,8 @@
 # Dependencies
-node_modules/
+# No trailing slash: `node_modules/` only matches a directory, so a symlinked
+# node_modules (how this repo is worked on in a container) slipped past it and
+# was committed once. The client's ignore has always been written this way.
+node_modules
 
 # Build output
 dist/

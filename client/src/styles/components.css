@@ -511,3 +511,30 @@ textarea::placeholder {
    `src/lib/useSmoothScroll.ts`, mounted from `PublicLayout`. Nothing on the
    dashboard is affected, and anything that must keep native scrolling can opt
    out with `data-lenis-prevent`. */
+
+/* ── RAIL RESIZE ────────────────────────────────────────────────────────
+   While the divider is being dragged the rail's width changes every pointer
+   move. Every surface that follows it — the rail itself, the page's margin and
+   the navbar's left offset — carries a 200ms transition, so mid-drag they lag
+   behind the pointer and visibly catch up afterwards: the navbar arrives "late",
+   which is exactly how it felt.
+
+   `data-resizing` is set on the layout root for the duration of the drag, and
+   nothing on these three animates while it is. `!important` because the
+   transitions are Tailwind utilities on the elements themselves. */
+[data-resizing="true"] #app-rail,
+[data-resizing="true"] main,
+[data-resizing="true"] header {
+  transition: none !important;
+}
+
+/* An overlay outranks the divider.
+   Every dialog in the app sets `aria-modal="true"` and locks body scroll, but
+   the divider's 16px hit area and its portalled tooltip are anchored in the
+   shell, so they stayed live on top of an open dialog — hovering the search
+   palette's edge showed "Drag to resize" and the blue line over it. `:has()`
+   asks the only question that matters: is a modal open? If so, the divider and
+   its tooltip anchor leave the page. */
+body:has([aria-modal="true"]) .rail-handle {
+  display: none;
+}

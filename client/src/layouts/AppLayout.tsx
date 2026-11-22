@@ -7,10 +7,13 @@ const DashboardSidebar = lazy(
 const DashboardNavbar = lazy(
   () => import("@components/sidebar/DashboardNavbar"),
 );
+const RightPanel = lazy(() => import("@components/layout/RightPanel"));
 
 import { NewWorkspaceDialogProvider } from "@/components/dashboard/workspace/create/NewWorkspaceDialogProvider";
 
 import { useSidebarState } from "@/features/dashboard/stores/sidebarState";
+import { useRailLayout } from "@/features/dashboard";
+import { useRightPanel } from "@/stores/rightPanel";
 import { useSearchStore } from "@/features/search/stores/searchStore";
 import { useEnsureActiveWorkspace } from "@/hooks/useEnsureActiveWorkspace";
 import { useSyncSavedBoards } from "@/hooks/useSyncSavedBoards";
@@ -26,11 +29,23 @@ function warmSearchModal() {
 }
 
 export default function AppLayout() {
-  const { collapsed, toggleCollapsed: toggleSidebar } = useSidebarState();
-  /* Hover mode opens the rail *over* the page instead of pushing it, so while
-     the pointer is on the rail the outlet gets a little breathing room back. */
-  const sidebarMode = useSidebarState((s) => s.mode);
-  const railOverPage = sidebarMode === "hover";
+  const toggleSidebar = useSidebarState((s) => s.toggleCollapsed);
+  const toggleHidden = useSidebarState((s) => s.toggleHidden);
+  const hide = useSidebarState((s) => s.hide);
+
+  /*
+   * The rail's width is data now, not two Tailwind classes. One computation
+   * (`useRailLayout`) decides it, and this layout reserves exactly what the
+   * rail takes via `--rail-width` — the same value the rail renders at, so the
+   * two cannot drift.
+   */
+  const rail = useRailLayout();
+  const resizing = useSidebarState((s) => s.resizing);
+
+  /* Off by default (`stores/rightPanel.ts`), so an existing reader's layout is
+     unchanged until they choose a column in Settings → Appearance. The panel
+     itself only exists from `lg:` up; below that it renders nothing. */
+  const rightPanelOpen = useRightPanel((s) => s.mode) !== "off";
 
   const searchOpen = useSearchStore((s) => s.open);
   const openSearch = useSearchStore((s) => s.openSearch);
@@ -66,6 +81,28 @@ export default function AppLayout() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [openSearch]);
 
+  /*
+   * ⌘B / Ctrl+B — collapse or bring the rail back, from anywhere.
+   * ⌘⇧B / Ctrl+Shift+B — put it away entirely. The two are one gesture apart on
+   * purpose: the plain one is used constantly, the shifted one is the "get this
+   * out of my way" version, and both are reversible.
+   */
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const mod = event.metaKey || event.ctrlKey;
+
+      if (!mod || event.key.toLowerCase() !== "b") return;
+
+      event.preventDefault();
+
+      if (event.shiftKey) hide();
+      else toggleHidden();
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [toggleHidden, hide]);
+
   // Prefetch the search chunk during idle time.
   // Fallback to a 2s timeout on browsers without requestIdleCallback.
   useEffect(() => {
@@ -82,22 +119,32 @@ export default function AppLayout() {
       {/* One column for the whole app, centred and capped like the marketing
           pages. The rail and the navbar are `fixed`, so they still measure
           against the viewport — see the note in the reply. */}
-      <div className="mx-auto min-h-screen w-full max-w-384 bg-(--bg-root) text-(--text-primary)">
+      <div
+        className="mx-auto min-h-screen w-full max-w-384 bg-(--bg-root) text-(--text-primary)"
+        style={{ "--rail-width": `${rail.reserved}px` } as React.CSSProperties}
+        /* Mid-drag, nothing animates: the rail, the page and the navbar have to
+           move together at pointer speed instead of easing behind it. */
+        data-resizing={resizing ? "true" : undefined}
+      >
         {/* The phone bar lives inside DashboardSidebar now, next to the panel it
             opens — one component owns both, so the flag never has to travel. */}
-        <DashboardSidebar collapsed={collapsed} onToggle={toggleSidebar} />
+        <DashboardSidebar onToggle={toggleSidebar} />
 
         <main
           className={[
             /* `main` is the app's scroller, not the document, so smooth
                scrolling has to be declared here for anything that calls
                scrollTo / scrollIntoView inside the shell. */
-            "flex h-screen flex-col overflow-y-auto scroll-smooth",
-            "transition-[margin-left,padding] duration-200 ease-out",
+            "flex h-dvh flex-col overflow-y-auto scroll-smooth",
+            "transition-[margin-left,margin-right,padding] duration-200 ease-out",
             "ml-0 pt-14 md:pt-0",
-            collapsed ? "md:ml-18" : "md:ml-64",
-            /* Same 200ms as the rail's own slide, so the two move together. */
-            railOverPage && "md:px-8 md:ml-4",
+            /* What the rail reserves, in one variable — the navbar offsets
+               against the same one. */
+            "md:ml-(--rail-width)",
+            /* Same 360px the panel reserves (`w-90`), so the board is never
+               half-covered. Below `lg` the panel is not rendered and this
+               class does nothing. */
+            rightPanelOpen && "lg:mr-90",
           ].join(" ")}
         >
           <DashboardNavbar />
@@ -105,6 +152,12 @@ export default function AppLayout() {
             <Outlet />
           </div>
         </main>
+
+        {rightPanelOpen && (
+          <Suspense fallback={null}>
+            <RightPanel />
+          </Suspense>
+        )}
 
         {/* Mounted only while open — lazy() downloads the chunk on
             first open; after that it is cached in memory. */}

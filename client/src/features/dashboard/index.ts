@@ -14,6 +14,7 @@ export { default as DashboardError } from "./components/main/DashboardError";
 export { default as DashboardHeader } from "./components/main/DashboardHeader";
 export { default as DashboardOverview } from "./components/main/DashboardOverview";
 export { default as WorkspaceSection } from "./components/main/WorkspaceSection";
+export { default as NotificationsFeed } from "./components/notifications/NotificationsFeed";
 export { default as NotificationsPanel } from "./components/notifications/NotificationsPanel";
 export { notificationKeys } from "./components/notifications/index";
 export { SearchInputRow } from "./components/search/SearchInputRow";
@@ -32,6 +33,18 @@ export { useDashboard } from "./hooks/useDashboard";
 export { usePinnedBoards } from "./stores/pinnedBoards";
 export { useSidebarState } from "./stores/sidebarState";
 export type { SidebarMode } from "./stores/sidebarState";
+export { useRailLayout, useViewportWidth } from "./hooks/useRailLayout";
+export {
+  RAIL,
+  RAIL_STOPS,
+  clampWidth,
+  computeRail,
+  requiredViewport,
+  snapWidth,
+  snapZone,
+} from "./lib/railMetrics";
+export type { RailZone } from "./lib/railMetrics";
+export type { RailLayout } from "./lib/railMetrics";
 
 export { formatDay } from "./components/search/formatDay";
 export type { PaletteRow, Scope } from "./components/search/types";
