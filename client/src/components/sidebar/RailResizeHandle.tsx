@@ -43,7 +43,10 @@ export default function RailResizeHandle({
   onResizeStart,
   onResizeEnd,
 }: RailResizeHandleProps) {
+  /** Pointer is down on the divider. */
   const [dragging, setDragging] = useState(false);
+  /** The pointer has actually travelled: this is a drag, not a click. */
+  const [moving, setMoving] = useState(false);
   /** The drag is under MID, so the rail is sitting collapsed. */
   const [belowMid, setBelowMid] = useState(false);
 
@@ -59,7 +62,7 @@ export default function RailResizeHandle({
    * itself, so it does not flicker while the pointer is still moving.
    */
   const atStop =
-    dragging &&
+    moving &&
     (belowMid ||
       width === RAIL.MIN ||
       width === RAIL.MID ||
@@ -81,13 +84,31 @@ export default function RailResizeHandle({
     startWidth.current = clampWidth(renderedWidth || width);
 
     event.currentTarget.setPointerCapture(event.pointerId);
-    onResizeStart(startWidth.current);
     setDragging(true);
+    setMoving(false);
     setBelowMid(false);
+
+    /*
+     * Nothing else happens here, deliberately.
+     *
+     * This used to call `onResizeStart`, which sets `resizing` — and `resizing`
+     * makes the rail render at the dragged width. A press that never moved
+     * therefore flashed the rail open at the stored width and snapped it back on
+     * release, which is what a single click on the border looked like. The drag
+     * starts on the first pointer move instead.
+     */
   };
 
   const onPointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
     if (!dragging) return;
+
+    /* A few px of slop, so a click with a shaky hand is still a click. */
+    if (!moving) {
+      if (Math.abs(event.clientX - startX.current) < 3) return;
+
+      setMoving(true);
+      onResizeStart(startWidth.current);
+    }
 
     const travel = (event.clientX - startX.current) * RAIL.DRAG_DAMPING;
     const raw = startWidth.current + travel;
@@ -98,6 +119,7 @@ export default function RailResizeHandle({
        expanded range stores a width. */
     if (zone === "hidden") {
       setDragging(false);
+      setMoving(false);
       setBelowMid(false);
       onHide();
       onResizeEnd();
@@ -139,9 +161,14 @@ export default function RailResizeHandle({
   const endDrag = () => {
     if (!dragging) return;
 
+    const wasMoving = moving;
+
     setDragging(false);
+    setMoving(false);
     setBelowMid(false);
-    onResizeEnd();
+
+    /* A click that never became a drag changed nothing, so it has nothing to end. */
+    if (wasMoving) onResizeEnd();
   };
 
   /* A drag can end without a pointerup on this element — the rail can be hidden
