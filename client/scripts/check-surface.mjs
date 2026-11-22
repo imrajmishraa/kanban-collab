@@ -18,6 +18,8 @@
  *   surface/safe-area     fixed chrome with no safe-area inset
  *   surface/drag-only     drag handling with no keyboard path
  *   surface/touch-target  a small control (report only, does not fail)
+ *   surface/persist-version  a persisted store with no schema version
+ *   surface/resize-a11y   a resize handle without separator semantics
  *
  * Run: node scripts/check-surface.mjs
  *      node scripts/check-surface.mjs --strict            exit 1 on new findings
@@ -206,6 +208,52 @@ for (const file of files) {
       file,
       1,
       "drag handling with no keyboard path — a finger fires no HTML5 drag event",
+    );
+  }
+
+  /* 8. persisted stores need a version
+   *
+   * A store that persists without `version` has no way to migrate the shape it
+   * wrote last month. Adding a field later (a width, a mode) then means either
+   * a runtime crash on old data or a silent reset of the user's settings. Every
+   * store that already ships a version gets this for free; the ones that do not
+   * are grandfathered so the rule can be switched on today.
+   */
+  if (/persist\(/.test(file.text) && !/\bversion:\s*\d/.test(file.text)) {
+    report(
+      "surface/persist-version",
+      file,
+      1,
+      "persist() without `version` — add one now, so the shape can be migrated later",
+    );
+  }
+
+  /* 9. a resize handle must be a separator
+   *
+   * The handle is the only way to change the width, so it has to be reachable
+   * and operable without a pointer: `role="separator"`, `tabindex`, and the
+   * aria value range are what a screen reader announces and what the arrow keys
+   * drive. A `cursor-col-resize` div with an onPointerDown and nothing else is
+   * invisible to every keyboard user.
+   */
+  const hasSeparator = /role="separator"/.test(file.text);
+  const hasResizeCursor = /cursor-(col|ew)-resize/.test(file.text);
+
+  if (hasSeparator && !/aria-valuenow/.test(file.text)) {
+    report(
+      "surface/resize-a11y",
+      file,
+      1,
+      'role="separator" without aria-valuenow — announce the width it controls',
+    );
+  }
+
+  if (hasResizeCursor && !hasSeparator) {
+    report(
+      "surface/resize-a11y",
+      file,
+      1,
+      'resize cursor with no role="separator" — the handle is pointer-only',
     );
   }
 

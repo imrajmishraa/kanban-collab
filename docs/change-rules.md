@@ -118,7 +118,7 @@ review.
 | `app/`, `layouts/` | anything | — |
 | `pages/` | features, components, hooks, lib, stores | another page |
 | `features/<x>/` | `components/`, `hooks/`, `lib/`, `services/`, `stores/`, `types/`, `design/`, itself | another feature's internals (barrel only), `pages/`, `app/` |
-| `components/` | `lib/`, `hooks/`, `design/`, `types/`, `stores/` | any `features/`, any `pages/` |
+| `components/` | `lib/`, `hooks/`, `design/`, `types/`, `stores/`, a feature's **barrel** | a feature's internals, any `pages/` |
 | `hooks/`, `stores/` | `lib/`, `services/`, `types/` | components, pages, features |
 | `lib/`, `services/` | `types/` | React, components, features |
 | `design/` | nothing | everything |
