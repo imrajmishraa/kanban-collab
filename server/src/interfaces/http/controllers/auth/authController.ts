@@ -6,6 +6,10 @@ import { ApiResponse } from "../../../../shared/utils/ApiResponse";
 import { register as registerUser } from "../../../../application/auth/register";
 import { login as loginUser } from "../../../../application/auth/login";
 import { refresh as refreshTokens } from "../../../../application/auth/refresh";
+import {
+  requestPasswordReset,
+  resetPasswordWithCode,
+} from "../../../../application/auth/passwordReset";
 import { logout as revokeSession } from "../../../../application/auth/logout";
 
 import {
@@ -136,5 +140,62 @@ export const me = asyncHandler(
     return res
       .status(200)
       .json(new ApiResponse(200, "User profile retrieved.", result));
+  },
+);
+
+/* ── password recovery ─────────────────────────────────────────────────── */
+
+/**
+ * POST /api/v1/auth/forgot-password
+ *
+ * Always 202, whatever happened: a different answer for a known address would
+ * turn this into an account enumerator. The user is told to check their inbox
+ * either way, which is also true — an address with no account receives nothing
+ * and learns nothing.
+ */
+export const forgotPassword = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { email } = req.body as { email: string };
+
+    await requestPasswordReset(email);
+
+    return res.status(202).json(
+      new ApiResponse(
+        202,
+        "If that address has an account, a code is on its way.",
+        {
+          data: null,
+        },
+      ),
+    );
+  },
+);
+
+/**
+ * POST /api/v1/auth/reset-password
+ *
+ * Sets the password and revokes every session. No new session is issued: the
+ * user logs in again with the password they just chose, which is one more chance
+ * for the person who had the old one to be locked out.
+ */
+export const resetPassword = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { email, code, password } = req.body as {
+      email: string;
+      code: string;
+      password: string;
+    };
+
+    await resetPasswordWithCode(email, code, password);
+
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        "Password updated. Sign in with your new password.",
+        {
+          data: null,
+        },
+      ),
+    );
   },
 );

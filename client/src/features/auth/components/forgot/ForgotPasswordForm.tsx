@@ -27,24 +27,16 @@ import { FieldError } from "../FieldError";
 import { CLEAR, FIELD, MARK, PAD } from "../fieldChrome";
 import {
   forgotPasswordSchema,
+  resetPasswordSchema,
   type ForgotPasswordFormData,
+  type ResetPasswordFormData,
 } from "../../validations/auth.validator";
+import { forgotPasswordRequest, resetPasswordRequest } from "../../api/authApi";
 
-type Step = "email" | "code" | "sent";
+type Step = "email" | "code" | "password" | "done";
 
 const CODE_LENGTH = 6;
 const RESEND_COOLDOWN = 30;
-
-/**
- * Stand-in for the two endpoints the server has not implemented yet.
- *
- * `/api/v1/auth/forgot-password` and `/api/v1/auth/reset-password` appear in
- * `csrf.middleware.ts` and in the rate-limit table, and nowhere else — there is
- * no handler behind either. So these three waits are the whole of the network
- * story, exactly as they were on the old page. When the routes land, each
- * `await pause(...)` becomes one `apiClient.post`.
- */
-const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /** The six boxes, in the card's language rather than the old mono-glow one. */
 const BOX = [
@@ -103,6 +95,10 @@ function BackLink({
 export function ForgotPasswordForm() {
   const emailId = useId();
   const emailErrorId = useId();
+  const passwordId = useId();
+  const passwordErrorId = useId();
+  const confirmId = useId();
+  const confirmErrorId = useId();
   const formRef = useRef<HTMLFormElement>(null);
   const codeRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -129,6 +125,15 @@ export function ForgotPasswordForm() {
 
   const emailField = registerField("email");
 
+  /* A second form, declared here rather than inside the step: hooks cannot be
+     called conditionally, and this one only mounts its inputs in step three. */
+  const resetForm = useForm<ResetPasswordFormData>({
+    resolver: zodResolver(resetPasswordSchema),
+    mode: "onSubmit",
+    reValidateMode: "onSubmit",
+    defaultValues: { password: "", confirmPassword: "" },
+  });
+
   const filled = code.filter(Boolean).length;
   const isCodeComplete = filled === CODE_LENGTH;
 
@@ -138,7 +143,7 @@ export function ForgotPasswordForm() {
     setIsSubmitting(true);
 
     try {
-      await pause(800);
+      await forgotPasswordRequest(values.email);
       setSentEmail(values.email);
       setStep("code");
       setCooldown(RESEND_COOLDOWN);
@@ -149,23 +154,42 @@ export function ForgotPasswordForm() {
     }
   });
 
-  /* ── Step 2: check the code ─────────────────────────────── */
-  const handleVerify = async (event?: FormEvent) => {
+  /* ── Step 2: the code, then the new password ────────────── */
+  const handleVerify = (event?: FormEvent) => {
     event?.preventDefault();
     if (!isCodeComplete || isSubmitting) return;
+
+    /* Nothing to check locally: the code is verified by the server together
+       with the new password, in one request, so a wrong code never leaves a
+       half-finished reset behind. */
+    setStep("password");
+  };
+
+  /* ── Step 3: set the password ───────────────────────────── */
+  const handleSetPassword = resetForm.handleSubmit(async (values) => {
+    if (isSubmitting) return;
     setIsSubmitting(true);
 
     try {
-      await pause(800);
-      setStep("sent");
+      await resetPasswordRequest({
+        email: sentEmail,
+        code: code.join(""),
+        password: values.password,
+      });
+
+      setStep("done");
     } catch {
-      toastError(null, "That code didn't match. Check it and try again.");
+      /* The code may have expired, or the attempts are spent. Sending them back
+         to the code step is the only useful thing to do — the message says
+         which. */
+      toastError(null, "That reset failed. Request a new code and try again.");
       setCode(Array(CODE_LENGTH).fill(""));
-      requestAnimationFrame(() => codeRefs.current[0]?.focus());
+      /* Back to the code step; the effect above focuses the first box. */
+      setStep("code");
     } finally {
       setIsSubmitting(false);
     }
-  };
+  });
 
   /* The sixth digit submits on its own, after long enough for the last key to
      land in its box first. */
@@ -245,7 +269,7 @@ export function ForgotPasswordForm() {
     setIsSubmitting(true);
 
     try {
-      await pause(600);
+      await forgotPasswordRequest(sentEmail);
       setCooldown(RESEND_COOLDOWN);
       setCode(Array(CODE_LENGTH).fill(""));
       requestAnimationFrame(() => codeRefs.current[0]?.focus());
@@ -464,7 +488,108 @@ export function ForgotPasswordForm() {
     );
   }
 
-  /* ── Step 3 ─────────────────────────────────────────────── */
+  /* ── Step 3: the new password ───────────────────────────── */
+  if (step === "password") {
+    const { errors: resetErrors } = resetForm.formState;
+
+    return (
+      <div className="mx-auto flex w-full max-w-105 flex-col">
+        <BackLink onClick={() => setStep("code")}>Back to the code</BackLink>
+
+        <h2 className="mt-3 text-[26px] leading-[1.15] font-semibold tracking-[-0.7px] text-(--text-primary) sm:text-[28px]">
+          Choose a new password
+        </h2>
+        <p className="mt-2.5 text-[13.5px] leading-[1.6] text-(--text-secondary)">
+          The code is good for{" "}
+          <span className="text-(--text-primary)">{sentEmail}</span>. Setting a
+          new password signs you out everywhere else.
+        </p>
+
+        <form
+          onSubmit={handleSetPassword}
+          noValidate
+          className="mt-6 flex flex-col gap-4"
+        >
+          <div className="pb-10">
+            <label htmlFor={passwordId} className="sr-only">
+              New password
+            </label>
+            <input
+              id={passwordId}
+              type="password"
+              autoComplete="new-password"
+              placeholder="New password"
+              aria-invalid={resetErrors.password ? "true" : "false"}
+              {...resetForm.register("password")}
+              className={[
+                FIELD,
+                PAD,
+                resetErrors.password
+                  ? "border-(--danger)"
+                  : "border-(--hairline)",
+              ].join(" ")}
+            />
+            <FieldError
+              id={passwordErrorId}
+              message={resetErrors.password?.message}
+              onDismiss={() => resetForm.clearErrors("password")}
+            />
+          </div>
+
+          <div className="pb-10">
+            <label htmlFor={confirmId} className="sr-only">
+              Confirm the new password
+            </label>
+            <input
+              id={confirmId}
+              type="password"
+              autoComplete="new-password"
+              placeholder="Confirm the new password"
+              aria-invalid={resetErrors.confirmPassword ? "true" : "false"}
+              {...resetForm.register("confirmPassword")}
+              className={[
+                FIELD,
+                PAD,
+                resetErrors.confirmPassword
+                  ? "border-(--danger)"
+                  : "border-(--hairline)",
+              ].join(" ")}
+            />
+            <FieldError
+              id={confirmErrorId}
+              message={resetErrors.confirmPassword?.message}
+              onDismiss={() => resetForm.clearErrors("confirmPassword")}
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-(--brand) text-[15px] font-semibold text-(--solid-text) transition-colors duration-150 hover:bg-(--brand-hover) focus-visible:ring-2 focus-visible:ring-(--brand) focus-visible:ring-offset-2 focus-visible:ring-offset-(--bg-surface) focus-visible:outline-hidden disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isSubmitting ? (
+              <>
+                <HugeiconsIcon
+                  icon={Loading03Icon}
+                  size={16}
+                  className="animate-spin motion-reduce:animate-none"
+                />
+                Setting the password…
+              </>
+            ) : (
+              "Set new password"
+            )}
+          </button>
+        </form>
+
+        <Footer>
+          Nothing arriving? Check spam before requesting another code.
+        </Footer>
+      </div>
+    );
+  }
+
+  /* ── Step 4: done ───────────────────────────────────────── */
   return (
     <div className="mx-auto flex w-full max-w-105 flex-col items-center text-center">
       <span className="flex size-16 items-center justify-center rounded-full border border-(--success)/35 bg-(--success)/10 text-(--success)">
@@ -472,32 +597,21 @@ export function ForgotPasswordForm() {
       </span>
 
       <h2 className="mt-6 text-[26px] leading-[1.15] font-semibold tracking-[-0.7px] text-(--text-primary) sm:text-[28px]">
-        Check your inbox
+        Password updated
       </h2>
       <p className="mt-2.5 max-w-80 text-[13.5px] leading-[1.6] text-(--text-secondary)">
-        A reset link is on its way to{" "}
-        <span className="break-all text-(--text-primary)">{sentEmail}</span>. It
-        expires in 60 minutes.
+        Every other session has been signed out. Log in with your new password.
       </p>
 
-      <a
-        href="https://mail.google.com"
-        target="_blank"
-        rel="noopener noreferrer"
+      <Link
+        to="/auth/login"
         className="mt-7 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-(--brand) text-[15px] font-semibold text-(--solid-text) transition-colors duration-150 hover:bg-(--brand-hover) focus-visible:ring-2 focus-visible:ring-(--brand) focus-visible:ring-offset-2 focus-visible:ring-offset-(--bg-surface) focus-visible:outline-hidden"
       >
-        Open Gmail
+        Back to log in
         <HugeiconsIcon icon={ArrowRight02Icon} size={16} strokeWidth={2.2} />
-      </a>
+      </Link>
 
-      <Footer>
-        <Link
-          to="/auth/login"
-          className="text-(--text-secondary) underline-offset-4 transition-colors duration-150 hover:text-(--text-primary) hover:underline"
-        >
-          Back to log in
-        </Link>
-      </Footer>
+      <Footer>Didn't ask for this? Contact support immediately.</Footer>
     </div>
   );
 }

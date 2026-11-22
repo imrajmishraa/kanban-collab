@@ -96,6 +96,16 @@ const envSchema = z.object({
   GITHUB_REDIRECT_URI: z.string().url().optional(),
   OAUTH_STATE_SECRET: z.string().min(32).optional(),
   OAUTH_STATE_COOKIE_NAME: z.string().default("oauth_state"),
+  /**
+   * Whether the OAuth state must be bound to the browser that started the flow.
+   *
+   * `required` refuses a callback whose state cookie is missing; `warn` allows it
+   * and logs, for deployments where the flow starts on one host and returns to
+   * another (a cookie cannot cross that gap). Default `warn`, because turning it
+   * on before the redirect URI and the start share an origin would lock every
+   * user out of provider sign-in.
+   */
+  OAUTH_STATE_BINDING: z.enum(["warn", "required"]).default("warn"),
 
   // CORS
   CLIENT_URL: z.url().default("http://localhost:5173"),

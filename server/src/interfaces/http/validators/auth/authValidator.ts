@@ -92,3 +92,34 @@ export const refreshTokenSchema = {
 
 export type RegisterBody = z.infer<typeof registerSchema.body>;
 export type LoginBody = z.infer<typeof loginSchema.body>;
+
+/* ── password recovery ─────────────────────────────────────────────────── */
+
+/**
+ * `POST /auth/forgot-password`
+ *
+ * The same address shape the login form uses. Nothing here can reveal whether
+ * the account exists — the handler answers 202 either way.
+ */
+export const forgotPasswordSchema = {
+  body: z.object({
+    email: z.string().trim().toLowerCase().email("Enter a valid email address"),
+  }),
+};
+
+/**
+ * `POST /auth/reset-password`
+ *
+ * The code is exactly six digits; the password rule is the one registration
+ * enforces, so a reset cannot set something the login form would have refused.
+ */
+export const resetPasswordSchema = {
+  body: z.object({
+    email: z.string().trim().toLowerCase().email("Enter a valid email address"),
+    code: z
+      .string()
+      .trim()
+      .regex(/^\d{6}$/, "The code is six digits"),
+    password: passwordField,
+  }),
+};

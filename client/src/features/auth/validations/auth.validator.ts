@@ -43,8 +43,28 @@ export const forgotPasswordSchema = z.object({
   email: z.string().trim().email("Please enter a valid email address."),
 });
 
+/**
+ * The last step of a reset: the code that was emailed, and the password to set.
+ *
+ * Same length rule as registration — a reset must not be able to set something
+ * the login form would have refused.
+ */
+export const resetPasswordSchema = z
+  .object({
+    password: z
+      .string()
+      .min(PASSWORD_MIN, "Password must be at least 8 characters."),
+
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match.",
+    path: ["confirmPassword"],
+  });
+
 /* ── Inferred types ──────────────────────────────────────── */
 
 export type RegisterFormData = z.infer<typeof registerSchema>;
 export type LoginFormData = z.infer<typeof loginSchema>;
 export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
+export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;

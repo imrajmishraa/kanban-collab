@@ -6,7 +6,11 @@ import { authLogger } from "../../../../infrastructure/logging/childLogger";
 
 import { startOAuthFlow } from "../../../../application/auth/oauth/startOAuthFlow";
 import { handleOAuthCallback } from "../../../../application/auth/oauth/handleOAuthCallback";
-import { verifyStateToken } from "../../../../application/auth/oauth/stateToken";
+import {
+  STATE_TTL_MS,
+  stateMatchesBrowser,
+  verifyStateToken,
+} from "../../../../application/auth/oauth/stateToken";
 import { listEnabledProviders } from "../../../../infrastructure/auth/providers";
 
 import { unknownProviderError } from "../../../../shared/errors/auth/oauth";
@@ -150,8 +154,26 @@ export const startOAuth = asyncHandler(async (req: Request, res: Response) => {
     rememberMe: parseRememberMe(req.query["rememberMe"]),
   });
 
-  // No state cookie: the state is signed and self-verifying, so it survives a
-  // redirect to a different host and browsers that block third-party cookies.
+  /*
+   * The signed state proves the flow came from this server. It does not prove
+   * which browser is finishing it — so the nonce also goes into a cookie, and
+   * the callback refuses a state whose cookie is missing or different. Without
+   * that, an attacker can start a flow, keep the `code`+`state` pair and send
+   * the callback URL to a victim, who then signs into the attacker's account
+   * (login CSRF).
+   *
+   * `sameSite: "lax"` is right for this: the cookie is set on a top-level
+   * navigation and comes back on the provider's redirect, both of which are
+   * GET navigations.
+   */
+  res.cookie(ENV.OAUTH_STATE_COOKIE_NAME, flow.stateNonce, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: ENV.NODE_ENV === "production",
+    path: "/",
+    maxAge: STATE_TTL_MS,
+  });
+
   res.redirect(flow.authorizeUrl);
 });
 
@@ -202,9 +224,10 @@ export const oauthCallback = asyncHandler(
     // Throws invalidOAuthStateError for a bad signature, wrong provider or an
     // expired token; the signed state carries the rememberMe choice.
     let rememberMe: boolean;
+    let stateNonce: string;
 
     try {
-      ({ rememberMe } = verifyStateToken(state, provider));
+      ({ rememberMe, nonce: stateNonce } = verifyStateToken(state, provider));
     } catch (error) {
       /* The reason travels in the redirect URL, because a browser-side OAuth
          flow leaves no other trace: `invalid_state` alone cannot distinguish a
@@ -224,6 +247,35 @@ export const oauthCallback = asyncHandler(
 
       redirectToClient(res, { status: "error", reason: `state_${detail}` });
       return;
+    }
+
+    /*
+     * Binding check, after the signature so a forged state never reaches it.
+     * The cookie is cleared either way — it is single-use.
+     */
+    const boundNonce = req.cookies?.[ENV.OAUTH_STATE_COOKIE_NAME] as
+      string | undefined;
+
+    res.clearCookie(ENV.OAUTH_STATE_COOKIE_NAME, { path: "/" });
+
+    if (!stateMatchesBrowser(stateNonce, boundNonce)) {
+      if (ENV.OAUTH_STATE_BINDING === "required") {
+        authLogger.warn(
+          { provider, hadCookie: boundNonce !== undefined },
+          "OAuth callback rejected — state is not bound to this browser.",
+        );
+
+        redirectToClient(res, { status: "error", reason: "state_not_bound" });
+        return;
+      }
+
+      /* `warn`: the flow started on a host that is not the callback's, so the
+         cookie could not come back. Logged on every occurrence, because this is
+         the gap the binding exists to close. */
+      authLogger.warn(
+        { provider },
+        "OAuth state cookie missing — the flow is not bound to this browser.",
+      );
     }
 
     try {
