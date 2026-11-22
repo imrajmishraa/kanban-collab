@@ -52,8 +52,20 @@ export default function BoardCardItem({
         onDragOverCard(card.columnId, card.orderIndex);
       }}
       onClick={() => onOpen(card)}
-      /* Reachable and operable without a mouse: Enter or Space opens the card,
-         Alt+Arrow moves it to the neighbouring column. */
+      /*
+       * Reachable and operable without a mouse: Enter or Space opens the card,
+       * Alt+Arrow or Shift+Arrow moves it to the neighbouring column.
+       *
+       * Both modifiers, because the platforms disagree. Alt+Left/Right is the
+       * back/forward shortcut on Windows and Linux, but macOS uses Command for
+       * that — so on a Mac the same chord is free, while Safari binds
+       * Option+Left to "scroll left a page". Shift+Arrow is unbound in every
+       * browser on every platform, which is why it is the second way in.
+       *
+       * `metaKey` and `ctrlKey` are refused on purpose: Command+Option+Arrow is
+       * previous/next tab in Chrome on macOS, and a handler that accepted it
+       * would move the card *and* switch tabs.
+       */
       tabIndex={0}
       role="button"
       onKeyDown={(event) => {
@@ -63,7 +75,9 @@ export default function BoardCardItem({
           return;
         }
 
-        if (!event.altKey || !onKeyboardMove) return;
+        if (!onKeyboardMove || event.metaKey || event.ctrlKey) return;
+
+        if (!event.altKey && !event.shiftKey) return;
 
         if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
           event.preventDefault();

@@ -108,6 +108,32 @@ describe("BoardCardItem keyboard", () => {
     expect(props.onKeyboardMove).not.toHaveBeenCalled();
   });
 
+  it("moves with Shift+Arrow too — the chord no browser or OS owns", async () => {
+    const user = userEvent.setup();
+    const props = renderCard();
+
+    const item = screen.getByRole("button", { name: /Write the spec/ });
+    item.focus();
+
+    await user.keyboard("{Shift>}{ArrowRight}{/Shift}");
+
+    expect(props.onKeyboardMove).toHaveBeenLastCalledWith(card, "right");
+  });
+
+  it("ignores Command+Option+Arrow, which is previous/next tab on macOS", async () => {
+    const user = userEvent.setup();
+    const props = renderCard();
+
+    const item = screen.getByRole("button", { name: /Write the spec/ });
+    item.focus();
+
+    /* Moving the card *and* switching tabs is worse than not moving it. */
+    await user.keyboard("{Meta>}{Alt>}{ArrowLeft}{/Alt}{/Meta}");
+    await user.keyboard("{Control>}{Alt>}{ArrowRight}{/Alt}{/Control}");
+
+    expect(props.onKeyboardMove).not.toHaveBeenCalled();
+  });
+
   it("ignores a plain arrow, which belongs to scrolling", async () => {
     const user = userEvent.setup();
     const props = renderCard();
