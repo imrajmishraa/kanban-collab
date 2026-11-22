@@ -29,20 +29,32 @@ export default defineConfig({
        so test files must not run concurrently. */
     pool: "forks",
     /*
-     * Files in parallel, each still in its own module graph.
+     * Workers are reused across files (`isolate: false` above), which is what
+     * takes this suite from ~43s to ~12s: isolation pays about 2s of worker
+     * startup per file, and there are thirty-odd of them.
      *
-     * `isolate: false` is tempting — it takes this suite from ~43s to ~12s — and
-     * it is wrong here: every test file shares one module registry, so a module
-     * that an earlier file already loaded keeps its *real* dependencies and this
-     * file's `vi.mock` factories never apply. The suites that mock a singleton
-     * (`getCacheClient`, `connectionRegistry`, `documentManager`) then assert
-     * against the real thing and fail with "expected vi.fn() to have been
-     * called", in an order that depends on which file ran first.
+     * The cost is the module registry. Every test file in a worker shares one,
+     * so a module an earlier file already imported keeps its **real**
+     * dependencies and this file's `vi.mock` factory is never applied — the
+     * suite then asserts against the real singleton and fails with "expected
+     * vi.fn() to have been called", in whatever order the files happened to run.
      *
-     * Parallel files buy most of the same wall-clock time (43s -> ~31s) without
-     * touching the isolation contract. A suite that wants to be isolation-proof
-     * anyway does `vi.resetModules()` and imports the module under test inside
-     * `beforeEach` — see `tests/unit/boards/boardCache.test.ts`.
+     * The rule that follows, and the reason it is written here rather than in a
+     * commit message: **a suite that uses `vi.mock` must reset the registry and
+     * import the module under test inside `beforeEach`**, so the mock applies for
+     * this file and not for whoever loaded the module first. The template is
+     * `tests/unit/boards/boardCache.test.ts`:
+     *
+     *     beforeEach(async () => {
+     *       vi.clearAllMocks();
+     *       vi.resetModules();
+     *       subject = await import(".../theModule.js");
+     *     });
+     *
+     * Get that wrong and the failure is order-dependent, so it can pass on your
+     * machine and fail in CI — or pass for a while and then stop. If a suite
+     * cannot follow the rule, run it with `isolate: true` rather than leaving a
+     * mock that only sometimes applies.
      */
     fileParallelism: true,
     maxWorkers: 4,
