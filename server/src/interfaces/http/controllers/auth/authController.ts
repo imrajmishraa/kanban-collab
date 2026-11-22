@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 
+import { shouldClearRefreshCookie } from "../../../../application/auth/refreshFailure";
 import { asyncHandler } from "../../../../shared/utils/asyncHandler";
 import { ApiResponse } from "../../../../shared/utils/ApiResponse";
 
@@ -106,7 +107,16 @@ export const refresh = asyncHandler(async (req: Request, res: Response) => {
       }),
     );
   } catch (error) {
-    res.clearCookie(REFRESH_COOKIE_NAME, clearRefreshCookieOptions());
+    /*
+     * Only a dead session clears the cookie. A 401 means the token is invalid,
+     * expired or reused — there is nothing left to keep. Anything else (the
+     * database is away, two tabs refreshed at once) is transient, and dropping
+     * the cookie turns a blip into a logout.
+     */
+    if (shouldClearRefreshCookie(error)) {
+      res.clearCookie(REFRESH_COOKIE_NAME, clearRefreshCookieOptions());
+    }
+
     throw error;
   }
 });

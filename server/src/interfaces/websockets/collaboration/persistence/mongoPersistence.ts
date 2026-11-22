@@ -45,6 +45,12 @@ export class MongoPersistence implements DocumentPersistence {
         },
         "Failed to load Yjs document from MongoDB.",
       );
+
+      /* Rethrow. Carrying on binds persistence to a document that never got its
+         stored state, and the first client update then writes over it — the
+         board is replaced by whatever one person happened to do next. Failing
+         the connection is recoverable; losing the board is not. */
+      throw error;
     }
 
     //  Prevent duplicate persistence listeners.

@@ -13,6 +13,10 @@ import {
   WorkspaceModel,
 } from "../../../../infrastructure/db/mongoose/schemas";
 import { getCacheClient } from "../../../../infrastructure/cache/cacheClient";
+import {
+  readCachedPage,
+  shapeCommentPage,
+} from "../../../../application/comments/commentPage";
 import { commentControllerLogger } from "../../../../infrastructure/logging/childLogger";
 import { cardNotFoundError } from "../../../../shared/errors/card/card";
 import { notWorkspaceMemberError } from "../../../../shared/errors/workspace/workspace";
@@ -257,12 +261,20 @@ const listComments = asyncHandler(async (req: AuthenticatedRequest, res) => {
   const version = cacheable ? await cacheVersion(cardId) : 0;
   const key = `comments:card:${cardId}:v${version}:${limit}`;
 
-  let page = cacheable
-    ? (JSON.parse((await cache.get(key)) ?? "null") as CommentDoc[] | null)
+  /*
+   * The cache stores the page *and* the answer to "is there more".
+   *
+   * It used to store `page.slice(0, limit)` — the extra row the query fetches
+   * only to prove another page exists was thrown away, so on a cache hit
+   * `hasMore` came back false and the second page became unreachable for the
+   * cache's lifetime.
+   */
+  let cached = cacheable
+    ? readCachedPage<CommentDoc>(await cache.get(key))
     : null;
 
-  if (!page) {
-    page = (await CommentModel.find({
+  if (!cached) {
+    const rows = (await CommentModel.find({
       cardId: cardObjectId,
       parentId: null,
       ...(cursor ? { _id: { $lt: new Types.ObjectId(cursor) } } : {}),
@@ -271,17 +283,14 @@ const listComments = asyncHandler(async (req: AuthenticatedRequest, res) => {
       .limit(limit + 1)
       .lean()) as CommentDoc[];
 
+    cached = shapeCommentPage(rows, limit);
+
     if (cacheable) {
-      await cache.setEx(
-        key,
-        CACHE_TTL_SECONDS,
-        JSON.stringify(page.slice(0, limit)),
-      );
+      await cache.setEx(key, CACHE_TTL_SECONDS, JSON.stringify(cached));
     }
   }
 
-  const hasMore = page.length > limit;
-  const sliced = page.slice(0, limit);
+  const { items: sliced, hasMore } = cached;
   const comments = await hydrate(sliced, userId, { withRepliesCount: true });
 
   commentControllerLogger.info(
@@ -289,7 +298,7 @@ const listComments = asyncHandler(async (req: AuthenticatedRequest, res) => {
       userId,
       cardId,
       count: comments.length,
-      cached: Boolean(cacheable && page),
+      cached: Boolean(cacheable && cached),
     },
     "Comments listed",
   );
@@ -474,10 +483,12 @@ const voteComment = asyncHandler(async (req: AuthenticatedRequest, res) => {
      left three dead stores, which is what the editor was warning about. */
   const plan = planVote(existing ? existing.action : null, action);
 
+  /* Whether this request is the one that actually created the vote. The loser
+     of a double-tap must not move the counter: the winner already applied the
+     same delta, so a second `$inc` counted one click twice. */
+  let created = true;
+
   if (plan.op === "create") {
-    /* First vote. The unique index makes a double-tap safe: the loser of the
-       race gets E11000, and the counters below are still correct because the
-       other request applied the same delta. */
     try {
       await CommentLikeModel.create({
         commentId: commentObjectId,
@@ -486,7 +497,24 @@ const voteComment = asyncHandler(async (req: AuthenticatedRequest, res) => {
       });
     } catch (error) {
       if ((error as { code?: number }).code !== 11000) throw error;
+
+      created = false;
     }
+  }
+
+  if (!created) {
+    /* The row already exists, so the answer is what is in the database now. */
+    const current = await CommentModel.findById(commentObjectId, {
+      likeCount: 1,
+      dislikeCount: 1,
+    }).lean();
+
+    return res.status(200).json(
+      new ApiResponse(200, "Vote recorded.", {
+        likeCount: current?.likeCount ?? 0,
+        dislikeCount: current?.dislikeCount ?? 0,
+      }),
+    );
   }
 
   if (plan.op === "delete" && existing) {

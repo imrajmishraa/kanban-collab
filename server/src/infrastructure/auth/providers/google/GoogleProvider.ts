@@ -34,6 +34,14 @@ function reason(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
+/**
+ * How long a provider gets before the request is abandoned.
+ *
+ * Without it a stuck connection holds the request (and its socket) until the
+ * platform gives up, which on a serverless host is the whole invocation budget.
+ */
+const PROVIDER_TIMEOUT_MS = 8_000;
+
 export class GoogleProvider implements OAuthProvider {
   readonly name = "google" as const;
 
@@ -92,6 +100,7 @@ export class GoogleProvider implements OAuthProvider {
          exchange (which does use the client) succeeded. */
       const response = await fetch(GOOGLE_CONFIG.userInfoUrl, {
         headers: { Authorization: `Bearer ${accessToken}` },
+        signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
       });
 
       if (!response.ok) {
