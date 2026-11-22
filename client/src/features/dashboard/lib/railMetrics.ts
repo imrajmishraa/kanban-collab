@@ -62,8 +62,10 @@ export interface RailLayout {
 /**
  * The whole state machine, pure.
  *
- * `hover` opens to MIN and no wider, whatever width is stored: it is a glance at
- * the nav, not a layout change. `autoRail` wins over both `open` and `hover`.
+ * `hover` opens to the stored width — the same width `open` shows — but it is an
+ * overlay, so the page keeps reserving only the icon rail and never reflows.
+ * Only a drag can take the rail down to MIN. `autoRail` wins over both `open`
+ * and `hover`.
  */
 export function computeRail({
   mode,
@@ -85,9 +87,19 @@ export function computeRail({
   let railWidth: number;
 
   if (hidden) railWidth = 0;
-  else if (hoverOpen) railWidth = RAIL.MIN;
-  else if (expanded) railWidth = clamped;
+  else if (hoverOpen || expanded) railWidth = clamped;
   else railWidth = RAIL.ICON;
+
+  /*
+   * What the page reserves, and why it is not `railWidth` in hover mode.
+   *
+   * The hover rail is an overlay: it opens over the content instead of pushing
+   * it. Reserving its open width would move the whole page every time the
+   * pointer crossed the edge — which is what it used to do, because `reserved`
+   * dropped from 72 to 0 the moment the pointer arrived. In hover mode the
+   * layout is therefore pinned to the icon rail, and only the rail itself grows.
+   */
+  const reserved = mode === "hover" ? RAIL.ICON : railWidth;
 
   return {
     width: clamped,
@@ -96,6 +108,6 @@ export function computeRail({
     autoRail,
     hoverOpen,
     railWidth,
-    reserved: hoverOpen ? 0 : railWidth,
+    reserved,
   };
 }

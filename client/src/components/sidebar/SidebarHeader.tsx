@@ -2,6 +2,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import {
   MousePointerBanIcon,
   SidebarLeftIcon,
+  LayoutLeftIcon,
 } from "@hugeicons/core-free-icons";
 import { useNavigate } from "react-router-dom";
 
@@ -60,7 +61,7 @@ const SidebarHeader = ({
             {/* Hover hint, hidden normally, visible on hover: a pointer when
                 the rail opens by hovering, an arrow when it opens on click. */}
             <HugeiconsIcon
-              icon={mode === "hover" ? MousePointerBanIcon : SidebarLeftIcon}
+              icon={mode === "hover" ? MousePointerBanIcon : LayoutLeftIcon}
               size={16}
               strokeWidth={1.8}
               className="

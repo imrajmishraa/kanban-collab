@@ -61,16 +61,34 @@ describe("computeRail", () => {
     expect(layout.reserved).toBe(RAIL.ICON);
   });
 
-  it("hover opens to MIN and no wider, and reserves nothing", () => {
+  it("hover opens to the stored width", () => {
     const layout = at({ mode: "hover", hovering: true, width: RAIL.MAX });
 
     expect(layout.hoverOpen).toBe(true);
-    expect(layout.railWidth).toBe(RAIL.MIN);
-    expect(layout.reserved).toBe(0);
+    expect(layout.railWidth).toBe(RAIL.MAX);
+  });
+
+  it("hover never reflows the page: the layout stays pinned to the icon rail", () => {
+    const rest = at({ mode: "hover", hovering: false });
+    const open = at({ mode: "hover", hovering: true });
+
+    expect(rest.reserved).toBe(RAIL.ICON);
+    expect(open.reserved).toBe(RAIL.ICON);
+    expect(open.reserved).toBe(rest.reserved);
   });
 
   it("hover at rest is the icon rail", () => {
     expect(at({ mode: "hover", hovering: false }).railWidth).toBe(RAIL.ICON);
+  });
+
+  it("only a drag reaches MIN — expanding never does", () => {
+    /* Collapsed → open goes to the stored width, not to the minimum. */
+    expect(at({ mode: "open", width: RAIL.DEFAULT }).railWidth).toBe(
+      RAIL.DEFAULT,
+    );
+    expect(
+      at({ mode: "hover", hovering: true, width: RAIL.DEFAULT }).railWidth,
+    ).toBe(RAIL.DEFAULT);
   });
 
   it("hidden is off the page entirely", () => {

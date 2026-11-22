@@ -3,8 +3,8 @@ import {
   Cursor02Icon,
   CursorInWindowIcon,
   LayoutAlignLeftIcon,
-  PanelLeftCloseIcon,
-  PanelLeftOpenIcon,
+  LayoutLeftIcon,
+  SidebarLeftIcon,
 } from "@hugeicons/core-free-icons";
 
 import type { SidebarMode } from "@/features/dashboard";
@@ -20,8 +20,8 @@ const MODES: Array<{
   label: string;
   icon: typeof Cursor02Icon;
 }> = [
-  { mode: "open", label: "Expanded", icon: PanelLeftCloseIcon },
-  { mode: "collapsed", label: "Collapsed", icon: PanelLeftOpenIcon },
+  { mode: "open", label: "Expanded", icon: LayoutLeftIcon },
+  { mode: "collapsed", label: "Collapsed", icon: SidebarLeftIcon },
   { mode: "hover", label: "Hover", icon: CursorInWindowIcon },
   { mode: "hidden", label: "Hidden", icon: LayoutAlignLeftIcon },
 ];

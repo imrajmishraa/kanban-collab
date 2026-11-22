@@ -8,7 +8,7 @@ import { useSidebarState } from "@/features/dashboard";
 import { NavbarSearchIcon, NotificationsButton } from "@/features/dashboard";
 import { NotificationsPanel } from "@/features/dashboard";
 import { Tooltip } from "@/components/Tooltips/ToolTip";
-import { SidebarLeftIcon } from "@hugeicons/core-free-icons";
+import { LayoutLeftIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
 export default function DashboardNavbar() {
@@ -127,7 +127,7 @@ export default function DashboardNavbar() {
           "border-b border-(--hairline)",
           /* Same variable the layout reserves, so the navbar follows the rail
              at any width instead of two fixed offsets. */
-          "md:left-[var(--rail-width)]",
+          "md:left-(--rail-width)",
           scrolled ? "bg-(--bg-root)/85 backdrop-blur-md" : "bg-transparent",
         ].join(" ")}
       >
@@ -141,7 +141,7 @@ export default function DashboardNavbar() {
               aria-keyshortcuts="Meta+B Control+B"
               className="grid size-9 shrink-0 cursor-pointer place-items-center rounded-lg text-(--text-muted) transition-colors hover:bg-(--bg-hover) hover:text-(--text-primary)"
             >
-              <HugeiconsIcon icon={SidebarLeftIcon} size={18} />
+              <HugeiconsIcon icon={LayoutLeftIcon} size={18} />
             </button>
           </Tooltip>
         )}

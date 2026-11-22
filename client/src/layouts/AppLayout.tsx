@@ -39,7 +39,6 @@ export default function AppLayout() {
    * two cannot drift.
    */
   const rail = useRailLayout();
-  const railOverPage = rail.hoverOpen;
 
   /* Off by default (`stores/rightPanel.ts`), so an existing reader's layout is
      unchanged until they choose a column in Settings → Appearance. The panel
@@ -134,8 +133,6 @@ export default function AppLayout() {
                half-covered. Below `lg` the panel is not rendered and this
                class does nothing. */
             rightPanelOpen && "lg:mr-90",
-            /* Same 200ms as the rail's own slide, so the two move together. */
-            railOverPage && "md:px-8 md:ml-4",
           ].join(" ")}
         >
           <DashboardNavbar />
