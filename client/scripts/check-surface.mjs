@@ -65,11 +65,23 @@ function walk(dir, out = []) {
   return out;
 }
 
-const files = walk(ROOT).map((full) => ({
-  full,
-  rel: relative(ROOT, full).split("\\").join("/"),
-  text: readFileSync(full, "utf8"),
-}));
+/*
+ * Test files are not surfaces.
+ *
+ * A test that drives a drag *does* have a keyboard path — it is usually the file
+ * that proves it (`BoardCardItem.keyboard.test.tsx` exists because the keyboard
+ * path was added). Judging test files by what a finger can reach on screen is a
+ * category error, and it turned the one file that guards a11y into a finding.
+ */
+const TEST_FILE = /\.(test|spec)\.tsx?$/;
+
+const files = walk(ROOT)
+  .filter((full) => !TEST_FILE.test(full))
+  .map((full) => ({
+    full,
+    rel: relative(ROOT, full).split("\\").join("/"),
+    text: readFileSync(full, "utf8"),
+  }));
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
