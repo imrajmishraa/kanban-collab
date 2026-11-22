@@ -35,11 +35,19 @@ interface SidebarState {
   collapsed: boolean;
   /** True while the pointer is over a hover-mode rail. Runtime only. */
   hovering: boolean;
+  /**
+   * True while the divider is being dragged. Runtime only, and the reason it
+   * exists: the rail, the page and the navbar all animate their width for
+   * 200ms, so mid-drag they lag behind the pointer and catch up afterwards.
+   * While this is set nothing animates and the three move as one.
+   */
+  resizing: boolean;
   boardsOpen: boolean;
 
   setMode: (mode: SidebarMode) => void;
   setHovering: (hovering: boolean) => void;
   setWidth: (width: number) => void;
+  setResizing: (resizing: boolean) => void;
 
   toggleCollapsed: () => void;
   collapse: () => void;
@@ -61,6 +69,7 @@ export const useSidebarState = create<SidebarState>()(
       lastVisible: "open",
       collapsed: false,
       hovering: false,
+      resizing: false,
       boardsOpen: true,
 
       setMode: (mode) =>
@@ -73,6 +82,7 @@ export const useSidebarState = create<SidebarState>()(
         }),
 
       setHovering: (hovering) => set({ hovering }),
+      setResizing: (resizing) => set({ resizing }),
 
       /* Clamped here as well as on read: a drag that overshoots must not store
          900, and a double-click reset must not store 0. */

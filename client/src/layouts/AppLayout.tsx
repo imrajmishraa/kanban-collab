@@ -39,6 +39,7 @@ export default function AppLayout() {
    * two cannot drift.
    */
   const rail = useRailLayout();
+  const resizing = useSidebarState((s) => s.resizing);
 
   /* Off by default (`stores/rightPanel.ts`), so an existing reader's layout is
      unchanged until they choose a column in Settings → Appearance. The panel
@@ -113,6 +114,9 @@ export default function AppLayout() {
       <div
         className="mx-auto min-h-screen w-full max-w-384 bg-(--bg-root) text-(--text-primary)"
         style={{ "--rail-width": `${rail.reserved}px` } as React.CSSProperties}
+        /* Mid-drag, nothing animates: the rail, the page and the navbar have to
+           move together at pointer speed instead of easing behind it. */
+        data-resizing={resizing ? "true" : undefined}
       >
         {/* The phone bar lives inside DashboardSidebar now, next to the panel it
             opens — one component owns both, so the flag never has to travel. */}

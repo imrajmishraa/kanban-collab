@@ -75,7 +75,8 @@ export default function RailResizeHandle({
   const onPointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
     if (!dragging) return;
 
-    const raw = startWidth.current + (event.clientX - startX.current);
+    const travel = (event.clientX - startX.current) * RAIL.DRAG_DAMPING;
+    const raw = startWidth.current + travel;
     const zone = snapZone(raw);
 
     /* The rail snaps instead of sliding: below MID it collapses to the icon

@@ -40,6 +40,7 @@ export default function DashboardSidebar({ onToggle }: DashboardSidebarProps) {
   const setHovering = useSidebarState((state) => state.setHovering);
   const setWidth = useSidebarState((state) => state.setWidth);
   const hide = useSidebarState((state) => state.hide);
+  const setResizing = useSidebarState((state) => state.setResizing);
 
   /* One computation decides the width; `AppLayout` reads the same one so the
      page reserves exactly what the rail takes. */
@@ -223,8 +224,14 @@ export default function DashboardSidebar({ onToggle }: DashboardSidebarProps) {
                becomes a drag has to be a no-op, or the rail opens the moment you
                aim at the border. The rail is promoted only once the pointer
                actually moves into the expanded range. */
-            onResizeStart={() => setHovering(false)}
-            onResizeEnd={() => setHovering(false)}
+            onResizeStart={() => {
+              setHovering(false);
+              setResizing(true);
+            }}
+            onResizeEnd={() => {
+              setHovering(false);
+              setResizing(false);
+            }}
           />
         )}
 

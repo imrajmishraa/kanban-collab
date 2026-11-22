@@ -26,6 +26,14 @@ export const RAIL = {
    * to mean it.
    */
   HIDE_BELOW: 36,
+  /**
+   * How much of the pointer's travel the divider takes.
+   *
+   * 1 is "the line stays under the cursor"; below 1 the rail moves less than the
+   * pointer, which is what makes a 220px range feel controllable at speed. Tuned
+   * down from 1 after the first hands-on pass — 0.6 makes it positively sticky.
+   */
+  DRAG_DAMPING: 0.75,
   /** Below this viewport the expanded rail is never shown. */
   MIN_VIEWPORT: 700,
 } as const;
