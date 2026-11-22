@@ -880,7 +880,10 @@ const PasswordResetSchema = new Schema<IPasswordReset>(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      index: true,
+      /* One row per account, enforced by the database. The upsert in
+         `requestPasswordReset` would otherwise race two rows into existence, and
+         two rows means two attempt budgets. */
+      unique: true,
     },
     codeHash: { type: String, required: true },
     /* Five wrong guesses and the code is dead — six digits is only a million
