@@ -24,6 +24,13 @@ const MESSAGES = {
     "We couldn't finish signing you in with that provider. Try again, or use your password.",
   oauth_refresh:
     "You signed in, but we couldn't start your session. Try again.",
+  /**
+   * The state was valid but arrived without the cookie that ties it to this
+   * browser — a sign-in started somewhere else. It begins with `state_`, so it
+   * needs its own entry or the prefix rule would call it an expired link.
+   */
+  state_not_bound:
+    "That sign-in link was started in a different browser. Start the sign-in again from this one.",
   unknown:
     "We couldn't finish signing you in. Try again, or use your password.",
 } as const;
@@ -45,7 +52,9 @@ export function oauthFailureMessage(
 
   const key = reason ?? error;
 
-  if (key in MESSAGES) {
+  /* `in` walks the prototype chain, so `?reason=constructor` returned a
+     function and put it in a toast. Own keys only. */
+  if (Object.hasOwn(MESSAGES, key)) {
     return MESSAGES[key as keyof typeof MESSAGES];
   }
 

@@ -69,4 +69,23 @@ describe("oauthFailureMessage", () => {
       expect(oauthFailureMessage("oauth", reason).length).toBeGreaterThan(10);
     }
   });
+
+  it("gives an unbound state its own sentence instead of 'link expired'", () => {
+    /* It starts with `state_`, so without its own entry the prefix rule would
+       call it an expired link — and it is not: the link is fine, it was started
+       in another browser. */
+    const message = oauthFailureMessage("oauth", "state_not_bound");
+
+    expect(message).toMatch(/different browser/i);
+    expect(message).not.toMatch(/expired/i);
+  });
+
+  it("does not resolve an inherited property name to a function", () => {
+    /* `key in MESSAGES` walked the prototype chain, so `?reason=constructor`
+       put a function into the toast. */
+    expect(oauthFailureMessage("oauth", "constructor")).toBe(
+      oauthFailureMessage("oauth", "unknown"),
+    );
+    expect(typeof oauthFailureMessage("oauth", "toString")).toBe("string");
+  });
 });

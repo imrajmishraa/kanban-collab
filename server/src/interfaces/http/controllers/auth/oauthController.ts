@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 
 import { asyncHandler } from "../../../../shared/utils/asyncHandler";
 import { ENV } from "../../../../config/env";
+import { oauthStateBindingMode } from "../../../../config/oauth";
 import { authLogger } from "../../../../infrastructure/logging/childLogger";
 
 import { startOAuthFlow } from "../../../../application/auth/oauth/startOAuthFlow";
@@ -259,7 +260,7 @@ export const oauthCallback = asyncHandler(
     res.clearCookie(ENV.OAUTH_STATE_COOKIE_NAME, { path: "/" });
 
     if (!stateMatchesBrowser(stateNonce, boundNonce)) {
-      if (ENV.OAUTH_STATE_BINDING === "required") {
+      if (oauthStateBindingMode() === "required") {
         authLogger.warn(
           { provider, hadCookie: boundNonce !== undefined },
           "OAuth callback rejected — state is not bound to this browser.",

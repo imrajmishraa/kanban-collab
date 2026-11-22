@@ -105,7 +105,10 @@ const envSchema = z.object({
    * on before the redirect URI and the start share an origin would lock every
    * user out of provider sign-in.
    */
-  OAUTH_STATE_BINDING: z.enum(["warn", "required"]).default("warn"),
+  /* Resolved by `oauthStateBindingMode()`: unset means `required` in
+     production and `warn` everywhere else, so the default is never the mode
+     that lets a login-CSRF callback through. */
+  OAUTH_STATE_BINDING: z.enum(["warn", "required"]).optional(),
 
   // CORS
   CLIENT_URL: z.url().default("http://localhost:5173"),

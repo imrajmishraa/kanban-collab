@@ -23,6 +23,7 @@ import {
 } from "@hugeicons/core-free-icons";
 
 import { toastError } from "@/lib/toast";
+import { ApiClientError } from "@/services/client";
 import { FieldError } from "../FieldError";
 import { CLEAR, FIELD, MARK, PAD } from "../fieldChrome";
 import {
@@ -178,14 +179,25 @@ export function ForgotPasswordForm() {
       });
 
       setStep("done");
-    } catch {
-      /* The code may have expired, or the attempts are spent. Sending them back
-         to the code step is the only useful thing to do — the message says
-         which. */
-      toastError(null, "That reset failed. Request a new code and try again.");
+    } catch (error) {
+      /* Two different failures, two different next steps. A spent budget is not
+         fixed by retyping the code — the account's reset is locked for fifteen
+         minutes — so that one goes back to the address step with the server's
+         own message. Everything else is a wrong or expired code. */
+      const locked =
+        error instanceof ApiClientError &&
+        error.code === "PASSWORD_RESET_TOO_MANY_ATTEMPTS";
+
+      toastError(error);
+
       setCode(Array(CODE_LENGTH).fill(""));
-      /* Back to the code step; the effect above focuses the first box. */
-      setStep("code");
+
+      if (locked) {
+        setStep("email");
+      } else {
+        /* Back to the code step; the effect above focuses the first box. */
+        setStep("code");
+      }
     } finally {
       setIsSubmitting(false);
     }
