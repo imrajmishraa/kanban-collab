@@ -143,11 +143,7 @@ export default function RailResizeHandle({
        the bubble is anchored to the divider itself. `disabled` while dragging:
        a tooltip appearing mid-drag is noise. */
     <Tooltip
-      label={
-        isCollapsed
-          ? "Double-click to expand"
-          : "Drag to resize"
-      }
+      label={isCollapsed ? "Double-click to expand" : "Drag to resize"}
       side="right"
       shape="solid"
       size="md"
