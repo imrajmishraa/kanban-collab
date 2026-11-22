@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { RAIL, clampWidth, computeRail, requiredViewport } from "./railMetrics";
+import {
+  RAIL,
+  clampWidth,
+  computeRail,
+  requiredViewport,
+  snapZone,
+} from "./railMetrics";
 
 /**
  * The rail's arithmetic, which three surfaces depend on: the rail's own width,
@@ -8,14 +14,35 @@ import { RAIL, clampWidth, computeRail, requiredViewport } from "./railMetrics";
  * back to icons.
  */
 describe("clampWidth", () => {
-  it("holds both ends", () => {
-    expect(clampWidth(4)).toBe(RAIL.MIN);
+  it("holds both ends of the *expanded* range", () => {
+    /* A stored width is never collapsed: below MID the rail is a mode, not a
+       width. */
+    expect(clampWidth(4)).toBe(RAIL.MID);
     expect(clampWidth(900)).toBe(RAIL.MAX);
     expect(clampWidth(RAIL.DEFAULT)).toBe(RAIL.DEFAULT);
   });
 
   it("rounds, so a drag cannot store a fraction", () => {
     expect(clampWidth(287.6)).toBe(288);
+  });
+});
+
+describe("snapZone", () => {
+  it("stays expanded from MID up", () => {
+    expect(snapZone(RAIL.MID)).toBe("expanded");
+    expect(snapZone(RAIL.DEFAULT)).toBe("expanded");
+    expect(snapZone(RAIL.MAX)).toBe("expanded");
+  });
+
+  it("snaps to collapsed anywhere below MID", () => {
+    expect(snapZone(RAIL.MID - 1)).toBe("collapsed");
+    expect(snapZone(RAIL.MIN)).toBe("collapsed");
+    expect(snapZone(RAIL.HIDE_BELOW)).toBe("collapsed");
+  });
+
+  it("hides only when the pull goes past the collapsed rail", () => {
+    expect(snapZone(RAIL.HIDE_BELOW - 1)).toBe("hidden");
+    expect(snapZone(0)).toBe("hidden");
   });
 });
 
@@ -57,8 +84,8 @@ describe("computeRail", () => {
   it("collapsed reserves the icon rail", () => {
     const layout = at({ mode: "collapsed" });
 
-    expect(layout.railWidth).toBe(RAIL.ICON);
-    expect(layout.reserved).toBe(RAIL.ICON);
+    expect(layout.railWidth).toBe(RAIL.MIN);
+    expect(layout.reserved).toBe(RAIL.MIN);
   });
 
   it("hover opens to the stored width", () => {
@@ -72,13 +99,13 @@ describe("computeRail", () => {
     const rest = at({ mode: "hover", hovering: false });
     const open = at({ mode: "hover", hovering: true });
 
-    expect(rest.reserved).toBe(RAIL.ICON);
-    expect(open.reserved).toBe(RAIL.ICON);
+    expect(rest.reserved).toBe(RAIL.MIN);
+    expect(open.reserved).toBe(RAIL.MIN);
     expect(open.reserved).toBe(rest.reserved);
   });
 
   it("hover at rest is the icon rail", () => {
-    expect(at({ mode: "hover", hovering: false }).railWidth).toBe(RAIL.ICON);
+    expect(at({ mode: "hover", hovering: false }).railWidth).toBe(RAIL.MIN);
   });
 
   it("only a drag reaches MIN — expanding never does", () => {
@@ -107,7 +134,7 @@ describe("computeRail", () => {
     });
 
     expect(layout.autoRail).toBe(true);
-    expect(layout.railWidth).toBe(RAIL.ICON);
+    expect(layout.railWidth).toBe(RAIL.MIN);
   });
 
   it("never hides the rail at the default width, however narrow the viewport", () => {
@@ -125,11 +152,13 @@ describe("computeRail", () => {
     });
 
     expect(layout.hoverOpen).toBe(false);
-    expect(layout.railWidth).toBe(RAIL.ICON);
+    expect(layout.railWidth).toBe(RAIL.MIN);
   });
 
   it("clamps a hostile stored width before using it", () => {
     expect(at({ width: 900 }).railWidth).toBe(RAIL.MAX);
-    expect(at({ width: 4 }).railWidth).toBe(RAIL.MIN);
+    /* A stored 4 is an expanded width, so it clamps to MID — the rail never
+       renders narrower than the icon rail while it is open. */
+    expect(at({ width: 4 }).railWidth).toBe(RAIL.MID);
   });
 });

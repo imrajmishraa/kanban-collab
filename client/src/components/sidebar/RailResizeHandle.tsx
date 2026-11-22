@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 
 import { cn } from "@/utils/cn";
 
-import { RAIL, clampWidth } from "@/features/dashboard";
+import { RAIL, clampWidth, snapZone } from "@/features/dashboard";
 
 interface RailResizeHandleProps {
   /** The width on screen right now — which is not always the stored width. */
@@ -10,6 +10,8 @@ interface RailResizeHandleProps {
   /** Stored width, for the aria value. */
   width: number;
   onWidth: (width: number) => void;
+  /** The drag went below MID: snap to the icon rail. */
+  onCollapse: () => void;
   /** Pulling past the minimum means "get this out of my way". */
   onHide: () => void;
   /** Dragging from hover/collapsed promotes the rail to open. */
@@ -31,19 +33,27 @@ export default function RailResizeHandle({
   renderedWidth,
   width,
   onWidth,
+  onCollapse,
   onHide,
   onResizeStart,
   onResizeEnd,
 }: RailResizeHandleProps) {
   const [dragging, setDragging] = useState(false);
-  const [pastMin, setPastMin] = useState(false);
+  /** The drag is under MID, so the rail is sitting collapsed. */
+  const [belowMid, setBelowMid] = useState(false);
 
   const startX = useRef(0);
   const startWidth = useRef(0);
 
-  const atLimit = dragging && (width === RAIL.MIN || width === RAIL.MAX);
+  const atLimit = dragging && (width === RAIL.MID || width === RAIL.MAX);
 
   const onPointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
+    /* The rail itself is a click target while collapsed (click it to expand),
+       and this handle lives inside it. Without stopping here, the click that
+       ends a drag bubbles up to the rail — which by then is collapsed, so it
+       expands again: the divider appears to bounce back. */
+    event.stopPropagation();
+
     if (event.button !== 0) return;
 
     /* Start from what is on screen. In hover mode that is MIN while the stored
@@ -54,23 +64,33 @@ export default function RailResizeHandle({
     event.currentTarget.setPointerCapture(event.pointerId);
     onResizeStart(startWidth.current);
     setDragging(true);
-    setPastMin(false);
+    setBelowMid(false);
   };
 
   const onPointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
     if (!dragging) return;
 
     const raw = startWidth.current + (event.clientX - startX.current);
+    const zone = snapZone(raw);
 
-    if (raw <= RAIL.MIN - RAIL.HIDE_SLOP) {
+    /* The rail snaps instead of sliding: below MID it collapses to the icon
+       rail, and a deliberate pull past that takes it off the page. Only the
+       expanded range stores a width. */
+    if (zone === "hidden") {
       setDragging(false);
-      setPastMin(false);
+      setBelowMid(false);
       onHide();
       onResizeEnd();
       return;
     }
 
-    setPastMin(raw < RAIL.MIN);
+    if (zone === "collapsed") {
+      setBelowMid(true);
+      onCollapse();
+      return;
+    }
+
+    setBelowMid(false);
     onWidth(clampWidth(raw));
   };
 
@@ -78,7 +98,7 @@ export default function RailResizeHandle({
     if (!dragging) return;
 
     setDragging(false);
-    setPastMin(false);
+    setBelowMid(false);
     onResizeEnd();
   };
 
@@ -91,7 +111,7 @@ export default function RailResizeHandle({
         : event.key === "ArrowLeft"
           ? width - step
           : event.key === "Home"
-            ? RAIL.MIN
+            ? RAIL.MID
             : event.key === "End"
               ? RAIL.MAX
               : null;
@@ -109,7 +129,7 @@ export default function RailResizeHandle({
       aria-orientation="vertical"
       aria-controls="app-rail"
       aria-label="Resize sidebar"
-      aria-valuemin={RAIL.MIN}
+      aria-valuemin={RAIL.MID}
       aria-valuemax={RAIL.MAX}
       aria-valuenow={width}
       aria-valuetext={`${width} pixels`}
@@ -118,6 +138,8 @@ export default function RailResizeHandle({
       onPointerMove={onPointerMove}
       onPointerUp={endDrag}
       onPointerCancel={endDrag}
+      /* Belt and braces: a click can be synthesised even when the pointer moved. */
+      onClick={(event) => event.stopPropagation()}
       onDoubleClick={() => onWidth(RAIL.DEFAULT)}
       onKeyDown={onKeyDown}
       /* Inline, not a utility: `base.css` sets `cursor: pointer` on `button`
@@ -130,8 +152,7 @@ export default function RailResizeHandle({
         "after:absolute after:inset-y-0 after:left-1/2 after:w-0.5 after:-translate-x-1/2",
         "after:bg-transparent after:transition-colors",
         "hover:after:bg-(--link) focus-visible:after:bg-(--link)",
-        atLimit && "after:bg-(--warning)",
-        pastMin && "after:bg-(--warning)",
+        (atLimit || belowMid) && "after:bg-(--warning)",
       )}
     />
   );

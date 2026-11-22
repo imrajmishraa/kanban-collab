@@ -16,11 +16,7 @@ import SidebarNotifications from "@/components/sidebar/SidebarNotifications";
 import { useWorkspaces } from "@/hooks/useWorkspaces";
 import { useBoards, boardKeys, BOARDS_LIST_LIMIT } from "@/hooks/useBoards";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
-import {
-  RAIL,
-  useRailLayout,
-  useSidebarState,
-} from "@/features/dashboard";
+import { RAIL, useRailLayout, useSidebarState } from "@/features/dashboard";
 import RailResizeHandle from "./RailResizeHandle";
 import { useAuth } from "@/hooks/useAuth";
 import { boardApi } from "@/features/boards";
@@ -51,7 +47,7 @@ export default function DashboardSidebar({ onToggle }: DashboardSidebarProps) {
   const { railWidth } = layout;
 
   /* Labels only fit above the icon rail. */
-  const open = railWidth > RAIL.ICON;
+  const open = railWidth > RAIL.MIN;
 
   /* Expanded over the page rather than beside it: that is the only case where
      the rail needs to read as a layer. */
@@ -218,6 +214,8 @@ export default function DashboardSidebar({ onToggle }: DashboardSidebarProps) {
             renderedWidth={railWidth}
             width={layout.width}
             onWidth={setWidth}
+            /* Below MID the drag snaps to the icon rail instead of sliding. */
+            onCollapse={() => useSidebarState.getState().collapse()}
             onHide={hide}
             onResizeStart={(fromWidth) => {
               /* Dragging out of hover or collapsed means the reader wants the

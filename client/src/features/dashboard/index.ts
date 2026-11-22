@@ -39,7 +39,9 @@ export {
   clampWidth,
   computeRail,
   requiredViewport,
+  snapZone,
 } from "./lib/railMetrics";
+export type { RailZone } from "./lib/railMetrics";
 export type { RailLayout } from "./lib/railMetrics";
 
 export { formatDay } from "./components/search/formatDay";

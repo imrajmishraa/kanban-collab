@@ -10,24 +10,49 @@
  * and starts being a column.
  */
 export const RAIL = {
-  /** Narrowest expanded width. */
-  MIN: 200,
+  /** Collapsed icon rail — the lowest stop that still shows the nav. */
+  MIN: 72,
+  /** Narrowest *expanded* rail. A drag below this snaps to MIN. */
+  MID: 200,
+  /** First run, the double-click reset, and what hover opens at. */
+  DEFAULT: 288,
   /** Widest. Past this the rail eats the board. */
   MAX: 420,
-  /** First run, and the double-click reset. */
-  DEFAULT: 288,
-  /** Icons only — the old `w-18`. */
-  ICON: 72,
   /** Horizontal space the page needs beside the rail. */
   GUTTER: 329,
-  /** How far past MIN a drag must go before it means "hide". */
-  HIDE_SLOP: 48,
+  /**
+   * Below this, mid-drag, the rail leaves the page entirely. It is a little
+   * past MIN so that reaching collapsed does not immediately hide it — you have
+   * to mean it.
+   */
+  HIDE_BELOW: 36,
   /** Below this viewport the expanded rail is never shown. */
   MIN_VIEWPORT: 700,
 } as const;
 
+/**
+ * A stored width is always an *expanded* width, so it lives between MID and MAX.
+ * MIN is a mode, not a width the reader can store: below MID the rail is
+ * collapsed, and collapsing is what the drag snaps to.
+ */
 export const clampWidth = (width: number): number =>
-  Math.min(RAIL.MAX, Math.max(RAIL.MIN, Math.round(width)));
+  Math.min(RAIL.MAX, Math.max(RAIL.MID, Math.round(width)));
+
+export type RailZone = "expanded" | "collapsed" | "hidden";
+
+/**
+ * Where a drag at `rawWidth` should land.
+ *
+ * The rail has three stops and the drag snaps between them rather than sliding
+ * continuously: MAX…MID is the expanded range, below MID it collapses to the
+ * icon rail, and a deliberate pull past that takes it off the page.
+ */
+export function snapZone(rawWidth: number): RailZone {
+  if (rawWidth < RAIL.HIDE_BELOW) return "hidden";
+  if (rawWidth < RAIL.MID) return "collapsed";
+
+  return "expanded";
+}
 
 /**
  * The viewport width at which an expanded rail of `width` still leaves the page
@@ -88,7 +113,7 @@ export function computeRail({
 
   if (hidden) railWidth = 0;
   else if (hoverOpen || expanded) railWidth = clamped;
-  else railWidth = RAIL.ICON;
+  else railWidth = RAIL.MIN;
 
   /*
    * What the page reserves, and why it is not `railWidth` in hover mode.
@@ -99,7 +124,7 @@ export function computeRail({
    * dropped from 72 to 0 the moment the pointer arrived. In hover mode the
    * layout is therefore pinned to the icon rail, and only the rail itself grows.
    */
-  const reserved = mode === "hover" ? RAIL.ICON : railWidth;
+  const reserved = mode === "hover" ? RAIL.MIN : railWidth;
 
   return {
     width: clamped,
