@@ -5,7 +5,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import {
   CollapseIcon,
   ExpandIcon,
-  LayoutRightIcon,
+  LayoutAlignRightIcon,
 } from "@hugeicons/core-free-icons";
 
 import { useRightPanel } from "@/stores/rightPanel";
@@ -37,6 +37,19 @@ import { Tooltip } from "@/components/Tooltips/ToolTip";
  * - `hidden lg:flex` is the whole tablet story: between 768 and 1023 the column is not
  *   shown, so it can never squeeze the board.
  * - `h-dvh`, never `100vh`: iOS's collapsing chrome would push the last row off.
+ *
+ * The header's two controls have different widths on purpose:
+ *
+ * - **At the panel's own width** the full-width control is a bare 32px square — an
+ *   icon with no label, because "Full width" is a thing you learn once and the header
+ *   has one job: not to look like a toolbar.
+ * - **Full width** the same control becomes `icon + Show less`, because that is the
+ *   state where a bare glyph is a guess: is it expand, restore, or close? The label
+ *   is the only thing that distinguishes "back to my column" from "make it bigger".
+ *
+ * It cannot be `size-8` in both states: a grid cell of 32px stacks the icon over the
+ * text and clips both. So the button is a flex row that is 32px wide with one child
+ * and as wide as its content with two.
  */
 
 interface RightPanelProps {
@@ -231,10 +244,12 @@ export default function RightPanel({
       <header className="flex h-12 shrink-0 items-center justify-between gap-2 border-b border-(--hairline) px-3">
         <h2 className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-(--text-muted)"></h2>
 
-        <div className="flex items-center gap-1">
-          {/* Full width: everything the app rail leaves, never the rail itself. */}
+        <div className="flex shrink-0 items-center gap-1">
+          {/* Full width: everything the app rail leaves, never the rail itself.
+              Two shapes, one control: a bare square while the panel is a column,
+              icon + label once it owns the window. */}
           <Tooltip
-            label={layout.maximized ? "Show less" : "Full width"}
+            label={layout.maximized ? "Show page" : "Full width"}
             highlight={isMac ? "⌘⇧J" : "Ctrl⇧J"}
             side="bottom"
             shape="solid"
@@ -243,19 +258,32 @@ export default function RightPanel({
             <button
               type="button"
               onClick={() => setMaximized(!layout.maximized)}
-              aria-label={layout.maximized ? "Show less" : "Full width"}
+              aria-label={layout.maximized ? "Show page" : "Full width"}
               aria-pressed={layout.maximized}
               aria-keyshortcuts="Meta+Shift+J Control+Shift+J"
               className={cn(
-                "grid size-8 place-items-center rounded-lg",
-                "hover:bg-(--bg-hover) text-(--text-primary)",
+                /* `h-8` + `w-8`, never `size-8`: `size-*` sets both, and it would
+                   fight the `px-*` that the labelled state needs. */
+                "flex h-8 items-center justify-center rounded-lg",
+                "text-(--text-primary) transition-colors",
+                "hover:bg-(--bg-hover)",
                 "focus-visible:outline-2 focus-visible:outline-(--brand)",
+                layout.maximized
+                  ? "gap-1.25 px-2.5 mr-1 border border-(--hairline)"
+                  : "w-8",
               )}
             >
               <HugeiconsIcon
                 icon={layout.maximized ? CollapseIcon : ExpandIcon}
-                size={18}
+                size={layout.maximized ? 16 : 18}
+                strokeWidth={1.6}
               />
+
+              {layout.maximized && (
+                <span className="whitespace-nowrap text-[12px] leading-none ">
+                  Show page
+                </span>
+              )}
             </button>
           </Tooltip>
 
@@ -274,12 +302,12 @@ export default function RightPanel({
               aria-label="Hide panel"
               aria-controls="right-panel"
               className={cn(
-                "grid size-8 place-items-center rounded-lg bg-(--bg-hover)",
+                "grid size-8 shrink-0 place-items-center rounded-lg bg-(--bg-hover)",
                 "text-(--text-primary) transition-colors hover:bg-(--bg-active)",
                 "focus-visible:outline-2 focus-visible:outline-(--brand)",
               )}
             >
-              <HugeiconsIcon icon={LayoutRightIcon} size={18} />
+              <HugeiconsIcon icon={LayoutAlignRightIcon} size={18} />
             </button>
           </Tooltip>
         </div>

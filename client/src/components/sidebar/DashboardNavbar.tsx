@@ -9,7 +9,7 @@ import { useRightPanel } from "@/stores/rightPanel";
 import { NavbarSearchIcon, NotificationsButton } from "@/features/dashboard";
 import { NotificationsPanel } from "@/features/dashboard";
 import { Tooltip } from "@/components/Tooltips/ToolTip";
-import { LayoutLeftIcon, LayoutRightIcon } from "@hugeicons/core-free-icons";
+import { PanelLeftIcon, PanelRightIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import KanbanIcon from "@/assets/KanbanIcon";
 
@@ -179,7 +179,7 @@ export default function DashboardNavbar() {
                 {/* Hover hint, hidden normally, visible on hover: a pointer when
                 the rail opens by hovering, an arrow when it opens on click. */}
                 <HugeiconsIcon
-                  icon={LayoutLeftIcon}
+                  icon={PanelLeftIcon}
                   size={16}
                   strokeWidth={1.8}
                   className="absolute text-(--text-muted) opacity-0 scale-75 transition-all duration-150 group-hover:scale-100 group-hover:opacity-100 group-hover:text-(--text-primary) group-focus-within:scale-100 group-focus-within:opacity-100 group-focus-within:text-(--text-primary) focus:opacity-100"
@@ -280,7 +280,7 @@ export default function DashboardNavbar() {
                 ].join(" ")}
               >
                 <HugeiconsIcon
-                  icon={LayoutRightIcon}
+                  icon={PanelRightIcon}
                   size={18}
                   strokeWidth={1.6}
                 />
