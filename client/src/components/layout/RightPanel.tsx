@@ -207,7 +207,13 @@ export default function RightPanel({
     }
   };
 
-  const endDrag = () => {
+  /**
+   * Ends a drag — and treats a press that never moved as a click.
+   *
+   * `fromPointerUp` is a parameter rather than a check on the event because the same
+   * handler is bound to `pointercancel`: a cancelled pointer must not close the column.
+   */
+  const endDrag = (fromPointerUp = false) => {
     if (!dragging) return;
 
     const wasMoving = moving;
@@ -216,7 +222,13 @@ export default function RightPanel({
     setMoving(false);
     setOnStop(false);
 
-    if (wasMoving) onResizeEnd();
+    if (wasMoving) {
+      onResizeEnd();
+      return;
+    }
+
+    /* A single click on the divider closes the column. */
+    if (fromPointerUp) setMode("off");
   };
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
@@ -268,12 +280,10 @@ export default function RightPanel({
         tabIndex={0}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
-        onPointerUp={endDrag}
-        onPointerCancel={endDrag}
-        onDoubleClick={() => {
-          setLevel("normal");
-          setWidth(PANEL.DEFAULT);
-        }}
+        onPointerUp={() => endDrag(true)}
+        onPointerCancel={() => endDrag()}
+        /* No double-click: a single click already closes the column, so the first click
+           of a double-click would take the divider away with it. `Home` still resets. */
         onKeyDown={onKeyDown}
         /* Inline: `base.css` sets `cursor: pointer` on `button` unlayered, and
            unlayered CSS beats every Tailwind `@layer utilities` class. */

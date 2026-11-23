@@ -158,7 +158,14 @@ export default function RailResizeHandle({
     onWidth(snapWidth(raw));
   };
 
-  const endDrag = () => {
+  /**
+   * Ends a drag — and treats a press that never moved as a click.
+   *
+   * `fromPointerUp` is a parameter rather than a check on the event because the same
+   * handler is bound to `pointercancel`: a cancelled pointer (an OS gesture, a window
+   * blur) must not put the rail away.
+   */
+  const endDrag = (fromPointerUp = false) => {
     if (!dragging) return;
 
     const wasMoving = moving;
@@ -167,8 +174,14 @@ export default function RailResizeHandle({
     setMoving(false);
     setBelowMid(false);
 
-    /* A click that never became a drag changed nothing, so it has nothing to end. */
-    if (wasMoving) onResizeEnd();
+    if (wasMoving) {
+      onResizeEnd();
+      return;
+    }
+
+    /* A single click on the divider is "put it away" — the same place a long pull-left
+       reaches, without the pull. */
+    if (fromPointerUp) onHide();
   };
 
   /* A drag can end without a pointerup on this element — the rail can be hidden
@@ -237,17 +250,13 @@ export default function RailResizeHandle({
         tabIndex={0}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
-        onPointerUp={endDrag}
-        onPointerCancel={endDrag}
+        onPointerUp={() => endDrag(true)}
+        onPointerCancel={() => endDrag()}
         /* Belt and braces: a click can be synthesised even when the pointer
            moved, and it must not reach the rail's own click-to-expand. */
         onClick={(event) => event.stopPropagation()}
-        onDoubleClick={() => {
-          /* Double-click puts the rail away — the same place a long pull-left
-             reaches, without having to drag for it. A single click deliberately
-             does nothing: the border is far too easy to hit by accident. */
-          onHide();
-        }}
+        /* No double-click: with a single click closing the rail, the first click
+           of a double-click has already done the closing. */
         onKeyDown={onKeyDown}
         /* Inline, not a utility: `base.css` sets `cursor: pointer` on `button`
            unlayered, and unlayered CSS beats every Tailwind `@layer utilities`
