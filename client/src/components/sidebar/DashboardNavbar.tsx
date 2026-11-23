@@ -273,9 +273,17 @@ export default function DashboardNavbar() {
                 aria-label="Show panel"
                 aria-controls="right-panel"
                 aria-keyshortcuts="Meta+J Control+J"
-                className="grid size-9 shrink-0 cursor-pointer place-items-center rounded-lg text-(--text-primary) transition-colors hover:bg-(--bg-hover)"
+                className={[
+                  "grid size-8 place-items-center rounded-lg",
+                  "hover:bg-(--bg-active) text-(--text-primary)",
+                  "focus-visible:outline-2 focus-visible:outline-(--brand)",
+                ].join(" ")}
               >
-                <HugeiconsIcon icon={LayoutRightIcon} size={18} />
+                <HugeiconsIcon
+                  icon={LayoutRightIcon}
+                  size={18}
+                  strokeWidth={1.6}
+                />
               </button>
             </Tooltip>
           )}

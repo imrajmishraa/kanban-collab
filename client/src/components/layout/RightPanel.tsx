@@ -279,7 +279,7 @@ export default function RightPanel({
                 "focus-visible:outline-2 focus-visible:outline-(--brand)",
               )}
             >
-              <HugeiconsIcon icon={LayoutRightIcon} size={16} />
+              <HugeiconsIcon icon={LayoutRightIcon} size={18} />
             </button>
           </Tooltip>
         </div>
