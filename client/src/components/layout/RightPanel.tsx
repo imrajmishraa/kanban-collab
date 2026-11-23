@@ -337,29 +337,29 @@ export default function RightPanel({
 
           {/* The same control that opens the panel, where the close button used to
               be: the icon is never a mystery. */}
-              {!layout.maximized && (
-          <Tooltip
-            label="Hide panel"
-            highlight={isMac ? "⌘J" : "Ctrl J"}
-            side="bottom"
-            shape="solid"
-            size="md"
-          >
-            <button
-              type="button"
-              onClick={() => setMode("off")}
-              aria-label="Hide panel"
-              aria-controls="right-panel"
-              className={cn(
-                "grid size-8 shrink-0 place-items-center rounded-lg bg-(--bg-hover)",
-                "text-(--text-primary) transition-colors hover:bg-(--bg-active)",
-                "focus-visible:outline-2 focus-visible:outline-(--brand)",
-              )}
+          {!layout.maximized && (
+            <Tooltip
+              label="Hide panel"
+              highlight={isMac ? "⌘J" : "Ctrl J"}
+              side="bottom"
+              shape="solid"
+              size="md"
             >
-              <HugeiconsIcon icon={LayoutAlignRightIcon} size={18} />
-            </button>
-          </Tooltip>
-              )}
+              <button
+                type="button"
+                onClick={() => setMode("off")}
+                aria-label="Hide panel"
+                aria-controls="right-panel"
+                className={cn(
+                  "grid size-8 shrink-0 place-items-center rounded-lg bg-(--bg-hover)",
+                  "text-(--text-primary) transition-colors hover:bg-(--bg-active)",
+                  "focus-visible:outline-2 focus-visible:outline-(--brand)",
+                )}
+              >
+                <HugeiconsIcon icon={LayoutAlignRightIcon} size={18} />
+              </button>
+            </Tooltip>
+          )}
         </div>
       </header>
 
