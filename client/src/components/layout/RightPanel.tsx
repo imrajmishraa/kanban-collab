@@ -20,40 +20,6 @@ import { RAIL_MIN, besideMax, couple, panelDragLevel } from "@/lib/panelCouple";
 import { useSidebarState } from "@/features/dashboard";
 import { Tooltip } from "@/components/Tooltips/ToolTip";
 
-/**
- * The right column.
- *
- * A place, not a feature: this is where the things you are working on will live — an
- * activity feed, a card, a board's details — so it starts as a room with the lights on
- * rather than being built around one of them. Each section arrives as its own PR.
- *
- * Its rules are **not** the app rail's, on purpose (`panelMetrics.ts`): the left rail
- * is navigation and can be 72px of icons, this is a work surface and cannot. So it
- * starts at 320, opens at 400, and a drag past 560 takes the whole window instead of
- * stopping there.
- *
- * Layout notes that are not obvious from the classes:
- *
- * - `inset-y-0`, not `top-14`: a column like the app rail, with its own `h-14` header,
- *   so the navbar stops at its edge (`lg:right-(--panel-width)`).
- * - `hidden lg:flex` is the whole tablet story: between 768 and 1023 the column is not
- *   shown, so it can never squeeze the board.
- * - `h-dvh`, never `100vh`: iOS's collapsing chrome would push the last row off.
- *
- * The header's two controls have different widths on purpose:
- *
- * - **At the panel's own width** the full-width control is a bare 32px square — an
- *   icon with no label, because "Full width" is a thing you learn once and the header
- *   has one job: not to look like a toolbar.
- * - **Full width** the same control becomes `icon + Show less`, because that is the
- *   state where a bare glyph is a guess: is it expand, restore, or close? The label
- *   is the only thing that distinguishes "back to my column" from "make it bigger".
- *
- * It cannot be `size-8` in both states: a grid cell of 32px stacks the icon over the
- * text and clips both. So the button is a flex row that is 32px wide with one child
- * and as wide as its content with two.
- */
-
 interface RightPanelProps {
   /** What the app rail reserves, so this column can touch it but never cover it. */
   appRailWidth: number;
