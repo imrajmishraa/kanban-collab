@@ -5,10 +5,11 @@ import { WorkspaceSelector } from "@/features/dashboard";
 import { useNotifications } from "@/features/dashboard/hooks/useNotifications";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { useSidebarState } from "@/features/dashboard";
+import { useRightPanel } from "@/stores/rightPanel";
 import { NavbarSearchIcon, NotificationsButton } from "@/features/dashboard";
 import { NotificationsPanel } from "@/features/dashboard";
 import { Tooltip } from "@/components/Tooltips/ToolTip";
-import { LayoutLeftIcon } from "@hugeicons/core-free-icons";
+import { LayoutLeftIcon, LayoutRightIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import KanbanIcon from "@/assets/KanbanIcon";
 
@@ -51,6 +52,11 @@ export default function DashboardNavbar() {
    * rail's own header is the control, and a second one would be noise.
    */
   const showRailToggle = sidebarMode === "hidden";
+
+  /* The right column's only affordance, on screen in both states — a toggle that
+     only appears while the panel is closed makes people hunt for it. */
+  const rightPanelOpen = useRightPanel((state) => state.mode) !== "off";
+  const toggleRightPanel = useRightPanel((state) => state.toggle);
 
   /*
    * With nothing selected there is no workspace to scope the breadcrumb to, so
@@ -248,6 +254,32 @@ export default function DashboardNavbar() {
               ignoreRef={bellRef}
             />
           </div>
+
+          <Tooltip
+            label={rightPanelOpen ? "Hide panel" : "Show panel"}
+            highlight={isMac ? "⌘J" : "Ctrl J"}
+            side="bottom"
+            shape="solid"
+            size="md"
+          >
+            <button
+              type="button"
+              onClick={toggleRightPanel}
+              aria-label={rightPanelOpen ? "Hide panel" : "Show panel"}
+              aria-pressed={rightPanelOpen}
+              aria-controls="right-panel"
+              aria-keyshortcuts="Meta+J Control+J"
+              className={[
+                "grid size-9 shrink-0 cursor-pointer place-items-center rounded-lg",
+                "transition-colors hover:bg-(--bg-hover) text-(--text-primary)",
+                rightPanelOpen
+                  ? "bg-(--bg-hover) text-(--text-primary)"
+                  : "text-(--text-primary)",
+              ].join(" ")}
+            >
+              <HugeiconsIcon icon={LayoutRightIcon} size={18} />
+            </button>
+          </Tooltip>
         </div>
       </header>
     </>

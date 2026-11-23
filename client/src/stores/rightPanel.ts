@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+import { PANEL } from "@/components/layout/panelMetrics";
+
 /**
  * What the right column shows — if anything.
  *
@@ -15,7 +17,7 @@ import { persist } from "zustand/middleware";
  * That is the "default rule" for this surface: add a mode in one place, and the
  * settings UI, the labels and the guard in `merge` all follow.
  */
-export type RightPanelMode = "off" | "notifications";
+export type RightPanelMode = "off" | "panel";
 
 export interface RightPanelOption {
   mode: RightPanelMode;
@@ -32,10 +34,10 @@ export const RIGHT_PANEL_MODES: readonly RightPanelOption[] = [
       "The bell in the navbar opens the inbox, as it does today. Nothing is added to the layout.",
   },
   {
-    mode: "notifications",
-    label: "Notifications",
+    mode: "panel",
+    label: "Panel",
     description:
-      "A fixed inbox column on the right, from 1024px up. Narrower screens keep the bell.",
+      "A column on the right for whatever you are working on, from 1024px up. It starts empty; sections land here as they are built.",
   },
 ];
 
@@ -54,23 +56,55 @@ function isMode(value: unknown): value is RightPanelMode {
 
 interface RightPanelState {
   mode: RightPanelMode;
+  /** Persisted. Clamped on read and again at layout time. */
+  width: number;
+  /** Full width: the board is not rendered. A mode, not a width. */
+  maximized: boolean;
+
   setMode: (mode: RightPanelMode) => void;
+  setWidth: (width: number) => void;
+  setMaximized: (maximized: boolean) => void;
+  /** ⌘J and the navbar toggle: closed ↔ open, from either side. */
+  toggle: () => void;
 }
 
 export const useRightPanel = create<RightPanelState>()(
   persist(
     (set) => ({
       mode: RIGHT_PANEL_DEFAULT,
+      width: PANEL.DEFAULT,
+      maximized: false,
 
-      setMode: (mode) => set({ mode }),
+      setMode: (mode) =>
+        set((state) => ({
+          mode,
+          /* Closing drops full width, or the next open would come back over the
+             whole board. */
+          maximized: mode === "off" ? false : state.maximized,
+        })),
+      setWidth: (width) => set({ width: Math.round(width) }),
+      setMaximized: (maximized) => set({ maximized }),
+
+      /* One toggle, two states. "off" is the only closed state. */
+      toggle: () =>
+        set((state) => ({
+          mode: state.mode === "off" ? "panel" : "off",
+          maximized: false,
+        })),
     }),
     {
       name: "kanban.right-panel",
       /* Versioned from the first write: a width (the resize handle) and an
          activity mode are planned, so the persisted shape will change and old
          entries need a migration path. */
-      version: 1,
-      partialize: (state) => ({ mode: state.mode }),
+      /* v2 adds the width and full width. The `migrate` below is what keeps an
+         entry written by v1 from warning on every load and being thrown away. */
+      version: 2,
+      partialize: (state) => ({
+        mode: state.mode,
+        width: state.width,
+        maximized: state.maximized,
+      }),
       /*
        * Same reason as `docsSidebar`: a `version` without a `migrate` makes zustand
        * warn on every load and drop the stored value. It also has to survive an
@@ -79,16 +113,31 @@ export const useRightPanel = create<RightPanelState>()(
        * throwing.
        */
       migrate: (persisted) => {
-        const old = persisted as { mode?: unknown } | undefined;
+        const old = persisted as
+          { mode?: unknown; width?: unknown; maximized?: unknown } | undefined;
 
-        return { mode: isMode(old?.mode) ? old.mode : RIGHT_PANEL_DEFAULT };
+        return {
+          mode: isMode(old?.mode) ? old.mode : RIGHT_PANEL_DEFAULT,
+          width:
+            typeof old?.width === "number" && Number.isFinite(old.width)
+              ? Math.round(old.width)
+              : PANEL.DEFAULT,
+          /* Full width never survives a reload: it is a gesture, not a preference. */
+          maximized: false,
+        };
       },
       merge: (persisted, current) => {
-        const saved = persisted as { mode?: unknown } | undefined;
+        const saved = persisted as
+          { mode?: unknown; width?: unknown } | undefined;
 
         return {
           ...current,
           mode: isMode(saved?.mode) ? saved.mode : current.mode,
+          width:
+            typeof saved?.width === "number" && Number.isFinite(saved.width)
+              ? Math.round(saved.width)
+              : current.width,
+          maximized: false,
         };
       },
     },
