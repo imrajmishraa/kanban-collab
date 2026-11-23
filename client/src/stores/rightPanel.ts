@@ -71,6 +71,18 @@ export const useRightPanel = create<RightPanelState>()(
          entries need a migration path. */
       version: 1,
       partialize: (state) => ({ mode: state.mode }),
+      /*
+       * Same reason as `docsSidebar`: a `version` without a `migrate` makes zustand
+       * warn on every load and drop the stored value. It also has to survive an
+       * entry written by a newer build (the right-column work bumps this to 2), so
+       * anything it does not recognise falls back to the default instead of
+       * throwing.
+       */
+      migrate: (persisted) => {
+        const old = persisted as { mode?: unknown } | undefined;
+
+        return { mode: isMode(old?.mode) ? old.mode : RIGHT_PANEL_DEFAULT };
+      },
       merge: (persisted, current) => {
         const saved = persisted as { mode?: unknown } | undefined;
 

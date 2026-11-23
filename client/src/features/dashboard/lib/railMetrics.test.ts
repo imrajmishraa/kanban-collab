@@ -113,8 +113,8 @@ describe("computeRail", () => {
   it("collapsed reserves the 72px icon rail", () => {
     const layout = at({ mode: "collapsed" });
 
-    expect(layout.railWidth).toBe(RAIL.MIN);
-    expect(layout.reserved).toBe(RAIL.MIN);
+    expect(layout.railWidth).toBe(RAIL.COLLAPSED);
+    expect(layout.reserved).toBe(RAIL.COLLAPSED);
   });
 
   it("hover opens at the stored width and reserves only the icon rail", () => {
@@ -122,11 +122,13 @@ describe("computeRail", () => {
 
     expect(open.hoverOpen).toBe(true);
     expect(open.railWidth).toBe(300);
-    expect(open.reserved).toBe(RAIL.MIN);
+    expect(open.reserved).toBe(RAIL.COLLAPSED);
   });
 
   it("hover at rest is the icon rail", () => {
-    expect(at({ mode: "hover", hovering: false }).railWidth).toBe(RAIL.MIN);
+    expect(at({ mode: "hover", hovering: false }).railWidth).toBe(
+      RAIL.COLLAPSED,
+    );
   });
 
   it("hidden is off the page entirely", () => {

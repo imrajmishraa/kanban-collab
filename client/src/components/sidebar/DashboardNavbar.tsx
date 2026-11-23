@@ -165,7 +165,7 @@ export default function DashboardNavbar() {
                 <KanbanIcon
                   size={22}
                   variant="upper"
-                  className="transition-all duration-150 group-hover:opacity-0"
+                  className="transition-all duration-150 group-hover:opacity-0 group-focus-within:opacity-0"
                 />
 
                 {/* Hover hint, hidden normally, visible on hover: a pointer when
@@ -174,16 +174,7 @@ export default function DashboardNavbar() {
                   icon={LayoutLeftIcon}
                   size={16}
                   strokeWidth={1.8}
-                  className="
-              absolute
-              text-(--text-muted)
-              opacity-0
-              scale-75
-              transition-all duration-150
-              group-hover:scale-100
-              group-hover:opacity-100
-              group-hover:text-(--text-primary)
-            "
+                  className="absolute text-(--text-muted) opacity-0 scale-75 transition-all duration-150 group-hover:scale-100 group-hover:opacity-100 group-hover:text-(--text-primary) group-focus-within:scale-100 group-focus-within:opacity-100 group-focus-within:text-(--text-primary) focus:opacity-100"
                 />
               </button>
             </Tooltip>
