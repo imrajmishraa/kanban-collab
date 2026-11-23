@@ -15,7 +15,7 @@ import {
   computePanel,
   panelStops,
 } from "@/components/layout/panelMetrics";
-import { snapToStops } from "@/lib/railDrag";
+import { dampedWidth, snapToStops } from "@/lib/railDrag";
 import { RAIL_MIN, besideMax, couple, panelDragLevel } from "@/lib/panelCouple";
 import { useSidebarState } from "@/features/dashboard";
 import { Tooltip } from "@/components/Tooltips/ToolTip";
@@ -146,7 +146,14 @@ export default function RightPanel({
     }
 
     /* This is the left edge of a right-hand column: dragging left widens. */
-    const raw = startWidth.current + (startX.current - event.clientX);
+    /* Damped: the column follows 60% of the pointer's travel, so the drag reads as smooth
+       instead of twitchy. The same number the rail uses. */
+    const raw = dampedWidth(
+      startWidth.current,
+      startX.current,
+      event.clientX,
+      -1,
+    );
 
     /* The ladder: beside the board → `remaining` (board gone, rail kept) → `full`. */
     const next = panelDragLevel(raw, viewport, RAIL_MIN);

@@ -6,6 +6,7 @@ import { Tooltip } from "@/components/Tooltips/ToolTip";
 
 import { RAIL, clampWidth, snapWidth, snapZone } from "@/features/dashboard";
 import { couple } from "@/lib/panelCouple";
+import { DRAG_DAMPING } from "@/lib/railDrag";
 
 interface RailResizeHandleProps {
   /** The width on screen right now — which is not always the stored width. */
@@ -124,7 +125,7 @@ export default function RailResizeHandle({
       onResizeStart(startWidth.current);
     }
 
-    const travel = (event.clientX - startX.current) * RAIL.DRAG_DAMPING;
+    const travel = (event.clientX - startX.current) * DRAG_DAMPING;
     const raw = startWidth.current + travel;
     const zone = snapZone(raw);
 

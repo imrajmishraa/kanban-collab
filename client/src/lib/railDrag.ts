@@ -7,6 +7,24 @@
  */
 export const DRAG_START_SLOP = 3;
 
+/**
+ * How much of the pointer's travel the width follows.
+ *
+ * Below 1 the rails move slower than the cursor, which is what makes a drag feel smooth
+ * rather than twitchy: a 1px hand tremor is no longer a 1px layout shift, and the stops are
+ * easier to land on. Both edges use the same number — the rail and the column are the same
+ * gesture, so they must not feel different.
+ */
+export const DRAG_DAMPING = 0.6;
+
+/** The width a pointer at `clientX` is asking for, damped. */
+export const dampedWidth = (
+  startWidth: number,
+  startX: number,
+  clientX: number,
+  direction: 1 | -1,
+): number => startWidth + (clientX - startX) * DRAG_DAMPING * direction;
+
 export const isDragStart = (dx: number): boolean =>
   Math.abs(dx) >= DRAG_START_SLOP;
 

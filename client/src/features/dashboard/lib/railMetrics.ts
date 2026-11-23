@@ -41,7 +41,6 @@ export const RAIL = {
    * pointer, which is what makes a 220px range feel controllable at speed. Tuned
    * down from 1 after the first hands-on pass — 0.6 makes it positively sticky.
    */
-  DRAG_DAMPING: 0.75,
   /** Below this viewport the expanded rail is never shown. */
   MIN_VIEWPORT: 700,
 } as const;
