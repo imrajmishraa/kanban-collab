@@ -30,8 +30,8 @@ describe("clampPanelWidth", () => {
 
 describe("panelCeiling", () => {
   it("leaves the board its minimum", () => {
-    /* 1440 - 288 app rail - 360 board = 792. */
-    expect(panelCeiling(1440, 288)).toBe(792);
+    /* 1440 - 288 app rail - 420 board = 732. */
+    expect(panelCeiling(1440, 288)).toBe(732);
   });
 
   it("never returns less than MIN", () => {
@@ -71,12 +71,21 @@ describe("computePanel", () => {
     expect(at({ mode: "off" }).reserved).toBe(0);
   });
 
-  it("full width takes the window and removes the board", () => {
+  it("full width is everything the app rail leaves", () => {
+    /* 1440 - 288 rail = 1152, and the board is not rendered under it. */
     const layout = at({ maximized: true });
 
     expect(layout.maximized).toBe(true);
-    expect(layout.reserved).toBe(1440);
+    expect(layout.fullWidth).toBe(1152);
+    expect(layout.reserved).toBe(1152);
     expect(layout.pageVisible).toBe(false);
+  });
+
+  it("subtracts whatever the app rail is rendering at", () => {
+    /* The rail's own scale: 72 collapsed, 240…420 expanded, 0 hidden. */
+    expect(at({ maximized: true, appRailWidth: 0 }).reserved).toBe(1440);
+    expect(at({ maximized: true, appRailWidth: 72 }).reserved).toBe(1368);
+    expect(at({ maximized: true, appRailWidth: 420 }).reserved).toBe(1020);
   });
 
   it("an off panel ignores a stored full-width flag", () => {

@@ -23,7 +23,7 @@ export function NavbarSearchIcon() {
         highlight={isMac ? "⌘K" : "Ctrl K"}
         side="bottom"
         shape="solid"
-        size="sm"
+        size="md"
       >
         <button
           type="button"

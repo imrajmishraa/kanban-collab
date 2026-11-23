@@ -37,7 +37,7 @@ const SidebarHeader = ({
 
   if (collapsed) {
     return (
-      <div className="group/expand relative flex h-14 shrink-0 items-center justify-center">
+      <div className="group/expand relative flex h-12 shrink-0 items-center justify-center">
         <Tooltip
           label="Hide"
           highlight={isMac ? "⌘ ⇧ B" : "Ctrl ⇧ B"}
@@ -94,7 +94,7 @@ const SidebarHeader = ({
   }
 
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between px-3">
+    <header className="flex h-12 shrink-0 items-center justify-between px-2">
       <button
         type="button"
         onClick={() => navigate("/workspaces")}

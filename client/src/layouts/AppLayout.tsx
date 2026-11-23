@@ -96,15 +96,29 @@ export default function AppLayout() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [openSearch]);
 
-  /* ⌘J / Ctrl+J — the right column, from anywhere. */
+  /*
+   * ⌘J / Ctrl+J — the right column, from anywhere.
+   * ⌘⇧J / Ctrl+Shift+J — full width. One modifier apart on purpose: the plain one is
+   * used constantly, the shifted one changes the whole layout.
+   */
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       const mod = event.metaKey || event.ctrlKey;
 
-      if (!mod || event.shiftKey || event.key.toLowerCase() !== "j") return;
+      if (!mod || event.key.toLowerCase() !== "j") return;
 
       event.preventDefault();
-      toggleRightPanel();
+
+      if (!event.shiftKey) {
+        toggleRightPanel();
+        return;
+      }
+
+      /* Full width implies the panel is open. */
+      const panel = useRightPanel.getState();
+
+      if (panel.mode === "off") panel.setMode("panel");
+      panel.setMaximized(!panel.maximized);
     };
 
     window.addEventListener("keydown", onKeyDown);
@@ -176,7 +190,7 @@ export default function AppLayout() {
                scrollTo / scrollIntoView inside the shell. */
               "flex h-dvh flex-col overflow-y-auto scroll-smooth",
               "transition-[margin-left,margin-right,padding] duration-200 ease-out",
-              "ml-0 pt-14 md:pt-0",
+              "ml-0 pt-12 md:pt-0",
               /* What the rail reserves, in one variable — the navbar offsets
                against the same one. */
               "md:ml-(--rail-width)",

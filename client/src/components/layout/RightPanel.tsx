@@ -1,6 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 
 import { cn } from "@/utils/cn";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  CollapseIcon,
+  ExpandIcon,
+  LayoutRightIcon,
+} from "@hugeicons/core-free-icons";
 
 import { useRightPanel } from "@/stores/rightPanel";
 import {
@@ -10,6 +16,7 @@ import {
   panelStops,
 } from "@/components/layout/panelMetrics";
 import { isOnStop, snapToStops } from "@/lib/railDrag";
+import { Tooltip } from "@/components/Tooltips/ToolTip";
 
 /**
  * The right column.
@@ -38,6 +45,10 @@ interface RightPanelProps {
   onResizeStart: () => void;
   onResizeEnd: () => void;
 }
+
+const isMac =
+  typeof navigator !== "undefined" &&
+  /Mac|iPhone|iPad|iPod/.test(navigator.platform);
 
 export default function RightPanel({
   appRailWidth,
@@ -217,8 +228,61 @@ export default function RightPanel({
         )}
       />
 
-      <header className="flex h-14 shrink-0 items-center justify-between gap-2 px-4">
+      <header className="flex h-12 shrink-0 items-center justify-between gap-2 border-b border-(--hairline) px-3">
+        <h2 className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-(--text-muted)"></h2>
 
+        <div className="flex items-center gap-1">
+          {/* Full width: everything the app rail leaves, never the rail itself. */}
+          <Tooltip
+            label={layout.maximized ? "Show less" : "Full width"}
+            highlight={isMac ? "⌘⇧J" : "Ctrl⇧J"}
+            side="bottom"
+            shape="solid"
+            size="md"
+          >
+            <button
+              type="button"
+              onClick={() => setMaximized(!layout.maximized)}
+              aria-label={layout.maximized ? "Show less" : "Full width"}
+              aria-pressed={layout.maximized}
+              aria-keyshortcuts="Meta+Shift+J Control+Shift+J"
+              className={cn(
+                "grid size-8 place-items-center rounded-lg",
+                "hover:bg-(--bg-hover) text-(--text-primary)",
+                "focus-visible:outline-2 focus-visible:outline-(--brand)",
+              )}
+            >
+              <HugeiconsIcon
+                icon={layout.maximized ? CollapseIcon : ExpandIcon}
+                size={18}
+              />
+            </button>
+          </Tooltip>
+
+          {/* The same control that opens the panel, where the close button used to
+              be: the icon is never a mystery. */}
+          <Tooltip
+            label="Hide panel"
+            highlight={isMac ? "⌘J" : "Ctrl J"}
+            side="bottom"
+            shape="solid"
+            size="md"
+          >
+            <button
+              type="button"
+              onClick={() => setMode("off")}
+              aria-label="Hide panel"
+              aria-controls="right-panel"
+              className={cn(
+                "grid size-8 place-items-center rounded-lg bg-(--bg-hover)",
+                "text-(--text-primary) transition-colors hover:bg-(--bg-active)",
+                "focus-visible:outline-2 focus-visible:outline-(--brand)",
+              )}
+            >
+              <HugeiconsIcon icon={LayoutRightIcon} size={16} />
+            </button>
+          </Tooltip>
+        </div>
       </header>
 
       <div className="min-h-0 flex-1 overflow-y-auto">

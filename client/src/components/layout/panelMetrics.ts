@@ -60,6 +60,13 @@ export interface PanelLayoutInput {
 
 export interface PanelLayout {
   ceiling: number;
+  /**
+   * How wide the column is when it takes everything the app rail leaves.
+   *
+   * Not the whole viewport: the rail is never covered. Whatever it is rendering at —
+   * 0 hidden, 72 collapsed, or its stored width — the panel gets the rest.
+   */
+  fullWidth: number;
   width: number;
   hidden: boolean;
   maximized: boolean;
@@ -89,10 +96,15 @@ export function computePanel({
   const hidden = mode === "off";
   const isMaximized = !hidden && maximized;
 
-  const reserved = hidden ? 0 : isMaximized ? viewport : clamped;
+  /* Full width is "everything except the app rail": 72px of icons leaves 72px less, a
+     closed rail leaves all of it. */
+  const fullWidth = Math.max(PANEL.MIN, Math.round(viewport - appRailWidth));
+
+  const reserved = hidden ? 0 : isMaximized ? fullWidth : clamped;
 
   return {
     ceiling,
+    fullWidth,
     width: clamped,
     hidden,
     maximized: isMaximized,

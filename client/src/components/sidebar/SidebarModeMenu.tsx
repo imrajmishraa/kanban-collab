@@ -72,9 +72,7 @@ function SidebarModeMenu({ mode, onSelect }: SidebarModeMenuProps) {
                 active
                   ? "text-(--accent)"
                   : "text-(--text-muted) group-hover:text-(--text-primary)",
-                isHover
-                ?  "-rotate-90"
-                : null,
+                isHover ? "-rotate-90" : null,
               ].join(" ")}
             />
           </button>

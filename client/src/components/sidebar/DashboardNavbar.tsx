@@ -132,8 +132,10 @@ export default function DashboardNavbar() {
 
       <header
         className={[
-          "fixed top-0 right-0 z-50 hidden h-14 md:flex",
-          "items-center gap-2 px-5 ",
+          "fixed top-0 right-0 z-50 hidden h-12 md:flex",
+          /* Ends where the right column begins instead of running under it. */
+          "lg:right-(--panel-width)",
+          "items-center gap-1.5 px-3 ",
           "transition-[left,background-color] duration-200",
           "border-b border-(--hairline)",
           /* Same variable the layout reserves, so the navbar follows the rail
@@ -143,7 +145,7 @@ export default function DashboardNavbar() {
         ].join(" ")}
       >
         {showRailToggle && (
-          <div className="group/expand relative flex h-14 shrink-0 items-center justify-center">
+          <div className="group/expand relative flex h-12 shrink-0 items-center justify-center">
             <Tooltip
               label="Expand sidebar"
               highlight={isMac ? "⌘B" : "Ctrl B"}
@@ -255,31 +257,28 @@ export default function DashboardNavbar() {
             />
           </div>
 
-          <Tooltip
-            label={rightPanelOpen ? "Hide panel" : "Show panel"}
-            highlight={isMac ? "⌘J" : "Ctrl J"}
-            side="bottom"
-            shape="solid"
-            size="md"
-          >
-            <button
-              type="button"
-              onClick={toggleRightPanel}
-              aria-label={rightPanelOpen ? "Hide panel" : "Show panel"}
-              aria-pressed={rightPanelOpen}
-              aria-controls="right-panel"
-              aria-keyshortcuts="Meta+J Control+J"
-              className={[
-                "grid size-9 shrink-0 cursor-pointer place-items-center rounded-lg",
-                "transition-colors hover:bg-(--bg-hover) text-(--text-primary)",
-                rightPanelOpen
-                  ? "bg-(--bg-hover) text-(--text-primary)"
-                  : "text-(--text-primary)",
-              ].join(" ")}
+          {/* Only while the panel is closed. Open, the panel's own header carries
+              the same toggle — two of them on screen is the same control twice. */}
+          {!rightPanelOpen && (
+            <Tooltip
+              label="Show panel"
+              highlight={isMac ? "⌘J" : "Ctrl J"}
+              side="bottom"
+              shape="solid"
+              size="md"
             >
-              <HugeiconsIcon icon={LayoutRightIcon} size={18} />
-            </button>
-          </Tooltip>
+              <button
+                type="button"
+                onClick={toggleRightPanel}
+                aria-label="Show panel"
+                aria-controls="right-panel"
+                aria-keyshortcuts="Meta+J Control+J"
+                className="grid size-9 shrink-0 cursor-pointer place-items-center rounded-lg text-(--text-primary) transition-colors hover:bg-(--bg-hover)"
+              >
+                <HugeiconsIcon icon={LayoutRightIcon} size={18} />
+              </button>
+            </Tooltip>
+          )}
         </div>
       </header>
     </>
