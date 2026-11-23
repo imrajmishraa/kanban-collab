@@ -49,15 +49,15 @@ export default function AppLayout() {
      itself only exists from `lg:` up; below that it renders nothing. */
   const rightPanelMode = useRightPanel((s) => s.mode);
   const rightPanelWidth = useRightPanel((s) => s.width);
-  const rightPanelMaximized = useRightPanel((s) => s.maximized);
+  const rightPanelLevel = useRightPanel((s) => s.level);
   const rightPanelOpen = rightPanelMode !== "off";
 
   const toggleRightPanel = useRightPanel((s) => s.toggle);
 
   const panelLayout = computePanel({
     mode: rightPanelMode,
+    level: rightPanelLevel,
     width: rightPanelWidth,
-    maximized: rightPanelMaximized,
     viewport: typeof window === "undefined" ? 1440 : window.innerWidth,
     appRailWidth: rail.reserved,
   });
@@ -114,11 +114,12 @@ export default function AppLayout() {
         return;
       }
 
-      /* Full width implies the panel is open. */
+      /* Taking the remaining width implies the panel is open. It never touches the
+         rail: the rail keeps its width, and the column takes what is left. */
       const panel = useRightPanel.getState();
 
       if (panel.mode === "off") panel.setMode("panel");
-      panel.setMaximized(!panel.maximized);
+      panel.toggleLevel();
     };
 
     window.addEventListener("keydown", onKeyDown);

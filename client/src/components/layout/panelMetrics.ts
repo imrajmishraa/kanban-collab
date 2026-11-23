@@ -10,9 +10,9 @@
  * | | left rail | right column |
  * |---|---|---|
  * | min | 240 | **320** |
- * | default | 288 | **400** |
- * | max | 420 | **560** |
- * | beyond max | stops | **full width** |
+ * | default | 288 | **420** |
+ * | max | 560 | |
+ * | beyond max | stops | **takes the remaining width** |
  * | collapsed | 72 icon rail | **none** |
  */
 export const PANEL = {
@@ -20,15 +20,25 @@ export const PANEL = {
   MIN: 320,
   /** First run, and what the toggle opens at. */
   DEFAULT: 420,
-  /** Widest a drag can go before it means "full width". */
+  /** Widest a drag can go before it means "take the rest". */
   MAX: 560,
-  /** Past MAX by this much the column takes the window instead. */
+  /** Past the ceiling by this much the column takes the rest of the width. */
   FULL_SLOP: 32,
-  /** Past MIN by this much a drag closes the panel. */
+  /** Where the column gives up and the left rail's rules take over. */
   CLOSE_SLOP: 48,
-  /** The board is not rendered under this, however wide the window. */
+  /** The board keeps this much at the drag's ceiling, however wide the window. */
   PAGE_MIN: 420,
 } as const;
+
+/**
+ * Two levels. There is no third one, and no "fullscreen".
+ *
+ * `remaining` is *everything the rail is not using*, so it becomes the whole window by
+ * itself once the rail is hidden — `viewport - 0`. That is the whole trick: fullscreen is
+ * not a state that has to be entered and left, it is what `remaining` means when there
+ * is no rail, and nothing has to close the rail to get there.
+ */
+export type PanelLevel = "normal" | "remaining";
 
 /** Magnetic stops, narrowest first. `ceiling` moves with the window. */
 export const panelStops = (ceiling: number): number[] =>
@@ -44,87 +54,73 @@ export const clampPanelWidth = (width: number, ceiling: number): number =>
   );
 
 /**
- * The widest the column may be: everything except the app rail and the board's own
- * minimum. Dragging past it is what "full width" is for.
+ * The column's own drag limit: the board keeps `PAGE_MIN`. Below that the column has run
+ * out of room, which is where the left rail's rules begin.
  */
 export const panelCeiling = (viewport: number, appRailWidth: number): number =>
   Math.max(PANEL.MIN, Math.round(viewport - appRailWidth - PANEL.PAGE_MIN));
 
+/** Everything the rail is not using. The whole window when the rail is hidden. */
+export const panelRemaining = (
+  viewport: number,
+  appRailWidth: number,
+): number => Math.max(PANEL.MIN, Math.round(viewport - appRailWidth));
+
 export interface PanelLayoutInput {
   mode: "off" | "panel";
+  level: PanelLevel;
   width: number;
-  maximized: boolean;
-  /** Everything the rail leaves, rail untouched. */
-  expanded?: boolean;
   viewport: number;
   appRailWidth: number;
 }
 
 export interface PanelLayout {
   ceiling: number;
-  /**
-   * How wide the column is when it takes everything the app rail leaves.
-   *
-   * Not the whole viewport: the rail is never covered. Whatever it is rendering at —
-   * 0 hidden, 72 collapsed, or its stored width — the panel gets the rest.
-   */
-  fullWidth: number;
-  width: number;
-  hidden: boolean;
-  maximized: boolean;
-  expanded: boolean;
-  /** What the page gives up on the right. */
+  /** What `remaining` means right now: `viewport - appRailWidth`. */
+  remaining: number;
+  /** The width the column should render at, and what the page gives up. */
   reserved: number;
+  hidden: boolean;
+  /** `remaining` with no rail to leave room for — the whole window. */
+  fullscreen: boolean;
   /** False when the board would be a sliver: it is not rendered at all. */
   pageVisible: boolean;
 }
 
 /**
- * Open or closed, plus full width. There is no third state, and no icon form.
+ * Open or closed, at one of two levels.
  *
- * `maximized` is a mode rather than a width: at the window's width the pixel value is
- * meaningless and the next resize would change it, so restoring returns to the stored
- * width instead.
+ * `reserved` is the single number everything reads: the column's own width, the page's
+ * margin, and the navbar's right edge. Returning a width *and* a separate "reserved"
+ * value is how the column once rendered 420px while the page made room for 1152.
  */
 export function computePanel({
   mode,
+  level,
   width,
-  maximized,
-  expanded = false,
   viewport,
   appRailWidth,
 }: PanelLayoutInput): PanelLayout {
   const ceiling = panelCeiling(viewport, appRailWidth);
-  const clamped = clampPanelWidth(width, ceiling);
+  const remaining = panelRemaining(viewport, appRailWidth);
 
   const hidden = mode === "off";
-  const isMaximized = !hidden && maximized;
-
-  /* Full width is "everything except the app rail": 72px of icons leaves 72px less, a
-     closed rail leaves all of it. */
-  const fullWidth = Math.max(PANEL.MIN, Math.round(viewport - appRailWidth));
-
-  /* Three levels, narrowest first: the stored width, everything the rail leaves, the
-     whole viewport. Fullscreen is the only one that covers the rail. */
-  const isExpanded = !hidden && !isMaximized && expanded;
 
   const reserved = hidden
     ? 0
-    : isMaximized
-      ? Math.round(viewport)
-      : isExpanded
-        ? fullWidth
-        : clamped;
+    : level === "remaining"
+      ? remaining
+      : clampPanelWidth(width, ceiling);
 
   return {
     ceiling,
-    fullWidth,
-    width: clamped,
-    hidden,
-    maximized: isMaximized,
-    expanded: isExpanded,
+    remaining,
     reserved,
-    pageVisible:
-      !isMaximized && viewport - appRailWidth - reserved >= PANEL.PAGE_MIN,
+    hidden,
+    fullscreen: !hidden && reserved >= Math.round(viewport),
+    /* The board is hidden only when the column is *using* the space, never because the
+       column is closed: `hidden` means the page has all of it. Getting this wrong is a
+       white screen — the layout stops rendering `<main>` altogether. */
+    pageVisible: viewport - appRailWidth - reserved >= PANEL.PAGE_MIN,
   };
 }

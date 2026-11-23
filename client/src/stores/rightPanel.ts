@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-import { PANEL } from "@/components/layout/panelMetrics";
+import { PANEL, type PanelLevel } from "@/components/layout/panelMetrics";
 
 /**
  * What the right column shows — if anything.
@@ -18,6 +18,9 @@ import { PANEL } from "@/components/layout/panelMetrics";
  * settings UI, the labels and the guard in `merge` all follow.
  */
 export type RightPanelMode = "off" | "panel";
+
+/** The panel's body. `empty` is the resting state; sections add themselves here. */
+export type PanelSection = "empty" | "tips";
 
 export interface RightPanelOption {
   mode: RightPanelMode;
@@ -58,18 +61,22 @@ interface RightPanelState {
   mode: RightPanelMode;
   /** Persisted. Clamped on read and again at layout time. */
   width: number;
-  /** Full width: the whole viewport, rail closed. Only via ⌘⇧J or the button. */
-  maximized: boolean;
   /**
-   * Everything the rail is not using, with the rail left alone. This is what a drag
-   * past MAX reaches — the board is gone, but navigation is not covered.
+   * `normal` is the stored width; `remaining` is everything the rail leaves.
+   *
+   * One flag, not two: "fullscreen" is `remaining` with the rail hidden, so there is
+   * nothing extra to enter or leave.
    */
-  expanded: boolean;
+  level: PanelLevel;
+  /** What the panel is showing. Sections land here as they are built. */
+  section: PanelSection;
 
   setMode: (mode: RightPanelMode) => void;
   setWidth: (width: number) => void;
-  setMaximized: (maximized: boolean) => void;
-  setExpanded: (expanded: boolean) => void;
+  setLevel: (level: PanelLevel) => void;
+  setSection: (section: PanelSection) => void;
+  /** Take the remaining width, or go back to the stored width. Never touches the rail. */
+  toggleLevel: () => void;
   /** ⌘J and the navbar toggle: closed ↔ open, from either side. */
   toggle: () => void;
 }
@@ -79,32 +86,31 @@ export const useRightPanel = create<RightPanelState>()(
     (set) => ({
       mode: RIGHT_PANEL_DEFAULT,
       width: PANEL.DEFAULT,
-      maximized: false,
-      expanded: false,
+      level: "normal",
       section: "empty",
 
       setMode: (mode) =>
         set((state) => ({
           mode,
-          /* Closing drops full width, or the next open would come back over the
-             whole board. */
-          maximized: mode === "off" ? false : state.maximized,
+          /* Closing drops the level, or the next open would come back over the whole
+             board. */
+          level: mode === "off" ? "normal" : state.level,
         })),
       setWidth: (width) => set({ width: Math.round(width) }),
-      /* Fullscreen and "everything the rail leaves" are different claims: one covers
-         the rail, the other does not. Setting either clears the other. */
-      setMaximized: (maximized) =>
+      setLevel: (level) => set({ level }),
+      setSection: (section) => set({ section }),
+      toggleLevel: () =>
         set((state) => ({
-          maximized,
-          expanded: maximized ? false : state.expanded,
+          level: state.level === "remaining" ? "normal" : "remaining",
         })),
-      setExpanded: (expanded) => set({ expanded, maximized: false }),
 
       /* One toggle, two states. "off" is the only closed state. */
       toggle: () =>
         set((state) => ({
           mode: state.mode === "off" ? "panel" : "off",
-          maximized: false,
+          /* Closing drops the level too — a reopened panel should not come back over
+             the whole board. */
+          level: "normal",
         })),
     }),
     {
@@ -118,7 +124,7 @@ export const useRightPanel = create<RightPanelState>()(
       partialize: (state) => ({
         mode: state.mode,
         width: state.width,
-        maximized: state.maximized,
+        section: state.section,
       }),
       /*
        * Same reason as `docsSidebar`: a `version` without a `migrate` makes zustand
@@ -129,7 +135,7 @@ export const useRightPanel = create<RightPanelState>()(
        */
       migrate: (persisted) => {
         const old = persisted as
-          { mode?: unknown; width?: unknown; maximized?: unknown } | undefined;
+          { mode?: unknown; width?: unknown; section?: unknown } | undefined;
 
         return {
           mode: isMode(old?.mode) ? old.mode : RIGHT_PANEL_DEFAULT,
@@ -137,15 +143,14 @@ export const useRightPanel = create<RightPanelState>()(
             typeof old?.width === "number" && Number.isFinite(old.width)
               ? Math.round(old.width)
               : PANEL.DEFAULT,
-          /* Neither fullscreen nor "everything the rail leaves" survives a reload:
-             both are gestures, not preferences. */
-          maximized: false,
-          expanded: false,
+          /* The level never survives a reload: it is a gesture, not a preference. */
+          level: "normal" as PanelLevel,
+          section: old?.section === "tips" ? ("tips" as PanelSection) : "empty",
         };
       },
       merge: (persisted, current) => {
         const saved = persisted as
-          { mode?: unknown; width?: unknown } | undefined;
+          { mode?: unknown; width?: unknown; section?: unknown } | undefined;
 
         return {
           ...current,
@@ -154,7 +159,9 @@ export const useRightPanel = create<RightPanelState>()(
             typeof saved?.width === "number" && Number.isFinite(saved.width)
               ? Math.round(saved.width)
               : current.width,
-          maximized: false,
+          level: "normal" as PanelLevel,
+          section:
+            saved?.section === "tips" ? ("tips" as PanelSection) : "empty",
         };
       },
     },

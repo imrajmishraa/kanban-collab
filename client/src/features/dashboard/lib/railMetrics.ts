@@ -167,8 +167,10 @@ export function computeRail({
    * width being dragged, in every mode, and reserves that width so the page
    * follows instead of sitting still.
    */
-  if (resizing) railWidth = clamped;
-  else if (hidden) railWidth = 0;
+  /* `hidden` first: a drag that hides the rail must hide it now, not on release. The
+     `resizing` override is for widths, and "off the page" is not a width. */
+  if (hidden) railWidth = 0;
+  else if (resizing) railWidth = clamped;
   else if (hoverOpen || expanded) railWidth = clamped;
   else railWidth = RAIL.COLLAPSED;
 

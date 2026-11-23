@@ -74,10 +74,9 @@ export default function RightPanel({
   const width = useRightPanel((state) => state.width);
   const setWidth = useRightPanel((state) => state.setWidth);
   const setMode = useRightPanel((state) => state.setMode);
-  const maximized = useRightPanel((state) => state.maximized);
-  const setMaximized = useRightPanel((state) => state.setMaximized);
-  const expanded = useRightPanel((state) => state.expanded);
-  const setExpanded = useRightPanel((state) => state.setExpanded);
+  const level = useRightPanel((state) => state.level);
+  const setLevel = useRightPanel((state) => state.setLevel);
+  const toggleLevel = useRightPanel((state) => state.toggleLevel);
 
   const [viewport, setViewport] = useState(() =>
     typeof window === "undefined" ? 1440 : window.innerWidth,
@@ -103,22 +102,26 @@ export default function RightPanel({
 
   const layout = computePanel({
     mode,
+    level,
     width,
-    maximized,
-    expanded,
     viewport,
     appRailWidth,
   });
 
   const stops = panelStops(layout.ceiling);
-  const panelWidth = layout.maximized ? viewport : layout.width;
+
+  /* One number for everything: the column's width, the page's margin and the navbar's
+     right edge all read `reserved`. Rendering the stored width while the page made room
+     for `remaining` is what left a 700px hole. */
+  const panelWidth = layout.reserved;
 
   const onPointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
     if (event.button !== 0) return;
 
     startX.current = event.clientX;
-    /* The rendered width, not the store: grabbing mid-transition must not jump. */
-    startWidth.current = layout.maximized ? layout.ceiling : panelWidth;
+    /* What is actually on screen, not the stored width: grabbing a `remaining` column
+       must not snap back to 420. */
+    startWidth.current = panelWidth;
     /* The rail's width at this moment is the drag's reference for its own range. */
     startRailWidth.current = appRailWidth;
 
@@ -127,10 +130,12 @@ export default function RightPanel({
     setMoving(false);
     setOnStop(false);
 
-    /* Grabbing a full-width column means "make it a column again". */
-    if (layout.maximized) {
-      setMaximized(false);
+    /* Grabbing a `remaining` column means "make it a column again", starting from the
+       ceiling so the first move is continuous. */
+    if (level === "remaining") {
+      setLevel("normal");
       setWidth(layout.ceiling);
+      startWidth.current = layout.ceiling;
     }
   };
 
@@ -163,7 +168,7 @@ export default function RightPanel({
           layout.ceiling,
         );
 
-        setExpanded(false);
+        setLevel("normal");
         setOnStop(isOnStop(snapped, stops));
         setWidth(snapped);
         break;
@@ -173,7 +178,7 @@ export default function RightPanel({
         /* Past MAX: everything the rail leaves, with the rail left alone. Fullscreen is
            a deliberate act, not a drag. */
         setOnStop(true);
-        setExpanded(true);
+        setLevel("remaining");
         break;
       }
 
@@ -181,7 +186,7 @@ export default function RightPanel({
       case "rail-collapsed": {
         /* The column is at its minimum and the pointer has run into the rail: from here
            the rail's own rules apply — 420…240, then the 72px icon rail. */
-        setExpanded(false);
+        setLevel("normal");
         setOnStop(true);
         setWidth(PANEL.MIN);
 
@@ -193,7 +198,7 @@ export default function RightPanel({
       }
 
       case "rail-hidden": {
-        setExpanded(false);
+        setLevel("normal");
         setOnStop(true);
         setWidth(PANEL.MIN);
         railHide();
@@ -219,9 +224,9 @@ export default function RightPanel({
 
     const next =
       event.key === "ArrowLeft"
-        ? layout.width + step
+        ? panelWidth + step
         : event.key === "ArrowRight"
-          ? layout.width - step
+          ? panelWidth - step
           : event.key === "Home"
             ? PANEL.MIN
             : event.key === "End"
@@ -231,7 +236,7 @@ export default function RightPanel({
     if (next === null) return;
 
     event.preventDefault();
-    setMaximized(false);
+    setLevel("normal");
     setWidth(clampPanelWidth(next, layout.ceiling));
   };
 
@@ -258,15 +263,15 @@ export default function RightPanel({
         aria-label="Resize panel"
         aria-valuemin={PANEL.MIN}
         aria-valuemax={layout.ceiling}
-        aria-valuenow={layout.width}
-        aria-valuetext={`${layout.width} pixels`}
+        aria-valuenow={Math.min(panelWidth, layout.ceiling)}
+        aria-valuetext={`${Math.min(panelWidth, layout.ceiling)} pixels`}
         tabIndex={0}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={endDrag}
         onPointerCancel={endDrag}
         onDoubleClick={() => {
-          setMaximized(false);
+          setLevel("normal");
           setWidth(PANEL.DEFAULT);
         }}
         onKeyDown={onKeyDown}
@@ -291,7 +296,7 @@ export default function RightPanel({
               Two shapes, one control: a bare square while the panel is a column,
               icon + label once it owns the window. */}
           <Tooltip
-            label={layout.maximized ? "Show page" : "Full width"}
+            label={level === "remaining" ? "Show page" : "Full width"}
             highlight={isMac ? "⌘⇧J" : "Ctrl⇧J"}
             side="bottom"
             shape="solid"
@@ -299,15 +304,13 @@ export default function RightPanel({
           >
             <button
               type="button"
-              onClick={() => {
-                /* Fullscreen covers the rail, so the rail goes with it — otherwise the
-                 panel would be fullscreen over a sidebar it is supposed to have
-                 replaced. */
-                if (!layout.maximized) railHide();
-                setMaximized(!layout.maximized);
-              }}
-              aria-label={layout.maximized ? "Show page" : "Full width"}
-              aria-pressed={layout.maximized}
+              onClick={toggleLevel}
+              aria-label={
+                level === "remaining"
+                  ? "Show the page"
+                  : "Take the remaining width"
+              }
+              aria-pressed={level === "remaining"}
               aria-keyshortcuts="Meta+Shift+J Control+Shift+J"
               className={cn(
                 /* `h-8` + `w-8`, never `size-8`: `size-*` sets both, and it would
@@ -315,18 +318,18 @@ export default function RightPanel({
                 "flex h-8 items-center justify-center rounded-lg",
                 "text-(--text-primary) hover:bg-(--bg-hover)",
                 "focus-visible:outline-2 focus-visible:outline-(--brand)",
-                layout.maximized
+                level === "remaining"
                   ? "gap-1.25 px-2.5 mr-1 border border-(--hairline) hover:border-(--hairline-strong)"
                   : "w-8",
               )}
             >
               <HugeiconsIcon
-                icon={layout.maximized ? CollapseIcon : ExpandIcon}
-                size={layout.maximized ? 16 : 18}
+                icon={level === "remaining" ? CollapseIcon : ExpandIcon}
+                size={level === "remaining" ? 16 : 18}
                 strokeWidth={1.6}
               />
 
-              {layout.maximized && (
+              {level === "remaining" && (
                 <span className="whitespace-nowrap text-[12px] leading-none ">
                   Show page
                 </span>
@@ -336,7 +339,7 @@ export default function RightPanel({
 
           {/* The same control that opens the panel, where the close button used to
               be: the icon is never a mystery. */}
-          {!layout.maximized && (
+          {level !== "remaining" && (
             <Tooltip
               label="Hide panel"
               highlight={isMac ? "⌘J" : "Ctrl J"}

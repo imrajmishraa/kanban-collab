@@ -53,8 +53,8 @@ describe("computePanel", () => {
   const at = (overrides: Partial<Parameters<typeof computePanel>[0]> = {}) =>
     computePanel({
       mode: "panel",
+      level: "normal",
       width: PANEL.DEFAULT,
-      maximized: false,
       viewport: 1440,
       appRailWidth: 288,
       ...overrides,
@@ -67,46 +67,40 @@ describe("computePanel", () => {
     expect(layout.pageVisible).toBe(true);
   });
 
-  it("off reserves nothing", () => {
-    expect(at({ mode: "off" }).reserved).toBe(0);
+  it("off reserves nothing, and the page is still rendered", () => {
+    const layout = at({ mode: "off" });
+
+    expect(layout.reserved).toBe(0);
+    /* The bug this test exists for: `pageVisible` was `!hidden && …`, so closing the
+       panel unmounted `<main>` and the whole app rendered nothing. */
+    expect(layout.pageVisible).toBe(true);
   });
 
-  it("fullscreen is the whole viewport, and the board is not rendered", () => {
-    const layout = at({ maximized: true });
+  it("off renders the page even with a stored 'remaining' level", () => {
+    expect(at({ mode: "off", level: "remaining" }).pageVisible).toBe(true);
+  });
 
-    expect(layout.maximized).toBe(true);
+  it("remaining is everything the rail leaves, and it is not the whole window", () => {
+    /* 1440 - 288 = 1152: the rail keeps its 288. */
+    const layout = at({ level: "remaining" });
+
+    expect(layout.reserved).toBe(1152);
+    expect(layout.fullscreen).toBe(false);
+    expect(layout.pageVisible).toBe(false);
+  });
+
+  it("remaining IS fullscreen once the rail is hidden", () => {
+    /* The whole point of two levels instead of three: no extra state to enter. */
+    const layout = at({ level: "remaining", appRailWidth: 0 });
+
     expect(layout.reserved).toBe(1440);
-    expect(layout.pageVisible).toBe(false);
+    expect(layout.fullscreen).toBe(true);
   });
 
-  it("'expanded' takes what the rail leaves and never covers it", () => {
-    const layout = at({ expanded: true });
-
-    expect(layout.maximized).toBe(false);
-    expect(layout.expanded).toBe(true);
-    expect(layout.reserved).toBe(1440 - 288);
-    expect(layout.pageVisible).toBe(false);
-  });
-
-  it("expanded follows whatever the app rail is rendering at", () => {
-    /* The rail's own scale: 72 collapsed, 240…420 expanded, 0 hidden. */
-    expect(at({ expanded: true, appRailWidth: 0 }).reserved).toBe(1440);
-    expect(at({ expanded: true, appRailWidth: 72 }).reserved).toBe(1368);
-    expect(at({ expanded: true, appRailWidth: 420 }).reserved).toBe(1020);
-  });
-
-  it("an off panel ignores a stored full-width flag", () => {
-    expect(at({ mode: "off", maximized: true }).maximized).toBe(false);
-  });
-
-  it("always leaves the board PAGE_MIN at the ceiling", () => {
-    /* The ceiling is worked out as `viewport - appRail - PAGE_MIN`, so a drag can
-       never squeeze the board away — only full width can, and it does so on
-       purpose. */
+  it("never squeezes the board away at the ceiling", () => {
     const layout = at({ width: 900 });
 
-    expect(layout.width).toBe(layout.ceiling);
+    expect(layout.reserved).toBe(layout.ceiling);
     expect(1440 - 288 - layout.reserved).toBe(PANEL.PAGE_MIN);
-    expect(layout.pageVisible).toBe(true);
   });
 });

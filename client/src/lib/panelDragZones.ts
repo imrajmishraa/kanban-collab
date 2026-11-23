@@ -43,8 +43,6 @@ export interface DragFrame {
   panelWidth: number | null;
   /** Set when the rail's width changes; `null` leaves it alone. */
   railWidth: number | null;
-  /** True when the drag has left the column and closed it. */
-  closePanel: boolean;
 }
 
 const RAIL_MIN = 240;
@@ -58,11 +56,10 @@ export function dragZone({
   railWidth,
   ceiling,
 }: DragInput): DragZone {
-  /* Past the panel's ceiling the column takes what the rail leaves — but only when
-     there is a rail to leave it. With the rail hidden the ceiling *is* the window. */
-  if (rawPanelWidth >= ceiling + PANEL.FULL_SLOP) {
-    return railWidth > 0 ? "panel-remaining" : "panel-remaining";
-  }
+  /* Past the ceiling the column takes what the rail leaves. With the rail hidden that
+     *is* the whole window — which is the point of `remaining` being a width rather than
+     a mode, so there is nothing to special-case here. */
+  if (rawPanelWidth >= ceiling + PANEL.FULL_SLOP) return "panel-remaining";
 
   /* Below the column's own minimum the drag has run out of column: the rail is next.
      The handover point is `MIN - CLOSE_SLOP`, and only the travel *past* it counts —
@@ -95,7 +92,6 @@ export function resolveDrag(input: DragInput): DragFrame {
           Math.max(PANEL.MIN, Math.round(rawPanelWidth)),
         ),
         railWidth: null,
-        closePanel: false,
       };
     }
 
@@ -106,7 +102,6 @@ export function resolveDrag(input: DragInput): DragFrame {
         zone,
         panelWidth: Math.max(PANEL.MIN, Math.round(viewport - railWidth)),
         railWidth: null,
-        closePanel: false,
       };
     }
 
@@ -119,7 +114,6 @@ export function resolveDrag(input: DragInput): DragFrame {
         /* The column sits at its minimum while the rail gives ground. */
         panelWidth: PANEL.MIN,
         railWidth: Math.min(RAIL_MAX, Math.max(RAIL_MIN, wanted)),
-        closePanel: false,
       };
     }
 
@@ -128,7 +122,6 @@ export function resolveDrag(input: DragInput): DragFrame {
         zone,
         panelWidth: PANEL.MIN,
         railWidth: RAIL_COLLAPSED,
-        closePanel: false,
       };
     }
 
@@ -137,7 +130,6 @@ export function resolveDrag(input: DragInput): DragFrame {
         zone,
         panelWidth: PANEL.MIN,
         railWidth: 0,
-        closePanel: false,
       };
     }
   }

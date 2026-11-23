@@ -86,6 +86,12 @@ describe("resolveDrag", () => {
   });
 
   it("never closes the panel by drag: the rail takes over instead", () => {
-    expect(resolveDrag(at({ rawPanelWidth: 40 })).closePanel).toBe(false);
+    /* Below the handover the frame only ever names a rail width and the column's
+       minimum — there is no "close" outcome to reach. */
+    const frame = resolveDrag(at({ rawPanelWidth: 40 }));
+
+    expect(frame.zone).toBe("rail-hidden");
+    expect(frame.panelWidth).toBe(PANEL.MIN);
+    expect(frame.railWidth).toBe(0);
   });
 });
