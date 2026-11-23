@@ -180,7 +180,7 @@ export default function DashboardNavbar() {
                 the rail opens by hovering, an arrow when it opens on click. */}
                 <HugeiconsIcon
                   icon={PanelLeftIcon}
-                  size={16}
+                  size={18}
                   strokeWidth={1.8}
                   className="absolute text-(--text-muted) opacity-0 scale-75 transition-all duration-150 group-hover:scale-100 group-hover:opacity-100 group-hover:text-(--text-primary) group-focus-within:scale-100 group-focus-within:opacity-100 group-focus-within:text-(--text-primary) focus:opacity-100"
                 />

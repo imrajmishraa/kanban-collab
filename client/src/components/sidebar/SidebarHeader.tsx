@@ -2,6 +2,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import {
   MousePointerBanIcon,
   SidebarLeftIcon,
+  MousePointerOff01Icon,
   LayoutAlignLeftIcon,
 } from "@hugeicons/core-free-icons";
 import { useNavigate } from "react-router-dom";
@@ -72,9 +73,9 @@ const SidebarHeader = ({
                 the rail opens by hovering, an arrow when it opens on click. */}
             <HugeiconsIcon
               icon={
-                mode === "hover" ? MousePointerBanIcon : LayoutAlignLeftIcon
+                mode === "hover" ? MousePointerOff01Icon : LayoutAlignLeftIcon
               }
-              size={16}
+              size={18}
               strokeWidth={1.8}
               className="
               absolute
