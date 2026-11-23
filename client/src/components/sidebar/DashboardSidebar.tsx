@@ -16,6 +16,7 @@ import SidebarNotifications from "@/components/sidebar/SidebarNotifications";
 import { useWorkspaces } from "@/hooks/useWorkspaces";
 import { useBoards, boardKeys, BOARDS_LIST_LIMIT } from "@/hooks/useBoards";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
+import { cn } from "@/utils/cn";
 import { RAIL, useRailLayout, useSidebarState } from "@/features/dashboard";
 import RailResizeHandle from "./RailResizeHandle";
 import { useRightPanel } from "@/stores/rightPanel";
@@ -28,9 +29,17 @@ import ConfirmDialog from "@/components/dialog/ConfirmDialog";
 
 interface DashboardSidebarProps {
   onToggle: () => void;
+  /**
+   * Tablet only: the rail stepped aside because the column and the board needed its width.
+   * The rail is not hidden — a 72px strip stands in for it, one click away.
+   */
+  stripped?: boolean;
 }
 
-export default function DashboardSidebar({ onToggle }: DashboardSidebarProps) {
+export default function DashboardSidebar({
+  onToggle,
+  stripped = false,
+}: DashboardSidebarProps) {
   const { user, logout } = useAuth();
   const { boardsOpen, toggleBoards, openBoards } = useSidebarState();
   const queryClient = useQueryClient();
@@ -167,6 +176,26 @@ export default function DashboardSidebar({ onToggle }: DashboardSidebarProps) {
       ids.map((id) => handleDeleteBoard(id).catch(() => undefined)),
     );
   };
+
+  if (stripped) {
+    return (
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-label="Show sidebar"
+        aria-controls="app-rail"
+        className={cn(
+          "sticky top-0 z-40 hidden h-dvh w-[72px] shrink-0 flex-col items-center",
+          "gap-2 border-r border-(--hairline) bg-(--bg-panel) pt-3 md:flex",
+          "pb-[env(safe-area-inset-bottom)]",
+          "cursor-pointer hover:bg-(--bg-hover)",
+        )}
+      >
+        <span className="grid size-6 place-items-center rounded-md bg-(--brand)" />
+        <span className="font-mono text-[13px] text-(--text-muted)">›</span>
+      </button>
+    );
+  }
 
   return (
     <>

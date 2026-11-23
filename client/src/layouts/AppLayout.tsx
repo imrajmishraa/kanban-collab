@@ -168,7 +168,7 @@ export default function AppLayout() {
         className="mx-auto min-h-screen w-full max-w-384 bg-(--bg-root) text-(--text-primary)"
         style={
           {
-            "--rail-width": `${rail.reserved}px`,
+            "--rail-width": `${panelLayout.railReserve ?? rail.reserved}px`,
             /* The right column, from the same computation it renders with. */
             "--panel-width": `${panelLayout.reserved}px`,
           } as React.CSSProperties
@@ -179,7 +179,10 @@ export default function AppLayout() {
       >
         {/* The phone bar lives inside DashboardSidebar now, next to the panel it
             opens — one component owns both, so the flag never has to travel. */}
-        <DashboardSidebar onToggle={toggleSidebar} />
+        <DashboardSidebar
+          onToggle={toggleSidebar}
+          stripped={panelLayout.railStrip === true}
+        />
 
         {/* Full width takes the window: the board is not rendered, so its
             subscriptions and sockets go with it. */}
@@ -214,6 +217,7 @@ export default function AppLayout() {
           <Suspense fallback={null}>
             <RightPanel
               appRailWidth={rail.reserved}
+              sheet={panelLayout.sheet === true}
               onResizeStart={() => setResizing(true)}
               onResizeEnd={() => setResizing(false)}
             />

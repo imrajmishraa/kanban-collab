@@ -9,6 +9,7 @@ import {
 } from "@hugeicons/core-free-icons";
 
 import { useRightPanel } from "@/stores/rightPanel";
+import { useSheetDismiss } from "@/components/layout/useSheetDismiss";
 import {
   PANEL,
   clampPanelWidth,
@@ -23,6 +24,8 @@ import { Tooltip } from "@/components/Tooltips/ToolTip";
 interface RightPanelProps {
   /** What the app rail reserves, so this column can touch it but never cover it. */
   appRailWidth: number;
+  /** Below 700 the panel is the whole window, over the page, and reserves nothing. */
+  sheet?: boolean;
   onResizeStart: () => void;
   onResizeEnd: () => void;
 }
@@ -33,6 +36,7 @@ const isMac =
 
 export default function RightPanel({
   appRailWidth,
+  sheet = false,
   onResizeStart,
   onResizeEnd,
 }: RightPanelProps) {
@@ -207,6 +211,12 @@ export default function RightPanel({
     };
   }, [dragging]);
 
+  /* Three ways out of a sheet, none of them a drag handle. */
+  const sheetDismiss = useSheetDismiss({
+    sheet,
+    onClose: () => setMode("off"),
+  });
+
   const onKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
     const step = event.shiftKey ? 32 : 8;
 
@@ -234,44 +244,48 @@ export default function RightPanel({
     <aside
       id="right-panel"
       aria-label="Panel"
-      style={{ width: panelWidth }}
+      style={{ width: sheet ? undefined : panelWidth }}
+      {...sheetDismiss}
       className={cn(
-        "fixed inset-y-0 right-0 z-30 hidden flex-col lg:flex",
-        "h-dvh border-l border-(--hairline) bg-(--bg-root)",
+        sheet
+          ? "fixed inset-0 z-50 flex w-full flex-col bg-(--bg-root)"
+          : "fixed inset-y-0 right-0 z-30 hidden h-dvh flex-col border-l border-(--hairline) bg-(--bg-root) lg:flex",
         "pb-[env(safe-area-inset-bottom)]",
       )}
     >
       {/* The divider hangs off the panel's own left edge, outside its box: the
           column does not clip, so it needs no sibling in the layout. */}
-      <button
-        type="button"
-        role="separator"
-        aria-orientation="vertical"
-        aria-controls="right-panel"
-        aria-label="Resize panel"
-        aria-valuemin={PANEL.MIN}
-        aria-valuemax={layout.ceiling}
-        aria-valuenow={Math.min(panelWidth, layout.ceiling)}
-        aria-valuetext={`${Math.min(panelWidth, layout.ceiling)} pixels`}
-        tabIndex={0}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={() => endDrag(true)}
-        onPointerCancel={() => endDrag()}
-        /* No double-click: a single click already closes the column, so the first click
+      {!sheet && (
+        <button
+          type="button"
+          role="separator"
+          aria-orientation="vertical"
+          aria-controls="right-panel"
+          aria-label="Resize panel"
+          aria-valuemin={PANEL.MIN}
+          aria-valuemax={layout.ceiling}
+          aria-valuenow={Math.min(panelWidth, layout.ceiling)}
+          aria-valuetext={`${Math.min(panelWidth, layout.ceiling)} pixels`}
+          tabIndex={0}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={() => endDrag(true)}
+          onPointerCancel={() => endDrag()}
+          /* No double-click: a single click already closes the column, so the first click
            of a double-click would take the divider away with it. `Home` still resets. */
-        onKeyDown={onKeyDown}
-        /* Inline: `base.css` sets `cursor: pointer` on `button` unlayered, and
+          onKeyDown={onKeyDown}
+          /* Inline: `base.css` sets `cursor: pointer` on `button` unlayered, and
            unlayered CSS beats every Tailwind `@layer utilities` class. */
-        style={{ cursor: "col-resize" }}
-        className={cn(
-          "absolute inset-y-0 left-0 z-40 w-4 -translate-x-1/2",
-          "touch-none border-0 bg-transparent p-0",
-          "after:absolute after:inset-y-0 after:left-1/2 after:w-0.5 after:-translate-x-1/2",
-          "after:bg-transparent after:transition-colors",
-          "hover:after:bg-(--link) focus-visible:after:bg-(--link)",
-        )}
-      />
+          style={{ cursor: "col-resize" }}
+          className={cn(
+            "absolute inset-y-0 left-0 z-40 w-4 -translate-x-1/2",
+            "touch-none border-0 bg-transparent p-0",
+            "after:absolute after:inset-y-0 after:left-1/2 after:w-0.5 after:-translate-x-1/2",
+            "after:bg-transparent after:transition-colors",
+            "hover:after:bg-(--link) focus-visible:after:bg-(--link)",
+          )}
+        />
+      )}
 
       <header className="flex h-12 shrink-0 items-center justify-between gap-2 border-b border-(--hairline) px-3">
         <h2 className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-(--text-muted)"></h2>
