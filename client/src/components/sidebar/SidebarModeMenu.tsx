@@ -35,6 +35,7 @@ function SidebarModeMenu({ mode, onSelect }: SidebarModeMenuProps) {
     >
       {MODES.map((entry) => {
         const active = entry.mode === mode;
+        const isHover = entry.mode == "hover";
 
         return (
           <button
@@ -71,6 +72,9 @@ function SidebarModeMenu({ mode, onSelect }: SidebarModeMenuProps) {
                 active
                   ? "text-(--accent)"
                   : "text-(--text-muted) group-hover:text-(--text-primary)",
+                isHover
+                ?  "-rotate-90"
+                : null,
               ].join(" ")}
             />
           </button>

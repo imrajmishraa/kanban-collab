@@ -19,7 +19,7 @@ export const PANEL = {
   /** Narrower than this and the rows wrap into unreadable strips. */
   MIN: 320,
   /** First run, and what the toggle opens at. */
-  DEFAULT: 400,
+  DEFAULT: 420,
   /** Widest a drag can go before it means "full width". */
   MAX: 560,
   /** Past MAX by this much the column takes the window instead. */
@@ -27,7 +27,7 @@ export const PANEL = {
   /** Past MIN by this much a drag closes the panel. */
   CLOSE_SLOP: 48,
   /** The board is not rendered under this, however wide the window. */
-  PAGE_MIN: 360,
+  PAGE_MIN: 420,
 } as const;
 
 /** Magnetic stops, narrowest first. `ceiling` moves with the window. */
