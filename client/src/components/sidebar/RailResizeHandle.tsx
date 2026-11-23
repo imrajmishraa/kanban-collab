@@ -179,12 +179,21 @@ export default function RailResizeHandle({
         viewport: window.innerWidth,
       });
 
-      /* Only a real change is written: a 1px jitter under a click must not resize the
-         column, or the two rails twitch against each other. */
-      if (Math.abs(pair.rail - snapped) >= 1) onWidth(pair.rail);
-      if (Math.abs(pair.panel - startPanelWidth.current) >= 2) {
-        onPanelWidth(pair.panel);
-      }
+      /*
+       * Written when it differs from what is on screen — not from what the pointer asked
+       * for.
+       *
+       * The guard used to compare `pair.rail` with `snapped`, and those are equal whenever
+       * the column still has room to give: the write was skipped and the rail froze at
+       * whatever width the column had pushed it to (240). Comparing against the *current*
+       * width keeps the 2px jitter protection and lets the drag actually move.
+       */
+      const railNow = renderedWidth || width;
+      const panelNow = panelWidth ?? startPanelWidth.current;
+
+      if (Math.abs(pair.rail - railNow) >= 1) onWidth(pair.rail);
+      if (Math.abs(pair.panel - panelNow) >= 2) onPanelWidth(pair.panel);
+
       return;
     }
 
