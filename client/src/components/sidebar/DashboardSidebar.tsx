@@ -18,6 +18,7 @@ import { useBoards, boardKeys, BOARDS_LIST_LIMIT } from "@/hooks/useBoards";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { RAIL, useRailLayout, useSidebarState } from "@/features/dashboard";
 import RailResizeHandle from "./RailResizeHandle";
+import { useRightPanel } from "@/stores/rightPanel";
 import { useAuth } from "@/hooks/useAuth";
 import { boardApi } from "@/features/boards";
 import { useQueryClient } from "@tanstack/react-query";
@@ -39,6 +40,11 @@ export default function DashboardSidebar({ onToggle }: DashboardSidebarProps) {
   const mode = useSidebarState((state) => state.mode);
   const setHovering = useSidebarState((state) => state.setHovering);
   const setWidth = useSidebarState((state) => state.setWidth);
+
+  /* The column, if it is on screen: its width is what the rail's drag pays out of. */
+  const panelOpen = useRightPanel((state) => state.mode !== "off");
+  const panelWidth = useRightPanel((state) => state.width);
+  const setPanelWidth = useRightPanel((state) => state.setWidth);
   const hide = useSidebarState((state) => state.hide);
   const setResizing = useSidebarState((state) => state.setResizing);
 
@@ -222,6 +228,8 @@ export default function DashboardSidebar({ onToggle }: DashboardSidebarProps) {
             renderedWidth={railWidth}
             width={layout.width}
             onWidth={setWidth}
+            panelWidth={panelOpen ? panelWidth : undefined}
+            onPanelWidth={setPanelWidth}
             /* Below MID the drag snaps to the icon rail instead of sliding. */
             onCollapse={() => useSidebarState.getState().collapse()}
             /* Double-click while collapsed: back out at the default width. */

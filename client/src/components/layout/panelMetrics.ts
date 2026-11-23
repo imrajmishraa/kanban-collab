@@ -38,7 +38,11 @@ export const PANEL = {
  * not a state that has to be entered and left, it is what `remaining` means when there
  * is no rail, and nothing has to close the rail to get there.
  */
-export type PanelLevel = "normal" | "remaining";
+/**
+ * The column's levels. `closed` is the store's resting state and `full` covers the whole
+ * window — both are stored, not derived.
+ */
+export type PanelLevel = "closed" | "normal" | "remaining" | "full";
 
 /** Magnetic stops, narrowest first. `ceiling` moves with the window. */
 export const panelStops = (ceiling: number): number[] =>

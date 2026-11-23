@@ -16,7 +16,7 @@ import {
   panelStops,
 } from "@/components/layout/panelMetrics";
 import { isOnStop, snapToStops } from "@/lib/railDrag";
-import { resolveDrag } from "@/lib/panelDragZones";
+import { RAIL_MIN, besideMax, couple, panelDragLevel } from "@/lib/panelCouple";
 import { useSidebarState } from "@/features/dashboard";
 import { Tooltip } from "@/components/Tooltips/ToolTip";
 
@@ -81,17 +81,15 @@ export default function RightPanel({
   const [viewport, setViewport] = useState(() =>
     typeof window === "undefined" ? 1440 : window.innerWidth,
   );
+  /* The rail is pushed by this drag, so the column needs its setter. */
+  const railSetWidth = useSidebarState((state) => state.setWidth);
+
   const [dragging, setDragging] = useState(false);
   const [moving, setMoving] = useState(false);
   const [onStop, setOnStop] = useState(false);
 
   const startX = useRef(0);
   const startWidth = useRef(0);
-  const startRailWidth = useRef(appRailWidth);
-
-  const railSetWidth = useSidebarState((state) => state.setWidth);
-  const railSetMode = useSidebarState((state) => state.setMode);
-  const railHide = useSidebarState((state) => state.hide);
 
   useEffect(() => {
     const onResize = () => setViewport(window.innerWidth);
@@ -123,7 +121,6 @@ export default function RightPanel({
        must not snap back to 420. */
     startWidth.current = panelWidth;
     /* The rail's width at this moment is the drag's reference for its own range. */
-    startRailWidth.current = appRailWidth;
 
     event.currentTarget.setPointerCapture(event.pointerId);
     setDragging(true);
@@ -142,9 +139,13 @@ export default function RightPanel({
   const onPointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
     if (!dragging) return;
 
-    /* A drag starts on the first move: a click on the border does nothing. */
+    /*
+     * A drag starts on the first real move. The slop is 6px, not 3: a click on this border
+     * with a shaky hand used to count as a drag, and the first frame of that "drag" wrote a
+     * new width to the *other* rail — which is the jump people were seeing.
+     */
     if (!moving) {
-      if (Math.abs(event.clientX - startX.current) < 3) return;
+      if (Math.abs(event.clientX - startX.current) < 6) return;
 
       setMoving(true);
       onResizeStart();
@@ -153,58 +154,63 @@ export default function RightPanel({
     /* This is the left edge of a right-hand column: dragging left widens. */
     const raw = startWidth.current + (startX.current - event.clientX);
 
-    const frame = resolveDrag({
-      rawPanelWidth: raw,
-      railWidth: appRailWidth,
-      railStartWidth: startRailWidth.current,
+    /*
+     * The ladder, and the coupling.
+     *
+     *   beside the board  → the column takes its width out of the rail
+     *   past the board's floor → `remaining` (board gone, rail kept)
+     *   past everything the rail leaves → `full` (rail gone too)
+     *
+     * Before this, the column grew past the window and the rail walked over the page:
+     * nothing pushed back.
+     */
+    const next = panelDragLevel(raw, viewport, RAIL_MIN);
+
+    if (next !== "normal") {
+      setOnStop(true);
+      setLevel(next);
+      return;
+    }
+
+    /*
+     * The column is the one being dragged, so the **rail** is what gives ground — down to
+     * its own minimum of 240, not down to wherever it happens to be. Passing its current
+     * width as the floor made it immovable: the column could never push it.
+     */
+    const pair = couple({
+      active: "panel",
+      railWanted: appRailWidth,
+      panelWanted: raw,
       viewport,
-      ceiling: layout.ceiling,
+      railFloor: RAIL_MIN,
+      panelFloor: PANEL.MIN,
     });
 
-    switch (frame.zone) {
-      case "panel": {
-        const snapped = clampPanelWidth(
-          snapToStops(frame.panelWidth ?? raw, stops),
-          layout.ceiling,
-        );
+    /*
+     * Clamped to the column's own range only. It used to be re-clamped against
+     * `layout.ceiling`, which was worked out from the rail's width *before* this drag —
+     * so as the rail shrank the stale ceiling kept cutting the column back, and the
+     * column appeared to shrink by itself.
+     */
+    /* `PANEL.MAX` is a magnetic stop, not a ceiling: beside the board the column may reach
+       `viewport - RAIL_MIN - PAGE_MIN` — 620 at 1280 — which is exactly where the rail hits
+       its 240. */
+    const beside = besideMax(viewport, RAIL_MIN);
+    const snapped = Math.min(
+      beside,
+      Math.max(PANEL.MIN, snapToStops(pair.panel, stops)),
+    );
 
-        setLevel("normal");
-        setOnStop(isOnStop(snapped, stops));
-        setWidth(snapped);
-        break;
-      }
+    setLevel("normal");
+    setOnStop(isOnStop(snapped, stops) || pair.rail === RAIL_MIN);
+    setWidth(snapped);
 
-      case "panel-remaining": {
-        /* Past MAX: everything the rail leaves, with the rail left alone. Fullscreen is
-           a deliberate act, not a drag. */
-        setOnStop(true);
-        setLevel("remaining");
-        break;
-      }
-
-      case "rail":
-      case "rail-collapsed": {
-        /* The column is at its minimum and the pointer has run into the rail: from here
-           the rail's own rules apply — 420…240, then the 72px icon rail. */
-        setLevel("normal");
-        setOnStop(true);
-        setWidth(PANEL.MIN);
-
-        if (frame.railWidth !== null) {
-          if (frame.zone === "rail-collapsed") railSetMode("collapsed");
-          else railSetWidth(frame.railWidth);
-        }
-        break;
-      }
-
-      case "rail-hidden": {
-        setLevel("normal");
-        setOnStop(true);
-        setWidth(PANEL.MIN);
-        railHide();
-        break;
-      }
-    }
+    /*
+     * The rail is pushed by the column — but only when the push is real. Writing a 1-2px
+     * difference on every frame made the rail twitch under a click; the rule is that the
+     * rail moves when the column actually takes width from it.
+     */
+    if (Math.abs(pair.rail - appRailWidth) >= 2) railSetWidth(pair.rail);
   };
 
   /**

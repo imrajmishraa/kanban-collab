@@ -5,6 +5,7 @@ import { cn } from "@/utils/cn";
 import { Tooltip } from "@/components/Tooltips/ToolTip";
 
 import { RAIL, clampWidth, snapWidth, snapZone } from "@/features/dashboard";
+import { couple } from "@/lib/panelCouple";
 
 interface RailResizeHandleProps {
   /** The width on screen right now — which is not always the stored width. */
@@ -12,6 +13,14 @@ interface RailResizeHandleProps {
   /** Stored width, for the aria value. */
   width: number;
   onWidth: (width: number) => void;
+  /**
+   * The column's width while it is open, and a way to change it.
+   *
+   * Given these, the rail's drag is coupled: every pixel the rail takes is a pixel the
+   * column gives up. Omitted (column closed) and the rail is on its own.
+   */
+  panelWidth?: number;
+  onPanelWidth?: (width: number) => void;
   /** The drag went below MID: snap to the icon rail. */
   onCollapse: () => void;
   /** Double-click while collapsed: come back out at the default width. */
@@ -36,6 +45,8 @@ interface RailResizeHandleProps {
 export default function RailResizeHandle({
   renderedWidth,
   width,
+  panelWidth,
+  onPanelWidth,
   onWidth,
   onCollapse,
   onExpand,
@@ -51,6 +62,8 @@ export default function RailResizeHandle({
   const [belowMid, setBelowMid] = useState(false);
 
   const startX = useRef(0);
+  /** The column's width when this drag began — the pair the coupling keeps constant. */
+  const startPanelWidth = useRef<number | null>(null);
   const startWidth = useRef(0);
 
   /*
@@ -82,6 +95,7 @@ export default function RailResizeHandle({
        width is larger, and grabbing the divider must not make it jump. */
     startX.current = event.clientX;
     startWidth.current = clampWidth(renderedWidth || width);
+    startPanelWidth.current = panelWidth ?? null;
 
     event.currentTarget.setPointerCapture(event.pointerId);
     setDragging(true);
@@ -155,7 +169,26 @@ export default function RailResizeHandle({
     /* Magnetic stops: MID, DEFAULT and MAX hold the width for SNAP_TOLERANCE px
        before it moves on, so the drag pauses at each one instead of sliding
        through. */
-    onWidth(snapWidth(raw));
+    const snapped = snapWidth(raw);
+
+    if (startPanelWidth.current !== null && onPanelWidth) {
+      const pair = couple({
+        active: "rail",
+        railWanted: snapped,
+        panelWanted: startPanelWidth.current,
+        viewport: window.innerWidth,
+      });
+
+      /* Only a real change is written: a 1px jitter under a click must not resize the
+         column, or the two rails twitch against each other. */
+      if (Math.abs(pair.rail - snapped) >= 1) onWidth(pair.rail);
+      if (Math.abs(pair.panel - startPanelWidth.current) >= 2) {
+        onPanelWidth(pair.panel);
+      }
+      return;
+    }
+
+    onWidth(snapped);
   };
 
   /**
