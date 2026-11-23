@@ -10,6 +10,7 @@ import { NotificationsPanel } from "@/features/dashboard";
 import { Tooltip } from "@/components/Tooltips/ToolTip";
 import { LayoutLeftIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import KanbanIcon from "@/assets/KanbanIcon";
 
 const isMac =
   typeof navigator !== "undefined" &&
@@ -136,24 +137,48 @@ export default function DashboardNavbar() {
         ].join(" ")}
       >
         {showRailToggle && (
-          <Tooltip
-            label="Show sidebar"
-            highlight={isMac ? "⌘B" : "Ctrl B"}
-            side="bottom"
-            shape="solid"
-            size="md"
-          >
-            <button
-              type="button"
-              onClick={toggleHidden}
-              aria-label="Show sidebar"
-              aria-controls="app-rail"
-              aria-keyshortcuts="Meta+B Control+B"
-              className="grid size-9 shrink-0 cursor-pointer place-items-center rounded-lg text-(--text-muted) transition-colors hover:bg-(--bg-hover) hover:text-(--text-primary)"
+          <div className="group/expand relative flex h-14 shrink-0 items-center justify-center">
+            <Tooltip
+              label="Expand sidebar"
+              highlight={isMac ? "⌘B" : "Ctrl B"}
+              side="bottom"
+              shape="solid"
+              size="md"
+              gap={10}
             >
-              <HugeiconsIcon icon={LayoutLeftIcon} size={18} />
-            </button>
-          </Tooltip>
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  toggleHidden();
+                }}
+                aria-label="Expand sidebar"
+                className="
+            group relative flex size-8 cursor-pointer
+            items-center justify-center
+            hover:rounded-lg
+            transition-colors
+            hover:bg-(--bg-hover)
+          "
+              >
+                {/* Logo, visible normally, hidden on hover */}
+                <KanbanIcon
+                  size={22}
+                  variant="upper"
+                  className="transition-all duration-150 group-hover:opacity-0 group-focus-within:opacity-0"
+                />
+
+                {/* Hover hint, hidden normally, visible on hover: a pointer when
+                the rail opens by hovering, an arrow when it opens on click. */}
+                <HugeiconsIcon
+                  icon={LayoutLeftIcon}
+                  size={16}
+                  strokeWidth={1.8}
+                  className="absolute text-(--text-muted) opacity-0 scale-75 transition-all duration-150 group-hover:scale-100 group-hover:opacity-100 group-hover:text-(--text-primary) group-focus-within:scale-100 group-focus-within:opacity-100 group-focus-within:text-(--text-primary) focus:opacity-100"
+                />
+              </button>
+            </Tooltip>
+          </div>
         )}
 
         <nav

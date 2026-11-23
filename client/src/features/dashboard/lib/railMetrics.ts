@@ -10,13 +10,13 @@
  * and starts being a column.
  */
 export const RAIL = {
-  /** Collapsed icon rail — the lowest stop that still shows the nav. */
-  MIN: 72,
-  /** Narrowest *expanded* rail. A drag below this snaps to MIN. */
-  MID: 200,
-  /** First run, the double-click reset, and what hover opens at. */
+  /** Collapsed icon rail — a mode, not a width the divider can set. */
+  COLLAPSED: 72,
+  /** Narrowest expanded rail, and the first stop a drag can rest on. */
+  MIN: 240,
+  /** Where the rail opens, and what hover shows. */
   DEFAULT: 288,
-  /** Widest. Past this the rail eats the board. */
+  /** Widest expanded rail. A drag past this stops. */
   MAX: 420,
   /** Horizontal space the page needs beside the rail. */
   GUTTER: 329,
@@ -52,7 +52,7 @@ export const RAIL = {
  * collapsed, and collapsing is what the drag snaps to.
  */
 export const clampWidth = (width: number): number =>
-  Math.min(RAIL.MAX, Math.max(RAIL.MID, Math.round(width)));
+  Math.min(RAIL.MAX, Math.max(RAIL.MIN, Math.round(width)));
 
 export type RailZone = "expanded" | "collapsed" | "hidden";
 
@@ -65,13 +65,18 @@ export type RailZone = "expanded" | "collapsed" | "hidden";
  */
 export function snapZone(rawWidth: number): RailZone {
   if (rawWidth < RAIL.MIN - RAIL.HIDE_SLOP) return "hidden";
-  if (rawWidth < RAIL.MID) return "collapsed";
+  if (rawWidth < RAIL.MIN) return "collapsed";
 
   return "expanded";
 }
 
 /** The widths a drag should come to rest at, narrowest first. */
-export const RAIL_STOPS = [RAIL.MID, RAIL.DEFAULT, RAIL.MAX] as const;
+/**
+ * The two places an expanded drag comes to rest. The whole journey, in order:
+ *
+ *   320 (max) → 240 (min) → 72 (collapsed) → 0 (hidden)
+ */
+export const RAIL_STOPS = [RAIL.MIN, RAIL.DEFAULT, RAIL.MAX] as const;
 
 /**
  * The width a drag at `rawWidth` should actually use.
@@ -165,7 +170,7 @@ export function computeRail({
   if (resizing) railWidth = clamped;
   else if (hidden) railWidth = 0;
   else if (hoverOpen || expanded) railWidth = clamped;
-  else railWidth = RAIL.MIN;
+  else railWidth = RAIL.COLLAPSED;
 
   /*
    * What the page reserves, and why it is not `railWidth` in hover mode.
@@ -179,7 +184,7 @@ export function computeRail({
   const reserved = resizing
     ? railWidth
     : mode === "hover"
-      ? RAIL.MIN
+      ? RAIL.COLLAPSED
       : railWidth;
 
   return {

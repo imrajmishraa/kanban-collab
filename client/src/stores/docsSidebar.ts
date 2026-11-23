@@ -33,6 +33,20 @@ export const useDocsSidebarState = create<DocsSidebarState>()(
       version: 1,
       /* Only the preference is stored; the actions come from the store itself. */
       partialize: (state) => ({ collapsed: state.collapsed }),
+      /*
+       * Without this, zustand logs "State loaded from storage couldn't be migrated
+       * since no migrate function was provided" on every load for anyone whose
+       * browser still holds the entry this store wrote before it had a `version` —
+       * and then throws the value away. A version number with no migration path is
+       * worse than no version at all.
+       */
+      migrate: (persisted) => {
+        const old = persisted as { collapsed?: unknown } | undefined;
+
+        return {
+          collapsed: old?.collapsed === true,
+        } as DocsSidebarState;
+      },
     },
   ),
 );
