@@ -56,8 +56,8 @@ describe("snapZone", () => {
 });
 
 describe("snapWidth", () => {
-  it("has exactly two stops", () => {
-    expect(RAIL_STOPS).toEqual([RAIL.MIN, RAIL.MAX]);
+  it("has three stops", () => {
+    expect(RAIL_STOPS).toEqual([RAIL.MIN, RAIL.DEFAULT, RAIL.MAX]);
   });
 
   it("rests on each stop", () => {
@@ -73,23 +73,21 @@ describe("snapWidth", () => {
 
   it("clamps between and beyond the stops", () => {
     expect(snapWidth(1_000)).toBe(RAIL.MAX);
-    expect(snapWidth(RAIL.MIN + 40)).toBe(RAIL.MIN + 40);
+    /* Far enough from every stop to stay where the pointer put it. */
+    expect(snapWidth(RAIL.MIN + 60)).toBe(RAIL.MIN + 60);
   });
 });
 
 describe("requiredViewport", () => {
   it("never drops below the 700 floor", () => {
-    /* MAX is 320: even 320 + 329 is under 700, so the floor applies across the
-       whole expanded range. */
+    /* 240 + 329 = 569 is under the floor; 420 + 329 = 749 is over it. */
     expect(requiredViewport(RAIL.MIN)).toBe(RAIL.MIN_VIEWPORT);
-    expect(requiredViewport(RAIL.MAX)).toBe(RAIL.MIN_VIEWPORT);
+    expect(requiredViewport(RAIL.DEFAULT)).toBe(RAIL.MIN_VIEWPORT);
+    expect(requiredViewport(RAIL.MAX)).toBe(RAIL.MAX + RAIL.GUTTER);
   });
 
-  it("stays at the floor across the whole range, so the rail always shows", () => {
-    /* MAX 320 + 329 = 649 < 700: there is no width a reader can pick that makes
-       the rail refuse to open. `autoRail` is therefore unreachable here, which is
-       why the short-circuit is worth keeping explicit. */
-    expect(requiredViewport(400)).toBe(RAIL.MIN_VIEWPORT);
+  it("is width plus the gutter once that clears the floor", () => {
+    expect(requiredViewport(400)).toBe(400 + RAIL.GUTTER);
   });
 });
 

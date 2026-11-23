@@ -150,7 +150,7 @@ export default function RailResizeHandle({
 
     /* Coming out of collapsed or hover: the first move into the expanded range
        is what promotes the rail, so the drag and the mode change together. */
-    if (renderedWidth <= RAIL.MIN || belowMid) onExpand();
+    if (renderedWidth <= RAIL.COLLAPSED || belowMid) onExpand();
 
     /* Magnetic stops: MID, DEFAULT and MAX hold the width for SNAP_TOLERANCE px
        before it moves on, so the drag pauses at each one instead of sliding

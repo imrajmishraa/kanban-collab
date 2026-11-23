@@ -15,9 +15,9 @@ export const RAIL = {
   /** Narrowest expanded rail, and the first stop a drag can rest on. */
   MIN: 240,
   /** Where the rail opens, and what hover shows. */
-  DEFAULT: 240,
+  DEFAULT: 288,
   /** Widest expanded rail. A drag past this stops. */
-  MAX: 320,
+  MAX: 420,
   /** Horizontal space the page needs beside the rail. */
   GUTTER: 329,
   /**
@@ -76,7 +76,7 @@ export function snapZone(rawWidth: number): RailZone {
  *
  *   320 (max) → 240 (min) → 72 (collapsed) → 0 (hidden)
  */
-export const RAIL_STOPS = [RAIL.MIN, RAIL.MAX] as const;
+export const RAIL_STOPS = [RAIL.MIN, RAIL.DEFAULT, RAIL.MAX] as const;
 
 /**
  * The width a drag at `rawWidth` should actually use.

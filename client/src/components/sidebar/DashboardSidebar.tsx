@@ -48,7 +48,14 @@ export default function DashboardSidebar({ onToggle }: DashboardSidebarProps) {
   const { railWidth } = layout;
 
   /* Labels only fit above the icon rail. */
-  const open = railWidth > RAIL.MIN;
+  /*
+   * "Open" is anything wider than the icon rail — never "wider than MIN".
+   *
+   * MIN is where the rail opens, so `railWidth > RAIL.MIN` is false at exactly 240
+   * and every child was told `collapsed` while the rail itself was 240px wide:
+   * labels hidden, header and footer off-centre, a gap where the labels belong.
+   */
+  const open = railWidth > RAIL.COLLAPSED;
 
   /* Expanded over the page rather than beside it: that is the only case where
      the rail needs to read as a layer. */
