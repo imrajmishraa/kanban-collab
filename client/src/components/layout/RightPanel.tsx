@@ -15,7 +15,7 @@ import {
   computePanel,
   panelStops,
 } from "@/components/layout/panelMetrics";
-import { isOnStop, snapToStops } from "@/lib/railDrag";
+import { snapToStops } from "@/lib/railDrag";
 import { RAIL_MIN, besideMax, couple, panelDragLevel } from "@/lib/panelCouple";
 import { useSidebarState } from "@/features/dashboard";
 import { Tooltip } from "@/components/Tooltips/ToolTip";
@@ -86,7 +86,6 @@ export default function RightPanel({
 
   const [dragging, setDragging] = useState(false);
   const [moving, setMoving] = useState(false);
-  const [onStop, setOnStop] = useState(false);
 
   const startX = useRef(0);
   const startWidth = useRef(0);
@@ -125,7 +124,6 @@ export default function RightPanel({
     event.currentTarget.setPointerCapture(event.pointerId);
     setDragging(true);
     setMoving(false);
-    setOnStop(false);
 
     /* Grabbing a `remaining` column means "make it a column again", starting from the
        ceiling so the first move is continuous. */
@@ -154,7 +152,6 @@ export default function RightPanel({
     const next = panelDragLevel(raw, viewport, RAIL_MIN);
 
     if (next !== "normal") {
-      setOnStop(true);
       setLevel(next);
       return;
     }
@@ -181,7 +178,6 @@ export default function RightPanel({
 
     setLevel("normal");
     /* Amber means "resting on a stop" — the rail's floor is not one of them. */
-    setOnStop(isOnStop(snapped, stops));
     setWidth(snapped);
 
     /* Only a real push is written: frame jitter must not resize the rail. */
@@ -200,7 +196,6 @@ export default function RightPanel({
 
     setDragging(false);
     setMoving(false);
-    setOnStop(false);
     delete document.body.dataset.dragging;
 
     if (wasMoving) {
@@ -215,7 +210,7 @@ export default function RightPanel({
   /*
    * The drag must end even when the pointerup happens somewhere else — outside the window,
    * on another element, or after the capture was lost. Without this `dragging`, `moving` and
-   * `onStop` stayed set: the amber line stayed lit and the next hover moved the column,
+   * the drag state stayed set and the next hover moved the column,
    * because the handler still believed a drag was in progress.
    */
   /* Refreshed every render; the ref is the dependency-free channel. */
@@ -302,7 +297,6 @@ export default function RightPanel({
           "after:absolute after:inset-y-0 after:left-1/2 after:w-0.5 after:-translate-x-1/2",
           "after:bg-transparent after:transition-colors",
           "hover:after:bg-(--link) focus-visible:after:bg-(--link)",
-          onStop && "after:bg-(--warning)",
         )}
       />
 
