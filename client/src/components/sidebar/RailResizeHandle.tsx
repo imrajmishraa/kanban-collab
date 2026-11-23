@@ -79,7 +79,6 @@ export default function RailResizeHandle({
     moving &&
     (belowMid ||
       width === RAIL.MIN ||
-      width === RAIL.MIN ||
       width === RAIL.DEFAULT ||
       width === RAIL.MAX);
 
@@ -240,6 +239,36 @@ export default function RailResizeHandle({
 
   useEffect(() => () => endRef.current(), []);
 
+  /*
+   * The drag must end wherever the pointer goes.
+   *
+   * `onPointerUp` on the button only fires if the release happens *on* the button. Release
+   * outside the window, on another element, or after the capture is lost, and `dragging`
+   * and `moving` stayed set: the amber line stayed lit and the next hover moved the rail,
+   * because the handler still believed a drag was in progress.
+   */
+  const endDragRef = useRef(endDrag);
+
+  useEffect(() => {
+    endDragRef.current = endDrag;
+  });
+
+  useEffect(() => {
+    if (!dragging) return;
+
+    const stop = () => endDragRef.current();
+
+    window.addEventListener("pointerup", stop);
+    window.addEventListener("pointercancel", stop);
+    window.addEventListener("blur", stop);
+
+    return () => {
+      window.removeEventListener("pointerup", stop);
+      window.removeEventListener("pointercancel", stop);
+      window.removeEventListener("blur", stop);
+    };
+  }, [dragging]);
+
   const onKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
     const step = event.shiftKey ? 32 : 8;
 
@@ -270,9 +299,12 @@ export default function RailResizeHandle({
        the bubble is anchored to the divider itself. `disabled` while dragging:
        a tooltip appearing mid-drag is noise. */
     <Tooltip
-      label={isCollapsed ? "Double-click to hide" : "Drag to resize"}
+      label={"Drag to resize"}
+      highlight={"Click to hide"}
+      maxWidth={130}
+      maxHeight={50}
       side="right"
-      shape="solid"
+      shape="default"
       size="md"
       gap={8}
       disabled={dragging}
