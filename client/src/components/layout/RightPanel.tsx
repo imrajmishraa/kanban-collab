@@ -313,11 +313,10 @@ export default function RightPanel({
                 /* `h-8` + `w-8`, never `size-8`: `size-*` sets both, and it would
                    fight the `px-*` that the labelled state needs. */
                 "flex h-8 items-center justify-center rounded-lg",
-                "text-(--text-primary) transition-colors",
-                "hover:bg-(--bg-hover)",
+                "text-(--text-primary) hover:bg-(--bg-hover)",
                 "focus-visible:outline-2 focus-visible:outline-(--brand)",
                 layout.maximized
-                  ? "gap-1.25 px-2.5 mr-1 border border-(--hairline)"
+                  ? "gap-1.25 px-2.5 mr-1 border border-(--hairline) hover:border-(--hairline-strong)"
                   : "w-8",
               )}
             >
