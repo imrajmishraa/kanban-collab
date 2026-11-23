@@ -54,6 +54,8 @@ export interface PanelLayoutInput {
   mode: "off" | "panel";
   width: number;
   maximized: boolean;
+  /** Everything the rail leaves, rail untouched. */
+  expanded?: boolean;
   viewport: number;
   appRailWidth: number;
 }
@@ -70,6 +72,7 @@ export interface PanelLayout {
   width: number;
   hidden: boolean;
   maximized: boolean;
+  expanded: boolean;
   /** What the page gives up on the right. */
   reserved: number;
   /** False when the board would be a sliver: it is not rendered at all. */
@@ -87,6 +90,7 @@ export function computePanel({
   mode,
   width,
   maximized,
+  expanded = false,
   viewport,
   appRailWidth,
 }: PanelLayoutInput): PanelLayout {
@@ -100,7 +104,17 @@ export function computePanel({
      closed rail leaves all of it. */
   const fullWidth = Math.max(PANEL.MIN, Math.round(viewport - appRailWidth));
 
-  const reserved = hidden ? 0 : isMaximized ? fullWidth : clamped;
+  /* Three levels, narrowest first: the stored width, everything the rail leaves, the
+     whole viewport. Fullscreen is the only one that covers the rail. */
+  const isExpanded = !hidden && !isMaximized && expanded;
+
+  const reserved = hidden
+    ? 0
+    : isMaximized
+      ? Math.round(viewport)
+      : isExpanded
+        ? fullWidth
+        : clamped;
 
   return {
     ceiling,
@@ -108,6 +122,7 @@ export function computePanel({
     width: clamped,
     hidden,
     maximized: isMaximized,
+    expanded: isExpanded,
     reserved,
     pageVisible:
       !isMaximized && viewport - appRailWidth - reserved >= PANEL.PAGE_MIN,

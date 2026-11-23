@@ -58,12 +58,18 @@ interface RightPanelState {
   mode: RightPanelMode;
   /** Persisted. Clamped on read and again at layout time. */
   width: number;
-  /** Full width: the board is not rendered. A mode, not a width. */
+  /** Full width: the whole viewport, rail closed. Only via ⌘⇧J or the button. */
   maximized: boolean;
+  /**
+   * Everything the rail is not using, with the rail left alone. This is what a drag
+   * past MAX reaches — the board is gone, but navigation is not covered.
+   */
+  expanded: boolean;
 
   setMode: (mode: RightPanelMode) => void;
   setWidth: (width: number) => void;
   setMaximized: (maximized: boolean) => void;
+  setExpanded: (expanded: boolean) => void;
   /** ⌘J and the navbar toggle: closed ↔ open, from either side. */
   toggle: () => void;
 }
@@ -74,6 +80,8 @@ export const useRightPanel = create<RightPanelState>()(
       mode: RIGHT_PANEL_DEFAULT,
       width: PANEL.DEFAULT,
       maximized: false,
+      expanded: false,
+      section: "empty",
 
       setMode: (mode) =>
         set((state) => ({
@@ -83,7 +91,14 @@ export const useRightPanel = create<RightPanelState>()(
           maximized: mode === "off" ? false : state.maximized,
         })),
       setWidth: (width) => set({ width: Math.round(width) }),
-      setMaximized: (maximized) => set({ maximized }),
+      /* Fullscreen and "everything the rail leaves" are different claims: one covers
+         the rail, the other does not. Setting either clears the other. */
+      setMaximized: (maximized) =>
+        set((state) => ({
+          maximized,
+          expanded: maximized ? false : state.expanded,
+        })),
+      setExpanded: (expanded) => set({ expanded, maximized: false }),
 
       /* One toggle, two states. "off" is the only closed state. */
       toggle: () =>
@@ -122,8 +137,10 @@ export const useRightPanel = create<RightPanelState>()(
             typeof old?.width === "number" && Number.isFinite(old.width)
               ? Math.round(old.width)
               : PANEL.DEFAULT,
-          /* Full width never survives a reload: it is a gesture, not a preference. */
+          /* Neither fullscreen nor "everything the rail leaves" survives a reload:
+             both are gestures, not preferences. */
           maximized: false,
+          expanded: false,
         };
       },
       merge: (persisted, current) => {

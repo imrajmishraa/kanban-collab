@@ -71,21 +71,28 @@ describe("computePanel", () => {
     expect(at({ mode: "off" }).reserved).toBe(0);
   });
 
-  it("full width is everything the app rail leaves", () => {
-    /* 1440 - 288 rail = 1152, and the board is not rendered under it. */
+  it("fullscreen is the whole viewport, and the board is not rendered", () => {
     const layout = at({ maximized: true });
 
     expect(layout.maximized).toBe(true);
-    expect(layout.fullWidth).toBe(1152);
-    expect(layout.reserved).toBe(1152);
+    expect(layout.reserved).toBe(1440);
     expect(layout.pageVisible).toBe(false);
   });
 
-  it("subtracts whatever the app rail is rendering at", () => {
+  it("'expanded' takes what the rail leaves and never covers it", () => {
+    const layout = at({ expanded: true });
+
+    expect(layout.maximized).toBe(false);
+    expect(layout.expanded).toBe(true);
+    expect(layout.reserved).toBe(1440 - 288);
+    expect(layout.pageVisible).toBe(false);
+  });
+
+  it("expanded follows whatever the app rail is rendering at", () => {
     /* The rail's own scale: 72 collapsed, 240…420 expanded, 0 hidden. */
-    expect(at({ maximized: true, appRailWidth: 0 }).reserved).toBe(1440);
-    expect(at({ maximized: true, appRailWidth: 72 }).reserved).toBe(1368);
-    expect(at({ maximized: true, appRailWidth: 420 }).reserved).toBe(1020);
+    expect(at({ expanded: true, appRailWidth: 0 }).reserved).toBe(1440);
+    expect(at({ expanded: true, appRailWidth: 72 }).reserved).toBe(1368);
+    expect(at({ expanded: true, appRailWidth: 420 }).reserved).toBe(1020);
   });
 
   it("an off panel ignores a stored full-width flag", () => {

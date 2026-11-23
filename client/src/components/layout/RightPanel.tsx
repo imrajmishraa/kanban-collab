@@ -16,6 +16,8 @@ import {
   panelStops,
 } from "@/components/layout/panelMetrics";
 import { isOnStop, snapToStops } from "@/lib/railDrag";
+import { resolveDrag } from "@/lib/panelDragZones";
+import { useSidebarState } from "@/features/dashboard";
 import { Tooltip } from "@/components/Tooltips/ToolTip";
 
 /**
@@ -74,6 +76,8 @@ export default function RightPanel({
   const setMode = useRightPanel((state) => state.setMode);
   const maximized = useRightPanel((state) => state.maximized);
   const setMaximized = useRightPanel((state) => state.setMaximized);
+  const expanded = useRightPanel((state) => state.expanded);
+  const setExpanded = useRightPanel((state) => state.setExpanded);
 
   const [viewport, setViewport] = useState(() =>
     typeof window === "undefined" ? 1440 : window.innerWidth,
@@ -84,6 +88,11 @@ export default function RightPanel({
 
   const startX = useRef(0);
   const startWidth = useRef(0);
+  const startRailWidth = useRef(appRailWidth);
+
+  const railSetWidth = useSidebarState((state) => state.setWidth);
+  const railSetMode = useSidebarState((state) => state.setMode);
+  const railHide = useSidebarState((state) => state.hide);
 
   useEffect(() => {
     const onResize = () => setViewport(window.innerWidth);
@@ -96,6 +105,7 @@ export default function RightPanel({
     mode,
     width,
     maximized,
+    expanded,
     viewport,
     appRailWidth,
   });
@@ -109,6 +119,8 @@ export default function RightPanel({
     startX.current = event.clientX;
     /* The rendered width, not the store: grabbing mid-transition must not jump. */
     startWidth.current = layout.maximized ? layout.ceiling : panelWidth;
+    /* The rail's width at this moment is the drag's reference for its own range. */
+    startRailWidth.current = appRailWidth;
 
     event.currentTarget.setPointerCapture(event.pointerId);
     setDragging(true);
@@ -136,28 +148,58 @@ export default function RightPanel({
     /* This is the left edge of a right-hand column: dragging left widens. */
     const raw = startWidth.current + (startX.current - event.clientX);
 
-    if (raw >= layout.ceiling + PANEL.FULL_SLOP) {
-      setDragging(false);
-      setMoving(false);
-      setOnStop(false);
-      setMaximized(true);
-      onResizeEnd();
-      return;
+    const frame = resolveDrag({
+      rawPanelWidth: raw,
+      railWidth: appRailWidth,
+      railStartWidth: startRailWidth.current,
+      viewport,
+      ceiling: layout.ceiling,
+    });
+
+    switch (frame.zone) {
+      case "panel": {
+        const snapped = clampPanelWidth(
+          snapToStops(frame.panelWidth ?? raw, stops),
+          layout.ceiling,
+        );
+
+        setExpanded(false);
+        setOnStop(isOnStop(snapped, stops));
+        setWidth(snapped);
+        break;
+      }
+
+      case "panel-remaining": {
+        /* Past MAX: everything the rail leaves, with the rail left alone. Fullscreen is
+           a deliberate act, not a drag. */
+        setOnStop(true);
+        setExpanded(true);
+        break;
+      }
+
+      case "rail":
+      case "rail-collapsed": {
+        /* The column is at its minimum and the pointer has run into the rail: from here
+           the rail's own rules apply — 420…240, then the 72px icon rail. */
+        setExpanded(false);
+        setOnStop(true);
+        setWidth(PANEL.MIN);
+
+        if (frame.railWidth !== null) {
+          if (frame.zone === "rail-collapsed") railSetMode("collapsed");
+          else railSetWidth(frame.railWidth);
+        }
+        break;
+      }
+
+      case "rail-hidden": {
+        setExpanded(false);
+        setOnStop(true);
+        setWidth(PANEL.MIN);
+        railHide();
+        break;
+      }
     }
-
-    if (raw <= PANEL.MIN - PANEL.CLOSE_SLOP) {
-      setDragging(false);
-      setMoving(false);
-      setOnStop(false);
-      setMode("off");
-      onResizeEnd();
-      return;
-    }
-
-    const snapped = clampPanelWidth(snapToStops(raw, stops), layout.ceiling);
-
-    setOnStop(isOnStop(snapped, stops));
-    setWidth(snapped);
   };
 
   const endDrag = () => {
@@ -257,7 +299,13 @@ export default function RightPanel({
           >
             <button
               type="button"
-              onClick={() => setMaximized(!layout.maximized)}
+              onClick={() => {
+                /* Fullscreen covers the rail, so the rail goes with it — otherwise the
+                 panel would be fullscreen over a sidebar it is supposed to have
+                 replaced. */
+                if (!layout.maximized) railHide();
+                setMaximized(!layout.maximized);
+              }}
               aria-label={layout.maximized ? "Show page" : "Full width"}
               aria-pressed={layout.maximized}
               aria-keyshortcuts="Meta+Shift+J Control+Shift+J"
@@ -289,6 +337,7 @@ export default function RightPanel({
 
           {/* The same control that opens the panel, where the close button used to
               be: the icon is never a mystery. */}
+              {!layout.maximized && (
           <Tooltip
             label="Hide panel"
             highlight={isMac ? "⌘J" : "Ctrl J"}
@@ -310,6 +359,7 @@ export default function RightPanel({
               <HugeiconsIcon icon={LayoutAlignRightIcon} size={18} />
             </button>
           </Tooltip>
+              )}
         </div>
       </header>
 
