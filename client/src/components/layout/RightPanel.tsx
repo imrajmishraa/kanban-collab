@@ -139,11 +139,7 @@ export default function RightPanel({
   const onPointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
     if (!dragging) return;
 
-    /*
-     * A drag starts on the first real move. The slop is 6px, not 3: a click on this border
-     * with a shaky hand used to count as a drag, and the first frame of that "drag" wrote a
-     * new width to the *other* rail — which is the jump people were seeing.
-     */
+    /* A drag starts on the first real move; 6px, so a shaky click is still a click. */
     if (!moving) {
       if (Math.abs(event.clientX - startX.current) < 6) return;
 
@@ -154,16 +150,7 @@ export default function RightPanel({
     /* This is the left edge of a right-hand column: dragging left widens. */
     const raw = startWidth.current + (startX.current - event.clientX);
 
-    /*
-     * The ladder, and the coupling.
-     *
-     *   beside the board  → the column takes its width out of the rail
-     *   past the board's floor → `remaining` (board gone, rail kept)
-     *   past everything the rail leaves → `full` (rail gone too)
-     *
-     * Before this, the column grew past the window and the rail walked over the page:
-     * nothing pushed back.
-     */
+    /* The ladder: beside the board → `remaining` (board gone, rail kept) → `full`. */
     const next = panelDragLevel(raw, viewport, RAIL_MIN);
 
     if (next !== "normal") {
@@ -172,11 +159,7 @@ export default function RightPanel({
       return;
     }
 
-    /*
-     * The column is the one being dragged, so the **rail** is what gives ground — down to
-     * its own minimum of 240, not down to wherever it happens to be. Passing its current
-     * width as the floor made it immovable: the column could never push it.
-     */
+    /* The rail gives ground — down to its minimum, not down to where it happens to be. */
     const pair = couple({
       active: "panel",
       railWanted: appRailWidth,
@@ -186,12 +169,7 @@ export default function RightPanel({
       panelFloor: PANEL.MIN,
     });
 
-    /*
-     * Clamped to the column's own range only. It used to be re-clamped against
-     * `layout.ceiling`, which was worked out from the rail's width *before* this drag —
-     * so as the rail shrank the stale ceiling kept cutting the column back, and the
-     * column appeared to shrink by itself.
-     */
+    /* Clamped to the column's own range: a ceiling from before the drag cut it back. */
     /* `PANEL.MAX` is a magnetic stop, not a ceiling: beside the board the column may reach
        `viewport - RAIL_MIN - PAGE_MIN` — 620 at 1280 — which is exactly where the rail hits
        its 240. */
@@ -202,23 +180,19 @@ export default function RightPanel({
     );
 
     setLevel("normal");
-    setOnStop(isOnStop(snapped, stops) || pair.rail === RAIL_MIN);
+    /* Amber means "resting on a stop" — the rail's floor is not one of them. */
+    setOnStop(isOnStop(snapped, stops));
     setWidth(snapped);
 
-    /*
-     * The rail is pushed by the column — but only when the push is real. Writing a 1-2px
-     * difference on every frame made the rail twitch under a click; the rule is that the
-     * rail moves when the column actually takes width from it.
-     */
+    /* Only a real push is written: frame jitter must not resize the rail. */
     if (Math.abs(pair.rail - appRailWidth) >= 2) railSetWidth(pair.rail);
   };
 
-  /**
-   * Ends a drag — and treats a press that never moved as a click.
-   *
-   * `fromPointerUp` is a parameter rather than a check on the event because the same
-   * handler is bound to `pointercancel`: a cancelled pointer must not close the column.
-   */
+  /* Ends a drag — and treats a press that never moved as a click. `fromPointerUp` is a
+     parameter because the same handler is bound to `pointercancel`. */
+  /* Stable reference for the window listeners. */
+  const endDragRef = useRef<(fromPointerUp?: boolean) => void>(() => {});
+
   const endDrag = (fromPointerUp = false) => {
     if (!dragging) return;
 
@@ -227,6 +201,7 @@ export default function RightPanel({
     setDragging(false);
     setMoving(false);
     setOnStop(false);
+    delete document.body.dataset.dragging;
 
     if (wasMoving) {
       onResizeEnd();
@@ -236,6 +211,33 @@ export default function RightPanel({
     /* A single click on the divider closes the column. */
     if (fromPointerUp) setMode("off");
   };
+
+  /*
+   * The drag must end even when the pointerup happens somewhere else — outside the window,
+   * on another element, or after the capture was lost. Without this `dragging`, `moving` and
+   * `onStop` stayed set: the amber line stayed lit and the next hover moved the column,
+   * because the handler still believed a drag was in progress.
+   */
+  /* Refreshed every render; the ref is the dependency-free channel. */
+  useEffect(() => {
+    endDragRef.current = endDrag;
+  });
+
+  useEffect(() => {
+    if (!dragging) return;
+
+    const stop = () => endDragRef.current();
+
+    window.addEventListener("pointerup", stop);
+    window.addEventListener("pointercancel", stop);
+    window.addEventListener("blur", stop);
+
+    return () => {
+      window.removeEventListener("pointerup", stop);
+      window.removeEventListener("pointercancel", stop);
+      window.removeEventListener("blur", stop);
+    };
+  }, [dragging]);
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
     const step = event.shiftKey ? 32 : 8;
