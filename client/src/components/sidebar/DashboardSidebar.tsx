@@ -205,9 +205,20 @@ export default function DashboardSidebar({
            for its own panels, so at width 0 it would keep painting them. Take
            it off the page instead of just narrowing it. */
         hidden={railWidth === 0}
-        onClick={!open ? onToggle : undefined}
+        /* A3: a click on the rail no longer opens it. The preview is a glance, not a
+           control — and a rail that opens on any click inside it opens by accident. */
         onMouseEnter={onRailEnter}
         onMouseLeave={onRailLeave}
+        /* A6: a keyboard reader gets the same preview the pointer does. Focus leaving the
+           rail — not moving between its own items — is what closes it. */
+        onFocus={onRailEnter}
+        onBlur={(event) => {
+          if (
+            !event.currentTarget.contains(event.relatedTarget as Node | null)
+          ) {
+            onRailLeave();
+          }
+        }}
         style={{ width: railWidth }}
         className={[
           /* Visible, not hidden: the rail's own panels are wider than the rail

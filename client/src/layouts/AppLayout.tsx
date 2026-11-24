@@ -11,6 +11,7 @@ const RightPanel = lazy(() => import("@components/layout/RightPanel"));
 
 import { NewWorkspaceDialogProvider } from "@/components/dashboard/workspace/create/NewWorkspaceDialogProvider";
 
+import { RailEdgeHotZone } from "@/components/sidebar/RailEdgeHotZone";
 import { useSidebarState } from "@/features/dashboard/stores/sidebarState";
 import { useRailLayout } from "@/features/dashboard";
 import { useRightPanel } from "@/stores/rightPanel";
@@ -184,6 +185,10 @@ export default function AppLayout() {
           onToggle={toggleSidebar}
           stripped={panelLayout.railStrip === true}
         />
+
+        {/* B2: the window's left edge opens the preview too, for a pointer that is already
+            heading there. Invisible, eight pixels, and only where the rail is not open. */}
+        <RailEdgeHotZone />
 
         {/* Full width takes the window: the board is not rendered, so its
             subscriptions and sockets go with it. */}
