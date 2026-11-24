@@ -70,6 +70,14 @@ const baseArg = args.find((arg) => !arg.startsWith("--"));
 const git = (...argv) =>
   execFileSync("git", argv, { encoding: "utf8" }).trim();
 
+/* Same, with git's stderr swallowed: "HEAD^2 does not exist" is expected on a plain branch,
+   and a fatal line in the CI log reads like a failure that is not one. */
+const gitQuiet = (...argv) =>
+  execFileSync("git", argv, {
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "ignore"],
+  }).trim();
+
 function resolveBase() {
   if (baseArg) return baseArg;
   if (process.env.GITHUB_BASE_SHA) return process.env.GITHUB_BASE_SHA;
@@ -94,14 +102,24 @@ function overrideReason() {
     return "CHANGE_BUDGET_ALLOW=1";
   }
 
-  try {
-    const message = git("log", "-1", "--pretty=%B");
-    const match = /^Change-Budget-Exception:\s*(.+)$/m.exec(message);
+  /*
+   * A `pull_request` event checks out a **merge commit**, so HEAD's message is
+   * "Merge <sha> into <sha>" and the trailer — which lives on the PR's own commit — is
+   * invisible. That commit is HEAD's second parent, so look there too.
+   */
+  for (const ref of ["HEAD", "HEAD^2"]) {
+    try {
+      const match = /^Change-Budget-Exception:\s*(.+)$/m.exec(
+        gitQuiet("log", "-1", "--pretty=%B", ref),
+      );
 
-    return match ? match[1].trim() : null;
-  } catch {
-    return null;
+      if (match) return match[1].trim();
+    } catch {
+      /* Not a merge commit, or a shallow clone: try the next candidate. */
+    }
   }
+
+  return null;
 }
 
 const base = resolveBase();
