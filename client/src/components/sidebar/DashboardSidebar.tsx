@@ -16,8 +16,10 @@ import SidebarNotifications from "@/components/sidebar/SidebarNotifications";
 import { useWorkspaces } from "@/hooks/useWorkspaces";
 import { useBoards, boardKeys, BOARDS_LIST_LIMIT } from "@/hooks/useBoards";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
+import { cn } from "@/utils/cn";
 import { RAIL, useRailLayout, useSidebarState } from "@/features/dashboard";
 import RailResizeHandle from "./RailResizeHandle";
+import { useRightPanel } from "@/stores/rightPanel";
 import { useAuth } from "@/hooks/useAuth";
 import { boardApi } from "@/features/boards";
 import { useQueryClient } from "@tanstack/react-query";
@@ -27,9 +29,17 @@ import ConfirmDialog from "@/components/dialog/ConfirmDialog";
 
 interface DashboardSidebarProps {
   onToggle: () => void;
+  /**
+   * Tablet only: the rail stepped aside because the column and the board needed its width.
+   * The rail is not hidden — a 72px strip stands in for it, one click away.
+   */
+  stripped?: boolean;
 }
 
-export default function DashboardSidebar({ onToggle }: DashboardSidebarProps) {
+export default function DashboardSidebar({
+  onToggle,
+  stripped = false,
+}: DashboardSidebarProps) {
   const { user, logout } = useAuth();
   const { boardsOpen, toggleBoards, openBoards } = useSidebarState();
   const queryClient = useQueryClient();
@@ -39,6 +49,11 @@ export default function DashboardSidebar({ onToggle }: DashboardSidebarProps) {
   const mode = useSidebarState((state) => state.mode);
   const setHovering = useSidebarState((state) => state.setHovering);
   const setWidth = useSidebarState((state) => state.setWidth);
+
+  /* The column, if it is on screen: its width is what the rail's drag pays out of. */
+  const panelOpen = useRightPanel((state) => state.mode !== "off");
+  const panelWidth = useRightPanel((state) => state.width);
+  const setPanelWidth = useRightPanel((state) => state.setWidth);
   const hide = useSidebarState((state) => state.hide);
   const setResizing = useSidebarState((state) => state.setResizing);
 
@@ -162,6 +177,26 @@ export default function DashboardSidebar({ onToggle }: DashboardSidebarProps) {
     );
   };
 
+  if (stripped) {
+    return (
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-label="Show sidebar"
+        aria-controls="app-rail"
+        className={cn(
+          "sticky top-0 z-40 hidden h-dvh w-[72px] shrink-0 flex-col items-center",
+          "gap-2 border-r border-(--hairline) bg-(--bg-panel) pt-3 md:flex",
+          "pb-[env(safe-area-inset-bottom)]",
+          "cursor-pointer hover:bg-(--bg-hover)",
+        )}
+      >
+        <span className="grid size-6 place-items-center rounded-md bg-(--brand)" />
+        <span className="font-mono text-[13px] text-(--text-muted)">›</span>
+      </button>
+    );
+  }
+
   return (
     <>
       <aside
@@ -217,13 +252,15 @@ export default function DashboardSidebar({ onToggle }: DashboardSidebarProps) {
 
         {/* The divider lives inside the rail so it follows the width, but sits
             on the border itself. */}
-        {railWidth > 0 && (
+        {/* Hover mode is a preview, not a size: a drag there would fight the pointer that
+            is opening it. The divider is not rendered, so there is nothing to grab. */}
+        {railWidth > 0 && mode !== "hover" && (
           <RailResizeHandle
             renderedWidth={railWidth}
             width={layout.width}
             onWidth={setWidth}
-            /* Below MID the drag snaps to the icon rail instead of sliding. */
-            onCollapse={() => useSidebarState.getState().collapse()}
+            panelWidth={panelOpen ? panelWidth : undefined}
+            onPanelWidth={setPanelWidth}
             /* Double-click while collapsed: back out at the default width. */
             onExpand={() => useSidebarState.getState().expand()}
             onHide={hide}
@@ -242,9 +279,6 @@ export default function DashboardSidebar({ onToggle }: DashboardSidebarProps) {
                * is over the rail. Collapsed is *not* promoted here: a press that
                * never becomes a drag must stay a no-op.
                */
-              if (useSidebarState.getState().mode === "hover") {
-                useSidebarState.getState().expand();
-              }
             }}
             onResizeEnd={() => {
               setHovering(false);

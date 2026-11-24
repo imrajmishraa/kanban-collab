@@ -2,6 +2,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import {
   MousePointerBanIcon,
   SidebarLeftIcon,
+  MousePointerOff01Icon,
   LayoutAlignLeftIcon,
 } from "@hugeicons/core-free-icons";
 import { useNavigate } from "react-router-dom";
@@ -37,7 +38,7 @@ const SidebarHeader = ({
 
   if (collapsed) {
     return (
-      <div className="group/expand relative flex h-14 shrink-0 items-center justify-center">
+      <div className="group/expand relative flex h-12 shrink-0 items-center justify-center">
         <Tooltip
           label="Hide"
           highlight={isMac ? "⌘ ⇧ B" : "Ctrl ⇧ B"}
@@ -72,9 +73,9 @@ const SidebarHeader = ({
                 the rail opens by hovering, an arrow when it opens on click. */}
             <HugeiconsIcon
               icon={
-                mode === "hover" ? MousePointerBanIcon : LayoutAlignLeftIcon
+                mode === "hover" ? MousePointerOff01Icon : LayoutAlignLeftIcon
               }
-              size={16}
+              size={18}
               strokeWidth={1.8}
               className="
               absolute
@@ -94,7 +95,7 @@ const SidebarHeader = ({
   }
 
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between px-3">
+    <header className="flex h-12 shrink-0 items-center justify-between px-2">
       <button
         type="button"
         onClick={() => navigate("/workspaces")}
