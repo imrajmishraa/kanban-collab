@@ -31,8 +31,8 @@ function warmSearchModal() {
 
 export default function AppLayout() {
   const toggleSidebar = useSidebarState((s) => s.toggleCollapsed);
-  const toggleHidden = useSidebarState((s) => s.toggleHidden);
-  const hide = useSidebarState((s) => s.hide);
+  const toggleOpenHidden = useSidebarState((s) => s.toggleOpenHidden);
+  const collapse = useSidebarState((s) => s.collapse);
 
   /*
    * The rail's width is data now, not two Tailwind classes. One computation
@@ -127,10 +127,11 @@ export default function AppLayout() {
   }, [toggleRightPanel]);
 
   /*
-   * ⌘B / Ctrl+B — collapse or bring the rail back, from anywhere.
-   * ⌘⇧B / Ctrl+Shift+B — put it away entirely. The two are one gesture apart on
-   * purpose: the plain one is used constantly, the shifted one is the "get this
-   * out of my way" version, and both are reversible.
+   * ⌘B / Ctrl+B — open ↔ hidden, and nothing else.
+   * ⌘⇧B / Ctrl+Shift+B — the icon rail.
+   *
+   * Two gestures, two states: the plain one is used constantly and should never land on a
+   * third state the reader did not ask for; the shifted one is the "just the icons" version.
    */
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -140,13 +141,13 @@ export default function AppLayout() {
 
       event.preventDefault();
 
-      if (event.shiftKey) hide();
-      else toggleHidden();
+      if (event.shiftKey) collapse();
+      else toggleOpenHidden();
     };
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [toggleHidden, hide]);
+  }, [toggleOpenHidden, collapse]);
 
   // Prefetch the search chunk during idle time.
   // Fallback to a 2s timeout on browsers without requestIdleCallback.

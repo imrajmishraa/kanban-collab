@@ -150,7 +150,13 @@ export function computeRail({
     required === RAIL.MIN_VIEWPORT || viewportWidth > required
   );
 
-  const hoverOpen = mode === "hover" && hovering && !autoRail;
+  /*
+   * B1: the icon rail previews on hover too. A collapsed rail is a rail you can see, so the
+   * pointer resting on it should show what it holds — and leaving must put it back to 72,
+   * which is why the preview is derived, never stored.
+   */
+  const collapsedPreview = mode === "collapsed" && hovering && !autoRail;
+  const hoverOpen = (mode === "hover" || collapsedPreview) && hovering && !autoRail;
   const expanded = mode === "open" && !autoRail;
 
   let railWidth: number;
@@ -174,6 +180,7 @@ export function computeRail({
   /* Hover is a preview at the default width, whatever the pinned rail was dragged to. A
      reader who dragged the rail to 400 did not ask the overlay to be 400 too. */
   else if (hoverOpen) railWidth = RAIL.DEFAULT;
+  else if (collapsedPreview) railWidth = RAIL.DEFAULT;
   else railWidth = RAIL.COLLAPSED;
 
   /*
