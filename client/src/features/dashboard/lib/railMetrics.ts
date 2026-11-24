@@ -100,6 +100,9 @@ export function snapWidth(
  * enough room. The `700` floor short-circuits the narrow case: at MIN the rail
  * plus gutter is under 700, and refusing to show it there would be silly.
  */
+/** C1: a tablet's preview is 240 — its own open width, not the desktop's 288. */
+const TABLET_RAIL_PREVIEW = 240;
+
 export const requiredViewport = (width: number): number =>
   Math.max(RAIL.MIN_VIEWPORT, Math.ceil(clampWidth(width)) + RAIL.GUTTER);
 
@@ -156,7 +159,12 @@ export function computeRail({
    * which is why the preview is derived, never stored.
    */
   const collapsedPreview = mode === "collapsed" && hovering && !autoRail;
-  const hoverOpen = (mode === "hover" || collapsedPreview) && hovering && !autoRail;
+  const hoverOpen =
+    (mode === "hover" || collapsedPreview) && hovering && !autoRail;
+
+  /* C1: the preview is 288 on desktop and 240 on a tablet — the rail's own default there. */
+  const previewWidth =
+    viewportWidth <= 1023 ? TABLET_RAIL_PREVIEW : RAIL.DEFAULT;
   const expanded = mode === "open" && !autoRail;
 
   let railWidth: number;
@@ -174,13 +182,15 @@ export function computeRail({
    */
   /* `hidden` first: a drag that hides the rail must hide it now, not on release. The
      `resizing` override is for widths, and "off the page" is not a width. */
-  if (hidden) railWidth = 0;
+  /* B1: hover mode rests at zero. Nothing visible, nothing reserved — the icon in the
+     navbar is the trigger, so a strip on the page would be a second, quieter one. */
+  if (hidden || (mode === "hover" && !hoverOpen && !resizing)) railWidth = 0;
   else if (resizing) railWidth = clamped;
   else if (expanded) railWidth = clamped;
   /* Hover is a preview at the default width, whatever the pinned rail was dragged to. A
      reader who dragged the rail to 400 did not ask the overlay to be 400 too. */
-  else if (hoverOpen) railWidth = RAIL.DEFAULT;
-  else if (collapsedPreview) railWidth = RAIL.DEFAULT;
+  else if (hoverOpen) railWidth = previewWidth;
+  else if (collapsedPreview) railWidth = previewWidth;
   else railWidth = RAIL.COLLAPSED;
 
   /*
@@ -195,7 +205,8 @@ export function computeRail({
   const reserved = resizing
     ? railWidth
     : mode === "hover"
-      ? RAIL.COLLAPSED
+      ? /* B1: nothing to reserve — the board gets the whole width. */
+        0
       : railWidth;
 
   return {

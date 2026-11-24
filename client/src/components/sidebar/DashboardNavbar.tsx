@@ -9,7 +9,11 @@ import { useRightPanel } from "@/stores/rightPanel";
 import { NavbarSearchIcon, NotificationsButton } from "@/features/dashboard";
 import { NotificationsPanel } from "@/features/dashboard";
 import { Tooltip } from "@/components/Tooltips/ToolTip";
-import { PanelLeftIcon, PanelRightIcon } from "@hugeicons/core-free-icons";
+import {
+  LayoutAlignLeftIcon,
+  MousePointerOff01Icon,
+  PanelRightIcon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import KanbanIcon from "@/assets/KanbanIcon";
 
@@ -46,6 +50,7 @@ export default function DashboardNavbar() {
   const sidebarMode = useSidebarState((s) => s.mode);
   const toggleHidden = useSidebarState((s) => s.toggleHidden);
   const peek = useSidebarState((s) => s.peek);
+  const openFromPreview = useSidebarState((s) => s.openFromPreview);
   const unpeek = useSidebarState((s) => s.unpeek);
 
   /*
@@ -53,7 +58,12 @@ export default function DashboardNavbar() {
    * and only here, and only while it is hidden. With the rail on screen the
    * rail's own header is the control, and a second one would be noise.
    */
-  const showRailToggle = sidebarMode === "hidden";
+  /*
+   * The icon is the way back in whenever the rail is not open — hidden, the hover preview's
+   * resting state, or the icon rail itself (Q4: a click on the rail no longer opens it, so
+   * without this the mouse would have no way in).
+   */
+  const showRailToggle = sidebarMode !== "open";
 
   /* The right column's only affordance, on screen in both states — a toggle that
      only appears while the panel is closed makes people hunt for it. */
@@ -149,7 +159,7 @@ export default function DashboardNavbar() {
         {showRailToggle && (
           <div className="group/expand relative flex h-12 shrink-0 items-center justify-center">
             <Tooltip
-              label="Expand sidebar"
+              label={sidebarMode === "hover" ? "Keep open" : "Expand sidebar"}
               highlight={isMac ? "⌘B" : "Ctrl B"}
               side="bottom"
               shape="solid"
@@ -166,7 +176,10 @@ export default function DashboardNavbar() {
                 onBlur={() => unpeek()}
                 onClick={(event) => {
                   event.stopPropagation();
-                  toggleHidden();
+                  /* B5: hovering previewed it, so the click pins what the reader is looking
+                     at instead of collapsing it. */
+                  if (sidebarMode === "hover") openFromPreview();
+                  else toggleHidden();
                 }}
                 aria-label="Expand sidebar"
                 className="
@@ -184,10 +197,15 @@ export default function DashboardNavbar() {
                   className="transition-all duration-150 group-hover:opacity-0 group-focus-within:opacity-0"
                 />
 
-                {/* Hover hint, hidden normally, visible on hover: a pointer when
-                the rail opens by hovering, an arrow when it opens on click. */}
+                {/* Hover hint, hidden normally, visible on hover: a crossed-out pointer
+                    when the rail opens by hovering, an arrow when it opens on click — the
+                    same two icons the rail's own header uses, so the two ends agree. */}
                 <HugeiconsIcon
-                  icon={PanelLeftIcon}
+                  icon={
+                    sidebarMode === "hover"
+                      ? MousePointerOff01Icon
+                      : LayoutAlignLeftIcon
+                  }
                   size={18}
                   strokeWidth={1.8}
                   className="absolute text-(--text-muted) opacity-0 scale-75 transition-all duration-150 group-hover:scale-100 group-hover:opacity-100 group-hover:text-(--text-primary) group-focus-within:scale-100 group-focus-within:opacity-100 group-focus-within:text-(--text-primary) focus:opacity-100"

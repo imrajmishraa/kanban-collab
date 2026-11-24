@@ -115,14 +115,15 @@ describe("computeRail", () => {
     expect(layout.reserved).toBe(RAIL.COLLAPSED);
   });
 
-  it("hover opens at the default width, not at the stored one", () => {
+  it("hover opens at the default width, and reserves nothing", () => {
     /* The pinned rail was dragged to 300; the preview still arrives at DEFAULT — a preview
-       that changes width with the pinned rail is a surprise, not a shortcut. */
+       that changes width with the pinned rail is a surprise, not a shortcut. And it reserves
+       nothing: at rest hover mode is off the page entirely (B1). */
     const open = at({ mode: "hover", hovering: true, width: 300 });
 
     expect(open.hoverOpen).toBe(true);
     expect(open.railWidth).toBe(RAIL.DEFAULT);
-    expect(open.reserved).toBe(RAIL.COLLAPSED);
+    expect(open.reserved).toBe(0);
   });
 
   it("hover is 288 even when the rail is dragged wide", () => {
@@ -131,10 +132,11 @@ describe("computeRail", () => {
     expect(open.railWidth).toBe(288);
   });
 
-  it("hover at rest is the icon rail", () => {
-    expect(at({ mode: "hover", hovering: false }).railWidth).toBe(
-      RAIL.COLLAPSED,
-    );
+  it("hover at rest is off the page — nothing visible, nothing reserved", () => {
+    const rest = at({ mode: "hover", hovering: false });
+
+    expect(rest.railWidth).toBe(0);
+    expect(rest.reserved).toBe(0);
   });
 
   it("hidden is off the page entirely", () => {

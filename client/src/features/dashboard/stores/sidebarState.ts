@@ -55,6 +55,12 @@ interface SidebarState {
   hide: () => void;
   /** The navbar toggle: hidden → whatever was visible, otherwise → collapsed. */
   toggleHidden: () => void;
+  /**
+   * B5: a click while the preview is open pins it. Today the click ran `toggleHidden`, which
+   * in hover mode collapsed the rail — the opposite of what a click on something you are
+   * looking at should do.
+   */
+  openFromPreview: () => void;
   /** ⌘B: open ↔ hidden, nothing in between. */
   toggleOpenHidden: () => void;
   /**
@@ -140,6 +146,15 @@ export const useSidebarState = create<SidebarState>()(
       unpeek: () => {
         if (get().mode !== "hover") return;
         set({ mode: "hidden", hovering: false });
+      },
+
+      openFromPreview: () => {
+        set({
+          mode: "open",
+          collapsed: false,
+          hovering: false,
+          lastVisible: "open",
+        });
       },
 
       toggleOpenHidden: () => {
