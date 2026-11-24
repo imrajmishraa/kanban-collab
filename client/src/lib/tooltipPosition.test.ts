@@ -168,6 +168,73 @@ describe("computePlacement", () => {
     expect(p.left + caretLeft).toBeCloseTo(cx, 0);
   });
 
+  it("keeps the caret inside a bubble clamped at the edge", () => {
+    /* Anchor hard against the right edge: the bubble is clamped, the caret must stay
+       inside the rounded corner rather than hanging off it. */
+    const edge = {
+      left: 1190,
+      right: 1200,
+      top: 300,
+      bottom: 340,
+      width: 10,
+      height: 40,
+    };
+    const p = computePlacement({
+      anchor: edge,
+      bubble,
+      viewport,
+      side: "bottom",
+      align: "center",
+    });
+
+    const caret = p.arrow.left ?? 0;
+    expect(caret).toBeGreaterThanOrEqual(4);
+    expect(caret).toBeLessThanOrEqual(bubble.width - 4);
+  });
+
+  it("follows the caller's fallback order, not the roomiest side", () => {
+    /* Nothing fits the requested side; top is roomiest but the caller asked for right first. */
+    const tall = { width: 120, height: 400 };
+    const p = computePlacement({
+      anchor,
+      bubble: tall,
+      viewport,
+      side: "top",
+      align: "center",
+      fallbackSides: ["right", "bottom"],
+    });
+
+    expect(p.side).toBe("right");
+  });
+
+  it("clamps inside a boundary instead of the window", () => {
+    /* A modal that starts at x=300 and is 400 wide: the bubble must stay inside it. */
+    const p = computePlacement({
+      anchor,
+      bubble,
+      viewport,
+      side: "bottom",
+      align: "center",
+      boundary: { top: 0, left: 300, width: 400, height: 600 },
+    });
+
+    expect(p.left).toBeGreaterThanOrEqual(300 + MARGIN);
+    expect(p.left + bubble.width).toBeLessThanOrEqual(300 + 400);
+  });
+
+  it("mirrors left and right on an RTL page", () => {
+    const p = computePlacement({
+      anchor,
+      bubble,
+      viewport,
+      side: "left",
+      align: "center",
+      rtl: true,
+    });
+
+    expect(p.side).toBe("right");
+  });
+
   it("reports a flip", () => {
     const low = { ...anchor, top: 780, bottom: 800 };
     const p = computePlacement({

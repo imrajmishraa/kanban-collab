@@ -17,12 +17,18 @@ export function useTooltipPosition(
   gap = DEFAULT_GAP,
   followCursor?: boolean | "x" | "y",
   offset: { x?: number; y?: number } = {},
+  extras: {
+    fallbackSides?: Side[];
+    boundaryRef?: React.RefObject<HTMLElement | null>;
+  } = {},
 ) {
   /* `offset` is an object literal at every call site, so depending on it directly would
      rebuild `place` on every render. The values are what matter. */
   const offsetRef = useRef(offset);
+  const extrasRef = useRef(extras);
   useEffect(() => {
     offsetRef.current = offset;
+    extrasRef.current = extras;
   });
   const [pos, setPos] = useState<PlacementState | null>(null);
   const [placed, setPlaced] = useState(false);
@@ -81,6 +87,13 @@ export function useTooltipPosition(
       align,
       gap,
       offset: offsetRef.current,
+      fallbackSides: extrasRef.current.fallbackSides,
+      /* The bubble is clamped inside the boundary element when one is given, and inside the
+         window otherwise. */
+      boundary: extrasRef.current.boundaryRef?.current?.getBoundingClientRect(),
+      rtl:
+        typeof document !== "undefined" &&
+        getComputedStyle(document.documentElement).direction === "rtl",
     });
 
     setPos({

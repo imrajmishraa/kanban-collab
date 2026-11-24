@@ -14,15 +14,18 @@ import { cn } from "@/utils/cn";
 import type { TooltipProps } from "./types";
 import { useTooltipPosition } from "./useTooltip";
 import { TooltipContent } from "./TooltipContent";
-import { EXIT_MS } from "./constants";
+import { EXIT_MS, SHAPE_GAP } from "./constants";
+import { shortcutKeys } from "@/lib/shortcutKeys";
 import { useTooltipGroup } from "./useTooltipGroup";
 import {
   claimTooltip,
   onClosedByOther,
+  onScrollHide,
   onSuppressionChange,
   releaseTooltip,
   tooltipsSuppressed,
   watchDrags,
+  watchScrolls,
 } from "@/lib/tooltipBus";
 
 const canHover =
@@ -63,8 +66,17 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
     autoHide,
     maxLines,
     trigger: triggerMode = "hover",
+    descriptionTone,
     labelledBy = false,
     asChild = false,
+    icon,
+    loading,
+    avatar,
+    highlightAnchor = false,
+    copyValue,
+    actions,
+    fallbackSides,
+    boundaryRef,
     open: controlledOpen,
     onOpenChange,
   }: TooltipProps,
@@ -92,15 +104,10 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
   const prefersReducedMotion = () =>
     typeof window !== "undefined" &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  useEffect(() => watchDrags(), []);
-
-  const setOpen = useCallback(
-    (value: boolean) => {
-      if (!isControlled) setInternalOpen(value);
-      onOpenChange?.(value);
-    },
-    [isControlled, onOpenChange],
-  );
+  useEffect(() => {
+    watchDrags();
+    watchScrolls();
+  }, []);
 
   const id = useId();
   const { pos, placed, place, schedulePlace, pointerRef } = useTooltipPosition(
@@ -108,9 +115,14 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
     bubbleRef,
     /* `side` is the old prop; `placement` is the upgrade. */
     placement ?? side ?? "bottom",
-    gap,
+    /* A tab is attached to what it labels, so the normal 8px would leave it floating. */
+    SHAPE_GAP[shape] ?? gap,
     followCursor,
     offset,
+    {
+      fallbackSides,
+      boundaryRef,
+    },
   );
 
   const clearPending = useCallback(() => {
@@ -133,6 +145,14 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
       el.firstElementChild instanceof HTMLElement ? el.firstElementChild : el;
     return target.scrollWidth > target.clientWidth + 1;
   }, []);
+
+  const setOpen = useCallback(
+    (value: boolean) => {
+      if (!isControlled) setInternalOpen(value);
+      onOpenChange?.(value);
+    },
+    [isControlled, onOpenChange],
+  );
 
   const show = useCallback(() => {
     if (disabled) return;
@@ -208,11 +228,14 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
      starts. Both arrive through the bus. */
   useEffect(() => {
     const offClosed = onClosedByOther(tokenRef.current, beginExit);
+    /* A bubble anchored to something scrolling away is worse than no bubble. */
+    const offScroll = onScrollHide(beginExit);
     const offSuppressed = onSuppressionChange(() => {
       if (tooltipsSuppressed()) beginExit();
     });
     return () => {
       offClosed();
+      offScroll();
       offSuppressed();
     };
   }, [beginExit]);
@@ -246,6 +269,81 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
     }),
     [show, hideNow, open],
   );
+
+  const interactiveBubble =
+    interactive || Boolean(actions) || Boolean(copyValue);
+
+  /*
+   * An anchor that leaves the screen — scrolled out of its container, or hidden with
+   * `display:none` — takes its bubble with it. Without this the bubble stays where the
+   * anchor used to be, pointing at nothing.
+   */
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+
+    const observer = new IntersectionObserver((entries) => {
+      const entry = entries[0];
+      if (entry && !entry.isIntersecting) beginExit();
+    });
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [beginExit]);
+
+  /*
+   * The safe polygon (WCAG 1.4.13), as a corridor.
+   *
+   * Moving from the anchor to an interactive bubble, the pointer leaves the anchor before it
+   * reaches the bubble — and the bubble closes in that gap. While one is open and
+   * interactive, the pointer is followed and the close is cancelled as long as it stays
+   * inside the anchor, the bubble, or the band between them.
+   */
+  useEffect(() => {
+    if (!open || !interactiveBubble) return;
+
+    const inside = (el: HTMLElement | null, x: number, y: number, pad = 8) => {
+      if (!el) return false;
+      const r = el.getBoundingClientRect();
+      return (
+        x >= r.left - pad &&
+        x <= r.right + pad &&
+        y >= r.top - pad &&
+        y <= r.bottom + pad
+      );
+    };
+
+    const between = (x: number, y: number) => {
+      const a = wrapRef.current?.getBoundingClientRect();
+      const b = bubbleRef.current?.getBoundingClientRect();
+      if (!a || !b) return false;
+
+      const left = Math.min(a.left, b.left) - 8;
+      const right = Math.max(a.right, b.right) + 8;
+      const top = Math.min(a.top, b.top) - 8;
+      const bottom = Math.max(a.bottom, b.bottom) + 8;
+
+      return x >= left && x <= right && y >= top && y <= bottom;
+    };
+
+    const onMove = (event: PointerEvent) => {
+      const { clientX: x, clientY: y } = event;
+
+      if (
+        inside(wrapRef.current, x, y) ||
+        inside(bubbleRef.current, x, y) ||
+        between(x, y)
+      ) {
+        if (hideTimer.current !== null) {
+          window.clearTimeout(hideTimer.current);
+          hideTimer.current = null;
+        }
+      }
+    };
+
+    window.addEventListener("pointermove", onMove, { passive: true });
+    return () => window.removeEventListener("pointermove", onMove);
+  }, [open, interactiveBubble]);
 
   const trigger = (() => {
     if (disabled || !isValidElement(children)) return children;
@@ -300,6 +398,12 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
    * changes the spacing of everything beside it.
    */
   const triggerProps = {
+    /* Opt-in: an anchor that lights up when its bubble opens is a different look, so it is
+       never on by default. */
+    "data-tooltip-open": highlightAnchor && open ? "true" : undefined,
+    ...(highlightAnchor && open
+      ? { className: "rounded-lg ring-2 ring-(--accent-soft)" }
+      : {}),
     ...hoverProps,
     ...clickProps,
     onMouseMove: (e: React.MouseEvent) => {
@@ -373,11 +477,11 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
            */
           <TooltipContent
             ref={bubbleRef}
-            interactive={interactive}
+            interactive={interactiveBubble}
             id={id}
             label={label}
             description={description}
-            shortcut={shortcut}
+            shortcut={shortcut ? shortcutKeys(shortcut) : undefined}
             highlight={highlight}
             shape={shape}
             tone={tone}
@@ -386,6 +490,12 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
             align={align}
             caret={caret}
             maxLines={maxLines}
+            descriptionTone={descriptionTone}
+            icon={icon}
+            loading={loading}
+            avatar={avatar}
+            copyValue={copyValue}
+            actions={actions}
             bubbleClassName={bubbleClassName}
             pos={pos}
             placed={placed}

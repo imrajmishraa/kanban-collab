@@ -1,11 +1,14 @@
-import { forwardRef, type CSSProperties } from "react";
+import { forwardRef, useState, type CSSProperties } from "react";
+import { announce } from "@/lib/announce";
 import { cn } from "@/utils/cn";
 import type { TooltipProps, PlacementState } from "./types"; // Import PlacementState
 import {
-  SHAPE_CLASS,
+  CARETLESS_SHAPES,
+  shapeClass,
   TONE_CLASS,
   SIZE_CLASS,
   THEME_CLASS,
+  TONE_TEXT_CLASS,
   ARROW_CLASS,
   ENTER_OFFSET,
   ARROW_TONE_CLASS,
@@ -13,6 +16,64 @@ import {
   INVERTED_SHAPES,
   THEME_HIGHLIGHT_CLASS,
 } from "./constants";
+
+/**
+ * Copy, and say so.
+ *
+ * The announcement is the point: the bubble may close before a screen reader could read a
+ * visual change, so `announce()` speaks it instead.
+ */
+function CopyButton({ value }: { value: string }) {
+  const [copied, setCopied] = useState(false);
+
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        void navigator.clipboard?.writeText(value).then(() => {
+          setCopied(true);
+          announce("Copied to clipboard");
+          window.setTimeout(() => setCopied(false), 1500);
+        });
+      }}
+      className="rounded border border-current/25 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wide opacity-80 hover:opacity-100"
+    >
+      {copied ? "copied" : "copy"}
+    </button>
+  );
+}
+
+/** The leading slot: a spinner, an avatar or an icon — nothing when none is asked for. */
+function Leading({
+  icon,
+  loading,
+  avatar,
+}: {
+  icon?: React.ReactNode;
+  loading?: boolean;
+  avatar?: { src: string; alt?: string };
+}) {
+  if (!icon && !loading && !avatar) return null;
+
+  return (
+    <span className="mr-1.5 inline-flex items-center">
+      {loading ? (
+        <span
+          aria-hidden
+          className="size-3 animate-spin rounded-full border border-current border-t-transparent"
+        />
+      ) : avatar ? (
+        <img
+          src={avatar.src}
+          alt={avatar.alt ?? ""}
+          className="size-4 rounded-full object-cover"
+        />
+      ) : (
+        icon
+      )}
+    </span>
+  );
+}
 
 /** `12` → `12px`, `"12rem"` stays as it is. */
 const px = (v: number | string) => (typeof v === "number" ? `${v}px` : v);
@@ -35,6 +96,12 @@ interface TooltipContentProps extends Pick<
   | "width"
   | "maxWidth"
   | "maxLines"
+  | "descriptionTone"
+  | "icon"
+  | "loading"
+  | "avatar"
+  | "actions"
+  | "copyValue"
 > {
   id: string;
   pos: PlacementState | null; // FIXED: Used PlacementState here
@@ -69,6 +136,12 @@ export const TooltipContent = forwardRef<HTMLSpanElement, TooltipContentProps>(
       width,
       maxWidth,
       maxLines,
+      descriptionTone,
+      icon,
+      loading,
+      avatar,
+      actions,
+      copyValue,
       pos,
       placed,
       style,
@@ -118,7 +191,7 @@ export const TooltipContent = forwardRef<HTMLSpanElement, TooltipContentProps>(
           "text-[11px] font-medium tracking-[0.01em]",
           align === "center" && "text-center",
           align === "right" && "text-right",
-          SHAPE_CLASS[shape],
+          shapeClass(shape, pos?.side),
           TONE_CLASS[tone],
           SIZE_CLASS[size],
           THEME_CLASS[theme],
@@ -143,6 +216,7 @@ export const TooltipContent = forwardRef<HTMLSpanElement, TooltipContentProps>(
          */}
         {hasExtras ? (
           <span className="flex items-center gap-2.5">
+            <Leading icon={icon} loading={loading} avatar={avatar} />
             <span className="flex min-w-0 flex-col">
               <span>
                 {label}
@@ -159,7 +233,10 @@ export const TooltipContent = forwardRef<HTMLSpanElement, TooltipContentProps>(
               </span>
               {description && (
                 <span
-                  className="mt-0.5 text-[0.9em] font-normal opacity-65"
+                  className={cn(
+                    "mt-0.5 text-[0.9em] font-normal opacity-65",
+                    descriptionTone && TONE_TEXT_CLASS[descriptionTone],
+                  )}
                   style={
                     maxLines
                       ? {
@@ -201,7 +278,14 @@ export const TooltipContent = forwardRef<HTMLSpanElement, TooltipContentProps>(
           </>
         )}
 
-        {caret !== "none" && !followCursor && (
+        {(copyValue || actions) && (
+          <span className="mt-1.5 flex items-center gap-1.5 border-t border-current/15 pt-1.5">
+            {copyValue && <CopyButton value={copyValue} />}
+            {actions}
+          </span>
+        )}
+
+        {caret !== "none" && !followCursor && !CARETLESS_SHAPES.has(shape) && (
           <span
             aria-hidden
             style={placed && pos ? pos.arrow : undefined}

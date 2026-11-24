@@ -34,6 +34,16 @@ export interface PlacementInput {
   align: Align;
   gap?: number;
   offset?: { x?: number; y?: number };
+  /**
+   * Sides to try after the preferred one, in the caller's order. Without this the roomiest
+   * side wins — which is right by area and wrong by intent (a bubble that belongs above
+   * should go below, not off to the right).
+   */
+  fallbackSides?: Side[];
+  /** Clamp inside this box instead of the viewport — a modal, a scroll container. */
+  boundary?: { top: number; left: number; width: number; height: number };
+  /** Mirror `left` and `right` for a right-to-left page. */
+  rtl?: boolean;
 }
 
 export interface Placement {
@@ -70,6 +80,7 @@ export function chooseSide(
   viewport: Size,
   preferred: Side,
   gap = DEFAULT_GAP,
+  fallbackSides: Side[] = [],
 ): { side: Side; flipped: boolean } {
   const space = sideSpace(anchor, viewport);
 
@@ -77,10 +88,14 @@ export function chooseSide(
   const needed = (side: Side) =>
     (side === "top" || side === "bottom" ? bubble.height : bubble.width) + gap;
 
-  if (space[preferred] >= needed(preferred)) {
-    return { side: preferred, flipped: false };
+  /* The caller's order first: it knows what the bubble is about. */
+  for (const side of [preferred, ...fallbackSides]) {
+    if (space[side] >= needed(side)) {
+      return { side, flipped: side !== preferred };
+    }
   }
 
+  /* Nothing the caller asked for fits: take the roomiest, by area of need. */
   const best = (Object.keys(space) as Side[]).reduce((a, b) =>
     space[b] > space[a] ? b : a,
   );
@@ -88,8 +103,21 @@ export function chooseSide(
   return { side: best, flipped: best !== preferred };
 }
 
+/**
+ * The caret, kept inside the bubble.
+ *
+ * `size - 12` rather than `size - 10`: the caret is 8px wide and rotated, so its corners
+ * reach further than its box. Clamping to the last 10px put a corner outside a rounded
+ * bubble and the tail looked torn.
+ */
+const CARET = 8;
+const CARET_INSET = CARET / 2 + 4;
+
 const clampCaret = (value: number, size: number) =>
-  Math.min(Math.max(value, 2), Math.max(size - 10, 2));
+  Math.min(
+    Math.max(value, CARET_INSET),
+    Math.max(size - CARET_INSET, CARET_INSET),
+  );
 
 export function computePlacement({
   anchor,
@@ -99,14 +127,27 @@ export function computePlacement({
   align,
   gap = DEFAULT_GAP,
   offset = {},
+  fallbackSides,
+  boundary,
+  rtl = false,
 }: PlacementInput): Placement {
-  const { side, flipped } = chooseSide(
+  const { side: chosen, flipped } = chooseSide(
     anchor,
     bubble,
     viewport,
     preferred,
     gap,
+    fallbackSides,
   );
+
+  /* On an RTL page the anchor's "left" is the reader's "right": mirror the side. */
+  const side: Side = !rtl
+    ? chosen
+    : chosen === "left"
+      ? "right"
+      : chosen === "right"
+        ? "left"
+        : chosen;
 
   const cx = anchor.left + anchor.width / 2;
   const cy = anchor.top + anchor.height / 2;
@@ -128,22 +169,32 @@ export function computePlacement({
     top = cy - bubble.height / 2;
   }
 
-  if (align === "left") left = anchor.left;
-  else if (align === "right") left = anchor.right - bubble.width;
+  const startAlign = rtl ? "right" : "left";
+  const endAlign = rtl ? "left" : "right";
+
+  if (align === "left") left = anchor[startAlign];
+  else if (align === "right") left = anchor[endAlign] - bubble.width;
 
   /* `offset` nudges after the side and the alignment are settled, so it cannot fight the
      flip: it is a fine-tune, not a placement. */
   left += offset.x ?? 0;
   top += offset.y ?? 0;
 
-  left = Math.min(
-    Math.max(left, MARGIN),
-    Math.max(viewport.width - bubble.width - MARGIN, MARGIN),
+  /* Clamped inside the boundary — the viewport by default, a modal when one is given. */
+  const box = boundary ?? { top: 0, left: 0, ...viewport };
+  const minLeft = box.left + MARGIN;
+  const minTop = box.top + MARGIN;
+  const maxLeft = Math.max(
+    box.left + box.width - bubble.width - MARGIN,
+    minLeft,
   );
-  top = Math.min(
-    Math.max(top, MARGIN),
-    Math.max(viewport.height - bubble.height - MARGIN, MARGIN),
+  const maxTop = Math.max(
+    box.top + box.height - bubble.height - MARGIN,
+    minTop,
   );
+
+  left = Math.min(Math.max(left, minLeft), maxLeft);
+  top = Math.min(Math.max(top, minTop), maxTop);
 
   const arrow: Placement["arrow"] =
     side === "bottom"

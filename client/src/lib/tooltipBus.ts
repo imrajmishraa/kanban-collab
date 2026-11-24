@@ -73,6 +73,32 @@ export function onSuppressionChange(listener: () => void): () => void {
   return () => suppressionListeners.delete(listener);
 }
 
+/* ── Scrolling ─────────────────────────────────────────────────────────
+   A bubble anchored to something that is being scrolled away is worse than no bubble: it
+   floats over content it no longer describes. Any scroll closes the open one. Suppression is
+   deliberately *not* used here — a tooltip should still open after the scroll stops. */
+
+const scrollListeners = new Set<() => void>();
+
+export function onScrollHide(listener: () => void): () => void {
+  scrollListeners.add(listener);
+  return () => scrollListeners.delete(listener);
+}
+
+let watchingScroll = false;
+
+export function watchScrolls(): void {
+  if (watchingScroll || typeof window === "undefined") return;
+  watchingScroll = true;
+
+  const onScroll = () => {
+    for (const listener of scrollListeners) listener();
+  };
+
+  /* Capture, because the app scrolls `<main>`, not the document. */
+  window.addEventListener("scroll", onScroll, { capture: true, passive: true });
+}
+
 /* ── The drag flag ─────────────────────────────────────────────────────
    `AppLayout` already sets `data-resizing` on the shell and the dividers set
    `data-dragging` on `body`. Watching those two attributes is the whole integration: no

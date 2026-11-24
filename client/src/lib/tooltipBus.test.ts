@@ -2,6 +2,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   claimTooltip,
+  onScrollHide,
+  watchScrolls,
   onClosedByOther,
   releaseTooltip,
   suppressTooltips,
@@ -50,6 +52,23 @@ describe("one at a time", () => {
     claimTooltip(b);
 
     expect(closeA).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("scrolling", () => {
+  it("tells every listener to close", () => {
+    /* The listener is attached by the watcher, which a mounted tooltip calls once. */
+    watchScrolls();
+
+    const close = vi.fn();
+    const off = onScrollHide(close);
+
+    window.dispatchEvent(new Event("scroll"));
+    expect(close).toHaveBeenCalledTimes(1);
+
+    off();
+    window.dispatchEvent(new Event("scroll"));
+    expect(close).toHaveBeenCalledTimes(1);
   });
 });
 
