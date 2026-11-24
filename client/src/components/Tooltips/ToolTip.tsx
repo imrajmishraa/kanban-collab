@@ -15,6 +15,8 @@ import type { TooltipProps } from "./types";
 import { useTooltipPosition } from "./useTooltip";
 import { TooltipContent } from "./TooltipContent";
 import { EXIT_MS, SHAPE_GAP } from "./constants";
+import { Spotlight } from "./Spotlight";
+import { emitTooltipEvent } from "@/lib/tooltipAnalytics";
 import { shortcutKeys } from "@/lib/shortcutKeys";
 import { useTooltipGroup } from "./useTooltipGroup";
 import {
@@ -77,6 +79,10 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
     actions,
     fallbackSides,
     boundaryRef,
+    trackId,
+    morph = false,
+    magnetic = false,
+    spotlight = false,
     open: controlledOpen,
     onOpenChange,
   }: TooltipProps,
@@ -97,8 +103,13 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
   /* One token per tooltip: the bus uses it to close this bubble when another one opens. */
   const tokenRef = useRef<symbol>(Symbol("tooltip"));
 
+  /* Analytics: when it opened, so the close can report how long it was read. */
+  const openedAt = useRef<number | null>(null);
+
   /* Leaving takes a moment: the bubble stays mounted while it fades, then goes. */
   const [closing, setClosing] = useState(false);
+  /* Where the bubble leans, when `magnetic`. */
+  const [magnet, setMagnet] = useState({ x: 0, y: 0 });
   const exitTimer = useRef<number | null>(null);
 
   const prefersReducedMotion = () =>
@@ -174,6 +185,12 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
     showTimer.current = window.setTimeout(() => {
       showTimer.current = null;
       claimTooltip(tokenRef.current);
+
+      if (trackId) {
+        openedAt.current = Date.now();
+        emitTooltipEvent({ id: trackId, kind: "show" });
+      }
+
       if (exitTimer.current !== null) {
         window.clearTimeout(exitTimer.current);
         exitTimer.current = null;
@@ -181,10 +198,28 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
       setClosing(false);
       setOpen(true);
     }, actualDelay);
-  }, [delay, disabled, open, setOpen, group, truncationOnly, isTruncated]);
+  }, [
+    delay,
+    disabled,
+    open,
+    setOpen,
+    group,
+    truncationOnly,
+    isTruncated,
+    trackId,
+  ]);
 
   /* Every close goes through here, so nothing vanishes abruptly. */
   const beginExit = useCallback(() => {
+    if (openedAt.current !== null) {
+      emitTooltipEvent({
+        id: trackId ?? "tooltip",
+        kind: "hide",
+        ms: Date.now() - openedAt.current,
+      });
+      openedAt.current = null;
+    }
+
     clearPending();
     releaseTooltip(tokenRef.current);
 
@@ -201,7 +236,7 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
       setClosing(false);
       setOpen(false);
     }, EXIT_MS);
-  }, [clearPending, setOpen]);
+  }, [clearPending, setOpen, trackId]);
 
   const hideNow = beginExit;
 
@@ -407,6 +442,16 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
     ...hoverProps,
     ...clickProps,
     onMouseMove: (e: React.MouseEvent) => {
+      if (magnetic) {
+        /* A few pixels towards the pointer: enough to feel alive, not enough to drift. */
+        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+        const dx = e.clientX - (rect.left + rect.width / 2);
+        const dy = e.clientY - (rect.top + rect.height / 2);
+        setMagnet({
+          x: Math.max(-6, Math.min(6, dx * 0.15)),
+          y: Math.max(-6, Math.min(6, dy * 0.15)),
+        });
+      }
       if (!followCursor) return;
       if (pointerRef) pointerRef.current = { x: e.clientX, y: e.clientY };
       if (open) schedulePlace();
@@ -466,6 +511,10 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
     >
       {trigger}
 
+      {spotlight && open && !disabled && wrapRef.current
+        ? createPortal(<Spotlight anchorRef={wrapRef} />, document.body)
+        : null}
+
       {(open || closing) &&
         !disabled &&
         createPortal(
@@ -507,6 +556,8 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
             onBubbleEnter={interactive ? show : undefined}
             onBubbleLeave={interactive ? hide : undefined}
             closing={closing}
+            morph={morph}
+            magnet={magnetic ? magnet : undefined}
           />,
           document.body,
         )}

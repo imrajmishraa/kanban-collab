@@ -1,6 +1,8 @@
 export { Tooltip } from "./ToolTip";
 export { TooltipGroup } from "./TooltipGroup";
 export { useTooltipGroup } from "./useTooltipGroup";
+export { useNow } from "@/hooks/useNow";
+export { onTooltipEvent, type TooltipEvent } from "@/lib/tooltipAnalytics";
 export type {
   TooltipProps,
   TooltipShape,

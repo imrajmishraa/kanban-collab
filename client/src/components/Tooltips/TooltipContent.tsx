@@ -112,6 +112,10 @@ interface TooltipContentProps extends Pick<
   interactive?: boolean;
   onBubbleEnter?: () => void;
   onBubbleLeave?: () => void;
+  /** Glide between positions instead of jumping. */
+  morph?: boolean;
+  /** A nudge towards the pointer, when the bubble is magnetic. */
+  magnet?: { x: number; y: number };
   /** Fading out — kept mounted for the exit, then removed. */
   closing?: boolean;
 }
@@ -150,6 +154,8 @@ export const TooltipContent = forwardRef<HTMLSpanElement, TooltipContentProps>(
       onBubbleEnter,
       onBubbleLeave,
       closing,
+      morph,
+      magnet,
     },
     ref,
   ) {
@@ -174,6 +180,8 @@ export const TooltipContent = forwardRef<HTMLSpanElement, TooltipContentProps>(
         onMouseEnter={onBubbleEnter}
         onMouseLeave={onBubbleLeave}
         style={{
+          /* A few pixels towards the pointer, when the bubble is magnetic. */
+          ...(magnet ? { marginLeft: magnet.x, marginTop: magnet.y } : {}),
           /* Main set these on the bubble; the refactor kept the props and dropped the
              styles, so a `maxWidth` bubble wrapped nowhere. */
           ...(width !== undefined && { width: px(width) }),
@@ -195,7 +203,9 @@ export const TooltipContent = forwardRef<HTMLSpanElement, TooltipContentProps>(
           TONE_CLASS[tone],
           SIZE_CLASS[size],
           THEME_CLASS[theme],
-          "transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]",
+          morph
+            ? "transition-[opacity,transform,top,left] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]"
+            : "transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]",
           "motion-reduce:transition-none",
           /* Arriving: from the anchor's side. Leaving: same place, quicker. */
           placed && !closing

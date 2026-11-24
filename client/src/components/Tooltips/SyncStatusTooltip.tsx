@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import { Tooltip } from "@/components/Tooltips/ToolTip";
 import { syncCopy, type SyncState } from "@/lib/kanbanTooltipText";
+import { useNow } from "@/hooks/useNow";
 
 interface BaseProps {
   children: ReactNode;
@@ -17,8 +18,20 @@ export function SyncStatusTooltip({
   children,
   side,
   disabled,
-}: BaseProps & { state: SyncState; savedAt?: Date | string | number }) {
-  const { label, tone, loading, autoHide } = syncCopy(state, savedAt);
+  live = false,
+}: BaseProps & {
+  state: SyncState;
+  savedAt?: Date | string | number;
+  /** Tick the "Saved 30s ago" line while the bubble is open. */
+  live?: boolean;
+}) {
+  /* A clock only where one was asked for: twenty ticking timers is not a feature. */
+  const now = useNow(live ? 1000 : 3_600_000);
+  const { label, tone, loading, autoHide } = syncCopy(
+    state,
+    savedAt,
+    live ? now : undefined,
+  );
 
   return (
     <Tooltip

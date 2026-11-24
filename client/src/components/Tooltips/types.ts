@@ -134,6 +134,14 @@ export interface TooltipProps {
    * Without it a bubble in a dialog can clamp against a window the dialog does not fill.
    */
   boundaryRef?: React.RefObject<HTMLElement | null>;
+  /** A stable name for analytics: "due-date", "sync-status". */
+  trackId?: string;
+  /** Glide to a new position instead of jumping when the anchor moves. */
+  morph?: boolean;
+  /** The bubble leans towards the pointer as it comes close. */
+  magnetic?: boolean;
+  /** Dim the page behind the anchor — an onboarding step. */
+  spotlight?: boolean;
   /** What opens it. `manual` leaves it entirely to `open`. */
   trigger?: "hover" | "focus" | "click" | "manual";
   open?: boolean;
