@@ -8,6 +8,7 @@ import { publicRoutes } from "./routes/public.routes";
 import { authRoutes } from "./routes/auth.routes";
 import { appRoutes } from "./routes/app.routes";
 import { docsRoutes } from "./routes/docs.routes";
+import { devRoutes } from "./routes/dev.routes";
 
 /**
  * The route table is assembled here and nowhere else. Each group lives in its
@@ -20,6 +21,8 @@ const routes: RouteObject[] = [
   ...authRoutes,
   ...docsRoutes,
   ...appRoutes,
+  /* Dev only — empty in a production build. */
+  ...devRoutes,
   {
     path: "/",
     element: <Navigate to="/home" replace />,

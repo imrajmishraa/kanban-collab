@@ -7,7 +7,8 @@ import {
   useEffect,
 } from "react";
 import type { Placement, Side, Align, PlacementState } from "./types";
-import { DEFAULT_GAP, MARGIN, ORIGIN } from "./constants";
+import { DEFAULT_GAP, ORIGIN } from "./constants";
+import { computePlacement } from "@/lib/tooltipPosition";
 
 export function useTooltipPosition(
   anchorRef: React.RefObject<HTMLElement | null>,
@@ -15,7 +16,14 @@ export function useTooltipPosition(
   placement: Placement = "bottom",
   gap = DEFAULT_GAP,
   followCursor?: boolean | "x" | "y",
+  offset: { x?: number; y?: number } = {},
 ) {
+  /* `offset` is an object literal at every call site, so depending on it directly would
+     rebuild `place` on every render. The values are what matter. */
+  const offsetRef = useRef(offset);
+  useEffect(() => {
+    offsetRef.current = offset;
+  });
   const [pos, setPos] = useState<PlacementState | null>(null);
   const [placed, setPlaced] = useState(false);
 
@@ -25,7 +33,10 @@ export function useTooltipPosition(
 
   const parsePlacement = useCallback((): { side: Side; align: Align } => {
     if (placement.includes("-")) {
-      const [side, align] = placement.split("-") as [Side, Align];
+      const [side, raw] = placement.split("-") as [Side, Align];
+      /* `start` / `end` are the RTL-safe spelling of left / right. */
+      const align: Align =
+        raw === "start" ? "left" : raw === "end" ? "right" : raw;
       return { side, align };
     }
     return { side: placement as Side, align: "center" };
@@ -60,68 +71,29 @@ export function useTooltipPosition(
       };
     }
 
-    const bw = bubbleEl.offsetWidth;
-    const bh = bubbleEl.offsetHeight;
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
+    const { side, align } = parsePlacement();
 
-    const { side: prefSide, align } = parsePlacement();
-    const cx = anchor.left + anchor.width / 2;
-    const cy = anchor.top + anchor.height / 2;
-
-    const space: Record<Side, number> = {
-      top: anchor.top,
-      bottom: vh - anchor.bottom,
-      left: anchor.left,
-      right: vw - anchor.right,
-    };
-
-    let s: Side = prefSide;
-    if (space[prefSide] < bh + gap) {
-      s = (Object.keys(space) as Side[]).reduce((a, b) =>
-        space[b] > space[a] ? b : a,
-      );
-    }
-
-    let top;
-    let left;
-
-    if (s === "bottom") {
-      top = anchor.bottom + gap;
-      left = cx - bw / 2;
-    } else if (s === "top") {
-      top = anchor.top - bh - gap;
-      left = cx - bw / 2;
-    } else if (s === "right") {
-      left = anchor.right + gap;
-      top = cy - bh / 2;
-    } else {
-      left = anchor.left - bw - gap;
-      top = cy - bh / 2;
-    }
-
-    if (align === "left") left = anchor.left;
-    else if (align === "right") left = anchor.right - bw;
-
-    left = Math.min(Math.max(left, MARGIN), Math.max(vw - bw - MARGIN, MARGIN));
-    top = Math.min(Math.max(top, MARGIN), Math.max(vh - bh - MARGIN, MARGIN));
-
-    const clamp = (v: number, size: number) =>
-      Math.min(Math.max(v, 2), Math.max(size - 10, 2));
-
-    let arrow: React.CSSProperties;
-    if (s === "bottom") arrow = { top: -4, left: clamp(cx - left - 4, bw) };
-    else if (s === "top")
-      arrow = { bottom: -4, left: clamp(cx - left - 4, bw) };
-    else if (s === "right") arrow = { left: -4, top: clamp(cy - top - 4, bh) };
-    else arrow = { right: -4, top: clamp(cy - top - 4, bh) };
+    const placement = computePlacement({
+      anchor,
+      bubble: { width: bubbleEl.offsetWidth, height: bubbleEl.offsetHeight },
+      viewport: { width: window.innerWidth, height: window.innerHeight },
+      side,
+      align,
+      gap,
+      offset: offsetRef.current,
+    });
 
     setPos({
-      side: s,
+      side: placement.side,
       align,
-      style: { top, left, transformOrigin: ORIGIN[s] },
-      arrow,
+      style: {
+        top: placement.top,
+        left: placement.left,
+        transformOrigin: ORIGIN[placement.side],
+      },
+      arrow: placement.arrow as React.CSSProperties,
     });
+
     setPlaced(true);
   }, [anchorRef, bubbleRef, gap, followCursor, parsePlacement]);
 
@@ -145,12 +117,25 @@ export function useTooltipPosition(
       passive: true,
     });
     window.addEventListener("resize", handleReposition);
+
+    /* A `resize` on the window is not the only thing that moves an anchor: the sidebar
+       collapsing, a label growing, a card reflowing. Watch the anchor itself. */
+    const observer =
+      typeof ResizeObserver === "undefined"
+        ? null
+        : new ResizeObserver(() => schedulePlace());
+
+    const anchorEl = anchorRef.current;
+    if (observer && anchorEl) observer.observe(anchorEl);
+
     return () => {
+      observer?.disconnect();
       window.removeEventListener("scroll", handleReposition, { capture: true });
       window.removeEventListener("resize", handleReposition);
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
     };
-  }, [placed, schedulePlace]);
+    /* `anchorRef` is a ref: its identity never changes, so it does not belong here. */
+  }, [placed, schedulePlace, anchorRef]);
 
   return { pos, placed, place, schedulePlace, pointerRef }; // Export pointerRef
 }

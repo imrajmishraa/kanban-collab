@@ -1,6 +1,5 @@
 [
   "boundary:components/sidebar/DashboardNavbar.tsx",
-  "boundary:components/sidebar/DashboardSidebar.tsx",
   "boundary:components/sidebar/SidebarNotifications.tsx",
   "boundary:components/sidebar/mobile/SidebarMobileHeader.tsx",
   "boundary:features/dashboard/components/notifications/NotificationsFeed.tsx",
@@ -25,6 +24,7 @@
   "naming:features/marketing/components/examples/parts.tsx",
   "naming:features/workspaces/components/board-dialogs.tsx",
   "naming:features/workspaces/components/workspace-dialogs.tsx",
+  "orphan:components/Tooltips/index.ts",
   "orphan:components/auth/LiveBoardPreview.tsx",
   "orphan:components/auth/StatBlock.tsx",
   "orphan:components/board/cards/CardDetailModal.tsx",
@@ -57,7 +57,6 @@
   "orphan:types/websocket.ts",
   "shared-in-feature:features/dashboard/components/notifications/NotificationsFeed.tsx",
   "shared-in-feature:features/dashboard/hooks/useNotifications.ts",
-  "shared-in-feature:features/dashboard/stores/sidebarState.ts",
   "shared-in-feature:features/settings/api/notificationPreferencesApi.ts",
   "shared-in-feature:features/settings/hooks/useNotificationPreferences.ts",
   "shared-in-feature:features/workspaces/api/workspaceApi.ts"

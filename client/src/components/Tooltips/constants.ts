@@ -62,6 +62,16 @@ export const ARROW_CLASS: Record<TooltipShape, string> = {
   solid: "border-(--inverse-border) bg-(--inverse-bg)",
 };
 
+/* The caret follows the bubble's tone as well as its shape, or a danger bubble wears a
+   neutral tail. */
+export const ARROW_TONE_CLASS: Record<TooltipTone, string> = {
+  neutral: "",
+  brand: "border-(--accent-soft)",
+  success: "border-(--success)/30",
+  warning: "border-(--warning)/30",
+  danger: "border-(--danger)/30",
+};
+
 export const INVERTED_SHAPES = new Set<TooltipShape>([
   "default",
   "sharp",
@@ -94,3 +104,19 @@ export const SIZE_CLASS: Record<TooltipSize, string> = {
   md: "text-[11px]",
   lg: "text-[13px]",
 };
+
+/**
+ * Which way the bubble arrives from.
+ *
+ * A bubble above its anchor rises into place, so it starts *below* its final position; a
+ * bubble below starts above. The bubble grows out of the anchor instead of appearing on it.
+ */
+export const ENTER_OFFSET: Record<Side, string> = {
+  top: "translate-y-1",
+  bottom: "-translate-y-1",
+  left: "translate-x-1",
+  right: "-translate-x-1",
+};
+
+/** How long the exit takes. Arriving is 200ms; leaving is quicker than arriving. */
+export const EXIT_MS = 120;
