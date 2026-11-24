@@ -23,13 +23,17 @@ export function NavbarSearchIcon() {
         highlight={isMac ? "⌘K" : "Ctrl K"}
         side="bottom"
         shape="solid"
-        size="sm"
+        size="md"
       >
         <button
           type="button"
           onClick={() => openSearch()}
           aria-label="Search"
-          className="relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg hover:bg-(--bg-hover) text-(--text-primary)"
+          className={[
+            "grid size-8 place-items-center rounded-lg",
+            "hover:bg-(--bg-hover) text-(--text-primary)",
+            "focus-visible:outline-2 focus-visible:outline-(--brand)",
+          ].join(" ")}
         >
           <HugeiconsIcon icon={Search01Icon} size={18} strokeWidth={1.6} />
         </button>
@@ -84,7 +88,7 @@ export function NotificationsButton({
       highlight={"N"}
       side="bottom"
       shape="solid"
-      size="sm"
+      size="md"
     >
       <button
         type="button"
@@ -98,8 +102,9 @@ export function NotificationsButton({
               : "Notifications"
         }
         className={[
-          "relative flex h-9 w-9 cursor-pointer items-center justify-center",
-          "rounded-lg hover:bg-(--bg-hover) hover:text-(--text-primary)",
+          "grid size-8 place-items-center rounded-lg",
+          "hover:bg-(--bg-hover) text-(--text-primary)",
+          "focus-visible:outline-2 focus-visible:outline-(--brand)",
           isOpen ? "bg-(--tint-6)" : null,
         ].join(" ")}
       >

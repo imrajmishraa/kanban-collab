@@ -206,9 +206,9 @@ export default function SidebarSearch({ collapsed }: SidebarSearchProps) {
               }}
               aria-label="Find functions"
               aria-expanded={open}
-              className="flex size-9 cursor-pointer items-center justify-center rounded-full text-(--text-muted) transition-colors duration-200 hover:bg-(--bg-hover) hover:text-(--text-primary)"
+              className="flex size-10 cursor-pointer items-center justify-center rounded-lg text-(--text-muted) transition-colors duration-200  hover:text-(--text-primary)"
             >
-              <HugeiconsIcon icon={Search01Icon} size={16} strokeWidth={1.6} />
+              <HugeiconsIcon icon={Search01Icon} size={18} strokeWidth={1.6} />
             </button>
           </Tooltip>
         </div>
@@ -224,14 +224,14 @@ export default function SidebarSearch({ collapsed }: SidebarSearchProps) {
                it, so the box appears to be the thing that grew. */
             open ? "pointer-events-none opacity-0" : "opacity-100",
             open
-              ? "border-(--hairline-strong) bg-(--tint-5)"
-              : "border-(--hairline) bg-(--tint-3) hover:border-(--hairline-strong) hover:bg-(--bg-hover)",
+              ? "border-(--hairline)"
+              : "border-(--hairline-strong) hover:text-(--text-hover)",
           ].join(" ")}
         >
           <HugeiconsIcon
             icon={Search01Icon}
-            size={14}
-            strokeWidth={1.6}
+            size={18}
+            strokeWidth={1.8}
             className="shrink-0 text-(--text-muted) bg-(--primary) transition-colors duration-200 group-hover/find:text-(--text-soft)"
           />
 

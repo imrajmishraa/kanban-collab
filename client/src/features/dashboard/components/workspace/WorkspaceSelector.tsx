@@ -275,7 +275,7 @@ export function WorkspaceSelector({
           aria-expanded={isOpen}
           className={[
             "flex h-8 cursor-pointer items-center gap-2 rounded-lg px-3",
-            "text-[11.5px] tracking-tight",
+            "text-[12px] tracking-tight",
             "transition-colors duration-200",
             isOpen
               ? "bg-(--tint-10) text-(--text-primary)"
@@ -298,8 +298,8 @@ export function WorkspaceSelector({
 
           <HugeiconsIcon
             icon={UnfoldMoreIcon}
-            size={11}
-            strokeWidth={2}
+            size={15}
+            strokeWidth={1.8}
             className={[
               "shrink-0 text-(--text-secondary) transition-transform duration-200",
               isOpen && "",
@@ -344,17 +344,17 @@ export function WorkspaceSelector({
             aria-expanded={isOpen}
             aria-label="Switch workspace"
             className={[
-              "flex size-7 mr-0.5 cursor-pointer items-center justify-center rounded-md",
+              "flex size-8 mr-px cursor-pointer items-center justify-center rounded-md",
               "transition-colors duration-200",
               isOpen
                 ? "bg-(--tint-10) text-(--text-primary)"
-                : "text-(--text-secondary) hover:bg-(--tint-8) hover:text-(--text-primary)",
+                : "text-(--text-secondary) hover:bg-(--bg-hover) hover:text-(--text-primary)",
             ].join(" ")}
           >
             <HugeiconsIcon
               icon={UnfoldMoreIcon}
-              size={13}
-              strokeWidth={2.5}
+              size={16}
+              strokeWidth={1.8}
               className={[
                 "shrink-0 transition-transform duration-200",
                 isOpen && "",
@@ -376,18 +376,18 @@ export function WorkspaceSelector({
                 label="Back to project view"
                 side="bottom"
                 shape="solid"
-                size="sm"
+                size="md"
               >
                 <button
                   type="button"
                   onClick={onClose}
                   aria-label="Back to project view"
-                  className="flex ml-0.5 size-7 cursor-pointer items-center justify-center rounded-md text-(--text-muted) transition-colors duration-200 hover:bg-(--tint-6) hover:text-(--text-primary)"
+                  className="flex ml-0.5 size-8 cursor-pointer items-center justify-center rounded-md text-(--text-muted) transition-colors duration-200 hover:bg-(--bg-hover) hover:text-(--text-primary)"
                 >
                   <HugeiconsIcon
                     icon={Cancel01Icon}
-                    size={13}
-                    strokeWidth={2.5}
+                    size={15}
+                    strokeWidth={1.8}
                   />
                 </button>
               </Tooltip>

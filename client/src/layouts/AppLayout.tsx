@@ -14,6 +14,7 @@ import { NewWorkspaceDialogProvider } from "@/components/dashboard/workspace/cre
 import { useSidebarState } from "@/features/dashboard/stores/sidebarState";
 import { useRailLayout } from "@/features/dashboard";
 import { useRightPanel } from "@/stores/rightPanel";
+import { computePanel } from "@/components/layout/panelMetrics";
 import { useSearchStore } from "@/features/search/stores/searchStore";
 import { useEnsureActiveWorkspace } from "@/hooks/useEnsureActiveWorkspace";
 import { useSyncSavedBoards } from "@/hooks/useSyncSavedBoards";
@@ -41,11 +42,25 @@ export default function AppLayout() {
    */
   const rail = useRailLayout();
   const resizing = useSidebarState((s) => s.resizing);
+  const setResizing = useSidebarState((s) => s.setResizing);
 
   /* Off by default (`stores/rightPanel.ts`), so an existing reader's layout is
      unchanged until they choose a column in Settings → Appearance. The panel
      itself only exists from `lg:` up; below that it renders nothing. */
-  const rightPanelOpen = useRightPanel((s) => s.mode) !== "off";
+  const rightPanelMode = useRightPanel((s) => s.mode);
+  const rightPanelWidth = useRightPanel((s) => s.width);
+  const rightPanelLevel = useRightPanel((s) => s.level);
+  const rightPanelOpen = rightPanelMode !== "off";
+
+  const toggleRightPanel = useRightPanel((s) => s.toggle);
+
+  const panelLayout = computePanel({
+    mode: rightPanelMode,
+    level: rightPanelLevel,
+    width: rightPanelWidth,
+    viewport: typeof window === "undefined" ? 1440 : window.innerWidth,
+    appRailWidth: rail.reserved,
+  });
 
   const searchOpen = useSearchStore((s) => s.open);
   const openSearch = useSearchStore((s) => s.openSearch);
@@ -80,6 +95,36 @@ export default function AppLayout() {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [openSearch]);
+
+  /*
+   * ⌘J / Ctrl+J — the right column, from anywhere.
+   * ⌘⇧J / Ctrl+Shift+J — full width. One modifier apart on purpose: the plain one is
+   * used constantly, the shifted one changes the whole layout.
+   */
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const mod = event.metaKey || event.ctrlKey;
+
+      if (!mod || event.key.toLowerCase() !== "j") return;
+
+      event.preventDefault();
+
+      if (!event.shiftKey) {
+        toggleRightPanel();
+        return;
+      }
+
+      /* Taking the remaining width implies the panel is open. It never touches the
+         rail: the rail keeps its width, and the column takes what is left. */
+      const panel = useRightPanel.getState();
+
+      if (panel.mode === "off") panel.setMode("panel");
+      panel.toggleLevel();
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [toggleRightPanel]);
 
   /*
    * ⌘B / Ctrl+B — collapse or bring the rail back, from anywhere.
@@ -121,41 +166,61 @@ export default function AppLayout() {
           against the viewport — see the note in the reply. */}
       <div
         className="mx-auto min-h-screen w-full max-w-384 bg-(--bg-root) text-(--text-primary)"
-        style={{ "--rail-width": `${rail.reserved}px` } as React.CSSProperties}
+        style={
+          {
+            "--rail-width": `${panelLayout.railReserve ?? rail.reserved}px`,
+            /* The right column, from the same computation it renders with. */
+            "--panel-width": `${panelLayout.reserved}px`,
+          } as React.CSSProperties
+        }
         /* Mid-drag, nothing animates: the rail, the page and the navbar have to
            move together at pointer speed instead of easing behind it. */
         data-resizing={resizing ? "true" : undefined}
       >
         {/* The phone bar lives inside DashboardSidebar now, next to the panel it
             opens — one component owns both, so the flag never has to travel. */}
-        <DashboardSidebar onToggle={toggleSidebar} />
+        <DashboardSidebar
+          onToggle={toggleSidebar}
+          stripped={panelLayout.railStrip === true}
+        />
 
-        <main
-          className={[
-            /* `main` is the app's scroller, not the document, so smooth
+        {/* Full width takes the window: the board is not rendered, so its
+            subscriptions and sockets go with it. */}
+        {panelLayout.pageVisible && (
+          <main
+            className={[
+              /* `main` is the app's scroller, not the document, so smooth
                scrolling has to be declared here for anything that calls
                scrollTo / scrollIntoView inside the shell. */
-            "flex h-dvh flex-col overflow-y-auto scroll-smooth",
-            "transition-[margin-left,margin-right,padding] duration-200 ease-out",
-            "ml-0 pt-14 md:pt-0",
-            /* What the rail reserves, in one variable — the navbar offsets
+              "flex h-dvh flex-col overflow-y-auto scroll-smooth",
+              "transition-[margin-left,margin-right,padding] duration-200 ease-out",
+              "ml-0 pt-12 md:pt-0",
+              /* What the rail reserves, in one variable — the navbar offsets
                against the same one. */
-            "md:ml-(--rail-width)",
-            /* Same 360px the panel reserves (`w-90`), so the board is never
+              "md:ml-(--rail-width)",
+              /* Same 360px the panel reserves (`w-90`), so the board is never
                half-covered. Below `lg` the panel is not rendered and this
                class does nothing. */
-            rightPanelOpen && "lg:mr-90",
-          ].join(" ")}
-        >
-          <DashboardNavbar />
-          <div className="flex-1 mt-12">
-            <Outlet />
-          </div>
-        </main>
+              /* What the column reserves on the right, from the same computation it
+               renders with. Below `lg` it is not rendered and this does nothing. */
+              "lg:mr-(--panel-width)",
+            ].join(" ")}
+          >
+            <DashboardNavbar />
+            <div className="flex-1 mt-12">
+              <Outlet />
+            </div>
+          </main>
+        )}
 
         {rightPanelOpen && (
           <Suspense fallback={null}>
-            <RightPanel />
+            <RightPanel
+              appRailWidth={rail.reserved}
+              sheet={panelLayout.sheet === true}
+              onResizeStart={() => setResizing(true)}
+              onResizeEnd={() => setResizing(false)}
+            />
           </Suspense>
         )}
 

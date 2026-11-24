@@ -5,10 +5,11 @@ import { WorkspaceSelector } from "@/features/dashboard";
 import { useNotifications } from "@/features/dashboard/hooks/useNotifications";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { useSidebarState } from "@/features/dashboard";
+import { useRightPanel } from "@/stores/rightPanel";
 import { NavbarSearchIcon, NotificationsButton } from "@/features/dashboard";
 import { NotificationsPanel } from "@/features/dashboard";
 import { Tooltip } from "@/components/Tooltips/ToolTip";
-import { LayoutLeftIcon } from "@hugeicons/core-free-icons";
+import { PanelLeftIcon, PanelRightIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import KanbanIcon from "@/assets/KanbanIcon";
 
@@ -51,6 +52,11 @@ export default function DashboardNavbar() {
    * rail's own header is the control, and a second one would be noise.
    */
   const showRailToggle = sidebarMode === "hidden";
+
+  /* The right column's only affordance, on screen in both states — a toggle that
+     only appears while the panel is closed makes people hunt for it. */
+  const rightPanelOpen = useRightPanel((state) => state.mode) !== "off";
+  const toggleRightPanel = useRightPanel((state) => state.toggle);
 
   /*
    * With nothing selected there is no workspace to scope the breadcrumb to, so
@@ -126,8 +132,10 @@ export default function DashboardNavbar() {
 
       <header
         className={[
-          "fixed top-0 right-0 z-50 hidden h-14 md:flex",
-          "items-center gap-2 px-5 ",
+          "fixed top-0 right-0 z-50 hidden h-12 md:flex",
+          /* Ends where the right column begins instead of running under it. */
+          "lg:right-(--panel-width)",
+          "items-center gap-1.5 px-3 ",
           "transition-[left,background-color] duration-200",
           "border-b border-(--hairline)",
           /* Same variable the layout reserves, so the navbar follows the rail
@@ -137,7 +145,7 @@ export default function DashboardNavbar() {
         ].join(" ")}
       >
         {showRailToggle && (
-          <div className="group/expand relative flex h-14 shrink-0 items-center justify-center">
+          <div className="group/expand relative flex h-12 shrink-0 items-center justify-center">
             <Tooltip
               label="Expand sidebar"
               highlight={isMac ? "⌘B" : "Ctrl B"}
@@ -171,8 +179,8 @@ export default function DashboardNavbar() {
                 {/* Hover hint, hidden normally, visible on hover: a pointer when
                 the rail opens by hovering, an arrow when it opens on click. */}
                 <HugeiconsIcon
-                  icon={LayoutLeftIcon}
-                  size={16}
+                  icon={PanelLeftIcon}
+                  size={18}
                   strokeWidth={1.8}
                   className="absolute text-(--text-muted) opacity-0 scale-75 transition-all duration-150 group-hover:scale-100 group-hover:opacity-100 group-hover:text-(--text-primary) group-focus-within:scale-100 group-focus-within:opacity-100 group-focus-within:text-(--text-primary) focus:opacity-100"
                 />
@@ -248,6 +256,37 @@ export default function DashboardNavbar() {
               ignoreRef={bellRef}
             />
           </div>
+
+          {/* Only while the panel is closed. Open, the panel's own header carries
+              the same toggle — two of them on screen is the same control twice. */}
+          {!rightPanelOpen && (
+            <Tooltip
+              label="Show panel"
+              highlight={isMac ? "⌘J" : "Ctrl J"}
+              side="bottom"
+              shape="solid"
+              size="md"
+            >
+              <button
+                type="button"
+                onClick={toggleRightPanel}
+                aria-label="Show panel"
+                aria-controls="right-panel"
+                aria-keyshortcuts="Meta+J Control+J"
+                className={[
+                  "grid size-8 place-items-center rounded-lg",
+                  "hover:bg-(--bg-active) text-(--text-primary)",
+                  "focus-visible:outline-2 focus-visible:outline-(--brand)",
+                ].join(" ")}
+              >
+                <HugeiconsIcon
+                  icon={PanelRightIcon}
+                  size={18}
+                  strokeWidth={1.6}
+                />
+              </button>
+            </Tooltip>
+          )}
         </div>
       </header>
     </>
