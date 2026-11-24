@@ -1,391 +1,158 @@
 import {
-  cloneElement,
-  isValidElement,
+  useState,
+  useRef,
   useCallback,
   useEffect,
   useId,
-  useLayoutEffect,
-  useRef,
-  useState,
-  type CSSProperties,
-  type ReactElement,
-  type ReactNode,
+  cloneElement,
+  forwardRef,
+  isValidElement,
+  useImperativeHandle,
 } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/utils/cn";
+import type { TooltipProps } from "./types";
+import { useTooltipPosition } from "./useTooltip";
+import { TooltipContent } from "./TooltipContent";
+import { EXIT_MS, SHAPE_GAP } from "./constants";
+import { Spotlight } from "./Spotlight";
+import { emitTooltipEvent } from "@/lib/tooltipAnalytics";
+import { shortcutKeys } from "@/lib/shortcutKeys";
+import { resolveTriggers } from "@/lib/tooltipTriggers";
+import { useTooltipGroup } from "./useTooltipGroup";
+import {
+  claimTooltip,
+  onClosedByOther,
+  onScrollHide,
+  onSuppressionChange,
+  releaseTooltip,
+  tooltipsSuppressed,
+  watchDrags,
+  watchScrolls,
+} from "@/lib/tooltipBus";
 
-type Side = "top" | "bottom" | "left" | "right";
-type Align = "left" | "center" | "right";
-
-const DEFAULT_GAP = 8; // bubble ↔ anchor
-const MARGIN = 8; // viewport safe area
-
-const ORIGIN: Record<Side, string> = {
-  top: "center bottom",
-  bottom: "center top",
-  left: "right center",
-  right: "left center",
-};
-
-/** Hover-capable devices only, prevents ghost tooltips after taps on touch. */
 const canHover =
   typeof window !== "undefined" &&
   window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 
-/* ── Bubble shapes ───────────────────────────────────────────────
-   Classic five : default · sharp · soft · pill · card
-   Creative set : glass · neon · gradient · ink · outline · terminal · badge
-   Editorial    : solid, the "Toggle side panel" look: black capsule,
-                  white text, soft floating shadow. The timeless one. */
-
-export type TooltipShape =
-  | "default"
-  | "sharp"
-  | "soft"
-  | "pill"
-  | "card"
-  | "glass"
-  | "neon"
-  | "gradient"
-  | "ink"
-  | "outline"
-  | "terminal"
-  | "badge"
-  | "solid";
-
-/* Shape classes merge BEFORE tone/size but AFTER the base fill/text/shadow,
-   so every variant can override the base, and tone can override shape. */
-
-const SHAPE_CLASS: Record<TooltipShape, string> = {
-  /* ChaiUI material rules applied to every bubble:
-     near-black surface, warm hairline (orange-50/15), no shadow.
-     Orange is never a fill, so the "loud" shapes use a cream tint and a
-     hairline instead of an orange background. */
-
-  /* ── Classic five ── */
-  default: "rounded-lg px-2.5 py-1",
-  sharp: "rounded-[3px] px-2.5 py-1",
-  soft: "rounded-xl px-3 py-1.5",
-  pill: "rounded-full px-3.5 py-1",
-  card: "rounded-xl px-3.5 py-2.5",
-
-  /* ── Creative set ── */
-
-  // Frosted: warm white wash over the near-black surface
-  glass: [
-    "rounded-xl px-3 py-1.5",
-    "border-(--hairline-strong) bg-(--tint-6) backdrop-blur-md",
-    "text-(--text-primary)",
-  ].join(" "),
-
-  // Cream ring: the one bubble that carries the highlight accent
-  neon: [
-    "rounded-lg px-3 py-1.5",
-    "border-(--accent-soft) bg-(--accent-soft) text-(--accent)",
-  ].join(" "),
-
-  // Cream wash: solid-looking without being an orange fill
-  gradient: [
-    "rounded-lg px-3 py-1.5 font-medium",
-    "border-(--accent-soft) bg-(--accent-soft) text-(--accent)",
-  ].join(" "),
-
-  // Ink: inverted paper, the only light bubble
-  ink: [
-    "rounded-md px-2.5 py-1",
-    "border-(--hairline) bg-(--bg-root) text-(--text-primary)",
-  ].join(" "),
-
-  // Outline: hairline only
-  outline: [
-    "rounded-md px-2.5 py-1",
-    "border-(--hairline-strong) bg-transparent text-(--text-soft)",
-  ].join(" "),
-
-  // Terminal: mono data label, quiet surface
-  terminal: [
-    "rounded-[4px] px-2.5 py-1",
-    "border-(--hairline) bg-(--bg-card)",
-    "font-mono text-[10px] tracking-wider text-(--text-muted)",
-  ].join(" "),
-
-  // Badge: cream tint pill, text carries the accent
-  badge: [
-    "rounded-full px-3.5 py-1",
-    "border-(--accent-soft) bg-(--accent-soft) text-(--accent) font-medium",
-  ].join(" "),
-
-  /* ── Editorial ── */
-
-  // Solid: the capsule every call site uses. Black, white text, warm hairline,
-  // flat on purpose (ChaiUI cards carry no shadow).
-  solid: [
-    "rounded-[10px] px-3 py-1.5",
-    "border border-(--inverse-border) bg-(--inverse-bg) text-(--inverse-text)",
-  ].join(" "),
-};
-
-/* ── Colour tones, a semantic layer that sits ON TOP of any shape.────
-   Use tone for MEANING (this board is archived, this action deletes),
-   use shape for VOICE (quiet glass vs loud neon). They compose. */
-
-export type TooltipTone =
-  "neutral" | "brand" | "success" | "warning" | "danger";
-
-const TONE_CLASS: Record<TooltipTone, string> = {
-  neutral: "",
-  // Cream, the highlight accent. Never an orange fill.
-  brand: "border-(--accent-soft) text-(--accent)",
-  success: "border-(--success)/30 text-(--success)",
-  warning: "border-(--warning)/30 text-(--warning)",
-  danger: "border-(--danger)/30 text-(--danger)",
-};
-
-/* The little rotated-square tail must match its bubble's fill,
-   or every non-default shape would wear a mismatched arrow. */
-
-const ARROW_CLASS: Record<TooltipShape, string> = {
-  default: "border-(--inverse-border) bg-(--inverse-bg)",
-  sharp: "border-(--inverse-border) bg-(--inverse-bg)",
-  soft: "border-(--inverse-border) bg-(--inverse-bg)",
-  pill: "border-(--inverse-border) bg-(--inverse-bg)",
-  card: "border-(--inverse-border) bg-(--inverse-bg)",
-  glass: "border-(--hairline-strong) bg-(--tint-6)",
-  neon: "border-(--accent-soft) bg-(--accent-soft)",
-  gradient: "border-(--accent-soft) bg-(--accent-soft)",
-  ink: "border-(--hairline) bg-(--bg-root)",
-  outline: "border-(--hairline-strong) bg-transparent",
-  terminal: "border-(--hairline) bg-(--bg-card)",
-  badge: "border-(--accent-soft) bg-(--accent-soft)",
-  solid: "border-(--inverse-border) bg-(--inverse-bg)",
-};
-
-/* These shapes turn their back on the theme, so their text, and their one
-   accent phrase, must invert with the capsule rather than follow the page. */
-const INVERTED_SHAPES: ReadonlySet<TooltipShape> = new Set([
-  "default",
-  "sharp",
-  "soft",
-  "pill",
-  "card",
-  "solid",
-]);
-
-const ARROW_TONE_CLASS: Record<TooltipTone, string> = {
-  neutral: "",
-  brand: "border-(--accent-soft)",
-  success: "border-(--success)/30",
-  warning: "border-(--warning)/30",
-  danger: "border-(--danger)/30",
-};
-
-/* ── Theme: serve the bubble dark or light, whatever the page is doing ──
-   "auto" keeps the old behaviour — the capsule inverts against the page, so it
-   is light on a dark page and dark on a light one. "dark" and "light" pin it to
-   fixed values instead, which is what a permanently white bar needs: a tooltip
-   that flips with the app theme would go dark on white chrome.
-
-   These are fixed colours on purpose. Every token in this system flips with the
-   theme, so none of them can express "always dark". Written as rgb() rather
-   than hex because `check-theme-colors` rejects hex and allows rgb. */
-
-export type TooltipTheme = "auto" | "dark" | "light";
-
-const THEME_CLASS: Record<TooltipTheme, string> = {
-  auto: "",
-  dark: "border-[rgb(58,58,62)] bg-[rgb(20,20,21)] text-[rgb(245,245,245)]",
-  light: "border-[rgb(226,226,226)] bg-[rgb(255,255,255)] text-[rgb(23,23,23)]",
-};
-
-const THEME_ARROW_CLASS: Record<TooltipTheme, string> = {
-  auto: "",
-  dark: "border-[rgb(58,58,62)] bg-[rgb(20,20,21)]",
-  light: "border-[rgb(226,226,226)] bg-[rgb(255,255,255)]",
-};
-
-/* The one accent phrase has to sit on whatever the capsule became: cream on
-   dark, deep amber on light. */
-const THEME_HIGHLIGHT_CLASS: Record<TooltipTheme, string> = {
-  auto: "",
-  dark: "text-[rgb(255,228,180)]",
-  light: "text-[rgb(146,64,14)]",
-};
-
-/* ── Typography scale, the bubble's voice, independent of shape. ── */
-
-export type TooltipSize = "sm" | "md" | "lg";
-
-const SIZE_CLASS: Record<TooltipSize, string> = {
-  sm: "text-[10px]",
-  md: "text-[11px]",
-  lg: "text-[13px]",
-};
-
-interface TooltipProps {
-  /** Bubble content, string, or any node for icon + label combos. */
-  label: ReactNode;
-  /** Preferred side, flips automatically when there's no room. */
-  side?: Side;
-  children: ReactNode;
-  className?: string;
-  /** ms before showing on hover (default 180) */
-  delay?: number;
-  /** grace period before hiding, allows gliding between anchors (default 80) */
-  hideDelay?: number;
-  disabled?: boolean;
-  /** Fixed bubble width (number = px, or any CSS length). Enables wrapping. */
-  width?: number | string;
-  /** Max bubble width. Enables wrapping. */
-  maxWidth?: number | string;
-  /** Fixed bubble height, content centers vertically. */
-  height?: number | string;
-  /** Max bubble height, content clips gracefully. */
-  maxHeight?: number | string;
-  /** Text alignment when the bubble wraps (default: left) */
-  align?: Align;
-  /** Pre-defined bubble shape (default: 'default', the original look) */
-  shape?: TooltipShape;
-  /** Semantic colour layer on top of the shape (default: 'neutral') */
-  tone?: TooltipTone;
-  /**
-   * Which way the bubble is painted. "auto" (default) inverts against the page;
-   * "dark" and "light" pin it, for chrome that does not follow the theme.
-   */
-  theme?: TooltipTheme;
-  /** Typography scale (default: 'md') */
-  size?: TooltipSize;
-  /** Show the arrow tail. 'none' hides it (default: 'auto') */
-  caret?: "auto" | "none";
-  /**
-   * One cream highlight phrase, ChaiUI's signature accent, rendered after the
-   * label. Keep it to a short phrase: it is the only accent in the bubble.
-   */
-  highlight?: ReactNode;
-  /** px between anchor and bubble (default 8) */
-  gap?: number;
-  /**
-   * Extra classes merged into the BUBBLE itself (not the wrapper span).
-   * NOTE: the bubble is portalled to document.body, so it does NOT
-   * inherit styles from `className`, use this for per-usage tweaks.
-   * Merged last, so it overrides everything.
-   */
-  bubbleClassName?: string;
+export interface TooltipHandle {
+  open: () => void;
+  close: () => void;
+  toggle: () => void;
 }
 
-interface Placement {
-  side: Side;
-  style: CSSProperties;
-  arrow: CSSProperties;
-}
-
-const px = (v: number | string) => (typeof v === "number" ? `${v}px` : v);
-
-export function Tooltip({
-  label,
-  side = "bottom",
-  children,
-  className,
-  delay = 180,
-  hideDelay = 80,
-  disabled = false,
-  width,
-  height,
-  maxWidth,
-  maxHeight,
-  align = "left",
-  shape = "default",
-  tone = "neutral",
-  theme = "auto",
-  size = "md",
-  caret = "auto",
-  highlight,
-  gap = DEFAULT_GAP,
-  bubbleClassName,
-}: TooltipProps) {
-  const wrapRef = useRef<HTMLSpanElement>(null);
+export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
+  {
+    label,
+    description,
+    shortcut,
+    children,
+    className,
+    delay = 180,
+    hideDelay = 80,
+    disabled = false,
+    placement,
+    side,
+    align = "left",
+    shape = "default",
+    tone = "neutral",
+    theme = "auto",
+    size = "md",
+    caret = "auto",
+    highlight,
+    gap = 8,
+    bubbleClassName,
+    followCursor = false,
+    interactive = false,
+    offset = {},
+    truncationOnly = false,
+    autoHide,
+    maxLines,
+    trigger: triggerMode = "hover",
+    descriptionTone,
+    labelledBy = false,
+    asChild = false,
+    icon,
+    loading,
+    avatar,
+    highlightAnchor = false,
+    copyValue,
+    actions,
+    fallbackSides,
+    boundaryRef,
+    virtualAnchor,
+    loadContent,
+    topLayer = false,
+    trackId,
+    morph = false,
+    magnetic = false,
+    spotlight = false,
+    open: controlledOpen,
+    onOpenChange,
+  }: TooltipProps,
+  ref,
+) {
+  const wrapRef = useRef<HTMLElement>(null);
   const bubbleRef = useRef<HTMLSpanElement>(null);
   const showTimer = useRef<number | null>(null);
   const hideTimer = useRef<number | null>(null);
   const touchTimer = useRef<number | null>(null);
 
-  const [open, setOpen] = useState(false);
-  const [placed, setPlaced] = useState(false);
-  const [pos, setPos] = useState<Placement | null>(null);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+
+  const group = useTooltipGroup(); // Group context for delay skipping
+
+  const tokenRef = useRef<symbol>(Symbol("tooltip"));
+
+  const openedAt = useRef<number | null>(null);
+
+  const [closing, setClosing] = useState(false);
+  const [pinned, setPinned] = useState(false);
+
+  const [magnet, setMagnet] = useState({ x: 0, y: 0 });
+  const exitTimer = useRef<number | null>(null);
+
+  const prefersReducedMotion = () =>
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  useEffect(() => {
+    watchDrags();
+    watchScrolls();
+  }, []);
+
   const id = useId();
+  const { pos, placed, place, schedulePlace, pointerRef } = useTooltipPosition(
+    wrapRef,
+    bubbleRef,
+    placement ?? side ?? "bottom",
+    SHAPE_GAP[shape] ?? gap,
+    followCursor,
+    offset,
+    {
+      fallbackSides,
+      boundaryRef,
+      virtualAnchor,
+    },
+  );
 
-  const bubbleStyle: CSSProperties = {
-    ...(width !== undefined && { width: px(width) }),
-    ...(maxWidth !== undefined && { maxWidth: px(maxWidth) }),
-    ...(height !== undefined && { height: px(height) }),
-    ...(maxHeight !== undefined && { maxHeight: px(maxHeight) }),
-  };
+  const [loaded, setLoaded] = useState<React.ReactNode>(null);
 
-  /* ── Measure anchor + bubble, pick the best side, clamp to viewport ── */
-  const place = useCallback(() => {
-    if (!wrapRef.current || !bubbleRef.current) return;
+  useEffect(() => {
+    if (!open || !loadContent) return;
 
-    const anchor = wrapRef.current.getBoundingClientRect();
-    const el = bubbleRef.current;
-    const bw = el.offsetWidth;
-    const bh = el.offsetHeight;
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
+    let alive = true;
+    setLoaded(null);
 
-    const cx = anchor.left + anchor.width / 2;
-    const cy = anchor.top + anchor.height / 2;
-
-    const space: Record<Side, number> = {
-      top: anchor.top,
-      bottom: vh - anchor.bottom,
-      left: anchor.left,
-      right: vw - anchor.right,
-    };
-
-    let s: Side = side;
-    if (space[side] < bh + gap) {
-      s = (Object.keys(space) as Side[]).reduce((a, b) =>
-        space[b] > space[a] ? b : a,
-      );
-    }
-
-    let top: number;
-    let left: number;
-    if (s === "bottom") {
-      top = anchor.bottom + gap;
-      left = cx - bw / 2;
-    } else if (s === "top") {
-      top = anchor.top - bh - gap;
-      left = cx - bw / 2;
-    } else if (s === "right") {
-      left = anchor.right + gap;
-      top = cy - bh / 2;
-    } else {
-      left = anchor.left - bw - gap;
-      top = cy - bh / 2;
-    }
-
-    left = Math.min(Math.max(left, MARGIN), Math.max(vw - bw - MARGIN, MARGIN));
-    top = Math.min(Math.max(top, MARGIN), Math.max(vh - bh - MARGIN, MARGIN));
-
-    const clamp = (v: number, size: number) =>
-      Math.min(Math.max(v, 2), Math.max(size - 10, 2));
-
-    let arrow: CSSProperties;
-    if (s === "bottom") arrow = { top: -4, left: clamp(cx - left - 4, bw) };
-    else if (s === "top")
-      arrow = { bottom: -4, left: clamp(cx - left - 4, bw) };
-    else if (s === "right") arrow = { left: -4, top: clamp(cy - top - 4, bh) };
-    else arrow = { right: -4, top: clamp(cy - top - 4, bh) };
-
-    setPos({
-      side: s,
-      style: { top, left, transformOrigin: ORIGIN[s] },
-      arrow,
+    void loadContent().then((content) => {
+      if (alive) setLoaded(content);
     });
-    setPlaced(true);
-  }, [side, gap]);
 
-  /* ── Show / hide choreography ─────────────────────────────────── */
+    return () => {
+      alive = false;
+    };
+  }, [open, loadContent]);
 
   const clearPending = useCallback(() => {
     if (showTimer.current !== null) window.clearTimeout(showTimer.current);
@@ -396,204 +163,423 @@ export function Tooltip({
     touchTimer.current = null;
   }, []);
 
+  const isTruncated = useCallback(() => {
+    const el = wrapRef.current;
+    if (!el) return true;
+    const target =
+      el.firstElementChild instanceof HTMLElement ? el.firstElementChild : el;
+    return target.scrollWidth > target.clientWidth + 1;
+  }, []);
+
+  const setOpen = useCallback(
+    (value: boolean) => {
+      if (!isControlled) setInternalOpen(value);
+      onOpenChange?.(value);
+    },
+    [isControlled, onOpenChange],
+  );
+
+  const showNow = useCallback(() => {
+    if (disabled) return;
+    if (tooltipsSuppressed()) return;
+    if (truncationOnly && !isTruncated()) return;
+
+    if (showTimer.current !== null) {
+      window.clearTimeout(showTimer.current);
+      showTimer.current = null;
+    }
+    if (hideTimer.current !== null) {
+      window.clearTimeout(hideTimer.current);
+      hideTimer.current = null;
+    }
+    if (exitTimer.current !== null) {
+      window.clearTimeout(exitTimer.current);
+      exitTimer.current = null;
+    }
+
+    claimTooltip(tokenRef.current);
+
+    if (trackId) {
+      openedAt.current = Date.now();
+      emitTooltipEvent({ id: trackId, kind: "show" });
+    }
+
+    setClosing(false);
+    setOpen(true);
+  }, [disabled, truncationOnly, isTruncated, trackId, setOpen]);
+
   const show = useCallback(() => {
     if (disabled) return;
+    if (tooltipsSuppressed()) return;
+    if (truncationOnly && !isTruncated()) return;
     if (hideTimer.current !== null) {
       window.clearTimeout(hideTimer.current);
       hideTimer.current = null;
     }
     if (showTimer.current !== null || open) return;
+
+    const isRecentlyClosed = group
+      ? Date.now() - (group.lastClosedAtRef.current ?? 0) < 300
+      : false;
+    const actualDelay = isRecentlyClosed ? 0 : delay;
+
     showTimer.current = window.setTimeout(() => {
       showTimer.current = null;
+      claimTooltip(tokenRef.current);
+
+      if (trackId) {
+        openedAt.current = Date.now();
+        emitTooltipEvent({ id: trackId, kind: "show" });
+      }
+
+      if (exitTimer.current !== null) {
+        window.clearTimeout(exitTimer.current);
+        exitTimer.current = null;
+      }
+      setClosing(false);
       setOpen(true);
-    }, delay);
-  }, [delay, disabled, open]);
+    }, actualDelay);
+  }, [
+    delay,
+    disabled,
+    open,
+    setOpen,
+    group,
+    truncationOnly,
+    isTruncated,
+    trackId,
+  ]);
+
+  const beginExit = useCallback(() => {
+    setPinned(false);
+    if (openedAt.current !== null) {
+      emitTooltipEvent({
+        id: trackId ?? "tooltip",
+        kind: "hide",
+        ms: Date.now() - openedAt.current,
+      });
+      openedAt.current = null;
+    }
+
+    clearPending();
+    releaseTooltip(tokenRef.current);
+
+    if (prefersReducedMotion()) {
+      setOpen(false);
+      return;
+    }
+
+    setClosing(true);
+    if (exitTimer.current !== null) window.clearTimeout(exitTimer.current);
+    exitTimer.current = window.setTimeout(() => {
+      exitTimer.current = null;
+      setClosing(false);
+      setOpen(false);
+    }, EXIT_MS);
+  }, [clearPending, setOpen, trackId]);
+
+  const hideNow = beginExit;
 
   const hide = useCallback(() => {
     if (showTimer.current !== null) {
       window.clearTimeout(showTimer.current);
       showTimer.current = null;
     }
-    if (hideTimer.current !== null) return; // already leaving
+    if (hideTimer.current !== null) return;
     hideTimer.current = window.setTimeout(() => {
       hideTimer.current = null;
-      setOpen(false);
-      setPlaced(false);
+      beginExit();
     }, hideDelay);
-  }, [hideDelay]);
+  }, [hideDelay, beginExit]);
 
-  const hideNow = useCallback(() => {
-    clearPending();
-    setOpen(false);
-    setPlaced(false);
-  }, [clearPending]);
+  useEffect(
+    () => () => {
+      if (exitTimer.current !== null) window.clearTimeout(exitTimer.current);
+    },
+    [],
+  );
+
+  useEffect(() => {
+    const offClosed = onClosedByOther(tokenRef.current, beginExit);
+    const offScroll = onScrollHide(beginExit);
+    const offSuppressed = onSuppressionChange(() => {
+      if (tooltipsSuppressed()) beginExit();
+    });
+    return () => {
+      offClosed();
+      offScroll();
+      offSuppressed();
+    };
+  }, [beginExit]);
 
   useEffect(() => clearPending, [clearPending]);
 
-  /* ── Place before paint, and RE-PLACE on scroll (instead of vanishing) ── */
-  useLayoutEffect(() => {
-    if (open) place();
-  }, [open, place]);
+  useEffect(() => {
+    if (!open || !autoHide) return;
+
+    const timer = window.setTimeout(() => setOpen(false), autoHide);
+    return () => window.clearTimeout(timer);
+  }, [open, autoHide, setOpen]);
 
   useEffect(() => {
-    if (!open) return;
-    let raf: number | null = null;
-    const reposition = () => {
-      if (raf !== null) return;
-      raf = requestAnimationFrame(() => {
-        raf = null;
-        place();
-      });
-    };
-    window.addEventListener("scroll", reposition, {
-      capture: true,
-      passive: true,
-    });
-    window.addEventListener("resize", reposition);
-    return () => {
-      window.removeEventListener("scroll", reposition, { capture: true });
-      window.removeEventListener("resize", reposition);
-      if (raf !== null) cancelAnimationFrame(raf);
-    };
-  }, [open, place]);
+    if (open) place();
+    else {
+      if (group) group.markClosed();
+    }
+  }, [open, place, group]);
 
-  /* ── Accessible trigger: forward aria-describedby to the child ── */
+  useImperativeHandle(
+    ref,
+    () => ({
+      open: () => showNow(),
+      close: () => hideNow(),
+      toggle: () => (open ? hideNow() : showNow()),
+    }),
+    [showNow, hideNow, open],
+  );
+
+  const interactiveBubble =
+    interactive || Boolean(actions) || Boolean(copyValue);
+
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+
+    const observer = new IntersectionObserver((entries) => {
+      const entry = entries[0];
+      if (entry && !entry.isIntersecting) beginExit();
+    });
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [beginExit]);
+
+  useEffect(() => {
+    if (!open || !interactiveBubble) return;
+
+    const inside = (el: HTMLElement | null, x: number, y: number, pad = 8) => {
+      if (!el) return false;
+      const r = el.getBoundingClientRect();
+      return (
+        x >= r.left - pad &&
+        x <= r.right + pad &&
+        y >= r.top - pad &&
+        y <= r.bottom + pad
+      );
+    };
+
+    const between = (x: number, y: number) => {
+      const a = wrapRef.current?.getBoundingClientRect();
+      const b = bubbleRef.current?.getBoundingClientRect();
+      if (!a || !b) return false;
+
+      const left = Math.min(a.left, b.left) - 8;
+      const right = Math.max(a.right, b.right) + 8;
+      const top = Math.min(a.top, b.top) - 8;
+      const bottom = Math.max(a.bottom, b.bottom) + 8;
+
+      return x >= left && x <= right && y >= top && y <= bottom;
+    };
+
+    const onMove = (event: PointerEvent) => {
+      const { clientX: x, clientY: y } = event;
+
+      if (
+        inside(wrapRef.current, x, y) ||
+        inside(bubbleRef.current, x, y) ||
+        between(x, y)
+      ) {
+        if (hideTimer.current !== null) {
+          window.clearTimeout(hideTimer.current);
+          hideTimer.current = null;
+        }
+      }
+    };
+
+    window.addEventListener("pointermove", onMove, { passive: true });
+    return () => window.removeEventListener("pointermove", onMove);
+  }, [open, interactiveBubble]);
+
+  const skeleton = (
+    <span className="flex w-32 flex-col gap-1">
+      <span className="h-2 w-full animate-pulse rounded bg-current/20" />
+      <span className="h-2 w-2/3 animate-pulse rounded bg-current/20" />
+    </span>
+  );
+
   const trigger = (() => {
     if (disabled || !isValidElement(children)) return children;
-    const child = children as ReactElement<{ "aria-describedby"?: string }>;
+    const child = children as React.ReactElement<{
+      "aria-describedby"?: string;
+      "aria-labelledby"?: string;
+    }>;
+    if (import.meta.env.DEV) {
+      const props = child.props as { disabled?: boolean };
+      if (props.disabled) {
+        console.warn(
+          "[Tooltip] The trigger is a disabled element: a disabled button receives no pointer events, so the bubble can only be opened from code.",
+        );
+      }
+    }
+
+    if (labelledBy) {
+      return cloneElement(child, { "aria-labelledby": id });
+    }
+
     const existing = child.props["aria-describedby"];
     return cloneElement(child, {
       "aria-describedby": existing ? `${existing} ${id}` : id,
     });
   })();
 
-  /* Hover handlers only on hover-capable devices, no ghost tooltips on phones */
-  const hoverProps = canHover ? { onMouseEnter: show, onMouseLeave: hide } : {};
+  const triggers = resolveTriggers(triggerMode, canHover);
+  const opensOnHover = triggers.hover;
+  const opensOnClick = triggers.click;
 
-  /* The accent phrase follows whatever the capsule became: a pinned theme wins,
-     otherwise the shape decides, otherwise the page theme. */
-  const highlightClass =
-    theme !== "auto"
-      ? THEME_HIGHLIGHT_CLASS[theme]
-      : INVERTED_SHAPES.has(shape)
-        ? "text-(--inverse-accent)"
-        : "text-(--accent)";
+  const hoverProps = opensOnHover
+    ? {
+        onMouseEnter: show,
+        onMouseLeave: () => {
+          if (!pinned) hide();
+        },
+      }
+    : {};
+
+  const clickProps = opensOnClick
+    ? {
+        onClick: () => {
+          if (pinned) {
+            setPinned(false);
+            hideNow();
+            return;
+          }
+
+          setPinned(true);
+          showNow();
+        },
+      }
+    : {};
+
+  const triggerProps = {
+    "data-tooltip-open": highlightAnchor && open ? "true" : undefined,
+    ...(highlightAnchor && open
+      ? { className: "rounded-lg ring-2 ring-(--accent-soft)" }
+      : {}),
+    ...hoverProps,
+    ...clickProps,
+    onMouseMove: (e: React.MouseEvent) => {
+      if (magnetic) {
+        /* A few pixels towards the pointer: enough to feel alive, not enough to drift. */
+        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+        const dx = e.clientX - (rect.left + rect.width / 2);
+        const dy = e.clientY - (rect.top + rect.height / 2);
+        setMagnet({
+          x: Math.max(-6, Math.min(6, dx * 0.15)),
+          y: Math.max(-6, Math.min(6, dy * 0.15)),
+        });
+      }
+      if (!followCursor) return;
+      if (pointerRef) pointerRef.current = { x: e.clientX, y: e.clientY };
+      if (open) schedulePlace();
+    },
+    onFocus: (e: React.FocusEvent) => {
+      if (
+        e.target instanceof HTMLElement &&
+        e.target.matches(":focus-visible")
+      ) {
+        show();
+      }
+    },
+    onBlur: hide,
+    onKeyDown: (e: React.KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setPinned(false);
+        hideNow();
+      }
+    },
+    onTouchStart: () => {
+      if (disabled || touchTimer.current !== null) return;
+      touchTimer.current = window.setTimeout(() => {
+        touchTimer.current = null;
+        setOpen(true);
+      }, 500);
+    },
+    onTouchMove: () => {
+      clearPending();
+      hideNow();
+    },
+    onTouchEnd: () => {
+      if (touchTimer.current !== null) {
+        window.clearTimeout(touchTimer.current);
+        touchTimer.current = null;
+      }
+      hideNow();
+    },
+    onTouchCancel: () => {
+      clearPending();
+      hideNow();
+    },
+  };
+
+  if (asChild && isValidElement(children)) {
+    const child = children as React.ReactElement<{ className?: string }>;
+    return cloneElement(child, {
+      ref: wrapRef,
+      ...triggerProps,
+      className: cn("relative inline-flex", child.props.className, className),
+    } as never);
+  }
 
   return (
     <span
       ref={wrapRef}
       className={cn("relative inline-flex", className)}
-      {...hoverProps}
-      onFocus={(e) => {
-        if (
-          e.target instanceof HTMLElement &&
-          e.target.matches(":focus-visible")
-        )
-          show();
-      }}
-      onBlur={hide}
-      onKeyDown={(e) => {
-        if (e.key === "Escape") hideNow();
-      }}
-      /* Touch: long-press (500ms) shows, any movement or lift dismisses */
-      onTouchStart={() => {
-        if (disabled) return;
-        if (touchTimer.current !== null) return;
-        touchTimer.current = window.setTimeout(() => {
-          touchTimer.current = null;
-          setOpen(true);
-        }, 500);
-      }}
-      onTouchMove={() => {
-        if (touchTimer.current !== null) {
-          window.clearTimeout(touchTimer.current);
-          touchTimer.current = null;
-        }
-        hideNow();
-      }}
-      onTouchEnd={() => {
-        if (touchTimer.current !== null) {
-          window.clearTimeout(touchTimer.current);
-          touchTimer.current = null;
-        }
-        hideNow();
-      }}
-      onTouchCancel={() => {
-        if (touchTimer.current !== null) {
-          window.clearTimeout(touchTimer.current);
-          touchTimer.current = null;
-        }
-        hideNow();
-      }}
+      {...triggerProps}
     >
       {trigger}
 
-      {open &&
+      {spotlight && open && !disabled && wrapRef.current
+        ? createPortal(<Spotlight anchorRef={wrapRef} />, document.body)
+        : null}
+
+      {(open || closing) &&
         !disabled &&
         createPortal(
-          <span
+          <TooltipContent
             ref={bubbleRef}
+            interactive={interactiveBubble}
             id={id}
-            role="tooltip"
-            style={{
-              ...bubbleStyle,
-              ...(placed && pos ? pos.style : { visibility: "hidden" }),
-            }}
-            className={cn(
-              "pointer-events-none fixed z-999",
-              "max-w-[min(60vw,18rem)] whitespace-normal",
-              height !== undefined && "flex items-center overflow-hidden",
-              maxHeight !== undefined && "overflow-hidden",
-              /* The capsule inverts: light on a dark page, dark on a light one.
-                 Flat, so the inverted hairline and the ink carry the separation. */
-              "border border-(--inverse-border) bg-(--inverse-bg) text-(--inverse-text)",
-              "text-[11px] font-medium tracking-[0.01em]",
-              align === "center" && "text-center",
-              align === "right" && "text-right",
-              /* Shape classes come AFTER the base fill/text/shadow
-                 so creative variants can override all of them;
-                 tone, theme and size then layer on top of shape. */
-              SHAPE_CLASS[shape],
-              TONE_CLASS[tone],
-              SIZE_CLASS[size],
-              /* Last, so a pinned theme beats the shape's own colours. */
-              THEME_CLASS[theme],
-              /* 200ms sits inside ChaiUI's 200 to 300ms band. */
-              "transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]",
-              "motion-reduce:transition-none",
-              placed
-                ? "scale-100 opacity-100"
-                : "scale-[0.96] opacity-0 motion-reduce:scale-100",
-              bubbleClassName,
-            )}
-          >
-            {label}
-            {highlight ? (
-              <span
-                className={cn("ml-1 font-medium capitalize", highlightClass)}
-              >
-                {highlight}
-              </span>
-            ) : null}
-            {caret !== "none" && (
-              <span
-                aria-hidden
-                style={placed ? pos?.arrow : undefined}
-                className={cn(
-                  "absolute size-2 rotate-45 rounded-[3px]",
-                  ARROW_CLASS[shape],
-                  ARROW_TONE_CLASS[tone],
-                  THEME_ARROW_CLASS[theme],
-                  pos?.side === "bottom" && "border-t border-l",
-                  pos?.side === "top" && "border-r border-b",
-                  pos?.side === "right" && "border-b border-l",
-                  pos?.side === "left" && "border-t border-r",
-                )}
-              />
-            )}
-          </span>,
+            label={loaded ?? (loadContent && !loaded ? skeleton : label)}
+            description={description}
+            shortcut={shortcut ? shortcutKeys(shortcut) : undefined}
+            highlight={highlight}
+            shape={shape}
+            tone={tone}
+            theme={theme}
+            size={size}
+            align={align}
+            caret={caret}
+            maxLines={maxLines}
+            descriptionTone={descriptionTone}
+            icon={icon}
+            loading={loading}
+            avatar={avatar}
+            copyValue={copyValue}
+            actions={actions}
+            bubbleClassName={bubbleClassName}
+            pos={pos}
+            placed={placed}
+            style={pos?.style ?? {}}
+            followCursor={!!followCursor}
+            onBubbleEnter={interactive ? show : undefined}
+            onBubbleLeave={interactive ? hide : undefined}
+            closing={closing}
+            topLayer={topLayer}
+            morph={morph}
+            magnet={magnetic ? magnet : undefined}
+          />,
           document.body,
         )}
     </span>
   );
-}
+});

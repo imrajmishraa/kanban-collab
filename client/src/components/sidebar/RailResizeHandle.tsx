@@ -214,11 +214,17 @@ export default function RailResizeHandle({
        the bubble is anchored to the divider itself. `disabled` while dragging:
        a tooltip appearing mid-drag is noise. */
     <Tooltip
-      label={isCollapsed ? "Double-click to hide" : "Drag to resize"}
+      label={"Drag to resize"}
+      description={"Click to hide"}
+      descriptionTone="brand"
       side="right"
-      shape="solid"
+      shape="glass"
       size="md"
-      gap={8}
+      caret="none"
+      trigger={["hover", "click"]}
+      gap={6}
+      maxLines={2}
+      followCursor={"y"}
       disabled={dragging}
       /* `rail-handle` is what `components.css` targets to take the divider off
          the page while a dialog is open — the anchor and the bubble with it. */
