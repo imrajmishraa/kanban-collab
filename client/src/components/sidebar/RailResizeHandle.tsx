@@ -221,6 +221,7 @@ export default function RailResizeHandle({
       shape="glass"
       size="md"
       caret="none"
+      trigger={["hover", "click"]}
       gap={6}
       maxLines={2}
       followCursor={"y"}

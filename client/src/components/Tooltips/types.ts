@@ -1,5 +1,9 @@
 import type { ReactNode, CSSProperties } from "react";
 
+import type { TooltipTrigger } from "@/lib/tooltipTriggers";
+
+export type { TooltipTrigger };
+
 export type Side = "top" | "bottom" | "left" | "right";
 /**
  * `start` / `end` are the RTL-safe spelling of left / right and are what the list asked
@@ -151,8 +155,12 @@ export interface TooltipProps {
   magnetic?: boolean;
   /** Dim the page behind the anchor — an onboarding step. */
   spotlight?: boolean;
-  /** What opens it. `manual` leaves it entirely to `open`. */
-  trigger?: "hover" | "focus" | "click" | "manual";
+  /**
+   * What opens it — one gesture or several. `["hover", "click"]` is the useful pair: hover
+   * gives a preview, click pins it so it survives the pointer leaving. `manual` leaves it
+   * entirely to `open`.
+   */
+  trigger?: TooltipTrigger | TooltipTrigger[];
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }

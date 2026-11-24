@@ -18,6 +18,7 @@ import { EXIT_MS, SHAPE_GAP } from "./constants";
 import { Spotlight } from "./Spotlight";
 import { emitTooltipEvent } from "@/lib/tooltipAnalytics";
 import { shortcutKeys } from "@/lib/shortcutKeys";
+import { resolveTriggers } from "@/lib/tooltipTriggers";
 import { useTooltipGroup } from "./useTooltipGroup";
 import {
   claimTooltip,
@@ -103,15 +104,13 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
 
   const group = useTooltipGroup(); // Group context for delay skipping
 
-  /* One token per tooltip: the bus uses it to close this bubble when another one opens. */
   const tokenRef = useRef<symbol>(Symbol("tooltip"));
 
-  /* Analytics: when it opened, so the close can report how long it was read. */
   const openedAt = useRef<number | null>(null);
 
-  /* Leaving takes a moment: the bubble stays mounted while it fades, then goes. */
   const [closing, setClosing] = useState(false);
-  /* Where the bubble leans, when `magnetic`. */
+  const [pinned, setPinned] = useState(false);
+
   const [magnet, setMagnet] = useState({ x: 0, y: 0 });
   const exitTimer = useRef<number | null>(null);
 
@@ -127,9 +126,7 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
   const { pos, placed, place, schedulePlace, pointerRef } = useTooltipPosition(
     wrapRef,
     bubbleRef,
-    /* `side` is the old prop; `placement` is the upgrade. */
     placement ?? side ?? "bottom",
-    /* A tab is attached to what it labels, so the normal 8px would leave it floating. */
     SHAPE_GAP[shape] ?? gap,
     followCursor,
     offset,
@@ -140,7 +137,6 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
     },
   );
 
-  /* Content that arrives after the bubble is already on screen. */
   const [loaded, setLoaded] = useState<React.ReactNode>(null);
 
   useEffect(() => {
@@ -167,10 +163,6 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
     touchTimer.current = null;
   }, []);
 
-  /*
-   * `truncationOnly` answers a narrower question than hover: is this text actually cut off?
-   * If it is not, the tooltip would only repeat what the reader can already see.
-   */
   const isTruncated = useCallback(() => {
     const el = wrapRef.current;
     if (!el) return true;
@@ -187,9 +179,37 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
     [isControlled, onOpenChange],
   );
 
+  const showNow = useCallback(() => {
+    if (disabled) return;
+    if (tooltipsSuppressed()) return;
+    if (truncationOnly && !isTruncated()) return;
+
+    if (showTimer.current !== null) {
+      window.clearTimeout(showTimer.current);
+      showTimer.current = null;
+    }
+    if (hideTimer.current !== null) {
+      window.clearTimeout(hideTimer.current);
+      hideTimer.current = null;
+    }
+    if (exitTimer.current !== null) {
+      window.clearTimeout(exitTimer.current);
+      exitTimer.current = null;
+    }
+
+    claimTooltip(tokenRef.current);
+
+    if (trackId) {
+      openedAt.current = Date.now();
+      emitTooltipEvent({ id: trackId, kind: "show" });
+    }
+
+    setClosing(false);
+    setOpen(true);
+  }, [disabled, truncationOnly, isTruncated, trackId, setOpen]);
+
   const show = useCallback(() => {
     if (disabled) return;
-    /* Nothing opens while a drag or an open menu owns the pointer. */
     if (tooltipsSuppressed()) return;
     if (truncationOnly && !isTruncated()) return;
     if (hideTimer.current !== null) {
@@ -198,7 +218,6 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
     }
     if (showTimer.current !== null || open) return;
 
-    // Skip delay if another tooltip was recently closed in the group
     const isRecentlyClosed = group
       ? Date.now() - (group.lastClosedAtRef.current ?? 0) < 300
       : false;
@@ -231,8 +250,8 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
     trackId,
   ]);
 
-  /* Every close goes through here, so nothing vanishes abruptly. */
   const beginExit = useCallback(() => {
+    setPinned(false);
     if (openedAt.current !== null) {
       emitTooltipEvent({
         id: trackId ?? "tooltip",
@@ -245,7 +264,6 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
     clearPending();
     releaseTooltip(tokenRef.current);
 
-    /* A reduced-motion reader gets the old behaviour: gone at once. */
     if (prefersReducedMotion()) {
       setOpen(false);
       return;
@@ -281,11 +299,8 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
     [],
   );
 
-  /* Another tooltip opened: this one steps aside, and so does an open one when a drag
-     starts. Both arrive through the bus. */
   useEffect(() => {
     const offClosed = onClosedByOther(tokenRef.current, beginExit);
-    /* A bubble anchored to something scrolling away is worse than no bubble. */
     const offScroll = onScrollHide(beginExit);
     const offSuppressed = onSuppressionChange(() => {
       if (tooltipsSuppressed()) beginExit();
@@ -299,7 +314,6 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
 
   useEffect(() => clearPending, [clearPending]);
 
-  /* `autoHide` closes the bubble on its own — "Copied!", "Saved", a status flash. */
   useEffect(() => {
     if (!open || !autoHide) return;
 
@@ -310,31 +324,23 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
   useEffect(() => {
     if (open) place();
     else {
-      // Mark closed in group context so next tooltip opens instantly
       if (group) group.markClosed();
     }
   }, [open, place, group]);
 
-  /* `ref.open()` / `ref.close()` — for the cases a pointer cannot express: a tour step, a
-     validation message, a "copied" flash triggered by code. */
   useImperativeHandle(
     ref,
     () => ({
-      open: () => show(),
+      open: () => showNow(),
       close: () => hideNow(),
-      toggle: () => (open ? hideNow() : show()),
+      toggle: () => (open ? hideNow() : showNow()),
     }),
-    [show, hideNow, open],
+    [showNow, hideNow, open],
   );
 
   const interactiveBubble =
     interactive || Boolean(actions) || Boolean(copyValue);
 
-  /*
-   * An anchor that leaves the screen — scrolled out of its container, or hidden with
-   * `display:none` — takes its bubble with it. Without this the bubble stays where the
-   * anchor used to be, pointing at nothing.
-   */
   useEffect(() => {
     const el = wrapRef.current;
     if (!el || typeof IntersectionObserver === "undefined") return;
@@ -348,14 +354,6 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
     return () => observer.disconnect();
   }, [beginExit]);
 
-  /*
-   * The safe polygon (WCAG 1.4.13), as a corridor.
-   *
-   * Moving from the anchor to an interactive bubble, the pointer leaves the anchor before it
-   * reaches the bubble — and the bubble closes in that gap. While one is open and
-   * interactive, the pointer is followed and the close is cancelled as long as it stays
-   * inside the anchor, the bubble, or the band between them.
-   */
   useEffect(() => {
     if (!open || !interactiveBubble) return;
 
@@ -425,8 +423,6 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
     }
 
     if (labelledBy) {
-      /* Icon-only buttons: the tooltip *is* the label, so it must be the accessible name
-         rather than a description nobody reads out with the button. */
       return cloneElement(child, { "aria-labelledby": id });
     }
 
@@ -436,34 +432,35 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
     });
   })();
 
-  /*
-   * What opens the bubble. `hover` is the default and the old behaviour; `focus` is for
-   * keyboard-only hints, `click` pins it, and `manual` leaves it entirely to `open`.
-   */
-  const opensOnHover = triggerMode === "hover" && canHover;
-  const opensOnClick = triggerMode === "click";
+  const triggers = resolveTriggers(triggerMode, canHover);
+  const opensOnHover = triggers.hover;
+  const opensOnClick = triggers.click;
 
   const hoverProps = opensOnHover
-    ? { onMouseEnter: show, onMouseLeave: hide }
+    ? {
+        onMouseEnter: show,
+        onMouseLeave: () => {
+          if (!pinned) hide();
+        },
+      }
     : {};
 
   const clickProps = opensOnClick
     ? {
-        onClick: () => (open ? hideNow() : show()),
-        /* A click-tooltip should not also appear on hover, or the click reads as a
-           no-op because it was already open. */
-        onMouseEnter: undefined,
+        onClick: () => {
+          if (pinned) {
+            setPinned(false);
+            hideNow();
+            return;
+          }
+
+          setPinned(true);
+          showNow();
+        },
       }
     : {};
 
-  /*
-   * `asChild` puts these handlers on the child itself instead of on a wrapper span: an
-   * extra span around a button is an extra box in the layout, and inside a flex row it
-   * changes the spacing of everything beside it.
-   */
   const triggerProps = {
-    /* Opt-in: an anchor that lights up when its bubble opens is a different look, so it is
-       never on by default. */
     "data-tooltip-open": highlightAnchor && open ? "true" : undefined,
     ...(highlightAnchor && open
       ? { className: "rounded-lg ring-2 ring-(--accent-soft)" }
@@ -495,7 +492,10 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
     },
     onBlur: hide,
     onKeyDown: (e: React.KeyboardEvent) => {
-      if (e.key === "Escape") hideNow();
+      if (e.key === "Escape") {
+        setPinned(false);
+        hideNow();
+      }
     },
     onTouchStart: () => {
       if (disabled || touchTimer.current !== null) return;
@@ -509,8 +509,6 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
       hideNow();
     },
     onTouchEnd: () => {
-      /* A long press has already opened the bubble by the time the finger lifts; a quick
-         tap is the other half of the toggle. */
       if (touchTimer.current !== null) {
         window.clearTimeout(touchTimer.current);
         touchTimer.current = null;
@@ -547,12 +545,6 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
       {(open || closing) &&
         !disabled &&
         createPortal(
-          /*
-           * The bubble is the portal child, as it was before the refactor. An extra
-           * wrapper span is not harmless: `bubbleRef` then measures the wrapper — a
-           * static, zero-size inline box at the end of `body` — so the flip and clamp
-           * maths work from the wrong rect and the bubble lands in the wrong place.
-           */
           <TooltipContent
             ref={bubbleRef}
             interactive={interactiveBubble}
@@ -579,9 +571,6 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
             placed={placed}
             style={pos?.style ?? {}}
             followCursor={!!followCursor}
-            /* WCAG 1.4.13: content the pointer can reach must stay while it travels
-               there. Without this the bubble vanishes on the way and the text inside it
-               can never be selected. */
             onBubbleEnter={interactive ? show : undefined}
             onBubbleLeave={interactive ? hide : undefined}
             closing={closing}
