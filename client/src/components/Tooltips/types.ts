@@ -134,6 +134,15 @@ export interface TooltipProps {
    * Without it a bubble in a dialog can clamp against a window the dialog does not fill.
    */
   boundaryRef?: React.RefObject<HTMLElement | null>;
+  /**
+   * Position against a point instead of the trigger — a text selection, a chart bar, a step
+   * of a tour that has no element of its own.
+   */
+  virtualAnchor?: { x: number; y: number };
+  /** Content that arrives after the bubble opens: a skeleton, then the real thing. */
+  loadContent?: () => Promise<ReactNode>;
+  /** Render into the browser's top layer with the popover API, where it is supported. */
+  topLayer?: boolean;
   /** A stable name for analytics: "due-date", "sync-status". */
   trackId?: string;
   /** Glide to a new position instead of jumping when the anchor moves. */

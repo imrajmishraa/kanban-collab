@@ -24,3 +24,7 @@ export {
   wipCopy,
   type SyncState,
 } from "@/lib/kanbanTooltipText";
+export { CardPreviewTooltip, type CardPreview } from "./CardPreviewTooltip";
+export { FieldErrorTooltip } from "./FieldErrorTooltip";
+export { TooltipConnector } from "./TooltipConnector";
+export { TooltipTour, type TourStep } from "./TooltipTour";

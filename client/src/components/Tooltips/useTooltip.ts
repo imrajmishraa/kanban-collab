@@ -20,6 +20,7 @@ export function useTooltipPosition(
   extras: {
     fallbackSides?: Side[];
     boundaryRef?: React.RefObject<HTMLElement | null>;
+    virtualAnchor?: { x: number; y: number };
   } = {},
 ) {
   /* `offset` is an object literal at every call site, so depending on it directly would
@@ -53,7 +54,18 @@ export function useTooltipPosition(
     const bubbleEl = bubbleRef.current;
     if (!anchorEl || !bubbleEl) return;
 
-    const el0 = anchorEl.getBoundingClientRect();
+    /* A virtual anchor is a point: no element, no rect, just coordinates. */
+    const virtual = extrasRef.current.virtualAnchor;
+    const el0 = virtual
+      ? {
+          left: virtual.x,
+          right: virtual.x,
+          top: virtual.y,
+          bottom: virtual.y,
+          width: 0,
+          height: 0,
+        }
+      : anchorEl.getBoundingClientRect();
     let anchor = {
       left: el0.left,
       right: el0.right,

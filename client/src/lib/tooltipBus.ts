@@ -85,18 +85,25 @@ export function onScrollHide(listener: () => void): () => void {
   return () => scrollListeners.delete(listener);
 }
 
-let watchingScroll = false;
+/**
+ * Targets already being watched. A `WeakSet` rather than a boolean, so the module can be
+ * pointed at something other than `window` — a test has no `window`, and a future caller
+ * might want to watch one scroll container instead of all of them.
+ */
+const watchedScrollTargets = new WeakSet<EventTarget>();
 
-export function watchScrolls(): void {
-  if (watchingScroll || typeof window === "undefined") return;
-  watchingScroll = true;
+export function watchScrolls(
+  target: EventTarget | null = typeof window === "undefined" ? null : window,
+): void {
+  if (!target || watchedScrollTargets.has(target)) return;
+  watchedScrollTargets.add(target);
 
   const onScroll = () => {
     for (const listener of scrollListeners) listener();
   };
 
   /* Capture, because the app scrolls `<main>`, not the document. */
-  window.addEventListener("scroll", onScroll, { capture: true, passive: true });
+  target.addEventListener("scroll", onScroll, { capture: true, passive: true });
 }
 
 /* ── The drag flag ─────────────────────────────────────────────────────

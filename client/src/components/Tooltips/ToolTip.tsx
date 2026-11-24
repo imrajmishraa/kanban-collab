@@ -79,6 +79,9 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
     actions,
     fallbackSides,
     boundaryRef,
+    virtualAnchor,
+    loadContent,
+    topLayer = false,
     trackId,
     morph = false,
     magnetic = false,
@@ -133,8 +136,27 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
     {
       fallbackSides,
       boundaryRef,
+      virtualAnchor,
     },
   );
+
+  /* Content that arrives after the bubble is already on screen. */
+  const [loaded, setLoaded] = useState<React.ReactNode>(null);
+
+  useEffect(() => {
+    if (!open || !loadContent) return;
+
+    let alive = true;
+    setLoaded(null);
+
+    void loadContent().then((content) => {
+      if (alive) setLoaded(content);
+    });
+
+    return () => {
+      alive = false;
+    };
+  }, [open, loadContent]);
 
   const clearPending = useCallback(() => {
     if (showTimer.current !== null) window.clearTimeout(showTimer.current);
@@ -380,6 +402,13 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
     return () => window.removeEventListener("pointermove", onMove);
   }, [open, interactiveBubble]);
 
+  const skeleton = (
+    <span className="flex w-32 flex-col gap-1">
+      <span className="h-2 w-full animate-pulse rounded bg-current/20" />
+      <span className="h-2 w-2/3 animate-pulse rounded bg-current/20" />
+    </span>
+  );
+
   const trigger = (() => {
     if (disabled || !isValidElement(children)) return children;
     const child = children as React.ReactElement<{
@@ -528,7 +557,7 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
             ref={bubbleRef}
             interactive={interactiveBubble}
             id={id}
-            label={label}
+            label={loaded ?? (loadContent && !loaded ? skeleton : label)}
             description={description}
             shortcut={shortcut ? shortcutKeys(shortcut) : undefined}
             highlight={highlight}
@@ -556,6 +585,7 @@ export const Tooltip = forwardRef<TooltipHandle, TooltipProps>(function Tooltip(
             onBubbleEnter={interactive ? show : undefined}
             onBubbleLeave={interactive ? hide : undefined}
             closing={closing}
+            topLayer={topLayer}
             morph={morph}
             magnet={magnetic ? magnet : undefined}
           />,

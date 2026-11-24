@@ -57,18 +57,34 @@ describe("one at a time", () => {
 
 describe("scrolling", () => {
   it("tells every listener to close", () => {
-    /* The listener is attached by the watcher, which a mounted tooltip calls once. */
-    watchScrolls();
+    /* These suites run in the node environment: there is no `window`, so the watcher is
+       pointed at a plain `EventTarget`. The default is still `window` in the app. */
+    const target = new EventTarget();
+    watchScrolls(target);
 
     const close = vi.fn();
     const off = onScrollHide(close);
 
-    window.dispatchEvent(new Event("scroll"));
+    target.dispatchEvent(new Event("scroll"));
     expect(close).toHaveBeenCalledTimes(1);
 
     off();
-    window.dispatchEvent(new Event("scroll"));
+    target.dispatchEvent(new Event("scroll"));
     expect(close).toHaveBeenCalledTimes(1);
+  });
+
+  it("watches a target once, however often it is asked", () => {
+    const target = new EventTarget();
+    watchScrolls(target);
+    watchScrolls(target);
+
+    const close = vi.fn();
+    const off = onScrollHide(close);
+
+    target.dispatchEvent(new Event("scroll"));
+
+    expect(close).toHaveBeenCalledTimes(1);
+    off();
   });
 });
 

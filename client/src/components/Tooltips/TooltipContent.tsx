@@ -112,6 +112,8 @@ interface TooltipContentProps extends Pick<
   interactive?: boolean;
   onBubbleEnter?: () => void;
   onBubbleLeave?: () => void;
+  /** Render into the top layer with the popover API. */
+  topLayer?: boolean;
   /** Glide between positions instead of jumping. */
   morph?: boolean;
   /** A nudge towards the pointer, when the bubble is magnetic. */
@@ -154,6 +156,7 @@ export const TooltipContent = forwardRef<HTMLSpanElement, TooltipContentProps>(
       onBubbleEnter,
       onBubbleLeave,
       closing,
+      topLayer,
       morph,
       magnet,
     },
@@ -175,6 +178,9 @@ export const TooltipContent = forwardRef<HTMLSpanElement, TooltipContentProps>(
         id={id}
         role="tooltip"
         data-interactive={interactive ? "true" : undefined}
+        /* The popover attribute puts the bubble in the top layer, above every z-index in the
+           app. Supported browsers show it; the others ignore the attribute. */
+        {...(topLayer ? { popover: "manual" as const } : {})}
         data-side={pos?.side}
         data-closing={closing ? "true" : undefined}
         onMouseEnter={onBubbleEnter}
