@@ -70,8 +70,8 @@ const baseArg = args.find((arg) => !arg.startsWith("--"));
 const git = (...argv) =>
   execFileSync("git", argv, { encoding: "utf8" }).trim();
 
-/* Same, with git's stderr swallowed: "HEAD^2 does not exist" is expected on a plain branch,
-   and a fatal line in the CI log reads like a failure that is not one. */
+/* Same, with git's stderr swallowed: an empty range or a shallow clone is expected, and a
+   fatal line in the CI log reads like a failure that is not one. */
 const gitQuiet = (...argv) =>
   execFileSync("git", argv, {
     encoding: "utf8",
@@ -97,29 +97,36 @@ function mergeBase(base) {
   }
 }
 
-function overrideReason() {
+function overrideReason(from) {
   if (process.env.CHANGE_BUDGET_ALLOW === "1") {
     return "CHANGE_BUDGET_ALLOW=1";
   }
 
   /*
-   * A `pull_request` event checks out a **merge commit**, so HEAD's message is
-   * "Merge <sha> into <sha>" and the trailer — which lives on the PR's own commit — is
-   * invisible. That commit is HEAD's second parent, so look there too.
+   * The trailer can be on **any** commit of the pull request. On a `pull_request` event HEAD
+   * is GitHub's merge commit — "Merge <sha> into <sha>" — so HEAD alone finds nothing, and
+   * HEAD^2 finds only the newest commit, which is not where the trailer usually sits. The
+   * whole range is the honest question: "did this pull request declare an exception?"
    */
-  for (const ref of ["HEAD", "HEAD^2"]) {
-    try {
-      const match = /^Change-Budget-Exception:\s*(.+)$/m.exec(
-        gitQuiet("log", "-1", "--pretty=%B", ref),
-      );
+  try {
+    const match = /^Change-Budget-Exception:\s*(.+)$/m.exec(
+      gitQuiet("log", "--pretty=%B", `${from}..HEAD`),
+    );
 
-      if (match) return match[1].trim();
-    } catch {
-      /* Not a merge commit, or a shallow clone: try the next candidate. */
-    }
+    if (match) return match[1].trim();
+  } catch {
+    /* A shallow clone: fall through to HEAD alone. */
   }
 
-  return null;
+  try {
+    const match = /^Change-Budget-Exception:\s*(.+)$/m.exec(
+      gitQuiet("log", "-1", "--pretty=%B"),
+    );
+
+    return match ? match[1].trim() : null;
+  } catch {
+    return null;
+  }
 }
 
 const base = resolveBase();
@@ -193,7 +200,7 @@ if (counted.length > 0 && files <= BUDGET.filesWarn) {
 
 for (const warning of warnings) console.log(`  warn  ${warning}`);
 
-const override = overrideReason();
+const override = overrideReason(from);
 
 if (breaches.length === 0) {
   console.log("  within budget");
