@@ -115,12 +115,20 @@ describe("computeRail", () => {
     expect(layout.reserved).toBe(RAIL.COLLAPSED);
   });
 
-  it("hover opens at the stored width and reserves only the icon rail", () => {
+  it("hover opens at the default width, not at the stored one", () => {
+    /* The pinned rail was dragged to 300; the preview still arrives at DEFAULT — a preview
+       that changes width with the pinned rail is a surprise, not a shortcut. */
     const open = at({ mode: "hover", hovering: true, width: 300 });
 
     expect(open.hoverOpen).toBe(true);
-    expect(open.railWidth).toBe(300);
+    expect(open.railWidth).toBe(RAIL.DEFAULT);
     expect(open.reserved).toBe(RAIL.COLLAPSED);
+  });
+
+  it("hover is 288 even when the rail is dragged wide", () => {
+    const open = at({ mode: "hover", hovering: true, width: RAIL.MAX });
+
+    expect(open.railWidth).toBe(288);
   });
 
   it("hover at rest is the icon rail", () => {

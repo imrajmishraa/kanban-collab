@@ -130,10 +130,10 @@ export interface RailLayout {
 /**
  * The whole state machine, pure.
  *
- * `hover` opens to the stored width — the same width `open` shows — but it is an
- * overlay, so the page keeps reserving only the icon rail and never reflows.
- * Only a drag can take the rail down to MIN. `autoRail` wins over both `open`
- * and `hover`.
+ * `hover` opens to `RAIL.DEFAULT` — not to the stored width. It is a preview, and a preview
+ * that arrives at whatever width the pinned rail was dragged to is a surprise. It is also an
+ * overlay, so the page keeps reserving only the icon rail and never reflows. Only a drag can
+ * take the rail down to MIN. `autoRail` wins over both `open` and `hover`.
  */
 export function computeRail({
   mode,
@@ -170,7 +170,10 @@ export function computeRail({
      `resizing` override is for widths, and "off the page" is not a width. */
   if (hidden) railWidth = 0;
   else if (resizing) railWidth = clamped;
-  else if (hoverOpen || expanded) railWidth = clamped;
+  else if (expanded) railWidth = clamped;
+  /* Hover is a preview at the default width, whatever the pinned rail was dragged to. A
+     reader who dragged the rail to 400 did not ask the overlay to be 400 too. */
+  else if (hoverOpen) railWidth = RAIL.DEFAULT;
   else railWidth = RAIL.COLLAPSED;
 
   /*
