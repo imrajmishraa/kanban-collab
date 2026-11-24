@@ -1,8 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useSidebarState } from "../stores/sidebarState";
 import { useRightPanel } from "@/stores/rightPanel";
 import { computeRail, RAIL, type RailLayout } from "../lib/railMetrics";
+
+/** D3: the rail steps aside for the column above this width. */
+const PANEL_RAIL_LIMIT = 320;
 
 /**
  * The rail's layout for the current viewport.
@@ -32,11 +35,26 @@ export function useRailLayout(): RailLayout {
     if (!panelOpen) return;
 
     const rail = useSidebarState.getState();
-    if (rail.mode !== "hidden" && rail.width > RAIL.DEFAULT) rail.hide();
+    /* D3: above the icon rail's *default* is the rule — 320, not 288. A rail sitting at the
+       default is already the width the board was designed around; anything wider is what
+       leaves the board a sliver. */
+    if (rail.mode !== "hidden" && rail.width > PANEL_RAIL_LIMIT) rail.hide();
   }, [panelOpen]);
 
+  /*
+   * Only a reader-initiated open resets the width. A panel drag can promote `hover` to
+   * `open` as a side effect, and resetting the rail to MIN there was the "rail jumps to 240
+   * when I drag the panel" bug: the mode changed, so the effect fired, and a width the
+   * reader never touched moved.
+   */
+  const previousMode = useRef(mode);
+
   useEffect(() => {
+    const came = previousMode.current;
+    previousMode.current = mode;
+
     if (!panelOpen || mode !== "open") return;
+    if (came !== "hidden" && came !== "collapsed") return;
 
     const rail = useSidebarState.getState();
     if (rail.width > RAIL.MIN) rail.setWidth(RAIL.MIN);

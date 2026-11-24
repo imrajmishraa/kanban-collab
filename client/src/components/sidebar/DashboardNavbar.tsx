@@ -45,6 +45,8 @@ export default function DashboardNavbar() {
 
   const sidebarMode = useSidebarState((s) => s.mode);
   const toggleHidden = useSidebarState((s) => s.toggleHidden);
+  const peek = useSidebarState((s) => s.peek);
+  const unpeek = useSidebarState((s) => s.unpeek);
 
   /*
    * The rail has no way back once it is hidden, so the toggle appears here —
@@ -156,6 +158,12 @@ export default function DashboardNavbar() {
             >
               <button
                 type="button"
+                /* Hidden rail, and the icon is the only thing left of it: hovering previews
+                   it, a click opens it. Leaving puts it back, unless the click already did. */
+                onMouseEnter={() => peek()}
+                onMouseLeave={() => unpeek()}
+                onFocus={() => peek()}
+                onBlur={() => unpeek()}
                 onClick={(event) => {
                   event.stopPropagation();
                   toggleHidden();

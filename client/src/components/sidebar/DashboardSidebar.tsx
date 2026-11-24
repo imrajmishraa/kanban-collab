@@ -254,15 +254,15 @@ export default function DashboardSidebar({
             on the border itself. */}
         {/* Hover mode is a preview, not a size: a drag there would fight the pointer that
             is opening it. The divider is not rendered, so there is nothing to grab. */}
-        {railWidth > 0 && mode !== "hover" && (
+        {/* A2: the divider belongs to a column, not to the icon rail. On 72px there is
+            nothing to grab, so nothing is drawn — a line you cannot drag is a lie. */}
+        {railWidth > RAIL.COLLAPSED && mode !== "hover" && (
           <RailResizeHandle
             renderedWidth={railWidth}
             width={layout.width}
             onWidth={setWidth}
             panelWidth={panelOpen ? panelWidth : undefined}
             onPanelWidth={setPanelWidth}
-            /* Double-click while collapsed: back out at the default width. */
-            onExpand={() => useSidebarState.getState().expand()}
             onHide={hide}
             /* Touching the divider must change nothing: a press that never
                becomes a drag has to be a no-op, or the rail opens the moment you

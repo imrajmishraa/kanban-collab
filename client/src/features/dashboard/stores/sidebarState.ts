@@ -55,6 +55,14 @@ interface SidebarState {
   hide: () => void;
   /** The navbar toggle: hidden → whatever was visible, otherwise → collapsed. */
   toggleHidden: () => void;
+  /** ⌘B: open ↔ hidden, nothing in between. */
+  toggleOpenHidden: () => void;
+  /**
+   * A preview of a hidden rail: hovering its icon shows it as the hover overlay, and
+   * leaving puts it back. A click still opens it properly, so the icon is never a dead end.
+   */
+  peek: () => void;
+  unpeek: () => void;
 
   toggleBoards: () => void;
   openBoards: () => void;
@@ -120,6 +128,31 @@ export const useSidebarState = create<SidebarState>()(
        * reads as a broken shortcut, so collapsed now opens: the three states a
        * reader can be in all answer sensibly, and it is never a dead key.
        */
+      /* Only from hidden: a rail that is already open or collapsed has its own hover
+         behaviour and must not be switched to preview behind the reader's back. */
+      peek: () => {
+        if (get().mode !== "hidden") return;
+        /* `lastVisible` is left alone: it is what a click on the icon should return to,
+           and the preview must not overwrite that with itself. */
+        set({ mode: "hover", hovering: true });
+      },
+
+      unpeek: () => {
+        if (get().mode !== "hover") return;
+        set({ mode: "hidden", hovering: false });
+      },
+
+      toggleOpenHidden: () => {
+        const { mode, lastVisible } = get();
+
+        if (mode === "hidden") {
+          set({ mode: lastVisible, collapsed: false, hovering: false });
+          return;
+        }
+
+        set({ mode: "hidden", collapsed: true, hovering: false });
+      },
+
       toggleHidden: () => {
         const { mode, lastVisible } = get();
 

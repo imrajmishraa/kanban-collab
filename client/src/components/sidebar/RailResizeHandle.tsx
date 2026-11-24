@@ -22,8 +22,6 @@ interface RailResizeHandleProps {
    */
   panelWidth?: number;
   onPanelWidth?: (width: number) => void;
-  /** Double-click while collapsed: come back out at the default width. */
-  onExpand: () => void;
   /** Pulling past the minimum means "get this out of my way". */
   onHide: () => void;
   /** Dragging from hover/collapsed promotes the rail to open. */
@@ -47,7 +45,6 @@ export default function RailResizeHandle({
   panelWidth,
   onPanelWidth,
   onWidth,
-  onExpand,
   onHide,
   onResizeStart,
   onResizeEnd,
@@ -121,11 +118,9 @@ export default function RailResizeHandle({
     const travel = (event.clientX - startX.current) * DRAG_DAMPING;
     const raw = startWidth.current + travel;
 
-    /* A drag resizes; it never collapses and never hides. Those are a click or a keyboard
-       action, so the drag stops dead at MIN instead of snapping into the icon rail. The one
-       promotion left is out of the icon rail: the first move into the expanded range takes
-       it out of collapsed. */
-    if (renderedWidth <= RAIL.COLLAPSED) onExpand();
+    /* A drag resizes; it never collapses, never hides, and never promotes the icon rail.
+       All three are a click or a keyboard action — a divider that turns an icon rail into a
+       column on a stray drag is a divider you cannot aim at. */
 
     /* Magnetic stops: MID, DEFAULT and MAX hold the width for SNAP_TOLERANCE px
        before it moves on, so the drag pauses at each one instead of sliding
@@ -259,13 +254,15 @@ export default function RailResizeHandle({
        a tooltip appearing mid-drag is noise. */
     <Tooltip
       label={"Drag to resize"}
-      highlight={"Click to hide"}
-      maxWidth={130}
-      maxHeight={50}
+      description={"Click to hide"}
+      descriptionTone="brand"
+      followCursor={"y"}
+      autoHide={5000}
       side="right"
-      shape="default"
+      magnetic={true}
+      shape="glass"
       size="md"
-      gap={8}
+      gap={6}
       disabled={dragging}
       /* `rail-handle` is what `components.css` targets to take the divider off
          the page while a dialog is open — the anchor and the bubble with it. */

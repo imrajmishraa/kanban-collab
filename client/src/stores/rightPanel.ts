@@ -45,7 +45,11 @@ export const RIGHT_PANEL_MODES: readonly RightPanelOption[] = [
 ];
 
 /** Off is the default: no existing reader's layout changes on upgrade. */
-export const RIGHT_PANEL_DEFAULT: RightPanelMode = "off";
+/**
+ * E2: the column is on for everyone, and the settings toggle turns it off. It used to be
+ * opt-in; the board is designed around it now.
+ */
+export const RIGHT_PANEL_DEFAULT: RightPanelMode = "panel";
 
 /**
  * A stored value can be anything — a mode from a newer build, a hand-edited
