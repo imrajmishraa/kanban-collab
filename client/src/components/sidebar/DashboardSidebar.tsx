@@ -34,11 +34,18 @@ interface DashboardSidebarProps {
    * The rail is not hidden — a 72px strip stands in for it, one click away.
    */
   stripped?: boolean;
+  /**
+   * The layout spike only: rendered inside an `Allotment` pane, so the pane owns
+   * the position and the width. `fixed` would escape the pane, and the rail's own
+   * divider would fight the sash. Default false keeps `AppLayout` untouched.
+   */
+  embedded?: boolean;
 }
 
 export default function DashboardSidebar({
   onToggle,
   stripped = false,
+  embedded = false,
 }: DashboardSidebarProps) {
   const { user, logout } = useAuth();
   const { boardsOpen, toggleBoards, openBoards } = useSidebarState();
@@ -204,7 +211,7 @@ export default function DashboardSidebar({
         /* A zero-width rail is not "invisible": it needs `overflow-visible`
            for its own panels, so at width 0 it would keep painting them. Take
            it off the page instead of just narrowing it. */
-        hidden={railWidth === 0}
+        hidden={!embedded && railWidth === 0}
         /* A3: a click on the rail no longer opens it. The preview is a glance, not a
            control — and a rail that opens on any click inside it opens by accident. */
         onMouseEnter={onRailEnter}
@@ -219,12 +226,14 @@ export default function DashboardSidebar({
             onRailLeave();
           }
         }}
-        style={{ width: railWidth }}
+        style={{ width: embedded ? "100%" : railWidth }}
         className={[
           /* Visible, not hidden: the rail's own panels are wider than the rail
              and open beside it, over the page. The nav clips itself, so only
              those panels escape. */
-          "fixed left-0 top-0 hidden h-dvh flex-col overflow-visible",
+          embedded
+            ? "relative flex h-full w-full flex-col overflow-hidden"
+            : "fixed left-0 top-0 hidden h-dvh flex-col overflow-visible",
           /* The navbar is z-50 and keeps its collapsed offset, so a rail that
              floats over the page has to sit above it or the two overlap. */
           floating ? "z-60" : "z-40",
@@ -267,7 +276,7 @@ export default function DashboardSidebar({
             is opening it. The divider is not rendered, so there is nothing to grab. */}
         {/* A2: the divider belongs to a column, not to the icon rail. On 72px there is
             nothing to grab, so nothing is drawn — a line you cannot drag is a lie. */}
-        {railWidth > RAIL.COLLAPSED && mode !== "hover" && (
+        {!embedded && railWidth > RAIL.COLLAPSED && mode !== "hover" && (
           <RailResizeHandle
             renderedWidth={railWidth}
             width={layout.width}
