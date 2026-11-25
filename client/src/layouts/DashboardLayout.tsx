@@ -20,6 +20,7 @@ import { useSidebarState } from "@/features/dashboard";
 import {
   panelConfigByDevice,
   percentOf,
+  type PanelConfig,
   type PanelDevice,
 } from "@/lib/panelConfig";
 import { useRightPanel } from "@/stores/rightPanel";
@@ -33,6 +34,9 @@ interface DashboardLayoutProps {
   onSizes?: (sizes: { left: number; centre: number; right: number }) => void;
 }
 
+/** A share of the group at or under this is closed, not narrow. */
+const CLOSED_SHARE = 0.5;
+
 /**
  * The shell's three regions, in one resizable group.
  *
@@ -45,9 +49,9 @@ interface DashboardLayoutProps {
  * window with a pixel floor, the centre has no `defaultSize` and takes the rest.
  * That is what makes a laptop and a 4K monitor the same layout rather than two.
  *
- * The two edges are collapsed, not unmounted, when their store says hidden: a
- * collapsed panel keeps its width for the reopen, and a percentage of the group
- * is meaningless once the panel is gone from the DOM.
+ * A closed edge is *zero wide*, not merely empty: the pane is pinned to a `0%`
+ * ceiling as well as collapsed imperatively, because a method call can be missed
+ * and a zero ceiling cannot. Reopening restores the configured share.
  */
 export default function DashboardLayout({
   device,
@@ -55,6 +59,10 @@ export default function DashboardLayout({
   onSizes,
 }: DashboardLayoutProps) {
   const config = panelConfigByDevice[device];
+  /* Annotated so `defaultSize` stays optional: the literal types from `satisfies`
+     make the `??` fallback unreachable, and TS reads that branch as `never`. */
+  const leftConfig: PanelConfig = config.leftPanel;
+  const rightConfig: PanelConfig = config.rightPanel;
 
   const railMode = useSidebarState((state) => state.mode);
   const setRailWidth = useSidebarState((state) => state.setWidth);
@@ -72,8 +80,8 @@ export default function DashboardLayout({
   /* Percentages, read once for the first paint. The centre is whatever is left,
      which is why the two edges carry a default and it does not. */
   const [defaultLayout] = useState<Layout>(() => {
-    const left = percentOf(config.leftPanel.defaultSize);
-    const right = percentOf(config.rightPanel.defaultSize);
+    const left = percentOf(leftConfig.defaultSize);
+    const right = percentOf(rightConfig.defaultSize);
 
     return {
       leftPanel: left,
@@ -85,22 +93,44 @@ export default function DashboardLayout({
   const railVisible = railMode !== "hidden";
   const panelOpen = panelMode !== "off";
 
+  /* Previous visibility, so a reopen can tell itself apart from a re-render. */
+  const wasRailVisible = useRef(railVisible);
+  const wasPanelOpen = useRef(panelOpen);
+
   /* The stores decide visibility; the group only knows sizes. */
   useEffect(() => {
     const panel = leftRef.current;
     if (!panel) return;
 
-    if (railVisible) panel.expand();
-    else panel.collapse();
-  }, [leftRef, railVisible]);
+    if (railVisible) {
+      /* Coming back from hidden, the rail opens at its configured share rather
+         than at the zero it was collapsed to. */
+      if (!wasRailVisible.current) {
+        panel.expand();
+        panel.resize(leftConfig.defaultSize ?? `${leftConfig.minSize}px`);
+      }
+    } else {
+      panel.collapse();
+    }
+
+    wasRailVisible.current = railVisible;
+  }, [leftConfig.defaultSize, leftConfig.minSize, leftRef, railVisible]);
 
   useEffect(() => {
     const panel = rightRef.current;
     if (!panel) return;
 
-    if (panelOpen) panel.expand();
-    else panel.collapse();
-  }, [panelOpen, rightRef]);
+    if (panelOpen) {
+      if (!wasPanelOpen.current) {
+        panel.expand();
+        panel.resize(rightConfig.defaultSize ?? `${rightConfig.minSize}px`);
+      }
+    } else {
+      panel.collapse();
+    }
+
+    wasPanelOpen.current = panelOpen;
+  }, [panelOpen, rightConfig.defaultSize, rightConfig.minSize, rightRef]);
 
   /**
    * Percentage in, pixels out.
@@ -142,30 +172,71 @@ export default function DashboardLayout({
     else workspace.expand();
   }, [level, panelOpen, workspaceRef]);
 
-  /* ⌘⇧J / Ctrl+Shift+J — the same gesture the app shell already binds. */
+  /*
+   * The shortcuts the app shell binds, repeated here because this page renders
+   * outside `AppLayout`: ⌘B opens/hides the rail, ⌘⇧J toggles `remaining`.
+   *
+   * ⌘B is the rail's second control, not a convenience: a drag stops at the
+   * minimum by design, so the keyboard is how the rail leaves the page.
+   */
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       const mod = event.metaKey || event.ctrlKey;
-      if (!mod || !event.shiftKey || event.key.toLowerCase() !== "j") return;
+      if (!mod) return;
 
-      event.preventDefault();
-      if (!panelOpen) useRightPanel.getState().setMode("panel");
-      toggleLevel();
+      const key = event.key.toLowerCase();
+
+      if (key === "b" && !event.shiftKey) {
+        event.preventDefault();
+        useSidebarState.getState().setMode(railVisible ? "hidden" : "open");
+        return;
+      }
+
+      if (key === "j" && !event.shiftKey) {
+        event.preventDefault();
+        useRightPanel.getState().setMode(panelMode !== "off" ? "off" : "panel");
+        toggleLevel();
+      }
+
+      if (key === "j" && event.shiftKey) {
+        event.preventDefault();
+        if (!panelOpen) useRightPanel.getState().setMode("panel");
+        toggleLevel();
+      }
     };
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [panelOpen, toggleLevel]);
+  }, [panelOpen, panelMode, railVisible, toggleLevel]);
 
   const onLayoutChanged = useCallback(
     (layout: Layout) => {
       report(layout);
 
+      /*
+       * The column's share, first: the store has to agree with the pane.
+       *
+       * Dragging the column to zero *is* closing it — otherwise it slid off screen
+       * while `mode` still said `panel`, and the next render put it back. Half a
+       * percent of tolerance, because a collapsed pane reports 0 and a hairline is
+       * not "open".
+       *
+       * The rail is deliberately not treated this way: it leaves the screen on a
+       * click or a shortcut, never on a drag.
+       */
+      const rightPct = layout.rightPanel ?? 0;
+
+      if (rightPct <= CLOSED_SHARE && panelOpen) {
+        useRightPanel.getState().setMode("off");
+      } else if (rightPct > CLOSED_SHARE && !panelOpen) {
+        useRightPanel.getState().setMode("panel");
+      }
+
       const width = groupEl.current?.clientWidth ?? 0;
       if (!width) return;
 
       const left = Math.round(((layout.leftPanel ?? 0) / 100) * width);
-      const right = Math.round(((layout.rightPanel ?? 0) / 100) * width);
+      const right = Math.round((rightPct / 100) * width);
 
       if (railVisible && left > 0) setRailWidth(left);
       if (panelOpen && right > 0) setPanelWidth(right);
@@ -180,26 +251,24 @@ export default function DashboardLayout({
        */
       if (level !== "normal" || !panelOpen) return;
 
-      const rightShare = layout.rightPanel ?? 0;
       const leftShare = layout.leftPanel ?? 0;
-      const pastRight = rightShare > percentOf(config.rightPanel.maxSize) + 0.5;
+      const pastRight = rightPct > percentOf(rightConfig.maxSize) + 0.5;
       const pastLeft =
-        device === "tablet" &&
-        leftShare > percentOf(config.leftPanel.maxSize) + 0.5;
+        device === "tablet" && leftShare > percentOf(leftConfig.maxSize) + 0.5;
 
       if (pastRight || pastLeft) setLevel("remaining");
     },
     [
-      config.leftPanel.maxSize,
-      config.rightPanel.maxSize,
       device,
       level,
       panelOpen,
+      railVisible,
       report,
+      rightConfig.maxSize,
+      leftConfig.maxSize,
       setLevel,
       setPanelWidth,
       setRailWidth,
-      railVisible,
     ],
   );
 
@@ -215,11 +284,20 @@ export default function DashboardLayout({
         <Panel
           id="leftPanel"
           panelRef={leftRef}
-          defaultSize={config.leftPanel.defaultSize}
-          minSize={config.leftPanel.minSize}
-          maxSize={config.leftPanel.maxSize}
-          collapsible={config.leftPanel.collapsible}
+          defaultSize={leftConfig.defaultSize}
+          /* A closed pane is pinned to zero here as well as collapsed
+             imperatively: `collapse()` is a call that can be missed, a zero
+             ceiling cannot. */
+          minSize={railVisible ? leftConfig.minSize : 0}
+          maxSize={railVisible ? leftConfig.maxSize : "0%"}
+          collapsible={leftConfig.collapsible}
           collapsedSize={0}
+          /* The rail leaves the screen on a click, the navbar button or ⌘B — never
+             on a drag. A drag that can hide the navigation is a drag nobody can
+             aim: pulling past the minimum should stop at the minimum. This is the
+             distance past `minSize` that would collapse the panel, so it is set
+             beyond any window; an explicit `collapse()` still works. */
+          collapsedThreshold={9999}
           className="min-w-0"
         >
           <DashboardSidebar
@@ -260,16 +338,16 @@ export default function DashboardLayout({
             of them as a prop. */}
         <Separator className="w-px shrink-0" />
 
-        {/* The library's own ceiling is 100%, not the config's 55%: the config's
-            number is the threshold that flips into `remaining`, and a hard stop at
-            55% would make that gesture impossible. */}
+        {/* Open: a 100% ceiling, so the overshoot that enters `remaining` is
+            possible. Closed: zero, so the column is off the screen instead of an
+            empty frame at its last width. */}
         <Panel
           id="rightPanel"
           panelRef={rightRef}
-          defaultSize={config.rightPanel.defaultSize}
-          minSize={config.rightPanel.minSize}
-          maxSize="100%"
-          collapsible={config.rightPanel.collapsible}
+          defaultSize={rightConfig.defaultSize}
+          minSize={panelOpen ? rightConfig.minSize : 0}
+          maxSize={panelOpen ? "100%" : "0%"}
+          collapsible={rightConfig.collapsible}
           collapsedSize={0}
           className="min-w-0"
         >
