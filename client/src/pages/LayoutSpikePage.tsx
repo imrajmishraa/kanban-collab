@@ -14,12 +14,7 @@ import { useViewportWidth } from "./layout-spike/useViewportWidth";
 
 /**
  * Dev-only layout spike (`/layout-spike`).
- *
- * Mounts `DashboardLayout` with real sidebar + right panel so settled rules
- * can be tried before AppLayout fully adopts the resizable group.
- *
- * Engine: `react-resizable-panels` (percentage shares + pixel floors).
- * State: `useLayoutShellStore` + existing `sidebarState` / `rightPanel`.
+ * Behaviour must match Layout.md (Grok-style shell).
  */
 export default function LayoutSpikePage() {
   const viewport = useViewportWidth();

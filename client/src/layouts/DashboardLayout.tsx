@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type ReactNode,
@@ -17,33 +18,38 @@ import {
 import RightPanel from "@/components/layout/RightPanel";
 import DashboardSidebar from "@/components/sidebar/DashboardSidebar";
 import { useSidebarState } from "@/features/dashboard";
-import { panelConfigByDevice, type PanelDevice } from "@/lib/panelConfig";
+import {
+  LAYOUT_DEFAULTS_PX,
+  panelConfigByDevice,
+  percentOf,
+  type PanelDevice,
+} from "@/lib/panelConfig";
 import { useRightPanel } from "@/stores/rightPanel";
 import { useLayoutShellStore } from "@/layouts/stores/layoutShellStore";
 
 interface DashboardLayoutProps {
-  /** Which column of the config this viewport is in. */
   device: PanelDevice;
-  /** The workspace — board or page. Takes what the two edges leave. */
   children: ReactNode;
-  /**
-   * Optional pixel sizes callback (spike readout). Prefer the shell store;
-   * this is kept for callers that still pass onSizes.
-   */
   onSizes?: (sizes: { left: number; centre: number; right: number }) => void;
 }
 
+function pxToPercent(
+  px: number,
+  groupWidth: number,
+  minPct: number,
+  maxPct: number,
+): number {
+  if (!groupWidth || px <= 0) return minPct;
+  const pct = (px / groupWidth) * 100;
+  return Math.min(maxPct, Math.max(minPct, pct));
+}
+
 /**
- * The shell's three regions, in one resizable group.
+ * Grok-style three-region shell — see Layout.md.
  *
- *     DashboardLayout
- *     ├── leftPanel     rail / DashboardSidebar
- *     ├── centreLayout  board or page
- *     └── rightPanel    RightPanel
- *
- * Visibility and persisted widths come from `sidebarState` + `rightPanel`.
- * Pixel sizes, resize flag, and layout→store writes go through
- * `useLayoutShellStore`.
+ * Hide = collapse to 0 + hide separator (no icons, no empty pane).
+ * Show = expand + resize to last stored open width.
+ * Constraints stay stable; never persist width 0.
  */
 export default function DashboardLayout({
   device,
@@ -52,22 +58,28 @@ export default function DashboardLayout({
 }: DashboardLayoutProps) {
   const config = panelConfigByDevice[device];
 
-  const railMode = useSidebarState((state) => state.mode);
-  const panelMode = useRightPanel((state) => state.mode);
-  const level = useRightPanel((state) => state.level);
+  const railMode = useSidebarState((s) => s.mode);
+  const railWidth = useSidebarState((s) => s.width);
+  const setRailWidth = useSidebarState((s) => s.setWidth);
+
+  const panelMode = useRightPanel((s) => s.mode);
+  const setPanelWidth = useRightPanel((s) => s.setWidth);
+  const level = useRightPanel((s) => s.level);
+  const setLevel = useRightPanel((s) => s.setLevel);
+  const toggleLevel = useRightPanel((s) => s.toggleLevel);
 
   const setDevice = useLayoutShellStore((s) => s.setDevice);
   const setResizing = useLayoutShellStore((s) => s.setResizing);
-  const applyLayout = useLayoutShellStore((s) => s.applyLayout);
-  const defaultLayoutFor = useLayoutShellStore((s) => s.defaultLayoutFor);
   const setSizes = useLayoutShellStore((s) => s.setSizes);
   const resizing = useLayoutShellStore((s) => s.resizing);
-  const railWidth = useSidebarState((s) => s.width);
 
   const leftRef = usePanelRef();
   const workspaceRef = usePanelRef();
   const rightRef = usePanelRef();
   const groupEl = useRef<HTMLDivElement | null>(null);
+
+  const prevRailVisible = useRef<boolean | null>(null);
+  const prevPanelOpen = useRef<boolean | null>(null);
 
   const railVisible = railMode !== "hidden";
   const panelOpen = panelMode !== "off";
@@ -76,49 +88,99 @@ export default function DashboardLayout({
     setDevice(device);
   }, [device, setDevice]);
 
-  const [defaultLayout] = useState<Layout>(() =>
-    defaultLayoutFor(device, panelOpen),
-  );
+  const [defaultLayout] = useState<Layout>(() => {
+    const left = percentOf(config.leftPanel.defaultSize);
+    const right = percentOf(config.rightPanel.defaultSize);
+    const open = useRightPanel.getState().mode !== "off";
+    const railOn = useSidebarState.getState().mode !== "hidden";
 
-  /* Stores decide visibility; the group only knows sizes. */
-  useEffect(() => {
+    return {
+      leftPanel: railOn ? left : 0,
+      centreLayout: Math.max(0, 100 - (railOn ? left : 0) - (open ? right : 0)),
+      rightPanel: open ? right : 0,
+    };
+  });
+
+  // ── Left: hide = 0; show = stored open width ─────────────────────
+  useLayoutEffect(() => {
     const panel = leftRef.current;
+    const groupWidth = groupEl.current?.clientWidth ?? 0;
     if (!panel) return;
-    if (railVisible) panel.expand();
-    else panel.collapse();
-  }, [leftRef, railVisible]);
 
-  useEffect(() => {
+    const was = prevRailVisible.current;
+    prevRailVisible.current = railVisible;
+
+    if (!railVisible) {
+      panel.collapse();
+      return;
+    }
+
+    panel.expand();
+
+    const justOpened = was === false || was === null;
+    if (!justOpened || groupWidth <= 0) return;
+
+    const stored = useSidebarState.getState().width || LAYOUT_DEFAULTS_PX.left;
+    const minPct = (config.leftPanel.minSize / groupWidth) * 100;
+    const maxPct = percentOf(config.leftPanel.maxSize);
+    panel.resize(pxToPercent(stored, groupWidth, minPct, maxPct));
+  }, [
+    railVisible,
+    config.leftPanel.minSize,
+    config.leftPanel.maxSize,
+    leftRef,
+  ]);
+
+  // ── Right: closed = 0; open = stored width ───────────────────────
+  useLayoutEffect(() => {
     const panel = rightRef.current;
+    const groupWidth = groupEl.current?.clientWidth ?? 0;
     if (!panel) return;
-    if (panelOpen) panel.expand();
-    else panel.collapse();
-  }, [panelOpen, rightRef]);
 
-  /**
-   * `remaining`: column takes everything the rail leaves — collapse the
-   * workspace rather than leave a 1% board sliver.
-   */
-  useEffect(() => {
+    const was = prevPanelOpen.current;
+    prevPanelOpen.current = panelOpen;
+
+    if (!panelOpen) {
+      panel.collapse();
+      return;
+    }
+
+    panel.expand();
+
+    const justOpened = was === false || was === null;
+    if (!justOpened || groupWidth <= 0) return;
+
+    const stored = useRightPanel.getState().width || LAYOUT_DEFAULTS_PX.right;
+    const minPct = (config.rightPanel.minSize / groupWidth) * 100;
+    const maxPct = percentOf(config.rightPanel.maxSize);
+    panel.resize(pxToPercent(stored, groupWidth, minPct, maxPct));
+  }, [
+    panelOpen,
+    config.rightPanel.minSize,
+    config.rightPanel.maxSize,
+    rightRef,
+  ]);
+
+  // ── remaining: main yields ───────────────────────────────────────
+  useLayoutEffect(() => {
     const workspace = workspaceRef.current;
     if (!workspace) return;
+
     if (level === "remaining" && panelOpen) workspace.collapse();
     else workspace.expand();
   }, [level, panelOpen, workspaceRef]);
 
-  /* ⌘⇧J — same gesture as AppLayout; safe on the spike (outside AppLayout). */
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       const mod = event.metaKey || event.ctrlKey;
       if (!mod || !event.shiftKey || event.key.toLowerCase() !== "j") return;
-
       event.preventDefault();
-      useLayoutShellStore.getState().toggleLevel();
+      if (!panelOpen) useRightPanel.getState().setMode("panel");
+      toggleLevel();
     };
-
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
+  }, [panelOpen, toggleLevel]);
 
   const report = useCallback(
     (layout: Layout) => {
@@ -126,7 +188,6 @@ export default function DashboardLayout({
       if (!width) return;
 
       const px = (id: string) => Math.round(((layout[id] ?? 0) / 100) * width);
-
       const next = {
         left: px("leftPanel"),
         centre: px("centreLayout"),
@@ -141,27 +202,41 @@ export default function DashboardLayout({
   const onLayoutChanged = useCallback(
     (layout: Layout) => {
       report(layout);
+
       const width = groupEl.current?.clientWidth ?? 0;
-      applyLayout(layout as Record<string, number>, width);
+      if (!width || resizing) return;
+
+      const left = Math.round(((layout.leftPanel ?? 0) / 100) * width);
+      const right = Math.round(((layout.rightPanel ?? 0) / 100) * width);
+
+      // Layout.md: never persist collapsed 0 as open width
+      if (railVisible && left >= config.leftPanel.minSize) {
+        setRailWidth(left);
+      }
+      if (panelOpen && right >= config.rightPanel.minSize) {
+        setPanelWidth(right);
+      }
+
+      if (level !== "normal" || !panelOpen) return;
+
+      const rightShare = layout.rightPanel ?? 0;
+      const pastRight = rightShare > percentOf(config.rightPanel.maxSize) + 0.5;
+      if (pastRight) setLevel("remaining");
     },
-    [applyLayout, report],
+    [
+      config.leftPanel.minSize,
+      config.rightPanel.maxSize,
+      config.rightPanel.minSize,
+      level,
+      panelOpen,
+      railVisible,
+      report,
+      resizing,
+      setLevel,
+      setPanelWidth,
+      setRailWidth,
+    ],
   );
-
-  const onPointerDownSeparator = useCallback(() => {
-    setResizing(true);
-  }, [setResizing]);
-
-  const onPointerUpSeparator = useCallback(() => {
-    setResizing(false);
-    // Flush final pixel sizes into sidebar / rightPanel after the drag settles.
-    const { sizes } = useLayoutShellStore.getState();
-    if (railVisible && sizes.left > 0) {
-      useSidebarState.getState().setWidth(sizes.left);
-    }
-    if (panelOpen && sizes.right > 0) {
-      useRightPanel.getState().setWidth(sizes.right);
-    }
-  }, [panelOpen, railVisible, setResizing]);
 
   return (
     <div
@@ -170,6 +245,7 @@ export default function DashboardLayout({
       data-resizing={resizing ? "true" : undefined}
     >
       <Group
+        id="dashboard-shell"
         orientation="horizontal"
         className="h-full"
         defaultLayout={defaultLayout}
@@ -180,26 +256,31 @@ export default function DashboardLayout({
           id="leftPanel"
           panelRef={leftRef}
           defaultSize={config.leftPanel.defaultSize}
-          minSize={railVisible ? config.leftPanel.minSize : 0}
-          maxSize={railVisible ? config.leftPanel.maxSize : "0%"}
-          collapsible={config.leftPanel.collapsible}
-          collapsedSize={config.leftPanel.collapsedSize}
-          className="min-w-0"
+          minSize={config.leftPanel.minSize}
+          maxSize={config.leftPanel.maxSize}
+          collapsible
+          collapsedSize={0}
+          className="min-w-0 overflow-hidden"
         >
-          <DashboardSidebar
-            onToggle={() =>
-              useSidebarState
-                .getState()
-                .setMode(railVisible ? "hidden" : "open")
-            }
-            embedded
-          />
+          {railVisible ? (
+            <DashboardSidebar
+              onToggle={() =>
+                useSidebarState
+                  .getState()
+                  .setMode(railVisible ? "hidden" : "open")
+              }
+              embedded
+            />
+          ) : null}
         </Panel>
 
         <Separator
-          className="w-px shrink-0"
-          onPointerDown={onPointerDownSeparator}
-          onPointerUp={onPointerUpSeparator}
+          className={
+            railVisible
+              ? "w-px shrink-0"
+              : "pointer-events-none w-0 shrink-0 overflow-hidden opacity-0"
+          }
+          disabled={!railVisible}
         />
 
         <Panel
@@ -215,31 +296,34 @@ export default function DashboardLayout({
         </Panel>
 
         <Separator
-          className="w-px shrink-0"
-          onPointerDown={onPointerDownSeparator}
-          onPointerUp={onPointerUpSeparator}
+          className={
+            panelOpen
+              ? "w-px shrink-0"
+              : "pointer-events-none w-0 shrink-0 overflow-hidden opacity-0"
+          }
+          disabled={!panelOpen}
+          onPointerDown={() => setResizing(true)}
+          onPointerUp={() => setResizing(false)}
         />
 
-        {/*
-         * Keep the pane mounted; closed column is zero-wide.
-         * Unmounting makes the group throw "Panel constraints not found"
-         * when the panel is opened later.
-         */}
         <Panel
           id="rightPanel"
           panelRef={rightRef}
           defaultSize={config.rightPanel.defaultSize}
-          collapsible={config.rightPanel.collapsible}
-          collapsedSize={config.rightPanel.collapsedSize}
-          minSize={panelOpen ? config.rightPanel.minSize : 0}
-          className="min-w-0"
+          minSize={config.rightPanel.minSize}
+          maxSize={config.rightPanel.maxSize}
+          collapsible
+          collapsedSize={0}
+          className="min-w-0 overflow-hidden"
         >
-          <RightPanel
-            appRailWidth={railWidth}
-            embedded
-            onResizeStart={() => setResizing(true)}
-            onResizeEnd={() => setResizing(false)}
-          />
+          {panelOpen ? (
+            <RightPanel
+              appRailWidth={railWidth}
+              embedded
+              onResizeStart={() => setResizing(true)}
+              onResizeEnd={() => setResizing(false)}
+            />
+          ) : null}
         </Panel>
       </Group>
     </div>

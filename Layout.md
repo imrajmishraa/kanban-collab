@@ -1,264 +1,208 @@
-# Layout — the workspace shell
+# Layout — shell rules (Grok-style)
 
-The source of truth for how the app's shell is sized, dragged, persisted and
-tested. It describes what is **built**, not what is wished for; anything not yet
-true is in §11.
+Target behaviour for the kanban workspace shell, aligned with **how grok.com’s
+app shell works**: a collapsible left rail, a main stage that always eats the
+remaining width, and an optional right surface that appears only when needed —
+with **no leftover empty panes** after hide.
 
-> `design.md` §Layout still says "256px rail, 72px collapsed". That was true
-> before the rail became resizable. Where the two disagree, this file wins.
+This file is the source of truth. Code that disagrees is wrong until this file
+changes on purpose.
 
 ---
 
-## 1. What exists today
+## 1. Regions (same idea as Grok)
 
-| Piece | Where | What it owns |
+```
+┌────────────┬──────────────────────────────┬──────────────┐
+│  LEFT      │         MAIN                 │  RIGHT       │
+│  rail      │         stage                │  surface     │
+│  (nav)     │         (board / page)       │  (optional)  │
+└────────────┴──────────────────────────────┴──────────────┘
+```
+
+| Region | Grok analogue | Kanban content |
 | --- | --- | --- |
-| Production shell | `client/src/layouts/AppLayout.tsx` | Writes `--rail-width` / `--panel-width`; fixed rail + column, not the group engine |
-| Spike shell | `client/src/layouts/DashboardLayout.tsx` | Three-region `react-resizable-panels` group (left / centre / right) |
-| Shell coordinator | `client/src/layouts/stores/layoutShellStore.ts` | Pixel sizes, `resizing`, device band, layout → store writes, toggles |
-| Rail maths | `client/src/features/dashboard/lib/railMetrics.ts` | `RAIL` numbers, `computeRail()` → `reserved` |
-| Rail state | `client/src/features/dashboard/stores/sidebarState.ts` | mode (`open` / `collapsed` / `hidden`), width; persist `kanban.sidebar` |
-| Rail layout | `client/src/features/dashboard/hooks/useRailLayout.ts` | Mode effects (hide, auto-rail, hover) for AppLayout |
-| Column maths | `client/src/components/layout/panelMetrics.ts` | `PANEL` numbers, `computePanel()` → `reserved`, levels |
-| Column state | `client/src/stores/rightPanel.ts` | mode, width, level, section; persist `kanban.right-panel` v2 |
-| Panel config (spike) | `client/src/lib/panelConfig.ts` | % defaults + px floors per device for the group |
-| Spike rules | `client/src/lib/layoutRules.ts` | Settled numbers, `deviceFor`, ceilings, deltas catalogue |
-| Coupling / drag (AppLayout) | `client/src/lib/panelCouple.ts`, `railDrag.ts` | AppLayout dividers: damping, snaps, couple |
-| Tablet | `client/src/lib/tabletLayout.ts` | 700–1023 numbers, rail strip fallback |
-| Shared numbers | `client/src/lib/layoutNumbers.ts` | `PAGE_MIN`, `RAIL_MIN`, `RAIL_MAX` |
-| Spike page | `client/src/pages/LayoutSpikePage.tsx` + `pages/layout-spike/` | Proves the group + stores before AppLayout moves |
+| Left | Chat history / nav sidebar | `DashboardSidebar` |
+| Main | Conversation thread | Board / page (`children`) |
+| Right | Artifact / side panel (when open) | `RightPanel` |
 
-**Engine (spike):** `react-resizable-panels` — percentage **shares** with **pixel**
-floors (`minSize` in px, `defaultSize` / `maxSize` as `%`). That keeps a side
-panel a side panel on a 4K monitor without shrinking past a readable width.
-
-**Engine (production today):** AppLayout still sizes the rail and column with
-CSS custom properties and its own dividers — not the group. The spike exists to
-prove the group + Zustand path before that migration.
-
-**Dev route:** `/layout-spike` (mounted only under `import.meta.env.DEV`).
+Only **main** is required. Left and right are optional surfaces that must fully
+leave the layout when closed.
 
 ---
 
-## 2. The rule that holds the shell together
+## 2. Visibility (Grok-style)
 
-**Width is data: one store owns mode + width; one computation decides what is
-reserved; one place publishes it.**
+### Left rail — three modes
 
-### Production (`AppLayout`)
-
-```
-store (mode + width)
-  → pure maths (computeRail / computePanel) → reserved
-  → AppLayout writes --rail-width / --panel-width
-  → main margins · navbar left/right · rail inline width · column inline width
-```
-
-- `reserved` ≠ rendered width. A hover preview can render 288 and reserve 72; a
-  hidden rail reserves 0. One function decides both.
-- `data-resizing` on the shell root kills the 200ms transition on the rail,
-  `main` and header (`styles/components.css`) so they move at pointer speed.
-
-### Spike (`DashboardLayout` + `layoutShellStore`)
-
-```
-sidebarState / rightPanel (mode + width)
-  → Group layout (%)
-  → layoutShellStore.applyLayout → sizes (px) + optional width write-back
-  → data-resizing while a sash is dragged
-```
-
-- Visibility is store-driven (`expand` / `collapse` on panel refs). Closed panes
-  stay **mounted** at zero width so the group does not lose constraints.
-- Width write-back skips mid-drag (`resizing === true`) and flushes on pointer-up.
-
-Known leaks (deliberate, listed so they do not grow):
-
-- `useRailLayout.ts` — `PANEL_RAIL_LIMIT = 320` is a literal copy of the
-  column's default.
-- `tabletLayout.ts` — the 72px strip is a separate literal from
-  `RAIL.COLLAPSED`.
-- `NotificationsPanel.tsx` — `w-90`; it is a popover, not the column.
-
----
-
-## 3. Panels that exist
-
-| Panel | Role | Spike config (desktop) | Settled rules (`layoutRules` / `SPIKE`) |
-| --- | --- | --- | --- |
-| Left (rail) | Sidebar | default `20%`, min **240px**, max `28%` | default **288**, min **200**, max **420**; collapsed mode **72** |
-| Centre (board) | Workspace | min **420px**, max `70%` | board floor **420** |
-| Right (column) | Activity / panel | default `28%`, min **320px**, max `55%` | default **420**, min **320**, max **660** |
-
-Tablet (700–1023): tighter ceilings in `panelConfigByDevice.tablet`; spike rules
-allow rail 200–420 and panel 280–420. When the three no longer fit, production
-AppLayout strips the rail to 72px.
-
-**Not built, on purpose:** a bottom panel, a second sidebar, and a vertical
-split. Nothing in the app needs them, and the change budget is 15 files / 600
-lines per PR.
-
-> `panelConfig` and `SPIKE` / production `RAIL` numbers still disagree in places.
-> `pendingDeltas()` on the spike page lists live mismatches. Sign off numbers in
-> one table, then align both modules.
-
----
-
-## 4. Drag contract
-
-| Number | Value | Where |
+| Mode | What you see | Width reserved |
 | --- | --- | --- |
-| Drag start (slop) | 3px rail, 6px column | AppLayout dividers (`layoutRules` / `railDrag`) |
-| Damping | 0.6 | AppLayout dividers |
-| Snap tolerance | 10px | AppLayout dividers |
-| Rail stops | 200 · 288 · 420 | AppLayout |
-| Keyboard | arrows / Home / End | Library separators on the spike; AppLayout sashes in production |
-
-Spike group:
-
-- Dragging past the right (or tablet left) **max share** flips
-  `rightPanel.level` to `remaining` (workspace collapses; column takes the rest).
-- A drag never hides the rail — that is a click or `⌘B`.
-
----
-
-## 5. Controls
-
-| Gesture | Effect |
-| --- | --- |
-| `⌘B` / `Ctrl+B` | Rail open ↔ hidden |
-| `⌘⇧B` / `Ctrl+Shift+B` | Icon rail (collapsed) |
-| `⌘J` / `Ctrl+J` | Right column open ↔ closed |
-| `⌘⇧J` / `Ctrl+Shift+J` | Column `level` normal ↔ remaining |
-
-Levels:
-
-- **normal** — all three regions, each with a floor.
-- **remaining** — column takes what the rail leaves; centre is collapsed (not a 1% sliver).
-
-Spike bar (dev): show/hide rail, open/close panel, toggle rule readout.
-
----
-
-## 6. State & persistence
-
-| Store | Key | Persists |
-| --- | --- | --- |
-| `useSidebarState` | `kanban.sidebar` | mode, width, lastVisible, boardsOpen |
-| `useRightPanel` | `kanban.right-panel` (v2) | mode, width, section — **not** level |
-| `useLayoutShellStore` | `kanban.layout-shell` | device only; sizes are runtime |
+| **open** | Full nav (labels + structure) | Stored width |
+| **collapsed** | Icon rail only (narrow strip) | Collapsed width (~56–72px) |
+| **hidden** | **Nothing** — no icons, no strip, no gap | **0** |
 
 Rules:
 
-- Unrecognised persisted values fall back to defaults (`migrate` / `merge` +
-  `isMode` / finite width).
-- `level` is a gesture: always `normal` after reload.
-- Default right-panel mode follows `defaultModeForViewport` (≥ 1024 → panel);
-  a stored choice always wins.
-- Responsive auto-collapse must not write back over the reader's chosen width.
+- **Hide** removes the rail from the layout completely (like closing Grok’s
+  sidebar so the chat is full-bleed). Icons must not remain floating in an
+  empty column.
+- **Collapse** is the icon-only strip (Grok’s compact sidebar), not a half-open
+  broken state.
+- **Open** restores the **last open width**, not 0 and not a random lock value.
 
----
+### Right surface
 
-## 7. Responsive
-
-| Range | Behaviour |
+| Mode | What you see |
 | --- | --- |
-| `< 700` | No group: spike shows a message; production column is a full-screen sheet |
-| `700 – 1023` | Tablet: tighter panel config; rail may strip to 72 in AppLayout |
-| `≥ 1024` | Desktop: full model |
+| **open** | Side panel at stored width |
+| **closed** | **Nothing** — no empty column, no sash gap |
 
-Breakpoint names are layout states (`tablet`, `desktop`), never device marketing
-names. `deviceFor(viewport)` in `layoutRules.ts` is the spike's source of truth
-for which config column applies.
+Same as Grok’s artifact panel: when you close it, main expands into that space.
+
+### Main
+
+Always fills **everything left and right are not using**.  
+It only goes away when the right surface is in **remaining** (full side focus)
+and the product intentionally covers the stage — otherwise main stays.
 
 ---
 
-## 8. Visual rules
+## 3. Sizing (Grok-like feel)
 
-Tokens only — no raw hex in components:
+Grok does not leave the user fighting a stuck drag. Sizes are **pixel-backed**,
+remembered, and restored on reopen.
 
-| Token | Dark |
+| Region | Min (open) | Default open | Max (drag) | Collapsed |
+| --- | --- | --- | --- | --- |
+| Left | 200px | 280px | 360px | 64px (icons only) |
+| Main | 400px | remainder | — | — |
+| Right | 320px | 400px | 560px | 0 (closed) |
+
+Notes:
+
+- Defaults sit in a comfortable mid band (not edge-to-edge on first paint).
+- Max keeps the main stage usable; the rail must not eat the whole window.
+- **No magic lock widths** (e.g. stuck at 412). If drag stops, it stops at
+  **min / max** only.
+- On **hide**, do not write `width: 0` into persistence. Remember the last
+  **open** width for the next show.
+
+### Responsive
+
+| Viewport | Behaviour |
 | --- | --- |
-| `--bg-root` | `rgb(0, 0, 0)` |
-| `--hairline` | `rgba(255, 245, 235, 0.12)` |
-| `--brand` | `#ff6b35` |
-
-Dividers are 1px hairlines (`[data-separator]` in `styles/components.css` for
-the spike). `data-resizing` disables layout transitions mid-drag.
-`prefers-reduced-motion` turns non-essential motion off.
-
-> Briefs quoting `#080808` / `#ff1f5a` describe a different app. This one is
-> black + orange; `check-theme-colors` fails raw hex.
+| Wide (≥ 1024) | Full three-region model |
+| Medium (700–1023) | Same model, tighter max; prefer collapse over crush |
+| Narrow (&lt; 700) | No persistent left column — rail becomes overlay / drawer; right becomes full-screen sheet |
 
 ---
 
-## 9. Spike file map
+## 4. Toggle & drag contract
+
+| User action | Result |
+| --- | --- |
+| Hide left | Width → 0 in layout; icons gone; separator gone; store keeps last open width |
+| Show left | Expand to **stored open width** |
+| Collapse left | Icon rail only (~64px) |
+| Hide right | Width → 0; separator gone; main expands |
+| Show right | Expand to stored width |
+| Drag left edge | Between min and max only; settle → persist width |
+| Drag right edge | Between min and max; past max may enter **remaining** (main yields) |
+
+**Never:**
+
+- Leave a hollow pane after hide  
+- Keep separators active on a hidden side  
+- Change `minSize` / `maxSize` constraints only because open/closed flipped  
+- Persist 0 as the “open” width  
+
+---
+
+## 5. State (mirrors Grok “remember my sidebar”)
+
+| Concern | Store | Survives reload |
+| --- | --- | --- |
+| Left mode + last open width | `sidebarState` | Yes |
+| Right mode + width | `rightPanel` | Yes |
+| Right “remaining” focus | `rightPanel.level` | **No** (session gesture) |
+| Live measured px / dragging | `layoutShellStore` | No (except optional device) |
+
+---
+
+## 6. Engine constraints (`react-resizable-panels`)
+
+These are implementation rules so behaviour matches §2–4:
+
+1. Panels stay **mounted**; hide = collapse to 0, not unmount.  
+2. **Stable** min/max while a panel can be open — do not set max to 0% on hide.  
+3. On **open** transition only: `expand()` then `resize(storedPx → % of group)`.  
+4. Separators on a hidden side: zero width, disabled, no hit target.  
+5. Do not write width into the store when measured size &lt; min (collapsed).  
+6. Stable ids: group `dashboard-shell`; panels `leftPanel`, `centreLayout`, `rightPanel`.
+
+---
+
+## 7. Controls (Grok-like shortcuts)
+
+| Shortcut | Effect |
+| --- | --- |
+| `⌘B` / `Ctrl+B` | Left open ↔ hidden |
+| `⌘⇧B` | Left collapsed (icon rail) |
+| `⌘J` / `Ctrl+J` | Right open ↔ closed |
+| `⌘⇧J` | Right remaining ↔ normal |
+
+UI also exposes explicit hide/show (spike bar / navbar), same as Grok’s sidebar toggle.
+
+---
+
+## 8. Acceptance (must match Grok-style shell)
+
+On `/layout-spike` (and later production shell):
+
+1. Hide left → **no icons**, no grey column, main full width (minus right if open).  
+2. Show left → returns to **last open width** (e.g. ~280), not 0, not stuck ~412.  
+3. Collapse left → icon strip only; expand again → full labels at stored width.  
+4. Hide right → **no empty pane**, no sash gap.  
+5. Show right → stored width.  
+6. Reload → modes + open widths restore; “remaining” does not.  
+7. Drag left only between min–max; release; hide; show → same width.  
+
+---
+
+## 9. Failure modes (do not ship)
+
+| Symptom | Violates |
+| --- | --- |
+| Hide left but icons still visible | §2 hidden |
+| Empty strip after hide right | §2 right closed |
+| Reopen at 0 or ~400+ randomly | §3 / §4 store rules |
+| Drag locks mid-range (e.g. 412) | §3 max/min only |
+| Constraints change on every toggle | §6.2 |
+
+---
+
+## 10. Files
 
 ```
-client/src/
-├── layouts/
-│   ├── AppLayout.tsx                 # production shell
-│   ├── DashboardLayout.tsx           # group shell (spike / future)
-│   └── stores/layoutShellStore.ts    # sizes, resizing, applyLayout
-├── pages/
-│   ├── LayoutSpikePage.tsx
-│   └── layout-spike/
-│       ├── BoardPlaceholder.tsx
-│       ├── RuleReadout.tsx
-│       ├── SpikeBar.tsx
-│       ├── pendingDeltas.ts
-│       └── useViewportWidth.ts
-├── lib/
-│   ├── panelConfig.ts                # group % / px per device
-│   └── layoutRules.ts                # SPIKE numbers, deviceFor, ceilings
+client/src/layouts/DashboardLayout.tsx    # group shell — must match this doc
+client/src/layouts/stores/layoutShellStore.ts
+client/src/layouts/AppLayout.tsx          # production path until migrated
+client/src/pages/LayoutSpikePage.tsx
+client/src/pages/layout-spike/*
+client/src/lib/panelConfig.ts             # align numbers with §3
+client/src/lib/layoutRules.ts
+Layout.md                                 # this file
 ```
 
 ---
 
-## 10. Change discipline
+## 11. Explicitly not Grok (out of scope)
 
-- Gates: `tsc -b`, `eslint src --max-warnings 0`, `prettier --check`,
-  `check-surface`, `check-paths`, `check-theme-colors`, `vitest run`.
-- Budget: 15 files / 600 added lines per PR. Over that needs a
-  `Change-Budget-Exception:` trailer on the PR's own commit.
-- Tests sit next to what they test (`*.test.ts` colocated). Do not edit tests
-  only to make a change pass without saying so first.
-- No drive-by refactors: unrelated bugs go in the reply, not the diff.
+- Grok’s chat model, auth, or branding  
+- Bottom panels / multi-column editors  
+- Pixel-perfect copy of Grok CSS — **behaviour** is the target, not the skin  
 
 ---
 
-## 11. Test status & open items
-
-**Covered:** `railMetrics`, `panelMetrics`, `tabletLayout`, `panelCouple`,
-`panelDragZones`, `railDrag`, `layoutRules` (device boundaries, ceilings,
-remaining formulas, deltas).
-
-**Not covered (DOM / sandbox limits):** spike rendering, `embedded` on
-`RightPanel` / `DashboardSidebar`, live sash keyboard behaviour.
-
-**Open:**
-
-1. Align `panelConfig` mins/defaults with `SPIKE` / production `RAIL` /
-   `PANEL` (see `pendingDeltas()`).
-2. Move AppLayout onto `DashboardLayout` (or extract a shared group) once numbers
-   and a11y are signed off — production still uses CSS variables, not the group.
-3. `tabletLayout.test.ts` may still hold a stale ceiling assertion at 700px.
-4. `design.md` §Layout: replace the 256px line with a pointer to this file.
-5. Confirm whether `Separator` exposes pointer events for `resizing` in the
-   installed `react-resizable-panels` version; fall back to group drag callbacks
-   if not.
-
----
-
-## 12. Verification
-
-```bash
-cd client
-npx tsc -b
-npx eslint src --max-warnings 0
-node scripts/check-surface.mjs --strict
-node scripts/check-paths.mjs --strict
-node scripts/check-theme-colors.mjs --strict
-npx vitest run
-npm run dev            # then open /layout-spike
-```
+*Implementation waits for an explicit go-ahead. When started, change code to
+match this document, not the other way around.*
