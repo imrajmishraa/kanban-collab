@@ -20,7 +20,7 @@ import {
  * bug long before anyone reads this file.
  */
 
-const PANEL_IDS: PanelId[] = ["leftPanel", "workspaceLayout", "rightPanel"];
+const PANEL_IDS: PanelId[] = ["leftPanel", "centreLayout", "rightPanel"];
 const DEVICES: PanelDevice[] = ["desktop", "tablet", "mobile"];
 
 describe("desktop config", () => {
@@ -30,22 +30,24 @@ describe("desktop config", () => {
       minSize: 240,
       maxSize: "28%",
       collapsible: true,
+      collapsedSize: 0,
     });
     expect(panelConfig.rightPanel).toEqual({
       defaultSize: "22%",
       minSize: 320,
       maxSize: "55%",
       collapsible: true,
+      collapsedSize: 0,
     });
   });
 
   it("gives the centre a pixel floor and no default size", () => {
-    expect(panelConfig.workspaceLayout.minSize).toBe(420);
-    expect(panelConfig.workspaceLayout.maxSize).toBe("70%");
-    const centre: PanelConfig = panelConfig.workspaceLayout;
+    expect(panelConfig.centreLayout.minSize).toBe(420);
+    expect(panelConfig.centreLayout.maxSize).toBe("70%");
+    const centre: PanelConfig = panelConfig.centreLayout;
 
     expect(centre.defaultSize).toBeUndefined();
-    expect(panelConfig.workspaceLayout.collapsible).toBe(false);
+    expect(panelConfig.centreLayout.collapsible).toBe(false);
   });
 });
 
@@ -53,13 +55,13 @@ describe("tablet config", () => {
   it("keeps its own tighter ceilings", () => {
     expect(panelConfigByDevice.tablet.leftPanel.maxSize).toBe("30%");
     expect(panelConfigByDevice.tablet.rightPanel.maxSize).toBe("35%");
-    expect(panelConfigByDevice.tablet.workspaceLayout.maxSize).toBe("65%");
+    expect(panelConfigByDevice.tablet.centreLayout.maxSize).toBe("65%");
   });
 
   it("holds the same pixel floors the brief settled", () => {
     expect(panelConfigByDevice.tablet.leftPanel.minSize).toBe(200);
     expect(panelConfigByDevice.tablet.rightPanel.minSize).toBe(320);
-    expect(panelConfigByDevice.tablet.workspaceLayout.minSize).toBe(420);
+    expect(panelConfigByDevice.tablet.centreLayout.minSize).toBe(420);
   });
 });
 
@@ -67,13 +69,13 @@ describe("mobile config", () => {
   it("renders neither edge and hands the window to the centre", () => {
     expect(panelConfigByDevice.mobile.leftPanel.maxSize).toBe("0%");
     expect(panelConfigByDevice.mobile.rightPanel.maxSize).toBe("0%");
-    expect(panelConfigByDevice.mobile.workspaceLayout.defaultSize).toBe("100%");
+    expect(panelConfigByDevice.mobile.centreLayout.defaultSize).toBe("100%");
 
     expect(isPanelRenderable(panelConfigByDevice.mobile.leftPanel)).toBe(false);
     expect(isPanelRenderable(panelConfigByDevice.mobile.rightPanel)).toBe(
       false,
     );
-    expect(isPanelRenderable(panelConfigByDevice.mobile.workspaceLayout)).toBe(
+    expect(isPanelRenderable(panelConfigByDevice.mobile.centreLayout)).toBe(
       true,
     );
   });
@@ -117,7 +119,7 @@ describe("every device", () => {
   it.each(["desktop", "tablet"] as const)(
     "%s: the centre carries no default size",
     (device) => {
-      const centre: PanelConfig = panelConfigByDevice[device].workspaceLayout;
+      const centre: PanelConfig = panelConfigByDevice[device].centreLayout;
 
       expect(centre.defaultSize).toBeUndefined();
     },
@@ -155,6 +157,6 @@ describe("isPanelRenderable", () => {
   it("is true wherever the panel has a ceiling to grow into", () => {
     expect(isPanelRenderable(panelConfig.leftPanel)).toBe(true);
     expect(isPanelRenderable(panelConfig.rightPanel)).toBe(true);
-    expect(isPanelRenderable(panelConfig.workspaceLayout)).toBe(true);
+    expect(isPanelRenderable(panelConfig.centreLayout)).toBe(true);
   });
 });

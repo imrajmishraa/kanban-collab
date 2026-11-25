@@ -38,7 +38,7 @@ interface DashboardLayoutProps {
  *
  *     DashboardLayout
  *     ├── LeftPanel        rail / MainSidebar   → Separator
- *     ├── WorkspaceLayout  board or page
+ *     ├── centreLayout  board or page
  *     └── RightPanel                            → Separator
  *
  * Sizing is percentage-first (`lib/panelConfig`): the edges are a share of the
@@ -69,16 +69,23 @@ export default function DashboardLayout({
   const rightRef = usePanelRef();
   const groupEl = useRef<HTMLDivElement | null>(null);
 
-  /* Percentages, read once for the first paint. The centre is whatever is left,
-     which is why the two edges carry a default and it does not. */
+  /*
+   * Percentages, read once for the first paint. The centre is whatever is left,
+   * which is why the two edges carry a default and it does not.
+   *
+   * A column that starts closed has no pane, so it gets no entry either — a layout
+   * that describes a panel which is not rendered is a share of the group nobody
+   * can account for.
+   */
   const [defaultLayout] = useState<Layout>(() => {
     const left = percentOf(config.leftPanel.defaultSize);
     const right = percentOf(config.rightPanel.defaultSize);
+    const open = panelMode !== "off";
 
     return {
       leftPanel: left,
-      workspaceLayout: Math.max(0, 100 - left - right),
-      rightPanel: right,
+      centreLayout: Math.max(0, 100 - left - (open ? right : 0)),
+      rightPanel: open ? right : 0,
     };
   });
 
@@ -119,7 +126,7 @@ export default function DashboardLayout({
 
       onSizes?.({
         left: px("leftPanel"),
-        centre: px("workspaceLayout"),
+        centre: px("centreLayout"),
         right: px("rightPanel"),
       });
     },
@@ -243,10 +250,13 @@ export default function DashboardLayout({
             centre by hand, and the group gives it back the moment the level is
             `normal` again. */}
         <Panel
-          id="workspaceLayout"
+          id="centreLayout"
           panelRef={workspaceRef}
-          minSize={config.workspaceLayout.minSize}
-          maxSize={config.workspaceLayout.maxSize}
+          minSize={config.centreLayout.minSize}
+          /* With the column closed the centre is the last thing on the right, so
+             its own ceiling must not leave the strip of empty page the pane used
+             to fill. */
+          maxSize={panelOpen ? config.centreLayout.maxSize : "100%"}
           collapsible
           collapsedSize={0}
           className="min-w-0"
@@ -260,17 +270,27 @@ export default function DashboardLayout({
             of them as a prop. */}
         <Separator className="w-px shrink-0" />
 
-        {/* The library's own ceiling is 100%, not the config's 55%: the config's
-            number is the threshold that flips into `remaining`, and a hard stop at
-            55% would make that gesture impossible. */}
+        {/*
+         * The pane stays mounted; a closed column is *zero wide*.
+         *
+         * Unmounting it is what the group cannot take: it throws "Panel constraints
+         * not found for Panel rightPanel" the first time a Panel appears after
+         * mount, because the group registers constraints when it lays out, not when
+         * a child arrives. A zero ceiling has no such problem, and it is the same
+         * result — nothing on screen, nothing reserved.
+         *
+         * The library's own ceiling is 100% while open, not the config's 55%: the
+         * config's number is the threshold that flips into `remaining`, and a hard
+         * stop at 55% would make that gesture impossible.
+         */}
         <Panel
           id="rightPanel"
           panelRef={rightRef}
           defaultSize={config.rightPanel.defaultSize}
-          minSize={config.rightPanel.minSize}
-          maxSize="100%"
           collapsible={config.rightPanel.collapsible}
-          collapsedSize={0}
+          collapsedSize={config.rightPanel.collapsedSize}
+          minSize={0}
+          
           className="min-w-0"
         >
           <RightPanel

@@ -61,8 +61,8 @@ export function RuleReadout({
     },
     {
       rule: "D6",
-      what: `Workspace keeps ${config.workspaceLayout.minSize}px`,
-      ok: sizes.centre >= config.workspaceLayout.minSize - 1,
+      what: `Workspace keeps ${config.centreLayout.minSize}px`,
+      ok: sizes.centre >= config.centreLayout.minSize - 1,
       detail: `${sizes.centre}px`,
     },
     {

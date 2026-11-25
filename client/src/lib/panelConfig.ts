@@ -5,7 +5,7 @@
  *
  *     DashboardLayout
  *     ├── LeftPanel   (rail / MainSidebar)   → Separator
- *     ├── WorkspaceLayout (board / page)
+ *     ├── centreLayout (board / page)
  *     └── RightPanel                         → Separator
  *
  * Sizing follows `react-resizable-panels` v4, whose own type docs settle it:
@@ -32,9 +32,17 @@ export interface PanelConfig {
   /** Percentage: a ceiling so a panel cannot eat a large screen. */
   maxSize: `${number}%`;
   collapsible: boolean;
+  /**
+   * Where the panel rests when collapsed. `0` is off the page.
+   *
+   * `react-resizable-panels` will only collapse a panel that is allowed to reach
+   * zero, so a collapsible panel needs `minSize: 0` on the element as well — this
+   * is the number it collapses *to*, not the number it stops at.
+   */
+  collapsedSize?: number | `${number}%`;
 }
 
-export type PanelId = "leftPanel" | "workspaceLayout" | "rightPanel";
+export type PanelId = "leftPanel" | "centreLayout" | "rightPanel";
 
 export type PanelDevice = "desktop" | "tablet" | "mobile";
 
@@ -51,13 +59,15 @@ export const panelConfig = {
     minSize: 240,
     maxSize: "28%",
     collapsible: true,
+    collapsedSize: 0,
   },
-  workspaceLayout: { minSize: 420, maxSize: "70%", collapsible: false },
+  centreLayout: { minSize: 420, maxSize: "70%", collapsible: false },
   rightPanel: {
-    defaultSize: "22%",
+    defaultSize: "26%",
     minSize: 320,
     maxSize: "55%",
     collapsible: true,
+    collapsedSize: 0,
   },
 } satisfies Record<PanelId, PanelConfig>;
 
@@ -73,13 +83,15 @@ export const panelConfigByDevice = {
       minSize: 200,
       maxSize: "30%",
       collapsible: true,
+      collapsedSize: 0,
     },
-    workspaceLayout: { minSize: 420, maxSize: "65%", collapsible: false },
+    centreLayout: { minSize: 420, maxSize: "65%", collapsible: false },
     rightPanel: {
       defaultSize: "27%",
       minSize: 320,
       maxSize: "35%",
       collapsible: true,
+      collapsedSize: 0,
     },
   },
   mobile: {
@@ -90,18 +102,21 @@ export const panelConfigByDevice = {
       minSize: 0,
       maxSize: "0%",
       collapsible: false,
+      collapsedSize: 0,
     },
-    workspaceLayout: {
+    centreLayout: {
       defaultSize: "100%",
       minSize: 0,
       maxSize: "100%",
       collapsible: false,
+      collapsedSize: 0,
     },
     rightPanel: {
       defaultSize: "0%",
       minSize: 0,
       maxSize: "0%",
       collapsible: false,
+      collapsedSize: 0,
     },
   },
 } satisfies Record<PanelDevice, Record<PanelId, PanelConfig>>;
