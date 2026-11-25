@@ -122,6 +122,33 @@ export const SPIKE_DELTAS = [
   },
 ] as const;
 
+/**
+ * Rule 1: what the column may take before the board drops under its floor.
+ *
+ * Rail hidden: `viewport - boardMin`. Rail open: `viewport - rail - boardMin`,
+ * so the two edges always leave the board its 420.
+ */
+export const panelMaxFor = (
+  viewport: number,
+  railWidth: number,
+  boardMin: number,
+  panelMin: number,
+): number => Math.max(panelMin, viewport - railWidth - boardMin);
+
+/**
+ * Rule 3: with the column open the rail is not capped at its own maximum.
+ *
+ * It pushes the column instead, so a rail in a fullscreen layout still drags and
+ * the column gives the width up rather than the drag stopping dead at 420.
+ */
+export const railMaxFor = (
+  viewport: number,
+  panelMin: number,
+  railMin: number,
+  railMax: number,
+  panelOpen: boolean,
+): number => (panelOpen ? Math.max(railMin, viewport - panelMin) : railMax);
+
 /** A ceiling the column may reach beside the board, never past it. */
 export const panelCeilingFor = (
   viewport: number,

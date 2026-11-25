@@ -44,12 +44,21 @@ export const RIGHT_PANEL_MODES: readonly RightPanelOption[] = [
   },
 ];
 
-/** Off is the default: no existing reader's layout changes on upgrade. */
 /**
  * E2: the column is on for everyone, and the settings toggle turns it off. It used to be
  * opt-in; the board is designed around it now.
  */
 export const RIGHT_PANEL_DEFAULT: RightPanelMode = "panel";
+
+/**
+ * E7: on where the column has room, off where it does not.
+ *
+ * A stored choice always wins; this is only what a reader who has never chosen
+ * gets. 1024 is where the column stops being a sheet over the board and starts
+ * being a column beside it.
+ */
+export const defaultModeForViewport = (viewport: number): RightPanelMode =>
+  viewport >= 1024 ? RIGHT_PANEL_DEFAULT : "off";
 
 /**
  * A stored value can be anything — a mode from a newer build, a hand-edited
@@ -88,7 +97,9 @@ interface RightPanelState {
 export const useRightPanel = create<RightPanelState>()(
   persist(
     (set) => ({
-      mode: RIGHT_PANEL_DEFAULT,
+      mode: defaultModeForViewport(
+        typeof window === "undefined" ? 1440 : window.innerWidth,
+      ),
       width: PANEL.DEFAULT,
       level: "normal",
       section: "empty",
@@ -142,7 +153,11 @@ export const useRightPanel = create<RightPanelState>()(
           { mode?: unknown; width?: unknown; section?: unknown } | undefined;
 
         return {
-          mode: isMode(old?.mode) ? old.mode : RIGHT_PANEL_DEFAULT,
+          mode: isMode(old?.mode)
+            ? old.mode
+            : defaultModeForViewport(
+                typeof window === "undefined" ? 1440 : window.innerWidth,
+              ),
           width:
             typeof old?.width === "number" && Number.isFinite(old.width)
               ? Math.round(old.width)

@@ -1,14 +1,36 @@
-export interface SpikeBarProps {
+export type SpikeLevel = "normal" | "remaining" | "full";
+
+interface SpikeBarProps {
   device: string;
   viewport: number;
   sizes: number[];
   railVisible: boolean;
   panelOpen: boolean;
+  level: SpikeLevel;
   showRules: boolean;
-  onToggleRules: () => void;
+  onChangeLevel: (level: SpikeLevel) => void;
   onToggleRail: () => void;
   onTogglePanel: () => void;
+  onToggleRules: () => void;
 }
+
+const LEVELS: { id: SpikeLevel; label: string; title: string }[] = [
+  {
+    id: "normal",
+    label: "Normal",
+    title: "Rail, board and column, each with a floor",
+  },
+  {
+    id: "remaining",
+    label: "Remaining",
+    title: "The column takes everything the rail leaves",
+  },
+  {
+    id: "full",
+    label: "Full",
+    title: "The column takes the window; the rail steps off",
+  },
+];
 
 export function SpikeBar({
   device,
@@ -16,17 +38,19 @@ export function SpikeBar({
   sizes,
   railVisible,
   panelOpen,
+  level,
   showRules,
-  onToggleRules,
+  onChangeLevel,
   onToggleRail,
   onTogglePanel,
+  onToggleRules,
 }: SpikeBarProps) {
   const rail = sizes[0] ?? 0;
   const board = sizes[1] ?? 0;
   const panel = sizes[2] ?? 0;
 
   return (
-    <header className="flex shrink-0 items-center gap-3 border-b border-(--hairline) px-3 py-2">
+    <header className="flex shrink-0 flex-wrap items-center gap-3 border-b border-(--hairline) px-3 py-2">
       <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-(--text-muted)">
         Allotment spike
       </span>
@@ -37,8 +61,33 @@ export function SpikeBar({
 
       <span className="font-mono text-[11px] tabular-nums text-(--text-muted)">
         rail {railVisible ? Math.round(rail) : "off"} · board{" "}
-        {Math.round(board)} · panel {panelOpen ? Math.round(panel) : "off"}
+        {level === "normal" ? Math.round(board) : "off"} · panel{" "}
+        {panelOpen ? Math.round(panel) : "off"}
       </span>
+
+      <div
+        className="flex items-center gap-1"
+        role="group"
+        aria-label="Layout level"
+      >
+        {LEVELS.map((option) => (
+          <button
+            key={option.id}
+            type="button"
+            title={option.title}
+            aria-pressed={level === option.id}
+            onClick={() => onChangeLevel(option.id)}
+            className={[
+              "rounded-md border px-2 py-1 text-[12px]",
+              level === option.id
+                ? "border-(--brand) bg-(--bg-hover) text-(--text-primary)"
+                : "border-(--hairline) text-(--text-muted) hover:bg-(--bg-hover)",
+            ].join(" ")}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
 
       <div className="ml-auto flex items-center gap-2">
         <button

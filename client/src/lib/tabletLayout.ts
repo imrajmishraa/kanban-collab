@@ -5,11 +5,11 @@ import { PAGE_MIN } from "@/lib/layoutNumbers";
  *
  * The tablet is the tight mode: three things want width and there is not much of it.
  *
- *     rail  <= 200      column >= 280      board >= 420
+ *     rail  <= 420      column >= 280      board >= 420
  *
- * `200 + 280 + 420 = 900`, so on most tablets they do **not** all fit — and the rail is the
- * one that gives, stepping aside into a 72px strip that is one click away. That single
- * fallback is the whole difference from desktop; the rendering is the same.
+ * At the rail's ceiling they do **not** all fit — and the rail is the one that gives,
+ * stepping aside into a 72px strip that is one click away. That single fallback is the
+ * whole difference from desktop; the rendering is the same.
  *
  * `280` is not arbitrary: `700 - 420 = 280`, the only column minimum at which a column fits
  * beside the board at the narrowest tablet. That is why there is no overlay mode.
@@ -20,7 +20,8 @@ export const TABLET = {
   MIN_VIEWPORT: 700,
   MAX_VIEWPORT: 1023,
   RAIL_MIN: 72,
-  RAIL_MAX: 200,
+  /** E6: a tablet rail may reach the desktop ceiling; the strip is the fallback. */
+  RAIL_MAX: 420,
   /** The width an *open* rail takes. Open is a width, not a mode name. */
   RAIL_DEFAULT: 200,
   PANEL_MIN: 280,

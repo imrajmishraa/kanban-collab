@@ -1,3 +1,5 @@
+import { RAIL_MAX, RAIL_MIN } from "@/lib/layoutNumbers";
+
 /**
  * The rail's numbers, in one place.
  *
@@ -12,12 +14,17 @@
 export const RAIL = {
   /** Collapsed icon rail — a mode, not a width the divider can set. */
   COLLAPSED: 72,
-  /** Narrowest expanded rail, and the first stop a drag can rest on. */
-  MIN: 240,
+  /**
+   * Narrowest expanded rail, and the first stop a drag can rest on.
+   *
+   * 200, not 240: a rail narrower than that cannot show a label, but 240 pushed
+   * the board below its own floor on a 1024 window. C1 settled on 200.
+   */
+  MIN: RAIL_MIN,
   /** Where the rail opens, and what hover shows. */
   DEFAULT: 288,
   /** Widest expanded rail. A drag past this stops. */
-  MAX: 420,
+  MAX: RAIL_MAX,
   /** Horizontal space the page needs beside the rail. */
   GUTTER: 329,
   /**
@@ -100,9 +107,6 @@ export function snapWidth(
  * enough room. The `700` floor short-circuits the narrow case: at MIN the rail
  * plus gutter is under 700, and refusing to show it there would be silly.
  */
-/** C1: a tablet's preview is 240 — its own open width, not the desktop's 288. */
-const TABLET_RAIL_PREVIEW = 240;
-
 export const requiredViewport = (width: number): number =>
   Math.max(RAIL.MIN_VIEWPORT, Math.ceil(clampWidth(width)) + RAIL.GUTTER);
 
@@ -162,9 +166,9 @@ export function computeRail({
   const hoverOpen =
     (mode === "hover" || collapsedPreview) && hovering && !autoRail;
 
-  /* C1: the preview is 288 on desktop and 240 on a tablet — the rail's own default there. */
-  const previewWidth =
-    viewportWidth <= 1023 ? TABLET_RAIL_PREVIEW : RAIL.DEFAULT;
+  /* B3: the preview is the rail's own default on every device. A tablet previewing
+     at 240 meant the same gesture showed two different widths. */
+  const previewWidth = RAIL.DEFAULT;
   const expanded = mode === "open" && !autoRail;
 
   let railWidth: number;

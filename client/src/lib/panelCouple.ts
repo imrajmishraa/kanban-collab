@@ -1,4 +1,5 @@
 import { PANEL } from "@/components/layout/panelMetrics";
+import { RAIL_MAX, RAIL_MIN } from "./layoutNumbers";
 
 /**
  * The two rails share one window — desktop rules.
@@ -9,8 +10,11 @@ import { PANEL } from "@/components/layout/panelMetrics";
  * overflow. Without this the rail walked over the page when the column was already wide:
  * the pair grew past the window and nothing pushed back.
  */
-export const RAIL_MIN = 240;
-export const RAIL_MAX = 420;
+/* One copy of the rail's numbers, in `railMetrics`, so a change there reaches
+   the coupling too. C1 moved the floor to 200 and this file had it at 240. */
+/* Typed as `number`, not as the literal: callers pass their own floor (a collapsed
+   rail is 72), and a literal type would reject every value but 200. */
+export { RAIL_MAX, RAIL_MIN };
 /** How far past a threshold a push must go before it changes level. */
 export const FULL_SLOP = 32;
 
