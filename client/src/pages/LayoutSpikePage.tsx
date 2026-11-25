@@ -26,9 +26,11 @@ export default function LayoutSpikePage() {
   const sizes = useLayoutShellStore((s) => s.sizes);
   const toggleRail = useLayoutShellStore((s) => s.toggleRail);
   const togglePanel = useLayoutShellStore((s) => s.togglePanel);
+  const toggleLevel = useLayoutShellStore((s) => s.toggleLevel);
 
   const railMode = useSidebarState((state) => state.mode);
   const panelMode = useRightPanel((state) => state.mode);
+  const level = useRightPanel((state) => state.level);
 
   const railVisible = railMode !== "hidden";
   const panelOpen = panelMode !== "off";
@@ -56,6 +58,8 @@ export default function LayoutSpikePage() {
           showRules={showRules}
           onToggleRail={toggleRail}
           onTogglePanel={togglePanel}
+          fullWidth={level === "remaining"}
+          onToggleFullWidth={toggleLevel}
           onToggleRules={() => setShowRules((value) => !value)}
         />
 

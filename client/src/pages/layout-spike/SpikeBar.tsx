@@ -4,9 +4,12 @@ interface SpikeBarProps {
   sizes: number[];
   railVisible: boolean;
   panelOpen: boolean;
+  /** `remaining`: the column takes viewport − rail and the stage yields. */
+  fullWidth: boolean;
   showRules: boolean;
   onToggleRail: () => void;
   onTogglePanel: () => void;
+  onToggleFullWidth: () => void;
   onToggleRules: () => void;
 }
 
@@ -16,9 +19,11 @@ export function SpikeBar({
   sizes,
   railVisible,
   panelOpen,
+  fullWidth,
   showRules,
   onToggleRail,
   onTogglePanel,
+  onToggleFullWidth,
   onToggleRules,
 }: SpikeBarProps) {
   const rail = sizes[0] ?? 0;
@@ -55,6 +60,16 @@ export function SpikeBar({
           className="rounded-md border border-(--hairline) px-2 py-1 text-[12px] hover:bg-(--bg-hover)"
         >
           {panelOpen ? "Close panel" : "Open panel"}
+        </button>
+
+        <button
+          type="button"
+          onClick={onToggleFullWidth}
+          aria-pressed={fullWidth}
+          title="Take everything the rail leaves (⌘⇧J)"
+          className="rounded-md border border-(--hairline) px-2 py-1 text-[12px] hover:bg-(--bg-hover) aria-pressed:border-(--brand) aria-pressed:text-(--brand)"
+        >
+          {fullWidth ? "Exit full width" : "Full width"}
         </button>
 
         <button

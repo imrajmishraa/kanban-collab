@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 
 import { useSidebarState } from "@/features/dashboard";
+import { useLayoutShellStore } from "@/layouts/stores/layoutShellStore";
 import { useRightPanel } from "@/stores/rightPanel";
 
 /**
@@ -8,14 +9,14 @@ import { useRightPanel } from "@/stores/rightPanel";
  *
  * Registered here rather than in `DashboardLayout` because this page renders
  * outside `AppLayout`: the app shell already binds ⌘B / ⌘J / ⌘⇧J, and a component
- * that binds them again would fire twice the moment the shell is nested.
+ * that bound them again would fire twice the moment the shell is nested.
  *
  * | Key | Effect |
  * |---|---|
  * | ⌘B | rail: open ↔ hidden |
  * | ⌘⇧B | rail: collapsed |
  * | ⌘J | column: open ↔ closed |
- * | ⌘⇧J | column: fullscreen (`remaining` — the stage yields to it) |
+ * | ⌘⇧J | column: full width (`remaining` — the stage yields to it) |
  */
 
 /** A shortcut must never eat a keystroke meant for a field. */
@@ -61,10 +62,10 @@ export function useShellShortcuts(): void {
         return;
       }
 
-      /* Fullscreen: the column takes the viewport minus the rail, and the stage
-         yields entirely — `remaining` is that state, not a width. */
-      if (panel.mode === "off") panel.setMode("panel");
-      panel.setLevel(panel.level === "remaining" ? "normal" : "remaining");
+      /* Full width: the column takes viewport − rail and the stage yields
+         entirely — `remaining` is that state, not a width. One implementation,
+         shared with the bar's button, so the two can never disagree. */
+      useLayoutShellStore.getState().toggleLevel();
     };
 
     window.addEventListener("keydown", onKeyDown);
