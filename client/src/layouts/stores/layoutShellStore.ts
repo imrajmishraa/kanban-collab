@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 import type { PanelLevel } from "@/components/layout/panelMetrics";
-import { useSidebarState } from "@/features/dashboard/stores/sidebarState";
+import { useSidebarState } from "@/features/dashboard";
 import { useRightPanel } from "@/stores/rightPanel";
 import type { PanelDevice } from "@/lib/panelConfig";
 import { panelConfigByDevice, percentOf } from "@/lib/panelConfig";

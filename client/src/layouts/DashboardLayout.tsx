@@ -33,17 +33,6 @@ interface DashboardLayoutProps {
   onSizes?: (sizes: { left: number; centre: number; right: number }) => void;
 }
 
-function pxToPercent(
-  px: number,
-  groupWidth: number,
-  minPct: number,
-  maxPct: number,
-): number {
-  if (!groupWidth || px <= 0) return minPct;
-  const pct = (px / groupWidth) * 100;
-  return Math.min(maxPct, Math.max(minPct, pct));
-}
-
 /**
  * Grok-style three-region shell — see Layout.md.
  *
@@ -120,16 +109,13 @@ export default function DashboardLayout({
     const justOpened = was === false || was === null;
     if (!justOpened || groupWidth <= 0) return;
 
+    /* Pixels, not a percentage: `resize()` reads a bare number as pixels and
+       clamps to the panel's own min/max. Converting to a share first sent ~19px,
+       which the collapsible panel resolved to `collapsedSize` — the rail came
+       back at 0 after every close. */
     const stored = useSidebarState.getState().width || LAYOUT_DEFAULTS_PX.left;
-    const minPct = (config.leftPanel.minSize / groupWidth) * 100;
-    const maxPct = percentOf(config.leftPanel.maxSize);
-    panel.resize(pxToPercent(stored, groupWidth, minPct, maxPct));
-  }, [
-    railVisible,
-    config.leftPanel.minSize,
-    config.leftPanel.maxSize,
-    leftRef,
-  ]);
+    panel.resize(stored);
+  }, [railVisible, leftRef]);
 
   // ── Right: closed = 0; open = stored width ───────────────────────
   useLayoutEffect(() => {
@@ -150,16 +136,11 @@ export default function DashboardLayout({
     const justOpened = was === false || was === null;
     if (!justOpened || groupWidth <= 0) return;
 
+    /* Pixels, for the same reason as the rail: a share here arrives as a tiny
+       pixel count and the collapsible panel collapses to 0. */
     const stored = useRightPanel.getState().width || LAYOUT_DEFAULTS_PX.right;
-    const minPct = (config.rightPanel.minSize / groupWidth) * 100;
-    const maxPct = percentOf(config.rightPanel.maxSize);
-    panel.resize(pxToPercent(stored, groupWidth, minPct, maxPct));
-  }, [
-    panelOpen,
-    config.rightPanel.minSize,
-    config.rightPanel.maxSize,
-    rightRef,
-  ]);
+    panel.resize(stored);
+  }, [panelOpen, rightRef]);
 
   // ── remaining: main yields ───────────────────────────────────────
   useLayoutEffect(() => {
