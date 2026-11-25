@@ -60,8 +60,12 @@ export default function DashboardLayout({
   const setRailWidth = useSidebarState((state) => state.setWidth);
   const panelMode = useRightPanel((state) => state.mode);
   const setPanelWidth = useRightPanel((state) => state.setWidth);
+  const level = useRightPanel((state) => state.level);
+  const setLevel = useRightPanel((state) => state.setLevel);
+  const toggleLevel = useRightPanel((state) => state.toggleLevel);
 
   const leftRef = usePanelRef();
+  const workspaceRef = usePanelRef();
   const rightRef = usePanelRef();
   const groupEl = useRef<HTMLDivElement | null>(null);
 
@@ -122,6 +126,37 @@ export default function DashboardLayout({
     [onSizes],
   );
 
+  /**
+   * `remaining`: the column takes everything the rail leaves.
+   *
+   * Not a width — a state. The column stops sharing the group with the board and
+   * takes `viewport - leftPanel` (the whole viewport when the rail is hidden),
+   * which is why the workspace is collapsed rather than merely narrow. Leaving it
+   * at 1% would keep a sliver of board on screen and call it a mode.
+   */
+  useEffect(() => {
+    const workspace = workspaceRef.current;
+    if (!workspace) return;
+
+    if (level === "remaining" && panelOpen) workspace.collapse();
+    else workspace.expand();
+  }, [level, panelOpen, workspaceRef]);
+
+  /* ⌘⇧J / Ctrl+Shift+J — the same gesture the app shell already binds. */
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const mod = event.metaKey || event.ctrlKey;
+      if (!mod || !event.shiftKey || event.key.toLowerCase() !== "j") return;
+
+      event.preventDefault();
+      if (!panelOpen) useRightPanel.getState().setMode("panel");
+      toggleLevel();
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [panelOpen, toggleLevel]);
+
   const onLayoutChanged = useCallback(
     (layout: Layout) => {
       report(layout);
@@ -134,8 +169,38 @@ export default function DashboardLayout({
 
       if (railVisible && left > 0) setRailWidth(left);
       if (panelOpen && right > 0) setPanelWidth(right);
+
+      /*
+       * Dragging past a ceiling means "give me the rest", not "stop here".
+       *
+       * The panels are allowed to overshoot their configured `maxSize` on purpose
+       * — that is the gesture. Crossing it flips the layout into `remaining`, and
+       * on a tablet either edge can make that call, because there the board is
+       * the first thing to go when two panels fight over the width.
+       */
+      if (level !== "normal" || !panelOpen) return;
+
+      const rightShare = layout.rightPanel ?? 0;
+      const leftShare = layout.leftPanel ?? 0;
+      const pastRight = rightShare > percentOf(config.rightPanel.maxSize) + 0.5;
+      const pastLeft =
+        device === "tablet" &&
+        leftShare > percentOf(config.leftPanel.maxSize) + 0.5;
+
+      if (pastRight || pastLeft) setLevel("remaining");
     },
-    [panelOpen, railVisible, report, setPanelWidth, setRailWidth],
+    [
+      config.leftPanel.maxSize,
+      config.rightPanel.maxSize,
+      device,
+      level,
+      panelOpen,
+      report,
+      setLevel,
+      setPanelWidth,
+      setRailWidth,
+      railVisible,
+    ],
   );
 
   return (
@@ -173,9 +238,17 @@ export default function DashboardLayout({
             of them as a prop. */}
         <Separator className="w-px shrink-0" />
 
+        {/* Collapsible only so `remaining` can take the board off the screen; the
+            config says `collapsible: false` because no reader is meant to fold the
+            centre by hand, and the group gives it back the moment the level is
+            `normal` again. */}
         <Panel
           id="workspaceLayout"
+          panelRef={workspaceRef}
           minSize={config.workspaceLayout.minSize}
+          maxSize={config.workspaceLayout.maxSize}
+          collapsible
+          collapsedSize={0}
           className="min-w-0"
         >
           {children}
@@ -187,12 +260,15 @@ export default function DashboardLayout({
             of them as a prop. */}
         <Separator className="w-px shrink-0" />
 
+        {/* The library's own ceiling is 100%, not the config's 55%: the config's
+            number is the threshold that flips into `remaining`, and a hard stop at
+            55% would make that gesture impossible. */}
         <Panel
           id="rightPanel"
           panelRef={rightRef}
           defaultSize={config.rightPanel.defaultSize}
           minSize={config.rightPanel.minSize}
-          maxSize={config.rightPanel.maxSize}
+          maxSize="100%"
           collapsible={config.rightPanel.collapsible}
           collapsedSize={0}
           className="min-w-0"

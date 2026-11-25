@@ -40,8 +40,9 @@ describe("tabletRailCeiling", () => {
   });
 
   it("keeps the board its 420 at the narrowest tablet", () => {
-    /* 700 - 420 = 280, but the rail's own MAX is 200 — the smaller one binds. */
-    expect(tabletRailCeiling(700)).toBe(TABLET.RAIL_MAX);
+    /* 700 - 420 = 280 now binds: E6 lifted the rail's own ceiling to 420, so at
+       the narrowest tablet it is the viewport that stops the rail, not the max. */
+    expect(tabletRailCeiling(700)).toBe(280);
     expect(700 - tabletRailCeiling(700)).toBeGreaterThanOrEqual(PANEL.PAGE_MIN);
   });
 });
