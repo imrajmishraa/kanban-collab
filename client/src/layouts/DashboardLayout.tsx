@@ -187,21 +187,11 @@ export default function DashboardLayout({
       if (!width || resizing) return;
 
       const left = Math.round(((layout.leftPanel ?? 0) / 100) * width);
-      const right = Math.round(((layout.rightPanel ?? 0) / 100) * width);
 
       // Layout.md: never persist collapsed 0 as open width
       if (railVisible && left >= config.leftPanel.minSize) {
         setRailWidth(left);
       }
-      // A rail measured at 0 is hidden, whatever the store last said.
-      if (railVisible && left <= 0) {
-        useSidebarState.getState().setMode("hidden");
-      }
-      // Dragged shut: the pane is at 0, so the state has to say so.
-      if (panelOpen && right < config.rightPanel.minSize) {
-        useRightPanel.getState().setMode("off");
-      }
-
       if (level !== "normal" || !panelOpen) return;
 
       const rightShare = layout.rightPanel ?? 0;
@@ -211,7 +201,6 @@ export default function DashboardLayout({
     [
       config.leftPanel.minSize,
       config.rightPanel.maxSize,
-      config.rightPanel.minSize,
       level,
       panelOpen,
       railVisible,

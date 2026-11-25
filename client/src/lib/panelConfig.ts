@@ -20,7 +20,7 @@ export type PanelDevice = "desktop" | "tablet" | "mobile";
  * Desktop (≥1024)
  * Left:  min 200 · default ~280 (≈18%) · max share 28%
  * Main:  min 400
- * Right: min 320 · default ~400 (≈26%) · max share 40%
+ * Right: min 320 · default ~400 (≈26%) · max share 55%
  */
 export const panelConfig = {
   leftPanel: {
@@ -38,7 +38,7 @@ export const panelConfig = {
   rightPanel: {
     defaultSize: "26%",
     minSize: 320,
-    maxSize: "40%",
+    maxSize: "55%",
     collapsible: true,
     collapsedSize: 0,
   },

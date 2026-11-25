@@ -26,8 +26,8 @@ export function useRailLayout(): RailLayout {
    *
    * Opening the column over a rail that is wider than its default leaves the board with a
    * sliver: the rail steps aside instead. And when the reader opens the rail again by hand,
-   * it starts at MIN — the default width would take the space straight back, so the column
-   * would shrink by itself and read as a bug.
+   * it comes back at its *default* width — the width the board was designed around — not at
+   * MIN, which would quietly forget the width they had chosen.
    */
   const panelOpen = useRightPanel((state) => state.mode !== "off");
 
@@ -60,7 +60,9 @@ export function useRailLayout(): RailLayout {
     if (came !== "hidden" && came !== "collapsed") return;
 
     const rail = useSidebarState.getState();
-    if (rail.width > RAIL.DEFAULT) rail.setWidth(RAIL.MIN);
+    /* Only a rail that had grown *past* the default is forced back to it; a reader
+       who left it narrower than the default keeps their width. */
+    if (rail.width > RAIL.DEFAULT) rail.setWidth(RAIL.DEFAULT);
   }, [panelOpen, mode]);
 
   return computeRail({ mode, width, hovering, viewportWidth, resizing });
