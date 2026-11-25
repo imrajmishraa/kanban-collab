@@ -28,7 +28,7 @@ export function SpikeBar({
   return (
     <header className="flex shrink-0 flex-wrap items-center gap-3 border-b border-(--hairline) px-3 py-2">
       <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-(--text-muted)">
-        Allotment spike
+        Layout spike
       </span>
 
       <span className="rounded-full border border-(--hairline) px-2 py-0.5 font-mono text-[10px] text-(--text-muted)">
