@@ -52,7 +52,6 @@ export default function DashboardLayout({
   const setRailWidth = useSidebarState((s) => s.setWidth);
 
   const panelMode = useRightPanel((s) => s.mode);
-  const setPanelWidth = useRightPanel((s) => s.setWidth);
   const level = useRightPanel((s) => s.level);
   const setLevel = useRightPanel((s) => s.setLevel);
   const toggleLevel = useRightPanel((s) => s.toggleLevel);
@@ -194,8 +193,9 @@ export default function DashboardLayout({
       if (railVisible && left >= config.leftPanel.minSize) {
         setRailWidth(left);
       }
-      if (panelOpen && right >= config.rightPanel.minSize) {
-        setPanelWidth(right);
+      // Dragged shut: the pane is at 0, so the state has to say so.
+      if (panelOpen && right < config.rightPanel.minSize) {
+        useRightPanel.getState().setMode("off");
       }
 
       if (level !== "normal" || !panelOpen) return;
@@ -214,7 +214,6 @@ export default function DashboardLayout({
       report,
       resizing,
       setLevel,
-      setPanelWidth,
       setRailWidth,
     ],
   );
@@ -268,7 +267,7 @@ export default function DashboardLayout({
           id="centreLayout"
           panelRef={workspaceRef}
           minSize={config.centreLayout.minSize}
-          maxSize={panelOpen ? config.centreLayout.maxSize : "100%"}
+          maxSize={"100%"}
           collapsible
           collapsedSize={0}
           className="min-w-0"
