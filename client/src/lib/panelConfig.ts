@@ -48,7 +48,7 @@ export type PanelDevice = "desktop" | "tablet" | "mobile";
 export const panelConfig = {
   leftPanel: {
     defaultSize: "20%",
-    minSize: 200,
+    minSize: 240,
     maxSize: "28%",
     collapsible: true,
   },
