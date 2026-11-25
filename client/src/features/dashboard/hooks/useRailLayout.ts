@@ -42,10 +42,13 @@ export function useRailLayout(): RailLayout {
   }, [panelOpen]);
 
   /*
-   * Only a reader-initiated open resets the width. A panel drag can promote `hover` to
-   * `open` as a side effect, and resetting the rail to MIN there was the "rail jumps to 240
-   * when I drag the panel" bug: the mode changed, so the effect fired, and a width the
-   * reader never touched moved.
+   * Only a reader-initiated open resets the width.
+   *
+   * The rail that D3 hid (because the column opened over it) comes back at its
+   * *default* width, not at MIN: it was hidden for being wider than the default,
+   * so reopening at MIN would quietly forget the width the reader had chosen and
+   * leave them to drag it back every time. The board makes room first — it is the
+   * centre's job to give, not the rail's.
    */
   const previousMode = useRef(mode);
 
@@ -57,7 +60,7 @@ export function useRailLayout(): RailLayout {
     if (came !== "hidden" && came !== "collapsed") return;
 
     const rail = useSidebarState.getState();
-    if (rail.width > RAIL.MIN) rail.setWidth(RAIL.MIN);
+    if (rail.width > RAIL.DEFAULT) rail.setWidth(RAIL.MIN);
   }, [panelOpen, mode]);
 
   return computeRail({ mode, width, hovering, viewportWidth, resizing });

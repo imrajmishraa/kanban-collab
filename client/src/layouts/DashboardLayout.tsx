@@ -223,10 +223,12 @@ export default function DashboardLayout({
           id="leftPanel"
           panelRef={leftRef}
           defaultSize={config.leftPanel.defaultSize}
-          minSize={config.leftPanel.minSize}
-          maxSize={config.leftPanel.maxSize}
+          minSize={railVisible ? config.leftPanel.minSize : 0}
+          maxSize={railVisible ? config.leftPanel.maxSize : "0%"}
+          collapsedThreshold={9999} // drag se hide na ho — button/⌘B se ho
+
           collapsible={config.leftPanel.collapsible}
-          collapsedSize={0}
+          collapsedSize={config.leftPanel.collapsedSize}
           className="min-w-0"
         >
           <DashboardSidebar
@@ -260,6 +262,7 @@ export default function DashboardLayout({
           collapsible
           collapsedSize={0}
           className="min-w-0"
+          defaultSize={"100%"}
         >
           {children}
         </Panel>
@@ -289,8 +292,7 @@ export default function DashboardLayout({
           defaultSize={config.rightPanel.defaultSize}
           collapsible={config.rightPanel.collapsible}
           collapsedSize={config.rightPanel.collapsedSize}
-          minSize={0}
-          
+          minSize={panelOpen ? 0 : config.rightPanel.minSize}
           className="min-w-0"
         >
           <RightPanel

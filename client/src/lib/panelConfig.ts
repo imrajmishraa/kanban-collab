@@ -63,7 +63,7 @@ export const panelConfig = {
   },
   centreLayout: { minSize: 420, maxSize: "70%", collapsible: false },
   rightPanel: {
-    defaultSize: "26%",
+    defaultSize: "28%",
     minSize: 320,
     maxSize: "55%",
     collapsible: true,
