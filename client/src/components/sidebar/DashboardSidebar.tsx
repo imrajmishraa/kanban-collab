@@ -194,7 +194,7 @@ export default function DashboardSidebar({
         aria-label="Show sidebar"
         aria-controls="app-rail"
         className={cn(
-          "sticky top-0 z-40 hidden h-dvh w-[72px] shrink-0 flex-col items-center",
+          "sticky top-0 z-40 hidden h-dvh w-18 shrink-0 flex-col items-center",
           "gap-2 border-r border-(--hairline) bg-(--bg-panel) pt-3 md:flex",
           "pb-[env(safe-area-inset-bottom)]",
           "cursor-pointer hover:bg-(--bg-hover)",
@@ -234,7 +234,7 @@ export default function DashboardSidebar({
              and open beside it, over the page. The nav clips itself, so only
              those panels escape. */
           embedded
-            ? "relative flex h-full w-full flex-col overflow-hidden"
+            ? "relative flex h-full w-full flex-col overflow-hidden select-none"
             : "fixed left-0 top-0 hidden h-dvh flex-col overflow-visible",
           /* The navbar is z-50 and keeps its collapsed offset, so a rail that
              floats over the page has to sit above it or the two overlap. */

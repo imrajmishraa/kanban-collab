@@ -8,6 +8,7 @@ import { useRightPanel } from "@/stores/rightPanel";
 import { useLayoutShellStore } from "@/layouts/stores/layoutShellStore";
 
 import { BoardPlaceholder } from "./layout-spike/BoardPlaceholder";
+import { useShellShortcuts } from "./layout-spike/useShellShortcuts";
 import { RuleReadout } from "./layout-spike/RuleReadout";
 import { SpikeBar } from "./layout-spike/SpikeBar";
 import { useViewportWidth } from "./layout-spike/useViewportWidth";
@@ -17,6 +18,8 @@ import { useViewportWidth } from "./layout-spike/useViewportWidth";
  * Behaviour must match Layout.md (Grok-style shell).
  */
 export default function LayoutSpikePage() {
+  useShellShortcuts();
+
   const viewport = useViewportWidth();
   const device = deviceFor(viewport);
 

@@ -193,6 +193,10 @@ export default function DashboardLayout({
       if (railVisible && left >= config.leftPanel.minSize) {
         setRailWidth(left);
       }
+      // A rail measured at 0 is hidden, whatever the store last said.
+      if (railVisible && left <= 0) {
+        useSidebarState.getState().setMode("hidden");
+      }
       // Dragged shut: the pane is at 0, so the state has to say so.
       if (panelOpen && right < config.rightPanel.minSize) {
         useRightPanel.getState().setMode("off");
