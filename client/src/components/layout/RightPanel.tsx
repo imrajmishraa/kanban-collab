@@ -59,6 +59,9 @@ export default function RightPanel({
   );
   /* The rail is pushed by this drag, so the column needs its setter. */
   const railSetWidth = useSidebarState((state) => state.setWidth);
+  /* A hidden rail is not on the page, so a push has nothing to give: writing its
+     width there only teaches the store a number the reader never chose. */
+  const railVisible = useSidebarState((state) => state.mode !== "hidden");
 
   const [dragging, setDragging] = useState(false);
   const [moving, setMoving] = useState(false);
@@ -163,8 +166,11 @@ export default function RightPanel({
     /* Amber means "resting on a stop" — the rail's floor is not one of them. */
     setWidth(snapped);
 
-    /* Only a real push is written: frame jitter must not resize the rail. */
-    if (Math.abs(pair.rail - appRailWidth) >= 2) railSetWidth(pair.rail);
+    /* Only a real push is written, and only onto a rail that is on the page:
+       frame jitter must not resize the rail, and a hidden one has nothing to give. */
+    if (railVisible && Math.abs(pair.rail - appRailWidth) >= 2) {
+      railSetWidth(pair.rail);
+    }
   };
 
   /* Ends a drag — and treats a press that never moved as a click. `fromPointerUp` is a

@@ -61,6 +61,8 @@ export default function DashboardLayout({
   const setSizes = useLayoutShellStore((s) => s.setSizes);
   const resizing = useLayoutShellStore((s) => s.resizing);
 
+  const [groupWidth, setGroupWidth] = useState(0);
+
   const leftRef = usePanelRef();
   const workspaceRef = usePanelRef();
   const rightRef = usePanelRef();
@@ -71,6 +73,23 @@ export default function DashboardLayout({
 
   const railVisible = railMode !== "hidden";
   const panelOpen = panelMode !== "off";
+
+  /*
+   * The column's ceiling, in pixels.
+   *
+   * A percentage ceiling can leave the rail less than its own minimum: at 1280 a
+   * 55% column plus the board's 400 leaves 176, and the rail needs 200 — so
+   * opening the rail did nothing at all, because the group could not satisfy it.
+   * The ceiling is therefore what is actually left once both floors are paid for,
+   * which is also where `remaining` begins.
+   */
+  const panelCeiling =
+    groupWidth > 0
+      ? Math.max(
+          config.rightPanel.minSize,
+          groupWidth - config.centreLayout.minSize - config.leftPanel.minSize,
+        )
+      : config.rightPanel.maxSize;
 
   useEffect(() => {
     setDevice(device);
@@ -175,6 +194,7 @@ export default function DashboardLayout({
       };
       setSizes(next);
       onSizes?.(next);
+      setGroupWidth(width);
     },
     [onSizes, setSizes],
   );
@@ -284,7 +304,7 @@ export default function DashboardLayout({
           panelRef={rightRef}
           defaultSize={config.rightPanel.defaultSize}
           minSize={config.rightPanel.minSize}
-          maxSize={config.rightPanel.maxSize}
+          maxSize={panelCeiling}
           collapsible
           collapsedSize={0}
           className="min-w-0 overflow-hidden"
