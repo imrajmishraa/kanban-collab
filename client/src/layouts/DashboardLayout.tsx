@@ -18,6 +18,8 @@ import {
 import RightPanel from "@/components/layout/RightPanel";
 import DashboardSidebar from "@/components/sidebar/DashboardSidebar";
 import { useSidebarState } from "@/features/dashboard";
+import DashboardNavbar from "@/components/sidebar/DashboardNavbar";
+import { RAIL } from "@/features/dashboard";
 import {
   LAYOUT_DEFAULTS_PX,
   panelConfigByDevice,
@@ -52,6 +54,7 @@ export default function DashboardLayout({
   const setRailWidth = useSidebarState((s) => s.setWidth);
 
   const panelMode = useRightPanel((s) => s.mode);
+  const setPanelWidth = useRightPanel((s) => s.setWidth);
   const level = useRightPanel((s) => s.level);
   const setLevel = useRightPanel((s) => s.setLevel);
   const toggleLevel = useRightPanel((s) => s.toggleLevel);
@@ -68,7 +71,6 @@ export default function DashboardLayout({
   const rightRef = usePanelRef();
   const groupEl = useRef<HTMLDivElement | null>(null);
 
-  const prevRailVisible = useRef<boolean | null>(null);
   const prevPanelOpen = useRef<boolean | null>(null);
 
   const railVisible = railMode !== "hidden";
@@ -108,14 +110,11 @@ export default function DashboardLayout({
     };
   });
 
-  // ── Left: hide = 0; show = stored open width ─────────────────────
+  // ── Left: hidden = 0; collapsed = icon strip; open = stored width ──
   useLayoutEffect(() => {
     const panel = leftRef.current;
     const groupWidth = groupEl.current?.clientWidth ?? 0;
     if (!panel) return;
-
-    const was = prevRailVisible.current;
-    prevRailVisible.current = railVisible;
 
     if (!railVisible) {
       panel.collapse();
@@ -124,16 +123,19 @@ export default function DashboardLayout({
 
     panel.expand();
 
-    const justOpened = was === false || was === null;
-    if (!justOpened || groupWidth <= 0) return;
+    /* Collapsed is the 72px icon strip; the 288px preview on hover is the
+       sidebar's own overlay, not a resize — resizing the pane on hover would
+       shove the board sideways every time the pointer crossed the rail. */
+    const target =
+      railMode === "collapsed"
+        ? RAIL.COLLAPSED
+        : useSidebarState.getState().width || LAYOUT_DEFAULTS_PX.left;
 
-    /* Pixels, not a percentage: `resize()` reads a bare number as pixels and
-       clamps to the panel's own min/max. Converting to a share first sent ~19px,
-       which the collapsible panel resolved to `collapsedSize` — the rail came
-       back at 0 after every close. */
-    const stored = useSidebarState.getState().width || LAYOUT_DEFAULTS_PX.left;
-    panel.resize(stored);
-  }, [railVisible, leftRef]);
+    /* Pixels: `resize()` reads a bare number as pixels and clamps to the panel's
+       own min/max. A share here arrives as ~19px, which a collapsible panel
+       resolves to `collapsedSize` — the rail came back at 0. */
+    if (groupWidth > 0) panel.resize(target);
+  }, [railMode, railVisible, leftRef]);
 
   // ── Right: closed = 0; open = stored width ───────────────────────
   useLayoutEffect(() => {
@@ -207,10 +209,16 @@ export default function DashboardLayout({
       if (!width || resizing) return;
 
       const left = Math.round(((layout.leftPanel ?? 0) / 100) * width);
+      const right = Math.round(((layout.rightPanel ?? 0) / 100) * width);
 
       // Layout.md: never persist collapsed 0 as open width
       if (railVisible && left >= config.leftPanel.minSize) {
         setRailWidth(left);
+      }
+      /* The column's width is stored the same way, so reopening restores what the
+         reader dragged rather than the config default. */
+      if (panelOpen && right >= config.rightPanel.minSize) {
+        setPanelWidth(right);
       }
       if (level !== "normal" || !panelOpen) return;
 
@@ -220,6 +228,7 @@ export default function DashboardLayout({
     },
     [
       config.leftPanel.minSize,
+      config.rightPanel.minSize,
       config.rightPanel.maxSize,
       level,
       panelOpen,
@@ -227,6 +236,7 @@ export default function DashboardLayout({
       report,
       resizing,
       setLevel,
+      setPanelWidth,
       setRailWidth,
     ],
   );
@@ -253,7 +263,13 @@ export default function DashboardLayout({
           maxSize={config.leftPanel.maxSize}
           collapsible
           collapsedSize={0}
-          className="min-w-0 overflow-hidden"
+          /* Collapsed, the sidebar paints its 288px preview over the page, so the
+             pane must not clip it. */
+          className={
+            railMode === "collapsed"
+              ? "min-w-0 overflow-visible"
+              : "min-w-0 overflow-hidden"
+          }
         >
           {railVisible ? (
             <DashboardSidebar
@@ -285,7 +301,13 @@ export default function DashboardLayout({
           collapsedSize={0}
           className="min-w-0"
         >
-          {children}
+          <main className="flex h-full flex-col overflow-y-auto scroll-smooth">
+            <div className="sticky top-0 z-50 bg-background">
+              <DashboardNavbar embedded />
+            </div>
+
+            <div className="flex-1">{children}</div>
+          </main>
         </Panel>
 
         <Separator

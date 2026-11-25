@@ -228,7 +228,11 @@ export default function DashboardSidebar({
             onRailLeave();
           }
         }}
-        style={{ width: embedded ? "100%" : railWidth }}
+        /* Embedded: fill the pane, except while a preview is open — then the
+           sidebar paints at its preview width over the page, which is what the
+           collapsed strip is for. Filling the pane the rest of the time keeps the
+           edge glued to the divider during a drag. */
+        style={{ width: embedded && !floating ? "100%" : railWidth }}
         className={[
           /* Visible, not hidden: the rail's own panels are wider than the rail
              and open beside it, over the page. The nav clips itself, so only
