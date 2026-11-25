@@ -1,98 +1,93 @@
 import {
   DRAG_DAMPING,
-  KEY_STEP,
   SNAP_TOLERANCE,
   SPIKE,
   panelCeilingFor,
 } from "@/lib/layoutRules";
+import { panelConfigByDevice, percentOf } from "@/lib/panelConfig";
 
-import type { SpikeLevel } from "./SpikeBar";
 import { pendingDeltas } from "./pendingDeltas";
 
 interface RuleReadoutProps {
   device: string;
   viewport: number;
-  sizes: number[];
-  level: SpikeLevel;
+  sizes: { left: number; centre: number; right: number };
   railVisible: boolean;
   panelOpen: boolean;
-  /** Rule 1: what the column is allowed to reach right now. */
-  panelMax: number;
-  /** Rule 3: what the rail is allowed to reach right now. */
-  railMax: number;
 }
 
 /**
  * The rules, as the panes actually behaved.
  *
- * A check compares the live sizes against `layoutRules`, so it can fail — that is
- * the point of running the spike at all. `pendingDeltas()` lists only the
- * numbers the app has still not adopted; a delta disappears on its own once the
- * app catches up.
+ * Sizes arrive in pixels (converted from the group's percentages), and the
+ * config's own numbers are the expectations — so a check fails when the engine
+ * and the config disagree, not when someone edits a comment.
  */
 export function RuleReadout({
   device,
   viewport,
   sizes,
-  level,
   railVisible,
   panelOpen,
-  panelMax,
-  railMax,
 }: RuleReadoutProps) {
+  const config = panelConfigByDevice[device as "desktop" | "tablet"];
   const rules = SPIKE[device as "desktop" | "tablet"];
-  const rail = sizes[0] ?? 0;
-  const board = sizes[1] ?? 0;
-  const panel = sizes[2] ?? 0;
 
   const ceiling = panelCeilingFor(
     viewport,
-    railVisible ? rail : 0,
+    railVisible ? sizes.left : 0,
     rules.boardMin,
   );
   const pending = pendingDeltas();
 
+  const leftShare = viewport ? Math.round((sizes.left / viewport) * 100) : 0;
+  const rightShare = viewport ? Math.round((sizes.right / viewport) * 100) : 0;
+
   const checks = [
     {
       rule: "C1",
-      what: `Rail within ${rules.rail.min}-${Math.round(railMax)}`,
-      ok: !railVisible || (rail >= rules.rail.min && rail <= railMax + 1),
-      detail: railVisible ? `${Math.round(rail)}px` : "hidden",
+      what: `LeftPanel ≥ ${config.leftPanel.minSize}px and ≤ ${config.leftPanel.maxSize}`,
+      ok:
+        !railVisible ||
+        (sizes.left >= config.leftPanel.minSize - 1 &&
+          leftShare <= percentOf(config.leftPanel.maxSize)),
+      detail: railVisible ? `${sizes.left}px · ${leftShare}%` : "collapsed",
     },
     {
       rule: "C4",
-      what: `Column within its ceiling (${ceiling})`,
-      ok: !panelOpen || panel <= Math.max(panelMax, ceiling) + 1,
-      detail: panelOpen
-        ? `${Math.round(panel)} / ${Math.round(panelMax)}`
-        : "off",
+      what: `RightPanel within its ceiling (${ceiling}px)`,
+      ok: !panelOpen || sizes.right <= ceiling + 1,
+      detail: panelOpen ? `${sizes.right}px · ${rightShare}%` : "off",
     },
     {
       rule: "D6",
-      what:
-        level === "normal"
-          ? `Board keeps ${rules.boardMin}`
-          : "Board yielded to the column",
-      ok: level !== "normal" || board >= rules.boardMin,
-      detail: level === "normal" ? `${Math.round(board)}px` : "off",
-    },
-    {
-      rule: "R2",
-      what: "Both edges push: neither drag is capped while the other has room",
-      ok: railMax > rules.rail.max || !panelOpen,
-      detail: panelOpen ? `rail max ${Math.round(railMax)}` : "rail alone",
+      what: `Workspace keeps ${config.workspaceLayout.minSize}px`,
+      ok: sizes.centre >= config.workspaceLayout.minSize - 1,
+      detail: `${sizes.centre}px`,
     },
     {
       rule: "E3",
-      what: `Sash keys ${KEY_STEP.base}/${KEY_STEP.shift}, Home/End to the stops`,
+      what: "Separators: role, tab stop, arrows, Home/End",
       ok: true,
-      detail: "ours, on .sash",
+      detail: "built into the library",
     },
     {
       rule: "AL4",
-      what: `Snap ${SNAP_TOLERANCE}px · damping ${DRAG_DAMPING}`,
+      what: `Snap ${SNAP_TOLERANCE}px · damping ${DRAG_DAMPING} (ours, on the app's own dividers)`,
       ok: true,
-      detail: "Allotment snap on",
+      detail: "library handles the group",
+    },
+    {
+      rule: "SUM",
+      what: "Percentages add up to 100",
+      ok:
+        Math.abs(
+          leftShare +
+            rightShare +
+            Math.round((sizes.centre / viewport) * 100) -
+            100,
+        ) <= 1,
+      detail: `${leftShare} + ${Math.round((sizes.centre / viewport) * 100)} + ${rightShare}`,
     },
   ];
 

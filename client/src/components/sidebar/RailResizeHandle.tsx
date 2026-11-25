@@ -70,10 +70,7 @@ export default function RailResizeHandle({
    */
   const atStop =
     moving &&
-    (
-      width === RAIL.MIN ||
-      width === RAIL.DEFAULT ||
-      width === RAIL.MAX);
+    (width === RAIL.MIN || width === RAIL.DEFAULT || width === RAIL.MAX);
 
   const onPointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
     /* The rail itself is a click target while collapsed (click it to expand),

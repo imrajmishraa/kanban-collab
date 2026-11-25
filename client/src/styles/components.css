@@ -538,3 +538,24 @@ textarea::placeholder {
 body:has([aria-modal="true"]) .rail-handle {
   display: none;
 }
+
+/* ── RESIZABLE GROUP ────────────────────────────────────────────────────
+   `react-resizable-panels` draws each separator as a div carrying the separator
+   role, `data-separator` and an aria orientation, and it owns the tab stop, the
+   arrow keys and the double-click reset. Only the look is ours, so it lives here
+   rather than as a class list on the element. */
+[data-separator] {
+  cursor: col-resize;
+  background: var(--hairline);
+  transition: background-color 120ms ease-out;
+}
+
+[data-separator]:hover,
+[data-separator]:focus-visible {
+  background: var(--brand);
+  outline: none;
+}
+
+[data-separator][aria-orientation="horizontal"] {
+  cursor: row-resize;
+}
