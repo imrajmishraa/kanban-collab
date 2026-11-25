@@ -7,23 +7,26 @@ import { RAIL, clampWidth } from "../lib/railMetrics";
  * How the rail behaves.
  *
  * open      the expanded rail at its stored width
- * collapsed icons only, always
- * hover     icons only until the pointer is over it, then it opens to MIN over
- *           the page instead of pushing it
- * hidden    not on the page at all; the navbar toggle is the way back
+ * collapsed icons only, always; the pointer arriving previews it at its default
+ *           width over the page, and leaving puts the icons back
+ * hidden    not on the page at all; the navbar toggle previews it on hover and a
+ *           click opens it
+ *
+ * There is no `hover` mode: a preview is a transient state of the two modes above
+ * (`hovering`), not a third thing a reader has to choose and then leave.
  */
-export type SidebarMode = "open" | "collapsed" | "hover" | "hidden";
+export type SidebarMode = "open" | "collapsed" | "hidden";
 
-const MODES: readonly SidebarMode[] = ["open", "collapsed", "hover", "hidden"];
+const MODES: readonly SidebarMode[] = ["open", "collapsed", "hidden"];
 
 const isMode = (value: unknown): value is SidebarMode =>
   MODES.includes(value as SidebarMode);
 
-/** Modes that show the rail, and so are worth restoring to. */
-type VisibleMode = "open" | "hover";
+/** The one mode that shows the expanded rail, and so is worth restoring to. */
+type VisibleMode = "open";
 
 const isVisibleMode = (value: unknown): value is VisibleMode =>
-  value === "open" || value === "hover";
+  value === "open";
 
 interface SidebarState {
   mode: SidebarMode;
@@ -33,7 +36,10 @@ interface SidebarState {
   lastVisible: VisibleMode;
   /** What the layout reserves: true for anything narrower than the open rail. */
   collapsed: boolean;
-  /** True while the pointer is over a hover-mode rail. Runtime only. */
+  /**
+   * True while the pointer is previewing the rail — over the icon strip of a
+   * collapsed rail, or over the navbar toggle of a hidden one. Runtime only.
+   */
   hovering: boolean;
   /**
    * True while the divider is being dragged. Runtime only, and the reason it
@@ -134,19 +140,18 @@ export const useSidebarState = create<SidebarState>()(
        * reads as a broken shortcut, so collapsed now opens: the three states a
        * reader can be in all answer sensibly, and it is never a dead key.
        */
-      /* Only from hidden: a rail that is already open or collapsed has its own hover
-         behaviour and must not be switched to preview behind the reader's back. */
+      /*
+       * A preview, from either closed state: the collapsed rail and the hidden
+       * rail both open at their default width on hover, over the page. `mode` is
+       * untouched — the preview is a flag, not a place to be — so leaving puts
+       * the rail straight back where it was.
+       */
       peek: () => {
-        if (get().mode !== "hidden") return;
-        /* `lastVisible` is left alone: it is what a click on the icon should return to,
-           and the preview must not overwrite that with itself. */
-        set({ mode: "hover", hovering: true });
+        if (get().mode === "open") return;
+        set({ hovering: true });
       },
 
-      unpeek: () => {
-        if (get().mode !== "hover") return;
-        set({ mode: "hidden", hovering: false });
-      },
+      unpeek: () => set({ hovering: false }),
 
       openFromPreview: () => {
         set({
@@ -239,11 +244,10 @@ export const useSidebarState = create<SidebarState>()(
             typeof old?.width === "number"
               ? clampWidth(old.width)
               : RAIL.DEFAULT,
+          /* A stored `hover` mode is gone: it reads as `open` now. */
           lastVisible: isVisibleMode(old?.lastVisible)
             ? old.lastVisible
-            : mode === "hover"
-              ? "hover"
-              : "open",
+            : "open",
         };
       },
       /*

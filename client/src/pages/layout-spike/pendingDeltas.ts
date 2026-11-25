@@ -17,11 +17,11 @@ const stillDiffers = (rule: string): boolean => {
       return RAIL.MIN !== SPIKE.desktop.rail.min;
 
     case "B3":
-      /* The preview is only reachable through the layout machine, so ask it what
-         a hover on a 900px window actually renders at. */
+      /* The preview is only reachable through the layout machine, so ask it what a
+         pointer on a collapsed rail at 900px actually renders at. */
       return (
         computeRail({
-          mode: "hover",
+          mode: "collapsed",
           hovering: true,
           width: RAIL.DEFAULT,
           viewportWidth: 900,

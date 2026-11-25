@@ -111,7 +111,7 @@ export const requiredViewport = (width: number): number =>
   Math.max(RAIL.MIN_VIEWPORT, Math.ceil(clampWidth(width)) + RAIL.GUTTER);
 
 export interface RailLayoutInput {
-  mode: "open" | "collapsed" | "hover" | "hidden";
+  mode: "open" | "collapsed" | "hidden";
   width: number;
   hovering: boolean;
   viewportWidth: number;
@@ -126,7 +126,7 @@ export interface RailLayout {
   hidden: boolean;
   /** The viewport cannot afford the expanded rail, so it falls back to icons. */
   autoRail: boolean;
-  /** Hover mode, pointer inside: an overlay at MIN. */
+  /** A preview is open: the pointer is inside a collapsed or hidden rail. */
   hoverOpen: boolean;
   /** What the rail actually renders at. 0 means "not on the page". */
   railWidth: number;
@@ -158,13 +158,12 @@ export function computeRail({
   );
 
   /*
-   * B1: the icon rail previews on hover too. A collapsed rail is a rail you can see, so the
-   * pointer resting on it should show what it holds — and leaving must put it back to 72,
-   * which is why the preview is derived, never stored.
+   * B1: both closed states preview on hover. A collapsed rail is a rail you can
+   * see, so the pointer resting on it should show what it holds; a hidden one is
+   * previewed from the navbar toggle. Leaving must put it back, which is why the
+   * preview is derived from `hovering` and never stored as a mode of its own.
    */
-  const collapsedPreview = mode === "collapsed" && hovering && !autoRail;
-  const hoverOpen =
-    (mode === "hover" || collapsedPreview) && hovering && !autoRail;
+  const hoverOpen = mode !== "open" && hovering && !autoRail;
 
   /* B3: the preview is the rail's own default on every device. A tablet previewing
      at 240 meant the same gesture showed two different widths. */
@@ -186,31 +185,30 @@ export function computeRail({
    */
   /* `hidden` first: a drag that hides the rail must hide it now, not on release. The
      `resizing` override is for widths, and "off the page" is not a width. */
-  /* B1: hover mode rests at zero. Nothing visible, nothing reserved — the icon in the
-     navbar is the trigger, so a strip on the page would be a second, quieter one. */
-  if (hidden || (mode === "hover" && !hoverOpen && !resizing)) railWidth = 0;
+  /* A hidden rail rests at zero: the icon in the navbar is the trigger, so a strip on
+     the page would be a second, quieter one. */
+  if (hidden && !hoverOpen && !resizing) railWidth = 0;
   else if (resizing) railWidth = clamped;
   else if (expanded) railWidth = clamped;
-  /* Hover is a preview at the default width, whatever the pinned rail was dragged to. A
+  /* A preview is the rail's default width, whatever the pinned rail was dragged to. A
      reader who dragged the rail to 400 did not ask the overlay to be 400 too. */
   else if (hoverOpen) railWidth = previewWidth;
-  else if (collapsedPreview) railWidth = previewWidth;
   else railWidth = RAIL.COLLAPSED;
 
   /*
-   * What the page reserves, and why it is not `railWidth` in hover mode.
+   * What the page reserves, and why it is not `railWidth` during a preview.
    *
-   * The hover rail is an overlay: it opens over the content instead of pushing
-   * it. Reserving its open width would move the whole page every time the
-   * pointer crossed the edge — which is what it used to do, because `reserved`
-   * dropped from 72 to 0 the moment the pointer arrived. In hover mode the
-   * layout is therefore pinned to the icon rail, and only the rail itself grows.
+   * A preview is an overlay: it opens over the content instead of pushing it.
+   * Reserving its width would move the whole page every time the pointer crossed
+   * the edge. So the layout keeps reserving what the rail's *mode* reserves — the
+   * icon strip at 72, nothing at all when hidden — and only the rail itself grows.
    */
   const reserved = resizing
     ? railWidth
-    : mode === "hover"
-      ? /* B1: nothing to reserve — the board gets the whole width. */
-        0
+    : hoverOpen
+      ? hidden
+        ? 0
+        : RAIL.COLLAPSED
       : railWidth;
 
   return {

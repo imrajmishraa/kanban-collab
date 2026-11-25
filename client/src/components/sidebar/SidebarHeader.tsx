@@ -2,7 +2,6 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import {
   MousePointerBanIcon,
   SidebarLeftIcon,
-  MousePointerOff01Icon,
   LayoutAlignLeftIcon,
 } from "@hugeicons/core-free-icons";
 import { useNavigate } from "react-router-dom";
@@ -11,7 +10,7 @@ import KanbanIcon from "@/assets/KanbanIcon";
 
 import { Tooltip } from "@/components/Tooltips/ToolTip";
 
-import { useSidebarState, type SidebarMode } from "@/features/dashboard";
+import { useSidebarState } from "@/features/dashboard";
 
 interface SidebarHeaderProps {
   collapsed: boolean;
@@ -20,7 +19,6 @@ interface SidebarHeaderProps {
   /** True while the rail is open only because the pointer is over it. */
   hovering?: boolean;
   /** Decides which hover hint the collapsed logo shows. */
-  mode?: SidebarMode;
 }
 
 const isMac =
@@ -31,7 +29,6 @@ const SidebarHeader = ({
   collapsed,
   onToggle,
   hovering = false,
-  mode = "open",
 }: SidebarHeaderProps) => {
   const navigate = useNavigate();
   const setMode = useSidebarState((state) => state.setMode);
@@ -72,9 +69,7 @@ const SidebarHeader = ({
             {/* Hover hint, hidden normally, visible on hover: a pointer when
                 the rail opens by hovering, an arrow when it opens on click. */}
             <HugeiconsIcon
-              icon={
-                mode === "hover" ? MousePointerOff01Icon : LayoutAlignLeftIcon
-              }
+              icon={LayoutAlignLeftIcon}
               size={18}
               strokeWidth={1.8}
               className="

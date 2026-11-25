@@ -16,7 +16,7 @@ describe("useSidebarState", () => {
   beforeEach(reset);
 
   it("derives `collapsed` from `mode` for every mode", () => {
-    for (const mode of ["open", "collapsed", "hover"] as const) {
+    for (const mode of ["open", "collapsed", "hidden"] as const) {
       useSidebarState.getState().setMode(mode);
 
       const state = useSidebarState.getState();
@@ -25,8 +25,7 @@ describe("useSidebarState", () => {
     }
   });
 
-  it("clears `hovering` when leaving hover mode", () => {
-    useSidebarState.getState().setMode("hover");
+  it("clears `hovering` on an explicit mode change", () => {
     useSidebarState.getState().setHovering(true);
     expect(useSidebarState.getState().hovering).toBe(true);
 
@@ -35,6 +34,16 @@ describe("useSidebarState", () => {
     const state = useSidebarState.getState();
     expect(state.mode).toBe("collapsed");
     expect(state.hovering).toBe(false);
+  });
+
+  it("previews a closed rail without leaving its mode", () => {
+    useSidebarState.getState().setMode("collapsed");
+    useSidebarState.getState().peek();
+    expect(useSidebarState.getState().hovering).toBe(true);
+    expect(useSidebarState.getState().mode).toBe("collapsed");
+
+    useSidebarState.getState().unpeek();
+    expect(useSidebarState.getState().hovering).toBe(false);
   });
 
   it("toggles between open and collapsed", () => {
@@ -47,8 +56,8 @@ describe("useSidebarState", () => {
     expect(useSidebarState.getState().collapsed).toBe(false);
   });
 
-  it("expands out of hover mode and drops the hover flag", () => {
-    useSidebarState.getState().setMode("hover");
+  it("expands and drops the preview flag", () => {
+    useSidebarState.getState().setMode("collapsed");
     useSidebarState.getState().setHovering(true);
 
     useSidebarState.getState().expand();

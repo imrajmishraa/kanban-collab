@@ -115,25 +115,37 @@ describe("computeRail", () => {
     expect(layout.reserved).toBe(RAIL.COLLAPSED);
   });
 
-  it("hover opens at the default width, and reserves nothing", () => {
+  it("a collapsed rail previews at the default width over its icons", () => {
     /* The pinned rail was dragged to 300; the preview still arrives at DEFAULT — a preview
-       that changes width with the pinned rail is a surprise, not a shortcut. And it reserves
-       nothing: at rest hover mode is off the page entirely (B1). */
-    const open = at({ mode: "hover", hovering: true, width: 300 });
+       that changes width with the pinned rail is a surprise, not a shortcut. The icons stay
+       in the page, so the layout keeps reserving them (B1). */
+    const open = at({ mode: "collapsed", hovering: true, width: 300 });
+
+    expect(open.hoverOpen).toBe(true);
+    expect(open.railWidth).toBe(RAIL.DEFAULT);
+    expect(open.reserved).toBe(RAIL.COLLAPSED);
+  });
+
+  it("the preview is 288 even when the rail is dragged wide", () => {
+    const open = at({
+      mode: "collapsed",
+      hovering: true,
+      width: RAIL.MAX,
+    });
+
+    expect(open.railWidth).toBe(288);
+  });
+
+  it("a hidden rail previews over the page and reserves nothing", () => {
+    const open = at({ mode: "hidden", hovering: true });
 
     expect(open.hoverOpen).toBe(true);
     expect(open.railWidth).toBe(RAIL.DEFAULT);
     expect(open.reserved).toBe(0);
   });
 
-  it("hover is 288 even when the rail is dragged wide", () => {
-    const open = at({ mode: "hover", hovering: true, width: RAIL.MAX });
-
-    expect(open.railWidth).toBe(288);
-  });
-
-  it("hover at rest is off the page — nothing visible, nothing reserved", () => {
-    const rest = at({ mode: "hover", hovering: false });
+  it("a hidden rail at rest is off the page", () => {
+    const rest = at({ mode: "hidden", hovering: false });
 
     expect(rest.railWidth).toBe(0);
     expect(rest.reserved).toBe(0);
@@ -147,7 +159,7 @@ describe("computeRail", () => {
   });
 
   it("a drag overrides the mode: the width follows the pointer", () => {
-    const layout = at({ mode: "hover", hovering: false, resizing: true });
+    const layout = at({ mode: "collapsed", hovering: false, resizing: true });
 
     expect(layout.railWidth).toBe(RAIL.DEFAULT);
     expect(layout.reserved).toBe(RAIL.DEFAULT);

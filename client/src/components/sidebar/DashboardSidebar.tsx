@@ -95,13 +95,15 @@ export default function DashboardSidebar({
   };
 
   const onRailEnter = () => {
-    if (mode !== "hover") return;
+    /* Collapsed is one preview away from being readable: the pointer arriving opens
+       it over the page, leaving puts the icons back. */
+    if (mode !== "collapsed") return;
     cancelClose();
     setHovering(true);
   };
 
   const onRailLeave = () => {
-    if (mode !== "hover") return;
+    if (mode !== "collapsed") return;
     cancelClose();
     closeTimer.current = window.setTimeout(() => {
       closeTimer.current = null;
@@ -248,7 +250,6 @@ export default function DashboardSidebar({
             collapsed={!open}
             onToggle={onToggle}
             hovering={floating}
-            mode={mode}
           />
         </div>
 
@@ -276,7 +277,7 @@ export default function DashboardSidebar({
             is opening it. The divider is not rendered, so there is nothing to grab. */}
         {/* A2: the divider belongs to a column, not to the icon rail. On 72px there is
             nothing to grab, so nothing is drawn — a line you cannot drag is a lie. */}
-        {!embedded && railWidth > RAIL.COLLAPSED && mode !== "hover" && (
+        {!embedded && railWidth > RAIL.COLLAPSED && !floating && (
           <RailResizeHandle
             renderedWidth={railWidth}
             width={layout.width}
@@ -317,7 +318,7 @@ export default function DashboardSidebar({
             /* Always offered, including collapsed: that is the state you need
                it in to get back out of. */
             showSidebarMode
-            hoverMode={mode === "hover"}
+            hoverMode={floating}
           />
         </div>
       </aside>

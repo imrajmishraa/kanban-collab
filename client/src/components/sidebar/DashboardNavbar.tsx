@@ -11,7 +11,6 @@ import { NotificationsPanel } from "@/features/dashboard";
 import { Tooltip } from "@/components/Tooltips/ToolTip";
 import {
   LayoutAlignLeftIcon,
-  MousePointerOff01Icon,
   PanelRightIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -159,7 +158,7 @@ export default function DashboardNavbar() {
         {showRailToggle && (
           <div className="group/expand relative flex h-12 shrink-0 items-center justify-center">
             <Tooltip
-              label={sidebarMode === "hover" ? "Keep open" : "Expand sidebar"}
+              label="Expand sidebar"
               highlight={isMac ? "⌘B" : "Ctrl B"}
               side="bottom"
               shape="solid"
@@ -176,9 +175,9 @@ export default function DashboardNavbar() {
                 onBlur={() => unpeek()}
                 onClick={(event) => {
                   event.stopPropagation();
-                  /* B5: hovering previewed it, so the click pins what the reader is looking
-                     at instead of collapsing it. */
-                  if (sidebarMode === "hover") openFromPreview();
+                  /* Hovering previewed it, so a click pins what the reader is looking at
+                     instead of collapsing it. */
+                  if (sidebarMode === "hidden") openFromPreview();
                   else toggleHidden();
                 }}
                 aria-label="Expand sidebar"
@@ -201,11 +200,7 @@ export default function DashboardNavbar() {
                     when the rail opens by hovering, an arrow when it opens on click — the
                     same two icons the rail's own header uses, so the two ends agree. */}
                 <HugeiconsIcon
-                  icon={
-                    sidebarMode === "hover"
-                      ? MousePointerOff01Icon
-                      : LayoutAlignLeftIcon
-                  }
+                  icon={LayoutAlignLeftIcon}
                   size={18}
                   strokeWidth={1.8}
                   className="absolute text-(--text-muted) opacity-0 scale-75 transition-all duration-150 group-hover:scale-100 group-hover:opacity-100 group-hover:text-(--text-primary) group-focus-within:scale-100 group-focus-within:opacity-100 group-focus-within:text-(--text-primary) focus:opacity-100"
