@@ -445,8 +445,8 @@ other.
 every label in `a11y`. A new attribute is a field inside a group, so the API
 cannot creep back over the eight-prop cap in `docs/change-rules.md` §3.
 
-**Presets** — `default`, `quiet` (one visible toast, no dismiss button, the
-moment lifetime), `assertive` (five visible, expanded, 8s), `auth` (the auth
+**Presets** — `default`, `quiet` (one visible toast, a `soft` fill, no dismiss
+button, the moment lifetime), `assertive` (five visible, expanded, 8s), `auth` (the auth
 tone at `lg`), `compact` (320px, tighter gap and offset). A preset is merged
 *under* the explicit groups, never over them: a preset that could override what
 the caller wrote would be a transient mode in a persisted key with a nicer name.
@@ -457,20 +457,41 @@ is the only writer of the radius: the surface table deliberately carries no
 `--border-radius`, so the two cannot disagree.
 
 **Size** — the type scale inside the bubble: `sm` 12/11px, `md` 13/12px (the
-default), `lg` 15/13px. The description is `--text-muted` at every size; a
+default), `lg` 15/13px. The description is `--toast-description` at every size,
+which a filling tone overrides; a
 description that competes with the title is a paragraph, and a toast is not a
 place for one.
 
-**Tone** — the surface, and there are nine. `auto` is the elevated panel above;
-`neutral` is the same panel without the gradient. `brand`, `success`, `warning`
-and `danger` fill with their token. `auth` is the blue that belongs to neither
-the accent nor the status set: it marks a moment rather than a result — signing
-in, finishing onboarding — so it fills the whole toast and dismisses faster than
-a success does. `accent` is the one place the accent is allowed to fill, in the
-segmented control's pair (`--accent-fill` with `--accent` text): a single "look
-here" that is not an error. `inverse` is the tooltip's family — a light capsule
-on a dark page, a dark one on a light page — for a toast that has to sit *above* a
-busy board rather than beside it.
+**Tone** — the surface, and there are eleven. `auto` is the elevated panel above;
+`neutral` is the same panel without the gradient. `brand`, `success`, `warning`,
+`danger` and `info` fill with their token — the last four are the tooltip's tone
+table, `info` on `--link`, which the toast had been missing while `toastInfo`
+painted a plain panel. `muted` is the surface a toast takes when it should
+recede: `--bg-surface` with a hairline, the inks the tooltip's `outline` variant
+uses. `auth` is the blue that belongs to neither the accent nor the status set:
+it marks a moment rather than a result — signing in, finishing onboarding — so it
+fills the whole toast and dismisses faster than a success does. `accent` is the
+one place the accent is allowed to fill, in the segmented control's pair
+(`--accent-fill` with `--accent` text): a single "look here" that is not an error.
+`inverse` is the tooltip's family — a light capsule on a dark page, a dark one on
+a light page — for a toast that has to sit *above* a busy board rather than
+beside it.
+
+**Fill** — how hard a tone is applied, three strengths, each one a recipe this
+document already had for something else:
+
+| Fill | Recipe | Where it comes from |
+|---|---|---|
+| `solid` | the tone fills the surface | `button-solid`, the status buttons |
+| `soft` | the tone tints the panel and edges it; the ink stays the page's | `chip`, `brand-muted` + `brand-border`, `accent-soft` |
+| `outline` | no fill; the tone is only the edge | `button-danger`, the tooltip's `outline` |
+
+Ten tones at three strengths is thirty surfaces — `auto` has no colour to
+soften, so it stays the gradient panel at every strength — and it is one table
+plus one function (`toneSurface`) rather than thirty rows. `solid` is the
+default, so a tone alone keeps the surface it always had. `soft` and `outline`
+deliberately leave the text in the page's ink: colour is information here — it
+edges the surface and backs the icon, it does not become the text.
 
 **A filled tone carries three inks, not one.** The title takes `--normal-text`,
 the description `--toast-description`, the close glyph `--toast-close`, and a
