@@ -141,16 +141,16 @@ export const SIZE_CLASS: Record<
 > = {
   sm: {
     title: "!text-[12px] !font-semibold !leading-[1.35]",
-    description: "!text-[11px] !leading-[1.5] !text-(--text-muted)",
+    description: "!text-[11px] !leading-[1.5] !text-(--toast-description)",
   },
   md: {
     title: "!text-[13px] !font-semibold !leading-[1.35] !tracking-[-0.1px]",
     description:
-      "!text-[12px] !leading-[1.5] !tracking-[-0.05px] !text-(--text-muted)",
+      "!text-[12px] !leading-[1.5] !tracking-[-0.05px] !text-(--toast-description)",
   },
   lg: {
     title: "!text-[15px] !font-semibold !leading-[1.35]",
-    description: "!text-[13px] !leading-[1.5] !text-(--text-muted)",
+    description: "!text-[13px] !leading-[1.5] !text-(--toast-description)",
   },
 };
 
@@ -175,6 +175,10 @@ export const SURFACE: CssVars = {
     "linear-gradient(to bottom, color-mix(in srgb, var(--text-primary) 5%, var(--bg-elevated)), var(--bg-elevated) 62%)",
   "--normal-border": "var(--border)",
   "--normal-text": "var(--text-primary)",
+  /* Two inks a tone can replace. The description and the close glyph are the
+     two places a filled surface used to keep a grey from the page. */
+  "--toast-description": "var(--text-muted)",
+  "--toast-close": "var(--text-muted)",
   "--width": `${DEFAULT_WIDTH_PX}px`,
   "--toast-mobile-width": `${MOBILE_WIDTH_PX}px`,
 };

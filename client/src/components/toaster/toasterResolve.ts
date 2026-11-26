@@ -69,9 +69,9 @@ const TRANSITION =
  */
 const CLOSE_BUTTON = [
   "!static !transform-none !shrink-0 !order-last",
-  "!size-6 !border-0 !bg-transparent !text-(--text-muted)",
+  "!size-6 !border-0 !bg-transparent !text-(--toast-close)",
   "!transition-colors !duration-150",
-  "hover:!bg-(--tint-8) hover:!text-(--text-primary)",
+  "hover:!bg-(--tint-8) hover:!text-(--normal-text)",
   "[&_svg]:!size-4",
 ];
 
