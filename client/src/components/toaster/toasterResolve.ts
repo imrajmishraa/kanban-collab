@@ -165,9 +165,9 @@ export function resolveToaster(props: ToasterProps = {}): ResolvedToaster {
     }),
     ...(maxWidth !== undefined && { "--toast-max-width": dimension(maxWidth) }),
     ...(minWidth !== undefined && { "--toast-min-width": dimension(minWidth) }),
-    ...(description.lines !== undefined && {
-      "--toast-lines": description.lines,
-    }),
+    /* `0` is not "clamp to nothing" — a description with no lines is no
+       description. Anything not positive means "natural height". */
+    ...((description.lines ?? 0) > 0 && { "--toast-lines": description.lines }),
     /* After the tone, so an explicit ink or description colour wins over it. */
     ...(ink !== undefined && { "--normal-text": ink }),
     ...(description.color !== undefined && {
@@ -229,7 +229,7 @@ export function resolveToaster(props: ToasterProps = {}): ResolvedToaster {
     closeButtonAriaLabel: closeLabel,
     toastStyle,
     classNames,
-    ...(description.lines !== undefined && {
+    ...((description.lines ?? 0) > 0 && {
       descriptionClassName: "!line-clamp-[var(--toast-lines)]",
     }),
     rootClass: join(MOBILE_WIDTH, toaster),

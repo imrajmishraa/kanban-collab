@@ -478,7 +478,8 @@ paragraph, and a toast is not a place for one.
 step of its own, `xs`–`lg`, so a `lg` title can carry an `xs` footnote), `color`
 (any token or CSS colour, written to `--toast-description`) and `lines` (the
 tooltip's `maxLines`, carried as `--toast-lines` so the clamp follows the number
-rather than a fixed class — `1` is a single line, absent is natural). `ink` does
+rather than a fixed class — `1` is a single line, and anything not positive or
+absent is natural height). `ink` does
 the same for the title: an explicit `--normal-text` for a colour the tone table
 does not have. Both go through variables, never a generated class, because a
 class built from a runtime string is never compiled.
@@ -553,7 +554,9 @@ enter and exit differ they become state-scoped classes on sonner's own
 It is the toast's own `::after`: no extra element, nothing long content can push
 out of the bubble, and no second timer — the rail reads the same `duration` the
 dismissal does, so the two cannot drift. `animated: false` leaves a still
-hairline instead, for a toast that is a label rather than a countdown.
+hairline instead, for a toast that is a label rather than a countdown, and
+`showOnLoading: false` hides it on a loading toast — which has no lifetime to
+count down — off sonner's own `data-type="loading"`.
 
 **The dismiss button sits inside the bubble.** Sonner anchors it to the outside
 corner by default, floating on the page; here it is a flex child, so it is

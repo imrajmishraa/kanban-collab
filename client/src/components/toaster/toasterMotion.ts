@@ -80,6 +80,10 @@ export function resolveProgress(
       "after:bg-(--toast-progress)",
       progress.animated !== false &&
         "after:origin-left after:[animation:toast-progress_var(--toast-progress-duration)_linear_forwards]",
+      /* A loading toast has no lifetime to count down; sonner marks it
+         `data-type="loading"`, so the rail can be hidden without a second prop. */
+      progress.showOnLoading === false &&
+        "[&[data-type=loading]]:after:!hidden",
     ),
     vars: {
       "--toast-progress-duration": `${duration}ms`,
