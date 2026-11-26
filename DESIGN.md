@@ -1,4 +1,4 @@
----
+[---
 version: alpha
 name: Kanban Collab
 description: A dense, two-theme work surface for real-time collaborative Kanban boards. Colour is information, never decoration; depth comes from a hairline; one accent, spent carefully.
@@ -483,3 +483,4 @@ Focus is visible on every interactive element through a global `:focus-visible` 
 A new component is added by writing its recipe into the front matter of this file first, then the component. If a value cannot be expressed with an existing token, the answer is a new token in `index.css` with a value in both themes — not a colour literal in a `className`. `npm run lint:colors` enforces the last part; the rest is review.
 
 When this document and the code disagree, the code is right and this file is a bug worth a PR. `client/Design.md` remains the long-form reference: component-by-component recipes, the keyboard map, the copy rules and the ChaiUI alignment notes. This file is the summary a new contributor reads first, and the token list a tool can read.
+](https://kanban-collab-client.onrender.com/workspaces/6a5e29c4907b1a38241358cf)
