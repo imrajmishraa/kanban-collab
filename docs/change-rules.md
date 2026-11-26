@@ -10,9 +10,9 @@ Three of these rules are already enforced by scripts that run in CI. The rest ar
 review rules, marked **[review]** — they are the ones a human or an agent has to
 hold, because no grep can judge them.
 
-Read this with `AGENTS.md`: that file records constraints that have already
-broken production (ESM dependencies, cookie scope, deployment paths). This file
-records what a change may *look like*.
+Read this with [`docs/constraints.md`](constraints.md): that file records
+constraints that have already broken production (ESM dependencies, cookie scope,
+deployment paths). This file records what a change may *look like*.
 
 ---
 
@@ -74,8 +74,8 @@ Rules that apply to every class:
   change turns a 5-line diff into a 300-line one.
 - **Deleting is free.** Removal never counts against the budget — the counter is
   *added* lines, not touched ones.
-- **No new dependency** without checking `AGENTS.md` §1 (the server compiles to
-  CommonJS; an ESM-only package takes the API down at load).
+- **No new dependency** without checking `docs/constraints.md` §1 (the server
+  compiles to CommonJS; an ESM-only package takes the API down at load).
 
 ---
 
@@ -273,5 +273,5 @@ Ten questions, in order. A "no" stops the review.
 - **No coverage threshold.** It rewards testing the easy files.
 - **No "no `any`" rule.** `tsc` is already strict; a rule on top of it produces
   suppressions, not types.
-- **No dependency-count limit.** `AGENTS.md` §1 already decides what may be
-  added, and it is a stronger rule than a number.
+- **No dependency-count limit.** `docs/constraints.md` §1 already decides what
+  may be added, and it is a stronger rule than a number.

@@ -4,13 +4,14 @@ The method for any agent (or person) who changes, reviews or debugs code here.
 
 Read in this order:
 
-1. [`AGENTS.md`](AGENTS.md) — constraints that already broke production
-   (CommonJS server, cookies, OAuth callback, Tailwind v4).
+1. [`docs/constraints.md`](docs/constraints.md) — constraints that already broke
+   production (CommonJS server, cookies, OAuth callback, Tailwind v4), the
+   per-package commands, the conventions and the gates.
 2. [`docs/change-rules.md`](docs/change-rules.md) — how big a change may be, and
    the gates that fail the build.
 3. **This file** — how to get from "something is wrong" to "it is fixed, and here
    is the proof". It does not repeat the two above; it is the order of work.
-4. [`LAYOUT.md`](LAYOUT.md) — before touching the shell (rail, board, column).
+4. [`DESIGN.md`](DESIGN.md) — before touching the shell (rail, board, column).
 
 ---
 
@@ -197,17 +198,18 @@ Check for these before you call something done.
 - Every control has a keyboard path and a touch path; hover is never the only way.
 - Keyboard shortcuts go through **one** registration. Search for the key before
   binding it.
-- Change layout behaviour → change [`LAYOUT.md`](LAYOUT.md) in the same PR.
+- Change layout behaviour → change [`DESIGN.md`](DESIGN.md) in the same PR.
 
 ---
 
 ## 7. Definition of done
 
-In addition to `AGENTS.md` and `docs/change-rules.md` §6–7:
+In addition to [`docs/constraints.md`](docs/constraints.md) and
+`docs/change-rules.md` §6–7:
 
 1. The cause is written down in one paragraph.
 2. A test, or a harness output, shows the bug before and its absence after — or
    the report says "not run" and why.
 3. Every gate passed, or the report names the gate you could not run.
-4. `LAYOUT.md` / `docs/` updated if a documented behaviour moved.
+4. `DESIGN.md` / `docs/` updated if a documented behaviour moved.
 5. The report lists what was **not** covered.

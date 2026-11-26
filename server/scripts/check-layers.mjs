@@ -11,7 +11,8 @@
 // `**/*.js` ignore does not match this extension, so without this line
 // `npm run lint` fails on a script that runs perfectly well.
 /**
- * Server structure rules — the layering `AGENTS.md` describes, made mechanical.
+ * Server structure rules — the layering `docs/constraints.md` describes, made
+ * mechanical.
  *
  * The client has `check-paths.mjs` for this. The server had nothing, so
  * "controllers stay thin" and "use cases live in application/" were conventions
