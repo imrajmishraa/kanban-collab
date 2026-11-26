@@ -41,6 +41,52 @@ describe("tone surfaces", () => {
   });
 });
 
+describe("the tone set", () => {
+  it("covers the status set, the accent and the tooltip's inverse", () => {
+    expect(Object.keys(TONE_SURFACE)).toEqual([
+      "auto",
+      "brand",
+      "success",
+      "warning",
+      "danger",
+      "neutral",
+      "auth",
+      "accent",
+      "inverse",
+    ]);
+  });
+
+  it("gives every filling tone its own description and close ink", () => {
+    for (const [tone, surface] of Object.entries(TONE_SURFACE)) {
+      if (tone === "auto") continue;
+
+      expect(surface["--toast-description"]).toBeTruthy();
+      expect(surface["--toast-close"]).toBeTruthy();
+    }
+  });
+
+  it("uses the ink that flips with the theme on a status fill", () => {
+    /* White on the dark theme's success fill is 1.9:1; this is the fix. */
+    for (const tone of ["brand", "success", "warning", "danger"] as const) {
+      expect(TONE_SURFACE[tone]["--normal-text"]).toBe("var(--inverse-text)");
+    }
+
+    expect(TONE_SURFACE.auth["--normal-text"]).toBe("var(--auth-ink)");
+  });
+
+  it("paints the accent tone from the segmented-control pair", () => {
+    expect(TONE_SURFACE.accent["--normal-bg"]).toBe("var(--accent-fill)");
+    expect(TONE_SURFACE.accent["--normal-text"]).toBe("var(--accent)");
+  });
+
+  it("takes the inverse tone from the tooltip's family", () => {
+    expect(TONE_SURFACE.inverse["--normal-bg"]).toBe("var(--inverse-bg)");
+    expect(TONE_SURFACE.inverse["--normal-border"]).toBe(
+      "var(--inverse-border)",
+    );
+  });
+});
+
 describe("lifetimes", () => {
   it("keeps an error on screen longest and a moment briefest", () => {
     expect(TOAST_MS.error).toBeGreaterThan(TOAST_MS.default);

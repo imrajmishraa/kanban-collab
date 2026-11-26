@@ -32,9 +32,19 @@ satisfiable.
 
 ## One writer per fact
 
-- **Surface** — `TONE_SURFACE` in `lib/toastTokens.ts`, and nowhere else. `auth`
-  is a tone, not a variant with its own table. Two writers of `--normal-bg` is
-  how a brand toast and an auth toast could disagree silently.
+- **Surface** — `TONE_SURFACE` in `lib/toastTokens.ts`, and nowhere else. Nine
+  tones: `auto`, `brand`, `success`, `warning`, `danger`, `neutral`, `auth`,
+  `accent`, `inverse`. `auth` is a tone, not a variant with its own table; two
+  writers of `--normal-bg` is how a brand toast and an auth toast could disagree
+  silently. `accent` and `inverse` are the two the rest of the system already
+  named: the segmented control's `--accent-fill`/`--accent` pair, and the
+  tooltip's inverse family.
+- **Ink** — a tone sets three: `--normal-text`, `--toast-description`,
+  `--toast-close`. A filled surface that leaves the description on
+  `--text-muted` is a grey on a fill, and the status fills take
+  `--inverse-text`, which is dark ink on a bright fill in one theme and the
+  reverse in the other. White on the dark theme's `--success` is 1.9:1; the ink
+  that flips with the token is 10.3:1.
 - **Radius** — `SHAPE_CLASS`. `SURFACE` deliberately carries no
   `--border-radius`.
 - **Lifetime** — `TOAST_MS`, read by the stack's default and by the per-kind

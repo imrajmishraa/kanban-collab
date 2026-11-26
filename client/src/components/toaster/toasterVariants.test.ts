@@ -46,9 +46,9 @@ describe("size variants", () => {
     expect(SIZE_CLASS.lg.title).toContain("15px");
   });
 
-  it("keeps every description muted", () => {
+  it("reads the description ink from the tone, not from the page", () => {
     for (const scale of Object.values(SIZE_CLASS)) {
-      expect(scale.description).toContain("text-(--text-muted)");
+      expect(scale.description).toContain("text-(--toast-description)");
     }
   });
 });
