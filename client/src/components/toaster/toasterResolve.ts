@@ -2,8 +2,9 @@ import type { ToastClassnames } from "sonner";
 
 import { TOAST_MS, toneSurface, type CssVars } from "@/lib/toastTokens";
 
+import { join, resolveAnimation, resolveProgress } from "./toasterMotion";
+
 import {
-  ANIMATION_CLASS,
   DEFAULT_WIDTH_PX,
   DESCRIPTION_INK,
   DESCRIPTION_SIZE_CLASS,
@@ -95,15 +96,14 @@ const CANCEL_BUTTON = [
   "sm:!h-7 sm:!px-2.5",
 ].join(" ");
 
-const join = (...parts: Array<string | false | undefined>) =>
-  parts.filter(Boolean).join(" ");
-
 /** Preset first, explicit group second — the caller always wins. */
 const merge = <T extends object>(base?: T, override?: T): T =>
   ({ ...base, ...override }) as T;
 
 export function resolveToaster(props: ToasterProps = {}): ResolvedToaster {
   const preset = PRESET[props.preset ?? "default"];
+  const animation = props.animation ?? preset.animation;
+  const progress = props.progress ?? preset.progress;
 
   const appearance = merge(preset.appearance, props.appearance);
   const layout = merge(preset.layout, props.layout);
@@ -139,7 +139,6 @@ export function resolveToaster(props: ToasterProps = {}): ResolvedToaster {
     duration = TOAST_MS.default,
     closeButton = true,
     closeButtonShape = "md",
-    animation = "scale",
     swipeDirections = ["right", "top"],
     hotkey = ["altKey", "KeyT"],
   } = behaviour;
@@ -152,6 +151,8 @@ export function resolveToaster(props: ToasterProps = {}): ResolvedToaster {
 
   const { toaster, ...toastClassNames } = props.classNames ?? {};
   const scale = SIZE_CLASS[size];
+  const motion = resolveAnimation(animation);
+  const rail = resolveProgress(progress, duration);
 
   const toastStyle: CssVars = {
     ...SURFACE,
@@ -172,6 +173,9 @@ export function resolveToaster(props: ToasterProps = {}): ResolvedToaster {
     ...(description.color !== undefined && {
       "--toast-description": description.color,
     }),
+    "--toast-anim-duration": `${motion.duration}ms`,
+    "--toast-anim-ease": motion.easing,
+    ...rail.vars,
   };
 
   const classNames: ToastClassnames = {
@@ -184,7 +188,8 @@ export function resolveToaster(props: ToasterProps = {}): ResolvedToaster {
       maxWidth !== undefined && "!max-w-[var(--toast-max-width)]",
       minWidth !== undefined && "!min-w-[var(--toast-min-width)]",
       SHADOW,
-      ANIMATION_CLASS[animation],
+      motion.classes,
+      rail.classes,
     ),
     title: join(scale.title, toastClassNames.title),
     description: join(

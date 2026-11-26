@@ -225,6 +225,42 @@ describe("the tooltip's per-toast attributes", () => {
   });
 });
 
+describe("preventDuplicate", () => {
+  it("derives an id from the kind and the message", () => {
+    const spy = spyOn("error");
+
+    toastError(new Error("Poll failed"), undefined, { preventDuplicate: true });
+
+    const [, options] = spy.mock.calls[0] as unknown as [
+      string,
+      { id?: string },
+    ];
+
+    expect(options.id).toBe("error:Poll failed");
+  });
+
+  it("keeps an explicit id", () => {
+    const spy = spyOn("success");
+
+    toastSuccess("Saved", undefined, { preventDuplicate: true, id: "mine" });
+
+    const [, options] = spy.mock.calls[0] as unknown as [
+      string,
+      { id?: string },
+    ];
+
+    expect(options.id).toBe("mine");
+  });
+
+  it("adds nothing when it is off", () => {
+    const spy = spyOn("success");
+
+    toastSuccess("Saved");
+
+    expect(spy.mock.calls[0][1]).not.toHaveProperty("id");
+  });
+});
+
 describe("delay", () => {
   it("shows at once when no delay is asked for", () => {
     const spy = spyOn("info");

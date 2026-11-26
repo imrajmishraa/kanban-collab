@@ -538,11 +538,22 @@ default is 4s. A per-toast duration still wins, and a per-toast `delay` holds th
 toast back — 200ms is how a save that usually finishes in 40 stops flashing a
 toast at all.
 
-**Motion** — `behaviour.animation` picks the property the enter and leave
-transition runs on: `scale` (transform and opacity together, the default),
-`fade`, `slide`, or `none`. `none` is the one value that also honours
-`prefers-reduced-motion` for a reader who has asked for no motion at all; the
-rest rely on sonner's own reduced-motion handling.
+**Motion** — its own group, because `enter` and `exit` are separate decisions: a
+stack that fades in and slides out is a normal thing to want, and one property
+for both is the compromise that makes it impossible. `animation` takes a
+shorthand string (`"fade"`) or the group — `enter`, `exit`, `duration` in ms,
+`easing` as any CSS timing function, and `respectReducedMotion` (default on),
+which adds `motion-reduce:!transition-none`. The four properties are `scale`
+(transform and opacity together, the default), `fade`, `slide` and `none`; when
+enter and exit differ they become state-scoped classes on sonner's own
+`data-mounted` and `data-removed`, which is the only place those two can diverge.
+
+**Progress** — `progress.visible` draws a rail along one edge of the toast, from
+`--toast-progress`, `--toast-progress-thickness` and `--toast-progress-duration`.
+It is the toast's own `::after`: no extra element, nothing long content can push
+out of the bubble, and no second timer — the rail reads the same `duration` the
+dismissal does, so the two cannot drift. `animated: false` leaves a still
+hairline instead, for a toast that is a label rather than a countdown.
 
 **The dismiss button sits inside the bubble.** Sonner anchors it to the outside
 corner by default, floating on the page; here it is a flex child, so it is
@@ -559,7 +570,9 @@ what the design asks for; both are one control.
 reaches one. `tone` and `fill`, `descriptionTone` (a warning line inside a
 neutral toast — the tooltip's attribute of the same name), `icon` (a glyph for
 one toast), `copyValue` (a Copy button, ignored when an `action` is set), `id`
-(re-fire replaces instead of stacking), `action` and `cancel`, `dismissible`,
+(re-fire replaces instead of stacking), `preventDuplicate` (derives that id from
+the kind and the message, so a poll that fails every tick is one error),
+`action` and `cancel`, `dismissible`,
 `closeButton`, `onDismiss`, `onAutoClose`, `toasterId` and `testId` live there.
 `id` is what turns "Saving…" into "Saved" in place rather than into two toasts,
 and `toastPromise` is the same idea for a whole async operation.
