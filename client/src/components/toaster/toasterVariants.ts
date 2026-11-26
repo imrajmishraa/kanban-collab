@@ -1,7 +1,12 @@
 import type { ReactNode } from "react";
 import type { ToastClassnames } from "sonner";
 
-import { TOAST_MS, type CssVars, type ToastTone } from "@/lib/toastTokens";
+import {
+  TOAST_MS,
+  type CssVars,
+  type ToastFill,
+  type ToastTone,
+} from "@/lib/toastTokens";
 
 /* ── Types ──────────────────────────────────────────────────────────
    The API is seven axes, not twenty props: `docs/change-rules.md` §3.3 caps a
@@ -36,6 +41,8 @@ export interface AppearanceOptions {
   shape?: ToasterShape;
   size?: ToasterSize;
   tone?: ToasterTone;
+  /** How hard the tone is applied: a fill, a tint, or an edge. */
+  fill?: ToastFill;
   theme?: ToasterTheme;
   /** Replaces the five status glyphs, or sonner's own close glyph. */
   icons?: Partial<Record<ToasterIconName, ReactNode>>;
@@ -210,7 +217,7 @@ export const MOBILE_WIDTH = [
 export const PRESET: Record<ToasterPreset, ToasterConfig> = {
   default: {},
   quiet: {
-    appearance: { size: "sm" },
+    appearance: { size: "sm", fill: "soft" },
     layout: { visibleToasts: 1 },
     behaviour: { closeButton: false, duration: TOAST_MS.moment },
   },

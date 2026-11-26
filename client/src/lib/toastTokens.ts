@@ -36,17 +36,10 @@ export type CssVars = CSSProperties &
  * while `--inverse-text` gives 10.3:1 and 11.2:1 there and still clears 4.5:1 in
  * the light theme. `auth` is the exception — a blue that wants white in both.
  *
- * `auth` is a tone here rather than a variant of its own: it is a surface like
- * the others, and keeping it in a second table meant a second writer of
- * `--normal-bg`, which is how a brand tone and an auth toast could resolve to
- * different colours with no warning.
- *
- * `inverse` and `accent` are the two the rest of the system already had a name
- * for: `DESIGN.md` gives the tooltip the inverse family (a light capsule on a
- * dark page, a dark one on a light page) and the segmented control
- * `--accent-fill` with `--accent` text. A toast that has to sit above a busy
- * board is the same job as a tooltip that has to sit above a chart, and a single
- * "look here" moment is the one place the accent is allowed to fill.
+ * The set is `components/Tooltips/constants.ts`'s tone table plus the surfaces
+ * `DESIGN.md` names elsewhere: `info` and `muted` are tones the tooltip already
+ * had and the toast did not; `inverse` and `accent` are the tooltip's family and
+ * the segmented control's pair; `auth` is this app's own blue.
  */
 export type ToastTone =
   | "auto"
@@ -54,7 +47,9 @@ export type ToastTone =
   | "success"
   | "warning"
   | "danger"
+  | "info"
   | "neutral"
+  | "muted"
   | "auth"
   | "accent"
   | "inverse";
@@ -93,12 +88,29 @@ export const TONE_SURFACE: Record<ToastTone, CssVars> = {
       "color-mix(in srgb, var(--inverse-text) 78%, transparent)",
     "--toast-close": "color-mix(in srgb, var(--inverse-text) 62%, transparent)",
   },
+  /* The tooltip's `info` tone, which the toast did not have. */
+  info: {
+    "--normal-bg": "var(--link)",
+    "--normal-border": "color-mix(in srgb, var(--link) 70%, black)",
+    "--normal-text": "var(--inverse-text)",
+    "--toast-description":
+      "color-mix(in srgb, var(--inverse-text) 78%, transparent)",
+    "--toast-close": "color-mix(in srgb, var(--inverse-text) 62%, transparent)",
+  },
   neutral: {
     "--normal-bg": "var(--bg-elevated)",
     "--normal-border": "var(--border)",
     "--normal-text": "var(--text-primary)",
     "--toast-description": "var(--text-muted)",
     "--toast-close": "var(--text-muted)",
+  },
+  /* A toast that recedes: the page's own surface, the tooltip's outline inks. */
+  muted: {
+    "--normal-bg": "var(--bg-surface)",
+    "--normal-border": "var(--hairline)",
+    "--normal-text": "var(--text-secondary)",
+    "--toast-description": "var(--text-muted)",
+    "--toast-close": "var(--text-subtle)",
   },
   auth: {
     "--normal-bg": "var(--auth)",
@@ -124,6 +136,79 @@ export const TONE_SURFACE: Record<ToastTone, CssVars> = {
     "--toast-close": "color-mix(in srgb, var(--inverse-text) 55%, transparent)",
   },
 };
+
+/**
+ * How hard a tone is applied — the three surface treatments `DESIGN.md` already
+ * defines for other components, rather than a name per combination:
+ *
+ * - `solid`   the tone fills the toast (`button-solid`, the status buttons).
+ * - `soft`    the tone tints it and edges it, the ink stays the page's
+ *             (`chip`, `brand-muted` + `brand-border`, `accent-soft`).
+ * - `outline` no fill, the tone is only the edge (`button-danger`, the
+ *             tooltip's `outline`).
+ *
+ * `solid` is the default, so every tone keeps the surface it had.
+ */
+export type ToastFill = "solid" | "soft" | "outline";
+
+export const TOAST_FILLS: ToastFill[] = ["solid", "soft", "outline"];
+
+/**
+ * The colour a tone is built from. `TONE_SURFACE` holds the solid fill; the
+ * other two are derived from this one token per tone, so a tone cannot be solid
+ * in one colour and soft in another.
+ */
+export const TONE_COLOR: Record<ToastTone, string | undefined> = {
+  auto: undefined,
+  brand: "var(--brand)",
+  success: "var(--success)",
+  warning: "var(--warning)",
+  danger: "var(--danger)",
+  info: "var(--link)",
+  neutral: "var(--border)",
+  muted: "var(--text-subtle)",
+  auth: "var(--auth)",
+  accent: "var(--accent)",
+  inverse: "var(--inverse-text)",
+};
+
+/**
+ * The surface for a tone at a given strength.
+ *
+ * `soft` and `outline` keep the page's ink and let the tone carry the fill and
+ * the edge, which is the rule the toast already wrote down for itself: colour is
+ * information here, it edges the surface and backs the icon, it does not become
+ * the text.
+ */
+export function toneSurface(
+  tone: ToastTone,
+  fill: ToastFill = "solid",
+): CssVars {
+  if (fill === "solid") return TONE_SURFACE[tone];
+
+  const color = TONE_COLOR[tone];
+
+  /* `auto` is the gradient panel itself; there is nothing to soften. */
+  if (color === undefined) return TONE_SURFACE[tone];
+
+  if (fill === "soft") {
+    return {
+      "--normal-bg": `color-mix(in srgb, ${color} 12%, var(--bg-elevated))`,
+      "--normal-border": `color-mix(in srgb, ${color} 40%, transparent)`,
+      "--normal-text": "var(--text-primary)",
+      "--toast-description": "var(--text-muted)",
+      "--toast-close": "var(--text-muted)",
+    };
+  }
+
+  return {
+    "--normal-bg": "var(--bg-elevated)",
+    "--normal-border": `color-mix(in srgb, ${color} 55%, transparent)`,
+    "--normal-text": "var(--text-primary)",
+    "--toast-description": "var(--text-muted)",
+    "--toast-close": "var(--text-muted)",
+  };
+}
 
 /**
  * Lifetimes, in ms — one table, read by the toaster's default and by the
