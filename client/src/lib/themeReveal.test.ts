@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { applyThemeWithReveal } from "./themeReveal";
 
 /**
- * The theme reveal, as design.md specifies it.
+ * The theme reveal, as DESIGN.md specifies it.
  *
  * The interesting behaviour is not the iris itself but what happens around it:
  * one reveal owns the frame at a time, a repeat press switches instantly

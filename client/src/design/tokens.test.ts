@@ -1,5 +1,5 @@
 /// <reference types="node" />
-// This suite reads the stylesheet and design.md off disk, so it needs the Node
+// This suite reads the stylesheet and DESIGN.md off disk, so it needs the Node
 // types. The app project deliberately does not include them (they would put
 // `process` and `Buffer` in scope for browser code); this reference pulls them
 // in for this file only.
@@ -10,7 +10,7 @@ import { describe, expect, it } from "vitest";
 /**
  * The design system's contract, checked against its own documentation.
  *
- * `design.md` publishes the token set, the type scale and the component
+ * `DESIGN.md` publishes the token set, the type scale and the component
  * recipes, and the tokens themselves live in `src/styles/tokens.css`. Nothing
  * keeps the two in step, so they drift the moment someone adds a token in a
  * hurry — which is how a design doc becomes a historical document. These tests
@@ -41,13 +41,15 @@ const css = [
    beside the client too, so moving it does not break the contract test — and say
    plainly what is missing rather than dying on an ENOENT deep in an import. */
 /* One canonical location, no fallback. A second candidate used to let a stale
-   copy win — `client/Design.md`, which on a case-insensitive filesystem is the
-   same path as `client/design.md`. One path, one file, same answer everywhere. */
+   copy win — a `Design.md` inside `client/`, which on a case-insensitive
+   filesystem shadowed the root file. One path, one file, same answer everywhere.
+   The name is `DESIGN.md`, capitals: CI runs on Linux, where `design.md` is a
+   different file and `existsSync` says so. */
 const designPath = ((): URL => {
-  const url = new URL("../../../design.md", import.meta.url);
+  const url = new URL("../../../DESIGN.md", import.meta.url);
   if (!existsSync(url)) {
     throw new Error(
-      `design.md not found at ${url.pathname}. This suite checks the token spec ` +
+      `DESIGN.md not found at ${url.pathname}. This suite checks the token spec ` +
         "against the stylesheet, so it needs the spec at the repo root, one level " +
         "above client/. Add the file, or delete this test if the spec is not " +
         "being kept.",
@@ -81,7 +83,7 @@ function block(source: string, selector: string): Map<string, string> {
 const dark = block(css, ":root");
 const light = block(css, ".light-theme");
 
-/* ── design.md ─────────────────────────────────────────────────────────── */
+/* ── DESIGN.md ─────────────────────────────────────────────────────────── */
 
 /**
  * The lines of a top-level `key:` block, as `name -> value`.
@@ -183,7 +185,7 @@ const ratio = (token: string, theme: "dark" | "light") => {
 
 /* ── the contract ──────────────────────────────────────────────────────── */
 
-describe("design.md mirrors the stylesheet", () => {
+describe("DESIGN.md mirrors the stylesheet", () => {
   it("documents every token the dark theme defines", () => {
     const undocumented = [...dark.keys()].filter(
       (token) => !docColors.has(token.replace(/^--/, "")),
@@ -259,7 +261,7 @@ describe("the accessibility table is measured, not remembered", () => {
   });
 
   it("fails the moment --text-muted is fixed, so the doc gets updated", () => {
-    // design.md records this as a known gap: 4.23:1 in light. When someone
+    // DESIGN.md records this as a known gap: 4.23:1 in light. When someone
     // darkens the token to rgb(115) the ratio clears 4.5 and this test turns
     // red, which is the reminder to delete the paragraph that documents it.
     expect(ratio("--text-muted", "dark")).toBeGreaterThanOrEqual(4.5);
