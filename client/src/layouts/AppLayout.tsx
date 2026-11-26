@@ -11,7 +11,6 @@ const RightPanel = lazy(() => import("@components/layout/RightPanel"));
 
 import { NewWorkspaceDialogProvider } from "@/components/dashboard/workspace/create/NewWorkspaceDialogProvider";
 
-import { RailEdgeHotZone } from "@/components/sidebar/RailEdgeHotZone";
 import { useSidebarState } from "@/features/dashboard/stores/sidebarState";
 import { useRailLayout } from "@/features/dashboard";
 import { useRightPanel } from "@/stores/rightPanel";
@@ -218,9 +217,9 @@ export default function AppLayout() {
           stripped={panelLayout.railStrip === true}
         />
 
-        {/* B2: the window's left edge opens the preview too, for a pointer that is already
-            heading there. Invisible, eight pixels, and only where the rail is not open. */}
-        <RailEdgeHotZone />
+        {/* The window's left edge no longer previews the rail: the strip that did it
+            was covered by the rail the moment it opened, so its `mouseleave` closed
+            what it had just opened. The navbar's icon is the one trigger. */}
 
         {/* Full width takes the window: the board is not rendered, so its
             subscriptions and sockets go with it. */}

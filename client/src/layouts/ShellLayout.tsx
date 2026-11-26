@@ -11,7 +11,7 @@ import { MOBILE_MAX_VIEWPORT } from "@/components/layout/panelMetrics";
 import { SHELL } from "@/lib/shellLayout";
 import { useRightPanel } from "@/stores/rightPanel";
 import { useLayoutShellStore } from "@/layouts/stores/layoutShellStore";
-import { useRailPreview } from "@/layouts/useRailPreview";
+import { cancelClose, scheduleEnd, startPreview } from "@/layouts/railPreview";
 import { useShellLayout } from "@/layouts/useShellLayout";
 import { useShellShortcuts } from "@/layouts/useShellShortcuts";
 import { useViewportWidth } from "@/features/dashboard";
@@ -53,9 +53,10 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
   /*
    * The hover preview: a second sidebar outside the group, because a hidden rail is
    * a 0px pane and the pane's `overflow-hidden` would clip a preview inside it. The
-   * timing (grace, cooldown, where to return to) lives in `useRailPreview`.
+   * timing (grace, cooldown, where to return to) lives in `railPreview.ts`, because the
+   * navbar's icon starts a preview and the overlay ends it — two components, one
+   * controller.
    */
-  const { startPreview, scheduleEnd, cancelClose } = useRailPreview();
   const previewing = railMode === "hover";
 
   const commit = useLayoutShellStore((s) => s.commit);
@@ -106,145 +107,139 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
   }
 
   return (
-    <div
-      ref={groupEl}
-      className="relative min-h-0 flex-1"
-      data-resizing={resizing ? "true" : undefined}
-    >
-      <Group
-        id="dashboard-shell"
-        orientation="horizontal"
-        className="h-full"
-        groupRef={groupRef}
-        onLayoutChange={onLayoutChange}
-        onLayoutChanged={onLayoutChanged}
+    <div className="flex h-full min-h-0 flex-col">
+      {/*
+        One navbar for the whole shell, always, full width — the rail and the column
+        are panes *below* it, so nothing has to offset itself against a rail width and
+        no sticky wrapper can sit above the preview overlay. Its rail icon is the only
+        way into the preview: no invisible edge strip, so nothing can open and close
+        the rail by itself.
+      */}
+      <DashboardNavbar embedded />
+
+      <div
+        ref={groupEl}
+        className="relative min-h-0 flex-1"
+        data-resizing={resizing ? "true" : undefined}
       >
-        <Panel
-          id="leftPanel"
-          defaultSize={initial.rail}
-          minSize={0}
-          maxSize={SHELL.left.max}
-          collapsible
-          collapsedSize={0}
-          className="min-w-0 overflow-hidden"
+        <Group
+          id="dashboard-shell"
+          orientation="horizontal"
+          className="h-full"
+          groupRef={groupRef}
+          onLayoutChange={onLayoutChange}
+          onLayoutChanged={onLayoutChanged}
         >
-          {state.railOpen && !previewing ? (
-            <div
-              className="h-full"
-              /* Collapsed, the strip itself is the trigger: 72px of sidebar is what
+          <Panel
+            id="leftPanel"
+            defaultSize={initial.rail}
+            minSize={0}
+            maxSize={SHELL.left.max}
+            collapsible
+            collapsedSize={0}
+            className="min-w-0 overflow-hidden"
+          >
+            {state.railOpen && !previewing ? (
+              <div
+                className="h-full"
+                /* Collapsed, the strip itself is the trigger: 72px of sidebar is what
                  the pointer lands on, so the handler has to be on its wrapper. */
-              onMouseEnter={state.railCollapsed ? startPreview : undefined}
-              onMouseLeave={state.railCollapsed ? scheduleEnd : undefined}
-            >
-              <DashboardSidebar
-                onToggle={() =>
-                  useSidebarState
-                    .getState()
-                    .setMode(state.railOpen ? "hidden" : "open")
-                }
-                embedded
-              />
-            </div>
-          ) : null}
-        </Panel>
+                onMouseEnter={state.railCollapsed ? startPreview : undefined}
+                onMouseLeave={state.railCollapsed ? scheduleEnd : undefined}
+              >
+                <DashboardSidebar
+                  onToggle={() =>
+                    useSidebarState
+                      .getState()
+                      .setMode(state.railOpen ? "hidden" : "open")
+                  }
+                  embedded
+                />
+              </div>
+            ) : null}
+          </Panel>
 
-        <Separator
-          {...separatorProps("left")}
-          onPointerDown={() => {
-            separatorProps("left").onPointerDown();
-            setResizing(true);
-          }}
-          onPointerUp={() => setResizing(false)}
-          className={
-            state.railOpen
-              ? "w-px shrink-0"
-              : "pointer-events-none w-0 shrink-0 overflow-hidden opacity-0"
-          }
-          disabled={!state.railOpen}
-        />
-
-        <Panel
-          id="centreLayout"
-          minSize={0}
-          maxSize="100%"
-          collapsible
-          collapsedSize={0}
-          className="min-w-0"
-        >
-          <main className="flex h-full flex-col overflow-y-auto scroll-smooth">
-            {/* `sticky top-0` chrome sits under the iOS status bar without an inset. */}
-            <div className="sticky top-0 z-50 bg-background pt-[env(safe-area-inset-top)]">
-              <DashboardNavbar embedded />
-            </div>
-
-            <div className="flex-1">{children}</div>
-          </main>
-        </Panel>
-
-        <Separator
-          {...separatorProps("right")}
-          onPointerDown={() => {
-            separatorProps("right").onPointerDown();
-            setResizing(true);
-          }}
-          onPointerUp={() => setResizing(false)}
-          className={
-            state.columnOpen
-              ? "w-px shrink-0"
-              : "pointer-events-none w-0 shrink-0 overflow-hidden opacity-0"
-          }
-          disabled={!state.columnOpen}
-        />
-
-        <Panel
-          id="rightPanel"
-          defaultSize={initial.column}
-          minSize={0}
-          maxSize="100%"
-          collapsible
-          collapsedSize={0}
-          className="min-w-0 overflow-hidden"
-        >
-          {state.columnOpen ? (
-            <RightPanel
-              appRailWidth={state.railOpen ? railPx : 0}
-              embedded
-              onResizeStart={() => setResizing(true)}
-              onResizeEnd={() => setResizing(false)}
-            />
-          ) : null}
-        </Panel>
-      </Group>
-
-      {/* Hidden: the window's left edge is the only thing left to hover, so an
-          invisible 8px strip opens the preview — the same gesture the app's own
-          `RailEdgeHotZone` gives the old layout. */}
-      {!state.railOpen && (
-        <div
-          aria-hidden="true"
-          onMouseEnter={startPreview}
-          onMouseLeave={scheduleEnd}
-          className="absolute inset-y-0 left-0 z-30 w-2"
-        />
-      )}
-
-      {previewing && (
-        <div
-          onMouseEnter={cancelClose}
-          onMouseLeave={scheduleEnd}
-          className="absolute inset-y-0 left-0 z-40"
-          style={{ width: RAIL.DEFAULT }}
-        >
-          <DashboardSidebar
-            /* A click inside the preview pins what the reader is looking at. */
-            onToggle={() => {
-              /* A click inside the preview pins what the reader is looking at. */
-              useSidebarState.getState().openFromPreview();
+          <Separator
+            {...separatorProps("left")}
+            onPointerDown={() => {
+              separatorProps("left").onPointerDown();
+              setResizing(true);
             }}
-            embedded
+            onPointerUp={() => setResizing(false)}
+            className={
+              state.railOpen
+                ? "w-px shrink-0"
+                : "pointer-events-none w-0 shrink-0 overflow-hidden opacity-0"
+            }
+            disabled={!state.railOpen}
           />
-        </div>
-      )}
+
+          <Panel
+            id="centreLayout"
+            minSize={0}
+            maxSize="100%"
+            collapsible
+            collapsedSize={0}
+            className="min-w-0"
+          >
+            <main className="flex h-full flex-col overflow-y-auto scroll-smooth">
+              <div className="flex-1">{children}</div>
+            </main>
+          </Panel>
+
+          <Separator
+            {...separatorProps("right")}
+            onPointerDown={() => {
+              separatorProps("right").onPointerDown();
+              setResizing(true);
+            }}
+            onPointerUp={() => setResizing(false)}
+            className={
+              state.columnOpen
+                ? "w-px shrink-0"
+                : "pointer-events-none w-0 shrink-0 overflow-hidden opacity-0"
+            }
+            disabled={!state.columnOpen}
+          />
+
+          <Panel
+            id="rightPanel"
+            defaultSize={initial.column}
+            minSize={0}
+            maxSize="100%"
+            collapsible
+            collapsedSize={0}
+            className="min-w-0 overflow-hidden"
+          >
+            {state.columnOpen ? (
+              <RightPanel
+                appRailWidth={state.railOpen ? railPx : 0}
+                embedded
+                onResizeStart={() => setResizing(true)}
+                onResizeEnd={() => setResizing(false)}
+              />
+            ) : null}
+          </Panel>
+        </Group>
+
+        {previewing && (
+          <div
+            onMouseEnter={cancelClose}
+            onMouseLeave={scheduleEnd}
+            className="absolute inset-y-0 left-0 z-40"
+            style={{ width: RAIL.DEFAULT }}
+          >
+            <DashboardSidebar
+              /* A click inside the preview pins what the reader is looking at. */
+              onToggle={() => {
+                /* A click inside the preview pins what the reader is looking at. */
+                useSidebarState.getState().openFromPreview();
+              }}
+              embedded
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

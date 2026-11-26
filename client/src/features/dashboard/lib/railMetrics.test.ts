@@ -132,10 +132,18 @@ describe("computeRail", () => {
     expect(open.railWidth).toBe(288);
   });
 
-  it("hover at rest is off the page — nothing visible, nothing reserved", () => {
+  /*
+   * The mode is the owner now, so "hover at rest" is no longer a state the app can
+   * be in: `mode: "hover"` means a preview is open, and the shell closes it by
+   * leaving that mode. The old assertion encoded the second owner — the sidebar
+   * clearing `hovering` while the overlay was still on screen, which is exactly the
+   * collapse-to-nothing the shell was showing.
+   */
+  it("a preview stays 288 for as long as the mode says hover", () => {
     const rest = at({ mode: "hover", hovering: false });
 
-    expect(rest.railWidth).toBe(0);
+    expect(rest.railWidth).toBe(RAIL.DEFAULT);
+    /* Still nothing reserved: the preview is an overlay, not a column. */
     expect(rest.reserved).toBe(0);
   });
 
@@ -156,5 +164,23 @@ describe("computeRail", () => {
   it("clamps a hostile stored width", () => {
     expect(at({ width: 900 }).railWidth).toBe(RAIL.MAX);
     expect(at({ width: 4 }).railWidth).toBe(RAIL.MIN);
+  });
+
+  /*
+   * The shell sets `mode: "hover"` for the whole preview, so the mode already says
+   * "the reader is looking at the rail". Requiring `hovering` as well gave the same
+   * fact a second owner — the sidebar cleared it 140ms after the pointer left the
+   * aside, and the rail collapsed to 0 inside a still-open overlay.
+   */
+  it("keeps the preview width while the mode says hover, even with hovering off", () => {
+    const layout = computeRail({
+      mode: "hover",
+      width: 280,
+      hovering: false,
+      viewportWidth: 1440,
+    });
+
+    expect(layout.hoverOpen).toBe(true);
+    expect(layout.railWidth).toBe(RAIL.DEFAULT);
   });
 });

@@ -159,8 +159,14 @@ export function computeRail({
    * which is why the preview is derived, never stored.
    */
   const collapsedPreview = mode === "collapsed" && hovering && !autoRail;
-  const hoverOpen =
-    (mode === "hover" || collapsedPreview) && hovering && !autoRail;
+  /*
+   * `hover` is the shell's own mode for a preview, so it already means "the reader
+   * is looking at the rail". Requiring `hovering` as well made a second, quieter
+   * owner of the same fact: the sidebar set it false 140ms after the pointer left
+   * the aside, which collapsed the rail to width 0 inside a still-open 288px
+   * overlay — an instant close, and a flicker when the pointer moved back in.
+   */
+  const hoverOpen = (mode === "hover" || collapsedPreview) && !autoRail;
 
   /* C1: the preview is 288 on desktop and 240 on a tablet — the rail's own default there. */
   const previewWidth =

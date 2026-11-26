@@ -1,4 +1,4 @@
-import { lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { lazy, useCallback, useMemo, useState } from "react";
 
 import SidebarHeader from "./SidebarHeader";
 
@@ -83,34 +83,6 @@ export default function DashboardSidebar({
   /* Expanded over the page rather than beside it: that is the only case where
      the rail needs to read as a layer. */
   const floating = layout.hoverOpen;
-
-  /* A pointer crossing the edge should not slam the rail shut, so the close is
-     delayed just long enough to move between the rail and a panel beside it. */
-  const closeTimer = useRef<number | null>(null);
-
-  const cancelClose = () => {
-    if (closeTimer.current !== null) {
-      window.clearTimeout(closeTimer.current);
-      closeTimer.current = null;
-    }
-  };
-
-  const onRailEnter = () => {
-    if (mode !== "hover") return;
-    cancelClose();
-    setHovering(true);
-  };
-
-  const onRailLeave = () => {
-    if (mode !== "hover") return;
-    cancelClose();
-    closeTimer.current = window.setTimeout(() => {
-      closeTimer.current = null;
-      setHovering(false);
-    }, 140);
-  };
-
-  useEffect(() => cancelClose, []);
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -214,19 +186,10 @@ export default function DashboardSidebar({
            it off the page instead of just narrowing it. */
         hidden={!embedded && railWidth === 0}
         /* A3: a click on the rail no longer opens it. The preview is a glance, not a
-           control — and a rail that opens on any click inside it opens by accident. */
-        onMouseEnter={onRailEnter}
-        onMouseLeave={onRailLeave}
-        /* A6: a keyboard reader gets the same preview the pointer does. Focus leaving the
-           rail — not moving between its own items — is what closes it. */
-        onFocus={onRailEnter}
-        onBlur={(event) => {
-          if (
-            !event.currentTarget.contains(event.relatedTarget as Node | null)
-          ) {
-            onRailLeave();
-          }
-        }}
+           control — and a rail that opens on any click inside it opens by accident.
+           The pointer and focus handlers that used to live here wrote `hovering`; the
+           shell's preview owns that now (`layouts/railPreview.ts`), and two owners is what
+           made the preview close under the pointer. */
         /* Embedded: fill the pane, except while a preview is open — then the
            sidebar paints at its preview width over the page. Filling the pane the
            rest of the time keeps the edge glued to the divider during a drag. */

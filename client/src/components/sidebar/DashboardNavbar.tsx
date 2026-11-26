@@ -7,6 +7,7 @@ import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { useSidebarState } from "@/features/dashboard";
 import { useRightPanel } from "@/stores/rightPanel";
 import { useLayoutShellStore } from "@/layouts/stores/layoutShellStore";
+import { scheduleEnd, startPreview } from "@/layouts/railPreview";
 import { NavbarSearchIcon, NotificationsButton } from "@/features/dashboard";
 import { NotificationsPanel } from "@/features/dashboard";
 import { Tooltip } from "@/components/Tooltips/ToolTip";
@@ -180,16 +181,26 @@ export default function DashboardNavbar({
               type="button"
               /* Hidden rail, and the icon is the only thing left of it: hovering previews
                    it, a click opens it. Leaving puts it back, unless the click already did. */
-              onMouseEnter={() => peek()}
+              onMouseEnter={() => {
+                /* Embedded, this icon is the whole trigger: it starts the preview and
+                   the overlay that appears under it is what ends it. */
+                if (embedded) startPreview();
+                else peek();
+              }}
               /* Embedded, the shell owns the preview: leaving the logo on the way
                    into the overlay must not close it, so only the old layout unpeeks
                    here. */
               onMouseLeave={() => {
-                if (!embedded) unpeek();
+                if (embedded) scheduleEnd();
+                else unpeek();
               }}
-              onFocus={() => peek()}
+              onFocus={() => {
+                if (embedded) startPreview();
+                else peek();
+              }}
               onBlur={() => {
-                if (!embedded) unpeek();
+                if (embedded) scheduleEnd();
+                else unpeek();
               }}
               onClick={(event) => {
                 event.stopPropagation();
