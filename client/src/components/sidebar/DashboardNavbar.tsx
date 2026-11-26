@@ -21,7 +21,18 @@ const isMac =
   typeof navigator !== "undefined" &&
   /Mac|iPhone|iPad|iPod/.test(navigator.platform);
 
-export default function DashboardNavbar() {
+interface DashboardNavbarProps {
+  /**
+   * Rendered inside a shell that already places the rail and the column, so the
+   * header stops being `fixed` and stops offsetting itself by `--rail-width` —
+   * the pane next to it is the offset. Default false: `AppLayout` is unchanged.
+   */
+  embedded?: boolean;
+}
+
+export default function DashboardNavbar({
+  embedded = false,
+}: DashboardNavbarProps = {}) {
   const sentinelRef = useRef<HTMLDivElement>(null);
   const bellRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
@@ -144,15 +155,20 @@ export default function DashboardNavbar() {
 
       <header
         className={[
-          "fixed top-0 right-0 z-50 hidden h-12 md:flex",
-          /* Ends where the right column begins instead of running under it. */
-          "lg:right-(--panel-width)",
-          "items-center gap-1.5 px-3 ",
+          embedded
+            ? /* In the shell the panes are the offsets. */
+              "relative z-30 flex h-12 w-full shrink-0"
+            : [
+                "fixed top-0 right-0 z-50 hidden h-12 md:flex",
+                /* Ends where the right column begins instead of running under it. */
+                "lg:right-(--panel-width)",
+                /* Same variable the layout reserves, so the navbar follows the rail
+                   at any width instead of two fixed offsets. */
+                "md:left-(--rail-width)",
+              ].join(" "),
+          "items-center gap-1.5 px-3",
           "transition-[left,background-color] duration-200",
           "border-b border-(--hairline)",
-          /* Same variable the layout reserves, so the navbar follows the rail
-             at any width instead of two fixed offsets. */
-          "md:left-(--rail-width)",
           scrolled ? "bg-(--bg-root)/85 backdrop-blur-md" : "bg-transparent",
         ].join(" ")}
       >
@@ -171,9 +187,16 @@ export default function DashboardNavbar() {
                 /* Hidden rail, and the icon is the only thing left of it: hovering previews
                    it, a click opens it. Leaving puts it back, unless the click already did. */
                 onMouseEnter={() => peek()}
-                onMouseLeave={() => unpeek()}
+                /* Embedded, the shell owns the preview: leaving the logo on the way
+                   into the overlay must not close it, so only the old layout unpeeks
+                   here. */
+                onMouseLeave={() => {
+                  if (!embedded) unpeek();
+                }}
                 onFocus={() => peek()}
-                onBlur={() => unpeek()}
+                onBlur={() => {
+                  if (!embedded) unpeek();
+                }}
                 onClick={(event) => {
                   event.stopPropagation();
                   /* B5: hovering previewed it, so the click pins what the reader is looking
@@ -183,7 +206,7 @@ export default function DashboardNavbar() {
                 }}
                 aria-label="Expand sidebar"
                 className="
-            group relative flex size-8 cursor-pointer
+            group relative ml-2 flex size-9 cursor-pointer
             items-center justify-center
             hover:rounded-lg
             transition-colors

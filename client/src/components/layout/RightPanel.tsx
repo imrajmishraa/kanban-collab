@@ -26,6 +26,12 @@ interface RightPanelProps {
   appRailWidth: number;
   /** Below 700 the panel is the whole window, over the page, and reserves nothing. */
   sheet?: boolean;
+  /**
+   * Inside a resizable group. The pane places and sizes the column, so it stops
+   * being `fixed`, fills its pane, and gives up its own divider — the group's
+   * separator is the divider. Default false: `AppLayout` is unchanged.
+   */
+  embedded?: boolean;
   onResizeStart: () => void;
   onResizeEnd: () => void;
 }
@@ -37,6 +43,7 @@ const isMac =
 export default function RightPanel({
   appRailWidth,
   sheet = false,
+  embedded = false,
   onResizeStart,
   onResizeEnd,
 }: RightPanelProps) {
@@ -244,18 +251,22 @@ export default function RightPanel({
     <aside
       id="right-panel"
       aria-label="Panel"
-      style={{ width: sheet ? undefined : panelWidth }}
+      style={{ width: sheet ? undefined : embedded ? "100%" : panelWidth }}
       {...sheetDismiss}
       className={cn(
         sheet
           ? "fixed inset-0 z-50 flex w-full flex-col bg-(--bg-root)"
-          : "fixed inset-y-0 right-0 z-30 hidden h-dvh flex-col border-l border-(--hairline) bg-(--bg-root) lg:flex",
+          : embedded
+            ? /* The group's separator draws the edge: a border here too was a
+                 second hairline, one pixel apart from the first. */
+              "relative flex h-full w-full flex-col bg-(--bg-root)"
+            : "fixed inset-y-0 right-0 z-30 hidden h-dvh flex-col border-l border-(--hairline) bg-(--bg-root) lg:flex",
         "pb-[env(safe-area-inset-bottom)]",
       )}
     >
       {/* The divider hangs off the panel's own left edge, outside its box: the
           column does not clip, so it needs no sibling in the layout. */}
-      {!sheet && (
+      {!sheet && !embedded && (
         <button
           type="button"
           role="separator"

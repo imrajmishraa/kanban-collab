@@ -34,11 +34,19 @@ interface DashboardSidebarProps {
    * The rail is not hidden — a 72px strip stands in for it, one click away.
    */
   stripped?: boolean;
+  /**
+   * Inside a resizable group. The pane already places and sizes the rail, so the
+   * aside stops being `fixed` and fills its pane instead of the viewport. While a
+   * preview is open it paints at the preview width, over the page — that is what
+   * the collapsed strip is for. Default false: `AppLayout` is unchanged.
+   */
+  embedded?: boolean;
 }
 
 export default function DashboardSidebar({
   onToggle,
   stripped = false,
+  embedded = false,
 }: DashboardSidebarProps) {
   const { user, logout } = useAuth();
   const { boardsOpen, toggleBoards, openBoards } = useSidebarState();
@@ -185,7 +193,7 @@ export default function DashboardSidebar({
         aria-label="Show sidebar"
         aria-controls="app-rail"
         className={cn(
-          "sticky top-0 z-40 hidden h-dvh w-[72px] shrink-0 flex-col items-center",
+          "sticky top-0 z-40 hidden h-dvh w-18 shrink-0 flex-col items-center",
           "gap-2 border-r border-(--hairline) bg-(--bg-panel) pt-3 md:flex",
           "pb-[env(safe-area-inset-bottom)]",
           "cursor-pointer hover:bg-(--bg-hover)",
@@ -204,7 +212,7 @@ export default function DashboardSidebar({
         /* A zero-width rail is not "invisible": it needs `overflow-visible`
            for its own panels, so at width 0 it would keep painting them. Take
            it off the page instead of just narrowing it. */
-        hidden={railWidth === 0}
+        hidden={!embedded && railWidth === 0}
         /* A3: a click on the rail no longer opens it. The preview is a glance, not a
            control — and a rail that opens on any click inside it opens by accident. */
         onMouseEnter={onRailEnter}
@@ -219,19 +227,27 @@ export default function DashboardSidebar({
             onRailLeave();
           }
         }}
-        style={{ width: railWidth }}
+        /* Embedded: fill the pane, except while a preview is open — then the
+           sidebar paints at its preview width over the page. Filling the pane the
+           rest of the time keeps the edge glued to the divider during a drag. */
+        style={{ width: embedded && !floating ? "100%" : railWidth }}
         className={[
           /* Visible, not hidden: the rail's own panels are wider than the rail
              and open beside it, over the page. The nav clips itself, so only
              those panels escape. */
-          "fixed left-0 top-0 hidden h-dvh flex-col overflow-visible",
+          embedded
+            ? "relative flex h-full w-full flex-col overflow-hidden select-none"
+            : "fixed left-0 top-0 hidden h-dvh flex-col overflow-visible",
           /* The navbar is z-50 and keeps its collapsed offset, so a rail that
              floats over the page has to sit above it or the two overlap. */
           floating ? "z-60" : "z-40",
-          "bg-(--bg-root) border-r border-(--hairline)",
+          embedded
+            ? "bg-(--bg-root)"
+            : "bg-(--bg-root) border-r border-(--hairline)",
           "transition-[width,border-color] duration-200 ease-out",
           "motion-reduce:transition-none",
           "md:flex",
+          "select-none",
         ].join(" ")}
       >
         <div className="shrink-0">
@@ -267,7 +283,7 @@ export default function DashboardSidebar({
             is opening it. The divider is not rendered, so there is nothing to grab. */}
         {/* A2: the divider belongs to a column, not to the icon rail. On 72px there is
             nothing to grab, so nothing is drawn — a line you cannot drag is a lie. */}
-        {railWidth > RAIL.COLLAPSED && mode !== "hover" && (
+        {!embedded && railWidth > RAIL.COLLAPSED && mode !== "hover" && (
           <RailResizeHandle
             renderedWidth={railWidth}
             width={layout.width}

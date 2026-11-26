@@ -1,9 +1,7 @@
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
-  MousePointerBanIcon,
-  SidebarLeftIcon,
-  MousePointerOff01Icon,
   LayoutAlignLeftIcon,
+  SidebarLeftIcon,
 } from "@hugeicons/core-free-icons";
 import { useNavigate } from "react-router-dom";
 
@@ -31,7 +29,6 @@ const SidebarHeader = ({
   collapsed,
   onToggle,
   hovering = false,
-  mode = "open",
 }: SidebarHeaderProps) => {
   const navigate = useNavigate();
   const setMode = useSidebarState((state) => state.setMode);
@@ -55,8 +52,8 @@ const SidebarHeader = ({
             }}
             aria-label="Hide sidebar"
             className="
-            group relative flex size-8 cursor-pointer
-            items-center justify-center
+            group relative flex size-9 cursor-pointer
+            items-center ml-1 justify-center
             hover:rounded-lg
             transition-colors
             hover:bg-(--bg-hover)
@@ -72,9 +69,7 @@ const SidebarHeader = ({
             {/* Hover hint, hidden normally, visible on hover: a pointer when
                 the rail opens by hovering, an arrow when it opens on click. */}
             <HugeiconsIcon
-              icon={
-                mode === "hover" ? MousePointerOff01Icon : LayoutAlignLeftIcon
-              }
+              icon={LayoutAlignLeftIcon}
               size={18}
               strokeWidth={1.8}
               className="
@@ -95,88 +90,63 @@ const SidebarHeader = ({
   }
 
   return (
-    <header className="flex h-12 shrink-0 items-center justify-between px-2">
+    <header className="flex h-12 shrink-0 items-center px-2">
+      {/*
+        The logo is the toggle.
+
+        Same 32px box, same 12px offset as the navbar's rail button (`px-3` + no
+        margin there, `px-2` + `ml-1` here), so the glyph does not jump between
+        the two surfaces. The wordmark keeps its own click target beside it.
+      */}
+      <Tooltip
+        label={"Collapse"}
+        highlight={isMac ? "⌘B" : "Ctrl B"}
+        side="bottom"
+        shape="solid"
+        size="md"
+      >
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            /* Hovered open, the rail is open because of the pointer: collapsing it
+               would fight the gesture, so the click pins what is on screen. */
+            if (hovering) setMode("open");
+            else onToggle();
+          }}
+          aria-label={hovering ? "Keep sidebar open" : "Collapse sidebar"}
+          className="group ml-2.5 flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-lg transition-colors hover:bg-(--bg-hover)"
+        >
+          {/* Logo, visible normally, hidden on hover */}
+          <KanbanIcon
+            size={22}
+            variant="upper"
+            className="transition-all duration-150 group-hover:opacity-0 group-focus-within:opacity-0"
+          />
+
+          {/* The hint takes the logo's place: the same two glyphs the collapsed
+              rail uses, so the two ends of the rail speak the same language. */}
+          <HugeiconsIcon
+            icon={SidebarLeftIcon}
+            size={18}
+            strokeWidth={1.8}
+            className="absolute text-(--text-muted) opacity-0 scale-75 transition-all duration-150 group-hover:scale-100 group-hover:opacity-100 group-hover:text-(--text-primary) group-focus-within:scale-100 group-focus-within:opacity-100"
+          />
+        </button>
+      </Tooltip>
+
       <button
         type="button"
         onClick={() => navigate("/workspaces")}
-        aria-label="Go to homepage"
-        className="group ml-1 flex cursor-pointer items-center gap-2.5 rounded-md px-1.5 py-1 transition-colors"
+        aria-label="Go to workspaces"
+        className="ml-1.5 flex cursor-pointer items-center gap-2.5 rounded-md px-1 py-1 transition-colors"
       >
-        {/* Logo, visible normally, hidden on hover */}
-        <KanbanIcon
-          size={22}
-          variant="upper"
-          className="transition-all duration-150 group-hover:scale-110"
-        />
-
         <span className="text-[15px] font-semibold tracking-tight text-(--text-primary)">
           Kanban
         </span>
       </button>
-
-      {/* Hovered open, the rail is open because of the pointer, so collapsing
-          it has nothing to act on. The cursor takes its place and pins the rail
-          open, which is the useful action in that state. */}
-      <div className="flex items-center gap-0.5">
-        {hovering ? (
-          <Tooltip label="Keep open" side="bottom" shape="solid" size="md">
-            <HeaderIconButton
-              icon={
-                <HugeiconsIcon
-                  icon={MousePointerBanIcon}
-                  size={18}
-                  strokeWidth={1.6}
-                />
-              }
-              onClick={() => setMode("open")}
-            />
-          </Tooltip>
-        ) : (
-          <Tooltip
-            label="Collapse"
-            highlight={isMac ? "⌘B" : "Ctrl B"}
-            side="bottom"
-            shape="solid"
-            size="md"
-          >
-            <HeaderIconButton
-              icon={
-                <HugeiconsIcon
-                  icon={SidebarLeftIcon}
-                  size={18}
-                  strokeWidth={1.6}
-                />
-              }
-              onClick={onToggle}
-            />
-          </Tooltip>
-        )}
-      </div>
     </header>
   );
 };
-
-function HeaderIconButton({
-  icon,
-  onClick,
-}: {
-  icon: React.ReactNode;
-  onClick: () => void;
-}) {
-  return (
-    <div className="group/tt relative">
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          onClick();
-        }}
-        className="flex size-8 cursor-pointer items-center justify-center rounded-lg text-(--text-muted) transition-colors hover:bg-(--bg-hover) hover:text-(--text-primary)"
-      >
-        {icon}
-      </button>
-    </div>
-  );
-}
 
 export default SidebarHeader;

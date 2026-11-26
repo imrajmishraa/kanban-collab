@@ -17,6 +17,9 @@ import { useRailLayout } from "@/features/dashboard";
 import { useRightPanel } from "@/stores/rightPanel";
 import { computePanel } from "@/components/layout/panelMetrics";
 import { useSearchStore } from "@/features/search/stores/searchStore";
+import { MOBILE_MAX_VIEWPORT } from "@/components/layout/panelMetrics";
+import ShellLayout from "@/layouts/ShellLayout";
+import { useShellFlag } from "@/layouts/useShellFlag";
 import { useEnsureActiveWorkspace } from "@/hooks/useEnsureActiveWorkspace";
 import { useSyncSavedBoards } from "@/hooks/useSyncSavedBoards";
 
@@ -31,6 +34,15 @@ function warmSearchModal() {
 }
 
 export default function AppLayout() {
+  /* The resizable shell, behind a flag until it has run in the wild. The rail and
+     the column become panes of a group, and the layout is written once per change
+     by \`useShellLayout\` instead of by CSS variables on three elements. */
+  const shellOn = useShellFlag();
+  const shellActive =
+    shellOn &&
+    typeof window !== "undefined" &&
+    window.innerWidth >= MOBILE_MAX_VIEWPORT;
+
   const toggleSidebar = useSidebarState((s) => s.toggleCollapsed);
   const toggleOpenHidden = useSidebarState((s) => s.toggleOpenHidden);
   const collapse = useSidebarState((s) => s.collapse);
@@ -103,6 +115,8 @@ export default function AppLayout() {
    * used constantly, the shifted one changes the whole layout.
    */
   useEffect(() => {
+    if (shellActive) return;
+
     const onKeyDown = (event: KeyboardEvent) => {
       const mod = event.metaKey || event.ctrlKey;
 
@@ -125,7 +139,7 @@ export default function AppLayout() {
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [toggleRightPanel]);
+  }, [shellActive, toggleRightPanel]);
 
   /*
    * ⌘B / Ctrl+B — open ↔ hidden, and nothing else.
@@ -135,6 +149,8 @@ export default function AppLayout() {
    * third state the reader did not ask for; the shifted one is the "just the icons" version.
    */
   useEffect(() => {
+    if (shellActive) return;
+
     const onKeyDown = (event: KeyboardEvent) => {
       const mod = event.metaKey || event.ctrlKey;
 
@@ -148,7 +164,7 @@ export default function AppLayout() {
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [toggleOpenHidden, collapse]);
+  }, [collapse, shellActive, toggleOpenHidden]);
 
   // Prefetch the search chunk during idle time.
   // Fallback to a 2s timeout on browsers without requestIdleCallback.
@@ -160,6 +176,22 @@ export default function AppLayout() {
     const id = window.setTimeout(warmSearchModal, 2000);
     return () => window.clearTimeout(id);
   }, []);
+
+  if (shellActive) {
+    return (
+      <NewWorkspaceDialogProvider>
+        <ShellLayout>
+          <Outlet />
+        </ShellLayout>
+
+        {searchOpen && (
+          <Suspense fallback={null}>
+            <SearchModal />
+          </Suspense>
+        )}
+      </NewWorkspaceDialogProvider>
+    );
+  }
 
   return (
     <NewWorkspaceDialogProvider>
