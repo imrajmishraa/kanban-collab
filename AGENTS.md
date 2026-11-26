@@ -1,245 +1,213 @@
-# AGENTS.md
+# AGENT.md — how to work in this repo
 
-Operational guide for AI coding agents working in this repository. Read this
-before touching code. For architecture and API detail, read `docs/` — this file
-does not repeat it, it records the constraints that are not obvious from the
-tree and that have already caused production incidents.
+The method for any agent (or person) who changes, reviews or debugs code here.
 
-For **what a change may look like** — its size, the files it may touch, which
-layer may import which, and the rules for mobile / tablet / desktop — read
-[`docs/change-rules.md`](docs/change-rules.md). Three of its gates are scripts
-(`lint:surface`, `lint:layers`, `scripts/check-change-budget.mjs`), so they are
-not advice; they fail the build.
+Read in this order:
 
-## What this is
+1. [`AGENTS.md`](AGENTS.md) — constraints that already broke production
+   (CommonJS server, cookies, OAuth callback, Tailwind v4).
+2. [`docs/change-rules.md`](docs/change-rules.md) — how big a change may be, and
+   the gates that fail the build.
+3. **This file** — how to get from "something is wrong" to "it is fixed, and here
+   is the proof". It does not repeat the two above; it is the order of work.
+4. [`LAYOUT.md`](LAYOUT.md) — before touching the shell (rail, board, column).
 
-Kanban-Collab: a real-time collaborative task board.
+---
 
-- `server/` — Express 4 + TypeScript API. MongoDB (Mongoose), Redis, Yjs over
-  `ws`, pino logging, zod validation, vitest.
-- `client/` — Vite + React SPA. Tailwind v4, react-router, TanStack Query,
-  Yjs client.
-- Deployed: client as a **Render static site**, server on **Vercel**.
+## 1. The loop
 
-## Layout
+Do the steps in order. Skipping the first three is how a fix ends up on the wrong
+cause.
+
+### 1. Understand the problem — before any edit
+
+- Restate it in your own words: what is expected, what happens, for whom, at
+  which width / state / browser.
+- Separate **observed** from **diagnosed**. A diagnosis in a ticket or a brief is
+  a hypothesis. (Example: "`expand()` restores the minimum" was a reasonable
+  diagnosis for a widget that came back at 200px; the cause was a write-back that
+  saved the library's intermediate layout over the stored width.)
+- Ask for the cause, not the symptom: *who writes this state, and when?* If more
+  than one thing writes it, that is usually the bug.
+- Ask one question only if you are blocked. Otherwise state your assumption in one
+  line and go on.
+
+### 2. Read the real code
+
+- Read the files **at the ref you are asked about** (`git show <ref>:<path>`, or
+  the branch in the link). Not memory, not a commit message, not a comment — all
+  three have been wrong here.
+- For every piece of state you touch, find every writer and every reader.
+- For a library, read the docs and types **for the installed version**
+  (`package.json` / lockfile). Behaviour changes between minors; when something
+  looks surprising, read the release notes before inventing a workaround.
+- Open the callers, not just the function.
+
+### 3. Classify and announce
+
+State the change class (A / B / C, `docs/change-rules.md` §2) and the files you
+expect to touch, **before the first edit**. If it turns out to be class C, stop
+and say so.
+
+### 4. Reproduce before you fix
+
+- Make the bug show up with **numbers**, not adjectives: a failing test, or a
+  throwaway harness that prints the wrong value.
+- If the logic is tangled with React or a library, pull it into a pure function
+  first (no imports of React or the library). Pure code can be fuzzed.
+- Good harnesses: a property test over many random inputs (every width from 700
+  to 2560; random command sequences), and a table of boundary cases (one pixel
+  either side of every floor).
+- If you cannot run the code (no browser, no dependencies, no network), say so
+  and label every affected claim **Read**, not **Tested** (§2).
+
+### 5. Design the fix
+
+- **One writer per piece of state.** If two things write it, delete one writer
+  rather than coordinating them.
+- **Store intent, derive the rest.** Persist what the reader chose. Never persist
+  a measurement, an intermediate layout or a transient mode (hover, preview).
+- **One place for every number.** `grep` before adding a constant: the same
+  floor has already existed as 200 and 240, the same ceiling as 360, 420 and 660.
+- The smallest change that removes the **cause**. A workaround on top of the
+  cause is a second bug.
+- Make the impossible request impossible: if a constraint cannot be met, the
+  command that would ask for it must refuse or adjust *first*, rather than relying
+  on a library to silently do nothing.
+
+### 6. Implement
+
+- One concern per commit. A rename sweep and a behaviour change never share one.
+- No drive-by formatting; deleting is free (`change-rules.md` §2).
+- Comments say *why*. Fix any stale comment you pass — a comment describing
+  behaviour the code no longer has is a defect.
+- A behaviour change ships with a test next to the code. Name the test after the
+  rule it protects, not the function it calls.
+
+### 7. Verify
+
+- Re-run your harness against the **final** code, not the first draft.
+- Run the gates: `npm run check` in each package you touched, and
+  `node scripts/check-change-budget.mjs`. `npm run build` for `server/`.
+- Delivering a patch: apply it to a clean checkout of the base
+  (`git apply --check`), and confirm the result equals your working tree.
+- A passing `tsc` is not a working UI. For anything visual, look at it — or say
+  which surface you could not.
+- Never edit a baseline, lockfile or config to make a check pass.
+
+### 8. Report
+
+Use the template in §3. Lead with what matters, label the evidence, list what you
+did not look at. Never write "bug free".
+
+---
+
+## 2. Evidence labels
+
+Every claim in a report carries one of these. If you cannot tell which, it is
+**Assumed**.
+
+| Label | Meaning | Say how |
+|---|---|---|
+| **Tested** | You ran code and saw the result. | The command, or the harness and its numbers. |
+| **Read** | You concluded it from reading code. | The file and line; the reasoning in one sentence. |
+| **Assumed** | Not verified. | What would verify it. |
+| **Not covered** | You did not open it. | List the files. |
+
+"Tested" is for the thing you tested. A pure model passing 48,000 random steps
+says nothing about how a React component mounts it — that part is **Read**.
+
+---
+
+## 3. Report templates
+
+### Review (read-only)
 
 ```
-server/src/
-  application/     use cases (auth, dashboard, notifications, workspaces)
-  bootstrap/       wiring, startup, shutdown
-  config/          env schema (zod) — the single source of truth for config
-  infrastructure/  db, cache, email, logging, scheduler, auth providers
-  interfaces/      http (routes, controllers, validators), websockets
-  serverless/      Vercel function entry (no cron, no signal handlers)
-  shared/          errors, constants, types, utils
-client/src/
-  app/             providers, router
-  features/<x>/    feature slice: api, components, hooks, stores
-  components/      shared UI
-  design/          tokens, theme
+Summary        one paragraph: what is wrong, and the single most important fix
+Bugs           ordered by severity, each: what · where (file:line) · evidence label · fix
+Tested         what you ran, and the numbers
+Not covered    files and behaviours you did not look at
+Next step      what you would do, and what it would cost
 ```
 
-`server/src/main.ts` is the long-running entry (listens, runs cron, handles
-signals). `server/api/index.ts` → `src/serverless/handler.ts` is the Vercel
-function entry. They are **not** equivalent — see constraint 3.
+Severity: **High** — data loss, security, corrupted persisted state, or a
+feature that does not work. **Medium** — wrong behaviour on a common path.
+**Low** — drift, dead code, cleanup.
 
-## Commands
+### Fix
 
-Run inside the package you changed, not at the repo root.
-
-### server/
-
-```bash
-npm ci
-npm run dev            # nodemon + ts-node, no build step
-npm run typecheck      # tsc --noEmit
-npm run lint
-npm run test           # vitest run
-npm run check          # typecheck + lint + format:check
-npm run verify         # typecheck + lint + test
-npm run build          # tsc -p tsconfig.build.json  → dist/
-npm run start          # node dist/main.js (needs a prior build)
-npm run infra:up       # mongo + redis via docker compose
+```
+Cause          one paragraph, in terms of who writes what
+Change         what the diff does (not a file list)
+Behaviour      anything a reader of the diff would not guess
+Verification   what ran, what did not
+Not in this change   what you saw and left alone
 ```
 
-### client/
+A patch is delivered as the diff plus a commit message. Message style is the
+repo's: `type(scope): subject`, then *what was wrong → why → what changed →
+behaviour to know → verification → not in this commit*.
 
-```bash
-npm ci
-npm run dev
-npm run typecheck      # tsc -b
-npm run lint
-npm run test           # vitest run
-npm run check          # typecheck + lint + format + path lint + test
-npm run build          # tsc -b && vite build
-```
+---
 
-`client` has two custom linters wired into `check`: `lint:paths` (import path
-rules) and `lint:colors` (theme colour tokens). A green `tsc` does not mean CI
-will pass — run `npm run check`.
+## 4. Traps already found here
 
-## Hard constraints
+Check for these before you call something done.
 
-These are not style preferences. Each one has already broken production.
+- **`key in object` as a lookup** also matches `constructor` and `__proto__`.
+  Use `Object.hasOwn`. (Found twice: an OAuth provider lookup and a login-error
+  message map.)
+- **Writing a measured layout back into a persisted store.** The library reports
+  intermediate layouts during `expand()` / `resize()`; saving them overwrites the
+  reader's width. Write back only when `meta.isUserInteraction` is true.
+- **A transient mode in a persisted key.** A hover preview stored as
+  `mode: "hover"` survives a reload as a stuck preview, and a `setMode` that
+  records "last visible" overwrites what the toggle should restore.
+- **Two handlers on one key.** Both fire; a toggle toggled twice is a no-op.
+- **Check-then-update on a counter.** Read, compare, increment lets parallel
+  requests all read zero. One conditional update (`$lt` + `$inc`) closes it.
+- **A reset that refills a budget.** Anything that "starts over" (resend a code,
+  reopen a pane) must not hand back what was already spent.
+- **TTL rows are not deleted on time.** The monitor runs about once a minute; an
+  expired row can still match a query.
+- **Unmeasured width = 0.** Treat `0` as "unknown", never as "nothing fits".
+- **Numbers that exist twice.** Search for the literal before adding it.
 
-### 1. The server compiles to CommonJS — no ESM-only dependencies
+---
 
-`server/tsconfig.json` uses `"module": "NodeNext"`, and `server/package.json`
-has **no** `"type": "module"`, so every source file is CommonJS and `tsc` emits
-`require()` for imports.
+## 5. Working with a library
 
-An ESM-only package (`"type": "module"` with no `require` export condition)
-therefore throws `ERR_REQUIRE_ESM` at module load, which kills the whole process
-before any route answers — every endpoint returns 500, including `/healthz`.
-This is how `@octokit/oauth-methods` and `@octokit/request` took the API down.
+1. Confirm the installed version; read its types, not a blog post.
+2. Prefer **one declarative call** over several imperative ones when each of them
+   re-runs layout (`Group.setLayout()` over `expand()` + `resize()` +
+   `collapse()`). Each imperative call is a separate re-layout that can race the
+   next.
+3. Read the return value. If the library applies something other than what you
+   asked for, log it in development instead of letting it fail silently.
+4. A number with no unit may mean pixels in one API and percent in another.
+   Check, and write the unit in the name.
 
-Before adding a dependency:
+---
 
-```bash
-node -p "const p=require('<pkg>/package.json'); [p.type ?? 'commonjs', JSON.stringify(p.exports?.['.'] ?? null)]"
-```
+## 6. UI and layout changes
 
-Reject it if `type` is `module` and the exports map has no `require` condition.
-To prove a build is safe on a runtime without `require(esm)`:
+- Look at mobile, tablet and desktop (`change-rules.md` §5), and at the widths
+  where the layout changes shape: 700, 720, 920, 1024, 1280, 1920.
+- Every control has a keyboard path and a touch path; hover is never the only way.
+- Keyboard shortcuts go through **one** registration. Search for the key before
+  binding it.
+- Change layout behaviour → change [`LAYOUT.md`](LAYOUT.md) in the same PR.
 
-```bash
-node --no-experimental-require-module -e "require('./dist/<compiled file>.js')"
-```
+---
 
-If a package is genuinely needed and ESM-only, use `fetch` against its HTTP API
-instead of adding the dependency (this is what the GitHub provider now does).
+## 7. Definition of done
 
-### 2. `engines.node` must be a major range, never `>=`
+In addition to `AGENTS.md` and `docs/change-rules.md` §6–7:
 
-`"node": "22.x"` — **not** `">=22.0.0"`. Vercel reads `engines.node` and ignores
-the project setting, so a `>=` range silently pins the runtime to the newest
-Node major and upgrades it again on every Node release. That is how the API
-ended up running on a different Node version than the Docker image
-(`node:22-bookworm-slim`), which is exactly the class of bug in constraint 1.
-
-Same applies to `client/package.json`; `render.yaml` pins `NODE_VERSION` there.
-
-### 3. The server has two deployment paths — know which one serves
-
-`server/vercel.json` describes a serverless function (`api/index.ts`, rewrites,
-crons). `server/Dockerfile` describes a long-running container that runs
-`dist/main.js`. Vercel currently builds **both** on every deploy.
-
-Consequences:
-
-- The function has no `node-cron` and cannot hold long-lived WebSockets. The
-  container can.
-- Config that applies to one path is dead weight (or actively misleading) for
-  the other. Changing `vercel.json` rewrites does nothing if the container is
-  serving, and vice versa.
-
-Before changing anything deployment-shaped, establish which path answers: the
-container logs `Scheduled job completed` (cron); the function never does.
-
-### 4. OAuth: the callback lives on the client origin, by design
-
-`GOOGLE_REDIRECT_URI` / `GITHUB_REDIRECT_URI` point at the **client** origin
-(`https://kanban-collab-client.onrender.com/api/v1/auth/oauth/<provider>/callback`),
-and Render rewrites `/api/*` through to Vercel.
-
-Do not "simplify" this by pointing the redirect URI at the API origin. The
-refresh cookie is written for the client origin (`path: /api/v1/auth`), and the
-browser only ever talks to that origin — moving the callback would set the
-cookie on a host the app cannot read, producing a login that "succeeds" and
-leaves the user signed out.
-
-### 5. Cookies: `SameSite=None` requires `Secure`
-
-`server/src/interfaces/http/utils/cookies.ts` sets `sameSite: "none"` in
-production. A `SameSite=None` cookie without `Secure` is silently discarded by
-Chrome, so `COOKIE_SECURE` must be true in every production environment. The
-CSRF cookie and the refresh cookie share this flag deliberately — do not let
-them diverge.
-
-### 6. `google-auth-library`: `OAuth2Client.request()` needs credentials
-
-`new OAuth2Client({ clientId, clientSecret, redirectUri }).request(...)` throws
-`No access, refresh token, API key or refresh handler callback is set.` before
-any HTTP request leaves the process. Profile reads use plain `fetch` with an
-`Authorization: Bearer` header. Keep it that way; if you must use the client,
-call `setCredentials({ access_token })` first.
-
-### 7. OAuth state is signed, not stored
-
-`state` is `<base64url(payload)>.<base64url(hmac)>` — self-contained, 15-minute
-TTL, 60 s clock-skew tolerance (`src/application/auth/oauth/stateToken.ts`). It
-carries the provider binding and the `rememberMe` flag.
-
-The HMAC key is `OAUTH_STATE_SECRET`, falling back to `JWT_SECRET`. Set
-`OAUTH_STATE_SECRET` explicitly in every environment: with the fallback, any
-`JWT_SECRET` rotation invalidates in-flight logins, and two deployments behind
-one hostname with different secrets reject every callback identically.
-
-Rejections surface to the browser as `?status=error&reason=…`; the reason codes
-distinguish missing params from a bad signature from expiry. Read the reason
-before theorising about the provider — it is almost never the provider.
-
-### 8. Tailwind v4, not v3
-
-Theme values are CSS variables: `bg-(--bg-root)`, `text-(--text-secondary)`,
-`bg-(--brand)/4.5`. Bare numeric utilities (`z-100`, `w-2xl`) are valid v4
-dynamic utilities. Do not "fix" these into v3 forms (`bg-[var(--bg-root)]`,
-`z-[100]`); `lint:colors` guards the token usage.
-
-## Conventions
-
-- **Layering**: controllers stay thin; use cases live in `application/`;
-  provider/DB/cache details in `infrastructure/`. Do not call Mongoose from a
-  controller.
-- **Errors**: build them from the factories in `src/shared/errors/<domain>.ts`
-  (`ApiError` with `code`, `isOperational`, optional `data`). Keep the client
-  message generic and put diagnostics in `data` — provider error text must never
-  reach a redirect URL.
-- **Validation**: zod schemas in `interfaces/http/validators/`, applied through
-  `validateSchema`. Parse, do not hand-roll checks in controllers.
-- **Logging**: pino child loggers (`authLogger`, `lifecycleLogger`, …) with
-  structured fields. Never `console.log`; never log tokens, codes or cookies.
-- **Tests**: `server/tests/{unit,integration,load,shell_testing}`, client tests
-  colocated as `*.test.tsx`. A behaviour change ships with a test.
-- **Comments**: explain *why*, not *what*. If a comment states a constraint the
-  code no longer honours (e.g. "no `prompt`" while passing `prompt`), fix the
-  comment in the same change — stale comments have already cost hours here.
-
-## Ask before doing
-
-- Anything destructive against a real database (`drop`, `deleteMany` on
-  non-test data).
-- Changing an OAuth redirect URI, a cookie scope, or a signing secret.
-- Switching the server between container and function deployment.
-- Force-pushing, rewriting history, or touching `main` directly.
-
-## Definition of done
-
-1. `npm run check` passes in every package you touched — that now includes
-   `lint:surface --strict` (client) and `lint:layers --strict` (server).
-2. `node scripts/check-change-budget.mjs` is within budget, or the commit
-   carries a `Change-Budget-Exception:` trailer explaining why it cannot be
-   split.
-3. `npm run build` succeeds for `server/` (it is what ships).
-4. No new ESM-only dependency (constraint 1).
-5. If you changed a documented behaviour, update the matching file in `docs/`.
-6. No baseline file was edited to make a new change pass
-   (`docs/change-rules.md` § 1).
-
-## Known noise — do not chase these
-
-Vercel build logs are noisy. These are expected and not actionable from this
-repo:
-
-- `Internal rewrites in backend framework projects now route requests using the
-  rewritten destination path` — affects function selection; there is one
-  function, so it is a no-op. Verify `/healthz`, `/ws`, `/api/v1/...` still
-  answer.
-- `npm warn Unknown env config "cache-dir"` — injected by the build environment,
-  not by a `.npmrc` in this repo.
-- `npm notice New major version of npm available` — npm's own advertisement.
-- `HEALTHCHECK is not supported for OCI image format and will be ignored` — the
-  Dockerfile's healthcheck does not run on Vercel; monitor `/healthz`
-  externally instead.
-- `npm warn deprecated node-domexception@1.0.0` — transitive:
-  `google-auth-library` → `gaxios` → `node-fetch@3` → `fetch-blob`.
+1. The cause is written down in one paragraph.
+2. A test, or a harness output, shows the bug before and its absence after — or
+   the report says "not run" and why.
+3. Every gate passed, or the report names the gate you could not run.
+4. `LAYOUT.md` / `docs/` updated if a documented behaviour moved.
+5. The report lists what was **not** covered.
