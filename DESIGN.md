@@ -468,12 +468,20 @@ What is *not* here is the tooltip's colour-bearing shapes — `neon`, `gradient`
 those are `tone` and `fill`, and a second way to say the same thing is how a
 surface ends up with two writers.
 
-**Size** — the type scale inside the bubble: `sm` 12/11px, `md` 13/12px (the
-default), `lg` 15/13px. The description is `--toast-description` at every size,
-which a filling tone overrides; a description that competes with the title is a
-paragraph, and a toast is not a place for one. `appearance.maxLines` clamps the
-description to that many lines — the tooltip's `maxLines`, carried as
-`--toast-lines` so the clamp follows the number rather than a fixed class.
+**Size** — five steps of the type scale inside the bubble, title over
+description: `xs` 11/10px, `sm` 12/11px, `md` 13/12px (the default), `lg` 15/13px,
+`xl` 17/14px. The description is `--toast-description` at every size, which a
+filling tone overrides; a description that competes with the title is a
+paragraph, and a toast is not a place for one.
+
+**The description is its own slot.** `appearance.description` takes `size` (a
+step of its own, `xs`–`lg`, so a `lg` title can carry an `xs` footnote), `color`
+(any token or CSS colour, written to `--toast-description`) and `lines` (the
+tooltip's `maxLines`, carried as `--toast-lines` so the clamp follows the number
+rather than a fixed class — `1` is a single line, absent is natural). `ink` does
+the same for the title: an explicit `--normal-text` for a colour the tone table
+does not have. Both go through variables, never a generated class, because a
+class built from a runtime string is never compiled.
 
 **Tone** — the surface, and there are eleven. `auto` is the elevated panel above;
 `neutral` is the same panel without the gradient. `brand`, `success`, `warning`,
@@ -515,16 +523,26 @@ dark in the light one, and white on `--success` is 1.9:1 where the ink that flip
 with them is 10.3:1. `auth` is the exception — a blue that wants white in both
 themes.
 
-**Width has three numbers, and each has one home.** `width` is sonner's
-`--width` (380px by default). `mobileWidth` is the cap below sonner's own 600px
-breakpoint, where it stops reading `--width` and gives each toast
+**Width has four numbers, and each has one home.** `width` is sonner's `--width`
+(380px by default). `mobileWidth` is the cap below sonner's own 600px breakpoint,
+where it stops reading `--width` and gives each toast
 `calc(100% - 2 × mobileOffset)`; the cap travels as `--toast-mobile-width`
 because a class built by interpolation is never generated at build time.
-`maxWidth` is a cap on top of either.
+`maxWidth` is a cap on top of either, and `minWidth` is the floor below which the
+content wraps rather than shrinks — the one of the four that stops a narrow toast
+from breaking a long word across three lines.
 
 **Lifetimes** — one table, in ms: a success is read at a glance (3s), an error
 has to be read *and* acted on (6s), a moment is briefest (2.5s), and the stack's
-default is 4s. A per-toast duration still wins.
+default is 4s. A per-toast duration still wins, and a per-toast `delay` holds the
+toast back — 200ms is how a save that usually finishes in 40 stops flashing a
+toast at all.
+
+**Motion** — `behaviour.animation` picks the property the enter and leave
+transition runs on: `scale` (transform and opacity together, the default),
+`fade`, `slide`, or `none`. `none` is the one value that also honours
+`prefers-reduced-motion` for a reader who has asked for no motion at all; the
+rest rely on sonner's own reduced-motion handling.
 
 **The dismiss button sits inside the bubble.** Sonner anchors it to the outside
 corner by default, floating on the page; here it is a flex child, so it is

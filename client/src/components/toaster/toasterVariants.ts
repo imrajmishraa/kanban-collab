@@ -1,153 +1,17 @@
-import type { ReactNode } from "react";
-import type { ToastClassnames } from "sonner";
+import { TOAST_MS, type CssVars } from "@/lib/toastTokens";
 
-import {
-  TOAST_MS,
-  type CssVars,
-  type ToastFill,
-  type ToastTone,
-} from "@/lib/toastTokens";
+import type {
+  DescriptionSize,
+  ToasterAnimation,
+  ToasterConfig,
+  ToasterPreset,
+  ToasterShape,
+  ToasterSize,
+} from "./toasterTypes";
 
-/* ── Types ──────────────────────────────────────────────────────────
-   The API is seven axes, not twenty props: `docs/change-rules.md` §3.3 caps a
-   component at eight props and asks for a `variant`/`slot` split past that. The
-   attributes live inside the groups, so a new one costs a field rather than a
-   prop. */
-
-/** Type scale inside the toast. `md` is the historical default. */
-export type ToasterSize = "sm" | "md" | "lg";
-
-/** Corner + padding. `default` matches the card radius used across the app. */
-export type ToasterShape =
-  | "default"
-  | "sharp"
-  | "soft"
-  | "pill"
-  | "card"
-  | "glass"
-  /* Silhouette — the bubble is not a rectangle. */
-  | "speech"
-  | "tab"
-  | "squircle"
-  | "chamfer"
-  | "ticket"
-  | "blob"
-  /* Border — the edge carries the character. */
-  | "dashed"
-  | "double"
-  | "keycap"
-  | "sticker"
-  | "callout";
-
-/** Which surface a toast is painted on. `auto` is the app's elevated panel. */
-export type ToasterTone = ToastTone;
-
-export type ToasterTheme = "light" | "dark" | "system";
-
-export type ToasterPosition =
-  | "top-left"
-  | "top-center"
-  | "top-right"
-  | "bottom-left"
-  | "bottom-center"
-  | "bottom-right";
-
-export type SwipeDirection = "top" | "right" | "bottom" | "left";
-
-/** Everything painted, nothing positioned. */
-export interface AppearanceOptions {
-  shape?: ToasterShape;
-  size?: ToasterSize;
-  tone?: ToasterTone;
-  /** How hard the tone is applied: a fill, a tint, or an edge. */
-  fill?: ToastFill;
-  theme?: ToasterTheme;
-  /** Replaces the five status glyphs, or sonner's own close glyph. */
-  icons?: Partial<Record<ToasterIconName, ReactNode>>;
-  /** Clamp the description to this many lines, the way the tooltip does. */
-  maxLines?: number;
-}
-
-/** The glyphs sonner accepts — the five statuses plus `close`. */
-export type ToasterIconName =
-  "success" | "error" | "warning" | "info" | "loading" | "close";
-
-/** Everything measured, no colour. */
-export interface LayoutOptions {
-  position?: ToasterPosition;
-  /** Fixed stack width — sonner's `--width`. */
-  width?: number | string;
-  /** Cap on a single toast, in addition to `width`. */
-  maxWidth?: number | string;
-  /**
-   * Cap below sonner's 600px breakpoint, where it stops reading `--width` and
-   * gives each toast `calc(100% - 2 × mobileOffset)` instead.
-   */
-  mobileWidth?: number | string;
-  /** Minimum height of a toast — useful when every toast should be one size. */
-  height?: number | string;
-  /** Maximum height; longer content is clipped by sonner's own overflow. */
-  maxHeight?: number | string;
-  /** Space between stacked toasts. */
-  gap?: number;
-  /** Distance from the viewport edge — a number, a CSS length, or per edge. */
-  offset?:
-    | number
-    | string
-    | Partial<Record<"top" | "right" | "bottom" | "left", number | string>>;
-  /** Same, on narrow screens. */
-  mobileOffset?:
-    | number
-    | string
-    | Partial<Record<"top" | "right" | "bottom" | "left", number | string>>;
-  /** Show every stacked toast, rather than collapsing them. */
-  expand?: boolean;
-  /** How many toasts can be on screen at once. */
-  visibleToasts?: number;
-}
-
-/** What a toast does over time. */
-export interface BehaviourOptions {
-  /** Default lifetime in ms; a per-toast duration still wins. */
-  duration?: number;
-  /** Show the dismiss button. */
-  closeButton?: boolean;
-  /** Dismiss button shape: `md` (rounded-md) or `round`. */
-  closeButtonShape?: "md" | "round";
-  /** Which ways a toast can be swiped away. */
-  swipeDirections?: SwipeDirection[];
-  /** Keyboard shortcut that focuses the stack — one registration, per §6. */
-  hotkey?: string[];
-}
-
-/** The labels a screen reader reads. Two stacks need two names. */
-export interface A11yOptions {
-  containerLabel?: string;
-  toastLabel?: string;
-  closeLabel?: string;
-}
-
-export type ToasterPreset =
-  "default" | "quiet" | "assertive" | "auth" | "compact";
-
-/** sonner's own class map, plus the one slot sonner does not name: the root. */
-export type ToasterClassNames = Partial<ToastClassnames> & { toaster?: string };
-
-/** The four attribute groups — what a preset fills. */
-export interface ToasterConfig {
-  appearance?: AppearanceOptions;
-  layout?: LayoutOptions;
-  behaviour?: BehaviourOptions;
-  a11y?: A11yOptions;
-}
-
-export interface ToasterProps extends ToasterConfig {
-  /** Names this stack, so a second toaster can run beside it. */
-  id?: string;
-  /** One word for a whole configuration. Explicit attributes always win. */
-  preset?: ToasterPreset;
-  classNames?: ToasterClassNames;
-}
+/* The types are the public API of this folder; the tables below are its body.
+   Re-exported so a caller still imports both from one path. */
+export type * from "./toasterTypes";
 
 /* ── Variants ─────────────────────────────────────────────────────
    Every map below is a plain record, so a new variant is one line and no
@@ -183,23 +47,57 @@ export const SHAPE_CLASS: Record<ToasterShape, string> = {
   callout: "!rounded-[12px] !border-l-[3px] !border-l-current",
 };
 
+/**
+ * The title's scale, and the step each size gives the description.
+ *
+ * The description's *ink* is not here: it is `--toast-description`, so a tone or
+ * a `description.color` can move it without a new class.
+ */
 export const SIZE_CLASS: Record<
   ToasterSize,
   { title: string; description: string }
 > = {
+  xs: {
+    title: "!text-[11px] !font-semibold !leading-[1.3]",
+    description: "!text-[10px] !leading-[1.45]",
+  },
   sm: {
     title: "!text-[12px] !font-semibold !leading-[1.35]",
-    description: "!text-[11px] !leading-[1.5] !text-(--toast-description)",
+    description: "!text-[11px] !leading-[1.5]",
   },
   md: {
     title: "!text-[13px] !font-semibold !leading-[1.35] !tracking-[-0.1px]",
-    description:
-      "!text-[12px] !leading-[1.5] !tracking-[-0.05px] !text-(--toast-description)",
+    description: "!text-[12px] !leading-[1.5] !tracking-[-0.05px]",
   },
   lg: {
     title: "!text-[15px] !font-semibold !leading-[1.35]",
-    description: "!text-[13px] !leading-[1.5] !text-(--toast-description)",
+    description: "!text-[13px] !leading-[1.5]",
   },
+  xl: {
+    title: "!text-[17px] !font-semibold !leading-[1.3] !tracking-[-0.15px]",
+    description: "!text-[14px] !leading-[1.5]",
+  },
+};
+
+/** A description size the caller set explicitly, whatever the title's step. */
+export const DESCRIPTION_SIZE_CLASS: Record<DescriptionSize, string> = {
+  xs: "!text-[10px] !leading-[1.45]",
+  sm: "!text-[11px] !leading-[1.5]",
+  md: "!text-[12px] !leading-[1.5]",
+  lg: "!text-[13px] !leading-[1.5]",
+};
+
+/** The description's ink, which a tone or `description.color` overrides. */
+export const DESCRIPTION_INK = "!text-(--toast-description)";
+
+/** The transition each animation runs on. */
+export const ANIMATION_CLASS: Record<ToasterAnimation, string> = {
+  fade: "!transition-opacity !duration-300 !ease-[cubic-bezier(0.21,0.47,0.32,0.98)]",
+  slide:
+    "!transition-transform !duration-300 !ease-[cubic-bezier(0.21,0.47,0.32,0.98)]",
+  scale:
+    "!transition-[transform,opacity] !duration-300 !ease-[cubic-bezier(0.21,0.47,0.32,0.98)]",
+  none: "!transition-none",
 };
 
 /* One number, one place: these were 380 in three spots and 340 in a class

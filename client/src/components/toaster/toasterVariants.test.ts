@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  ANIMATION_CLASS,
+  DESCRIPTION_INK,
   MOBILE_WIDTH,
   MOBILE_WIDTH_PX,
   PRESET,
@@ -48,16 +50,20 @@ describe("shape variants", () => {
 });
 
 describe("size variants", () => {
-  it("scales the title monotonically", () => {
+  it("scales the title monotonically, xs through xl", () => {
+    expect(SIZE_CLASS.xs.title).toContain("11px");
     expect(SIZE_CLASS.sm.title).toContain("12px");
     expect(SIZE_CLASS.md.title).toContain("13px");
     expect(SIZE_CLASS.lg.title).toContain("15px");
+    expect(SIZE_CLASS.xl.title).toContain("17px");
   });
 
-  it("reads the description ink from the tone, not from the page", () => {
+  it("leaves the description's ink to the tone, not to the scale", () => {
     for (const scale of Object.values(SIZE_CLASS)) {
-      expect(scale.description).toContain("text-(--toast-description)");
+      expect(scale.description).not.toContain("text-(");
     }
+
+    expect(DESCRIPTION_INK).toBe("!text-(--toast-description)");
   });
 });
 
@@ -80,6 +86,25 @@ describe("the default surface", () => {
   it("caps the toast below sonner's own breakpoint, not Tailwind's sm", () => {
     expect(MOBILE_WIDTH).toContain("max-width:600px");
     expect(MOBILE_WIDTH).not.toContain("sm:");
+  });
+});
+
+describe("animations", () => {
+  it("offers the four, and only `none` stops moving", () => {
+    expect(Object.keys(ANIMATION_CLASS)).toEqual([
+      "fade",
+      "slide",
+      "scale",
+      "none",
+    ]);
+    expect(ANIMATION_CLASS.none).toContain("!transition-none");
+
+    for (const [name, classes] of Object.entries(ANIMATION_CLASS)) {
+      if (name === "none") continue;
+
+      expect(classes).toContain("!transition");
+      expect(classes).toContain("!duration-300");
+    }
   });
 });
 

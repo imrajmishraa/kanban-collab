@@ -225,6 +225,31 @@ describe("the tooltip's per-toast attributes", () => {
   });
 });
 
+describe("delay", () => {
+  it("shows at once when no delay is asked for", () => {
+    const spy = spyOn("info");
+
+    toastInfo("Now");
+
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
+
+  it("waits for the delay before showing", () => {
+    vi.useFakeTimers();
+    const spy = spyOn("info");
+
+    toastInfo("Later", undefined, { delay: 600 });
+
+    expect(spy).not.toHaveBeenCalled();
+
+    vi.advanceTimersByTime(600);
+
+    expect(spy).toHaveBeenCalledTimes(1);
+
+    vi.useRealTimers();
+  });
+});
+
 describe("dismissToast", () => {
   it("dismisses one toast, or all of them", () => {
     const spy = vi.spyOn(toast, "dismiss").mockReturnValue("ok");

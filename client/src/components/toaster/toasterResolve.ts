@@ -3,7 +3,10 @@ import type { ToastClassnames } from "sonner";
 import { TOAST_MS, toneSurface, type CssVars } from "@/lib/toastTokens";
 
 import {
+  ANIMATION_CLASS,
   DEFAULT_WIDTH_PX,
+  DESCRIPTION_INK,
+  DESCRIPTION_SIZE_CLASS,
   MOBILE_WIDTH,
   MOBILE_WIDTH_PX,
   PRESET,
@@ -57,9 +60,6 @@ export interface ResolvedToaster {
 /** The hairline of light plus the deep drop. One blur reads as a browser default. */
 const SHADOW =
   "!shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_24px_56px_-20px_rgba(0,0,0,0.75),0_2px_8px_-2px_rgba(0,0,0,0.5)]";
-
-const TRANSITION =
-  "!transition-[transform,opacity] !duration-300 !ease-[cubic-bezier(0.21,0.47,0.32,0.98)]";
 
 /**
  * The dismiss button, in the flow rather than on top of it.
@@ -115,13 +115,15 @@ export function resolveToaster(props: ToasterProps = {}): ResolvedToaster {
     size = "md",
     tone = "auto",
     fill = "solid",
-    maxLines,
+    ink,
+    description = {},
     theme = "dark",
   } = appearance;
 
   const {
     position = "bottom-right",
     width = DEFAULT_WIDTH_PX,
+    minWidth,
     maxWidth,
     mobileWidth = MOBILE_WIDTH_PX,
     height,
@@ -137,6 +139,7 @@ export function resolveToaster(props: ToasterProps = {}): ResolvedToaster {
     duration = TOAST_MS.default,
     closeButton = true,
     closeButtonShape = "md",
+    animation = "scale",
     swipeDirections = ["right", "top"],
     hotkey = ["altKey", "KeyT"],
   } = behaviour;
@@ -160,7 +163,15 @@ export function resolveToaster(props: ToasterProps = {}): ResolvedToaster {
       "--toast-max-height": dimension(maxHeight),
     }),
     ...(maxWidth !== undefined && { "--toast-max-width": dimension(maxWidth) }),
-    ...(maxLines !== undefined && { "--toast-lines": maxLines }),
+    ...(minWidth !== undefined && { "--toast-min-width": dimension(minWidth) }),
+    ...(description.lines !== undefined && {
+      "--toast-lines": description.lines,
+    }),
+    /* After the tone, so an explicit ink or description colour wins over it. */
+    ...(ink !== undefined && { "--normal-text": ink }),
+    ...(description.color !== undefined && {
+      "--toast-description": description.color,
+    }),
   };
 
   const classNames: ToastClassnames = {
@@ -171,11 +182,18 @@ export function resolveToaster(props: ToasterProps = {}): ResolvedToaster {
       height !== undefined && "!min-h-[var(--toast-min-height)]",
       maxHeight !== undefined && "!max-h-[var(--toast-max-height)]",
       maxWidth !== undefined && "!max-w-[var(--toast-max-width)]",
+      minWidth !== undefined && "!min-w-[var(--toast-min-width)]",
       SHADOW,
-      TRANSITION,
+      ANIMATION_CLASS[animation],
     ),
     title: join(scale.title, toastClassNames.title),
-    description: join(scale.description, toastClassNames.description),
+    description: join(
+      description.size !== undefined
+        ? DESCRIPTION_SIZE_CLASS[description.size]
+        : scale.description,
+      DESCRIPTION_INK,
+      toastClassNames.description,
+    ),
     content: join("!gap-1", toastClassNames.content),
     icon: join("!size-6 !items-center !justify-center", toastClassNames.icon),
     loader: join("!text-(--text-secondary)", toastClassNames.loader),
@@ -206,7 +224,7 @@ export function resolveToaster(props: ToasterProps = {}): ResolvedToaster {
     closeButtonAriaLabel: closeLabel,
     toastStyle,
     classNames,
-    ...(maxLines !== undefined && {
+    ...(description.lines !== undefined && {
       descriptionClassName: "!line-clamp-[var(--toast-lines)]",
     }),
     rootClass: join(MOBILE_WIDTH, toaster),
