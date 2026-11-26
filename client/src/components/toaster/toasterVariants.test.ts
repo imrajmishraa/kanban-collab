@@ -24,10 +24,18 @@ describe("shape variants", () => {
     expect(SHAPE_CLASS.default).toBe("!rounded-[12px]");
   });
 
-  it("gives every shape its own radius", () => {
-    const radii = Object.values(SHAPE_CLASS);
+  it("gives every shape its own class list", () => {
+    const shapes = Object.values(SHAPE_CLASS);
 
-    expect(new Set(radii).size).toBe(radii.length);
+    expect(new Set(shapes).size).toBe(shapes.length);
+  });
+
+  it("offers the tooltip's silhouettes and edges as well as radii", () => {
+    expect(Object.keys(SHAPE_CLASS)).toHaveLength(17);
+    expect(SHAPE_CLASS.speech).toContain("!rounded-bl-[2px]");
+    expect(SHAPE_CLASS.chamfer).toContain("clip-path");
+    expect(SHAPE_CLASS.dashed).toContain("!border-dashed");
+    expect(SHAPE_CLASS.callout).toContain("!border-l-current");
   });
 
   it("adds a blur only for glass", () => {

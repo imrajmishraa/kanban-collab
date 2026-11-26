@@ -132,6 +132,9 @@ export function Toaster(props: ToasterProps = {}) {
         closeButtonAriaLabel: resolved.closeButtonAriaLabel,
         style: resolved.toastStyle,
         classNames: resolved.classNames,
+        ...(resolved.descriptionClassName !== undefined && {
+          descriptionClassName: resolved.descriptionClassName,
+        }),
       }}
     />
   );

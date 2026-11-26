@@ -156,6 +156,75 @@ describe("toastPromise", () => {
   });
 });
 
+describe("the tooltip's per-toast attributes", () => {
+  it("offers a copy button when given a value", () => {
+    const spy = spyOn("info");
+
+    toastInfo("Invite link", undefined, { copyValue: "https://x/b/1" });
+
+    const [, options] = spy.mock.calls[0] as unknown as [
+      string,
+      { action: { label: string } },
+    ];
+
+    expect(options.action.label).toBe("Copy");
+  });
+
+  it("keeps the caller's action rather than adding a second button", () => {
+    const spy = spyOn("success");
+
+    toastSuccess("Deleted", undefined, {
+      copyValue: "x",
+      action: { label: "Undo", onClick: () => undefined },
+    });
+
+    const [, options] = spy.mock.calls[0] as unknown as [
+      string,
+      { action: { label: string } },
+    ];
+
+    expect(options.action.label).toBe("Undo");
+  });
+
+  it("gives the description its own ink", () => {
+    const spy = spyOn("info");
+
+    toastInfo("Synced", "One card could not be saved.", {
+      descriptionTone: "danger",
+    });
+
+    const [, options] = spy.mock.calls[0] as [
+      string,
+      { style: Record<string, string> },
+    ];
+
+    expect(options.style["--toast-description"]).toContain(
+      "var(--inverse-text)",
+    );
+  });
+
+  it("takes a glyph for one toast", () => {
+    const spy = spyOn("success");
+
+    toastSuccess("Saved", undefined, { icon: "glyph" });
+
+    expect(spy.mock.calls[0][1]).toMatchObject({ icon: "glyph" });
+  });
+
+  it("keeps a per-toast fill", () => {
+    const spy = spyOn("info");
+
+    toastInfo("Tinted", undefined, { tone: "danger", fill: "soft" });
+
+    const [, options] = spy.mock.calls[0] as [
+      string,
+      { style: Record<string, string> },
+    ];
+
+    expect(options.style["--normal-bg"]).toContain("color-mix");
+  });
+});
+
 describe("dismissToast", () => {
   it("dismisses one toast, or all of them", () => {
     const spy = vi.spyOn(toast, "dismiss").mockReturnValue("ok");
