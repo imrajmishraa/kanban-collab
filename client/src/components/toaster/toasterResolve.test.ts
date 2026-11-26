@@ -138,6 +138,50 @@ describe("resolveToaster — appearance", () => {
   });
 });
 
+describe("resolveToaster — fill", () => {
+  it("fills the surface solid by default", () => {
+    expect(
+      resolveToaster({ appearance: { tone: "danger" } }).toastStyle[
+        "--normal-bg"
+      ],
+    ).toBe("var(--danger)");
+  });
+
+  it("tints the surface and keeps the page's ink when soft", () => {
+    const resolved = resolveToaster({
+      appearance: { tone: "danger", fill: "soft" },
+    });
+
+    expect(resolved.toastStyle["--normal-bg"]).toContain("color-mix");
+    expect(resolved.toastStyle["--normal-text"]).toBe("var(--text-primary)");
+  });
+
+  it("leaves the surface alone and colours the edge when outlined", () => {
+    const resolved = resolveToaster({
+      appearance: { tone: "danger", fill: "outline" },
+    });
+
+    expect(resolved.toastStyle["--normal-bg"]).toBe("var(--bg-elevated)");
+    expect(resolved.toastStyle["--normal-border"]).toContain("var(--danger)");
+  });
+
+  it("takes the fill from a preset, and the caller still wins", () => {
+    const quiet = resolveToaster({
+      preset: "quiet",
+      appearance: { tone: "danger" },
+    });
+
+    expect(quiet.toastStyle["--normal-bg"]).toContain("color-mix");
+
+    const overridden = resolveToaster({
+      preset: "quiet",
+      appearance: { tone: "danger", fill: "solid" },
+    });
+
+    expect(overridden.toastStyle["--normal-bg"]).toBe("var(--danger)");
+  });
+});
+
 describe("resolveToaster — behaviour and labels", () => {
   it("passes the shortcut and the swipe directions through", () => {
     const resolved = resolveToaster({

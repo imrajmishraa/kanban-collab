@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { TONE_SURFACE, TOAST_MS } from "./toastTokens";
+import {
+  TOAST_FILLS,
+  TONE_COLOR,
+  TONE_SURFACE,
+  TOAST_MS,
+  toneSurface,
+  type ToastTone,
+} from "./toastTokens";
 
 /**
  * The one copy of the toast's colour and time.
@@ -49,11 +56,18 @@ describe("the tone set", () => {
       "success",
       "warning",
       "danger",
+      "info",
       "neutral",
+      "muted",
       "auth",
       "accent",
       "inverse",
     ]);
+  });
+
+  it("carries the tooltip's info and muted tones", () => {
+    expect(TONE_SURFACE.info["--normal-bg"]).toBe("var(--link)");
+    expect(TONE_SURFACE.muted["--normal-text"]).toBe("var(--text-secondary)");
   });
 
   it("gives every filling tone its own description and close ink", () => {
@@ -84,6 +98,61 @@ describe("the tone set", () => {
     expect(TONE_SURFACE.inverse["--normal-border"]).toBe(
       "var(--inverse-border)",
     );
+  });
+});
+
+describe("toneSurface", () => {
+  it("returns the solid table for the default fill", () => {
+    expect(toneSurface("danger")).toEqual(TONE_SURFACE.danger);
+    expect(toneSurface("danger", "solid")).toEqual(TONE_SURFACE.danger);
+  });
+
+  it("tints and edges a soft fill, and keeps the page's ink", () => {
+    const soft = toneSurface("success", "soft");
+
+    expect(soft["--normal-bg"]).toContain("var(--success)");
+    expect(soft["--normal-bg"]).toContain("var(--bg-elevated)");
+    expect(soft["--normal-border"]).toContain("var(--success)");
+    expect(soft["--normal-text"]).toBe("var(--text-primary)");
+  });
+
+  it("leaves an outline unfilled and puts the tone on the edge", () => {
+    const outline = toneSurface("danger", "outline");
+
+    expect(outline["--normal-bg"]).toBe("var(--bg-elevated)");
+    expect(outline["--normal-border"]).toContain("var(--danger)");
+    expect(outline["--normal-text"]).toBe("var(--text-primary)");
+  });
+
+  it("has nothing to soften on auto", () => {
+    expect(toneSurface("auto", "soft")).toEqual({});
+    expect(toneSurface("auto", "outline")).toEqual({});
+  });
+
+  it("gives every tone and fill three inks", () => {
+    for (const tone of Object.keys(TONE_SURFACE) as ToastTone[]) {
+      if (tone === "auto") continue;
+
+      for (const fill of TOAST_FILLS) {
+        const surface = toneSurface(tone, fill);
+
+        expect(surface["--normal-bg"]).toBeTruthy();
+        expect(surface["--normal-text"]).toBeTruthy();
+        expect(surface["--toast-description"]).toBeTruthy();
+        expect(surface["--toast-close"]).toBeTruthy();
+      }
+    }
+  });
+
+  it("derives every fill from one colour per tone", () => {
+    for (const tone of Object.keys(TONE_COLOR) as ToastTone[]) {
+      const color = TONE_COLOR[tone];
+
+      if (color === undefined) continue;
+
+      expect(toneSurface(tone, "soft")["--normal-bg"]).toContain(color);
+      expect(toneSurface(tone, "outline")["--normal-border"]).toContain(color);
+    }
   });
 });
 

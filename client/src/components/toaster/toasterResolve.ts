@@ -1,6 +1,6 @@
 import type { ToastClassnames } from "sonner";
 
-import { TONE_SURFACE, TOAST_MS, type CssVars } from "@/lib/toastTokens";
+import { TOAST_MS, toneSurface, type CssVars } from "@/lib/toastTokens";
 
 import {
   DEFAULT_WIDTH_PX,
@@ -112,6 +112,7 @@ export function resolveToaster(props: ToasterProps = {}): ResolvedToaster {
     shape = "default",
     size = "md",
     tone = "auto",
+    fill = "solid",
     theme = "dark",
   } = appearance;
 
@@ -150,7 +151,7 @@ export function resolveToaster(props: ToasterProps = {}): ResolvedToaster {
     ...SURFACE,
     "--width": dimension(width) ?? `${DEFAULT_WIDTH_PX}px`,
     "--toast-mobile-width": dimension(mobileWidth) ?? `${MOBILE_WIDTH_PX}px`,
-    ...TONE_SURFACE[tone],
+    ...toneSurface(tone, fill),
     ...(height !== undefined && { "--toast-min-height": dimension(height) }),
     ...(maxHeight !== undefined && {
       "--toast-max-height": dimension(maxHeight),

@@ -32,13 +32,18 @@ satisfiable.
 
 ## One writer per fact
 
-- **Surface** — `TONE_SURFACE` in `lib/toastTokens.ts`, and nowhere else. Nine
-  tones: `auto`, `brand`, `success`, `warning`, `danger`, `neutral`, `auth`,
-  `accent`, `inverse`. `auth` is a tone, not a variant with its own table; two
-  writers of `--normal-bg` is how a brand toast and an auth toast could disagree
-  silently. `accent` and `inverse` are the two the rest of the system already
-  named: the segmented control's `--accent-fill`/`--accent` pair, and the
-  tooltip's inverse family.
+- **Surface** — `TONE_SURFACE` in `lib/toastTokens.ts`, and nowhere else. Eleven
+  tones: `auto`, `brand`, `success`, `warning`, `danger`, `info`, `neutral`,
+  `muted`, `auth`, `accent`, `inverse`. `auth` is a tone, not a variant with its
+  own table; two writers of `--normal-bg` is how a brand toast and an auth toast
+  could disagree silently. `info` and `muted` come from the tooltip's tone table;
+  `accent` and `inverse` from the segmented control's `--accent-fill`/`--accent`
+  pair and the tooltip's inverse family.
+- **Strength** — `appearance.fill` is `solid` (the tone fills), `soft` (the tone
+  tints and edges, the ink stays the page's) or `outline` (the tone is only the
+  edge). The three are `button-solid`, `chip` and `button-danger` from
+  `DESIGN.md`, and `toneSurface(tone, fill)` derives them from the one colour in
+  `TONE_COLOR`, so a tone cannot be solid in one colour and soft in another.
 - **Ink** — a tone sets three: `--normal-text`, `--toast-description`,
   `--toast-close`. A filled surface that leaves the description on
   `--text-muted` is a grey on a fill, and the status fills take
