@@ -433,11 +433,28 @@ The recipes in the front matter are the contract. A few rules sit behind them.
 ## Toasts
 
 A toast is the one surface with variants, because it carries a different job
-depending on why it appeared. `components/toaster/Toaster.tsx` takes them as
-props; the tables that back them live beside it in `toasterVariants.ts`.
+depending on why it appeared. The tables that back them live beside the
+component in `toasterVariants.ts`; the two facts both halves of the toast need —
+the surfaces and the lifetimes — live in `lib/toastTokens.ts`, because the call
+(`lib/toast.ts`) and the surface (`components/toaster/`) may not import each
+other.
+
+**Seven axes, not twenty props.** `Toaster` takes `appearance`, `layout`,
+`behaviour`, `a11y`, `classNames`, `preset` and `id`. Everything painted is in
+`appearance`, everything measured in `layout`, everything timed in `behaviour`,
+every label in `a11y`. A new attribute is a field inside a group, so the API
+cannot creep back over the eight-prop cap in `docs/change-rules.md` §3.
+
+**Presets** — `default`, `quiet` (one visible toast, no dismiss button, the
+moment lifetime), `assertive` (five visible, expanded, 8s), `auth` (the auth
+tone at `lg`), `compact` (320px, tighter gap and offset). A preset is merged
+*under* the explicit groups, never over them: a preset that could override what
+the caller wrote would be a transient mode in a persisted key with a nicer name.
 
 **Shape** — `default` `{rounded.xl}` (the card radius), `sharp` 4px, `soft` 16px,
-`pill` full, `card` 20px, `glass` 16px plus a blur. Only `glass` blurs.
+`pill` full, `card` 20px, `glass` 16px plus a blur. Only `glass` blurs. The shape
+is the only writer of the radius: the surface table deliberately carries no
+`--border-radius`, so the two cannot disagree.
 
 **Size** — the type scale inside the bubble: `sm` 12/11px, `md` 13/12px (the
 default), `lg` 15/13px. The description is `--text-muted` at every size; a
@@ -449,16 +466,41 @@ and `danger` fill with their token and take `--auth-ink` for text, which is why
 that ink exists as a token rather than as white in a class. `neutral` is the flat
 elevated surface with no gradient.
 
-**The auth surface** is the one tone with a name of its own: `--auth`, a blue
-that belongs to neither the accent nor the status set. It marks a moment rather
-than a result — signing in, finishing onboarding — so it fills the whole toast
-and dismisses faster than a success does.
+**The auth surface** is a tone like the others: `--auth`, a blue that belongs to
+neither the accent nor the status set. It marks a moment rather than a result —
+signing in, finishing onboarding — so it fills the whole toast and dismisses
+faster than a success does. It was a private table in the call layer until it
+became a tone; two writers of the same variable is how a brand toast and an auth
+toast could resolve differently with no warning.
+
+**Width has three numbers, and each has one home.** `width` is sonner's
+`--width` (380px by default). `mobileWidth` is the cap below sonner's own 600px
+breakpoint, where it stops reading `--width` and gives each toast
+`calc(100% - 2 × mobileOffset)`; the cap travels as `--toast-mobile-width`
+because a class built by interpolation is never generated at build time.
+`maxWidth` is a cap on top of either.
+
+**Lifetimes** — one table, in ms: a success is read at a glance (3s), an error
+has to be read *and* acted on (6s), a moment is briefest (2.5s), and the stack's
+default is 4s. A per-toast duration still wins.
 
 **The dismiss button sits inside the bubble.** Sonner anchors it to the outside
 corner by default, floating on the page; here it is a flex child, so it is
 centred for any content height, and ordered last so it stays at the right edge.
 24px, `{rounded.md}`, no fill, no border: the glyph is the affordance, and the
 hover tint is the only feedback.
+
+**The action buttons are 44px tall below `sm` and 28px above it.** A toast with
+"Undo" on it is the one control a thumb reaches for in a hurry, and
+`docs/change-rules.md` §5.1 sets the touch floor at 44×44. The desktop height is
+what the design asks for; both are one control.
+
+**Per toast, not per stack.** A `Toaster` prop reaches every toast; `lib/toast.ts`
+reaches one. `tone`, `id` (re-fire replaces instead of stacking), `action` and
+`cancel`, `dismissible`, `closeButton`, `onDismiss`, `onAutoClose`, `toasterId`
+and `testId` live there. `id` is what turns "Saving…" into "Saved" in place
+rather than into two toasts, and `toastPromise` is the same idea for a whole
+async operation.
 
 ## Accessibility
 
