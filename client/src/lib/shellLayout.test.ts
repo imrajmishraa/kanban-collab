@@ -167,6 +167,102 @@ describe("settleDrag", () => {
     expect("railPx" in settled).toBe(false);
   });
 
+  /*
+   * The drag's slop.
+   *
+   * Every pane's `minSize` is 0, so the library never stops a drag — the model is
+   * the only thing that decides "this gesture meant something else". Without a
+   * tolerance, a board released a few pixels under its floor flipped the column to
+   * full width, and a column released just under 320 closed itself: two big
+   * consequences for a 5px overshoot.
+   */
+  it("a rail left just under its floor stays open at the floor", () => {
+    const w = 1280;
+    const layout = {
+      leftPanel: (190 / w) * 100, // 10px under 200
+      centreLayout: ((w - 190 - 400) / w) * 100,
+      rightPanel: (400 / w) * 100,
+    };
+
+    expect(settleDrag(w, layout, "left", open())).toEqual({
+      railOpen: true,
+      railCollapsed: false,
+      railPx: SHELL.left.min,
+    });
+  });
+
+  it("a rail dragged well under its floor becomes the icon strip", () => {
+    const w = 1280;
+    const layout = {
+      leftPanel: (120 / w) * 100, // 80px under: past the slop
+      centreLayout: ((w - 120 - 400) / w) * 100,
+      rightPanel: (400 / w) * 100,
+    };
+
+    expect(settleDrag(w, layout, "left", open())).toEqual({
+      railOpen: true,
+      railCollapsed: true,
+    });
+  });
+
+  it("a board left just under its floor does not flip to full width", () => {
+    const w = 1280;
+    const layout = {
+      leftPanel: (280 / w) * 100,
+      centreLayout: (380 / w) * 100, // 20px under the 400 floor
+      rightPanel: ((w - 280 - 380) / w) * 100,
+    };
+
+    expect(settleDrag(w, layout, "right", open())).toEqual({
+      columnOpen: true,
+      fullWidth: false,
+      columnPx: SHELL.right.max,
+    });
+  });
+
+  it("a board pushed well under its floor still flips to full width", () => {
+    const w = 1280;
+    const layout = {
+      leftPanel: (280 / w) * 100,
+      centreLayout: (350 / w) * 100, // 50px under: past the slop
+      rightPanel: ((w - 280 - 350) / w) * 100,
+    };
+
+    expect(settleDrag(w, layout, "right", open())).toEqual({
+      columnOpen: true,
+      fullWidth: true,
+    });
+  });
+
+  it("a column left just under its floor stays open at the floor", () => {
+    const w = 1280;
+    const layout = {
+      leftPanel: (280 / w) * 100,
+      centreLayout: ((w - 280 - 310) / w) * 100,
+      rightPanel: (310 / w) * 100, // 10px under 320
+    };
+
+    expect(settleDrag(w, layout, "right", open())).toEqual({
+      columnOpen: true,
+      fullWidth: false,
+      columnPx: SHELL.right.min,
+    });
+  });
+
+  it("a column dragged well under its floor closes", () => {
+    const w = 1280;
+    const layout = {
+      leftPanel: (280 / w) * 100,
+      centreLayout: ((w - 280 - 280) / w) * 100,
+      rightPanel: (280 / w) * 100, // 40px under: past the slop
+    };
+
+    expect(settleDrag(w, layout, "right", open())).toEqual({
+      columnOpen: false,
+      fullWidth: false,
+    });
+  });
+
   it("flips to full width when the board was pushed below its floor", () => {
     const w = 1280;
     const layout = {

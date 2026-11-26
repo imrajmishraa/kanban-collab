@@ -152,6 +152,17 @@ export function settleDrag(
 
   /* Sub-pixel slack: percentages round-trip through floats. */
   const EPS = 0.5;
+
+  /*
+   * How far past a floor a release may land and still mean "the floor".
+   *
+   * Every pane's `minSize` is 0, so the library never stops a drag; the model is
+   * the only thing deciding that a gesture meant something else. At zero tolerance a
+   * board released 20px under its floor flipped the column to full width, and a
+   * column released 10px under 320 closed itself — two large consequences for a
+   * small overshoot.
+   */
+  const SLOP = 32;
   const px = (id: PaneId) => (layout[id] / 100) * groupPx;
 
   if (edge === "left") {
@@ -162,8 +173,9 @@ export function settleDrag(
     if (rail <= EPS) return { railOpen: false, railCollapsed: false };
 
     /* Between the icon strip and the open floor: the strip, not a broken
-       half-open rail. */
-    if (rail < c.left.min - EPS) {
+       half-open rail — unless the release only just missed the floor, in which
+       case it meant the floor. */
+    if (rail < c.left.min - SLOP) {
       return { railOpen: true, railCollapsed: true };
     }
 
@@ -177,13 +189,16 @@ export function settleDrag(
   const column = px("rightPanel");
   const centre = px("centreLayout");
 
-  if (column < c.right.min - EPS)
+  if (column < c.right.min - SLOP) {
     return { columnOpen: false, fullWidth: false };
+  }
 
   /* The board was pushed below its floor, which a collapsible pane does by
      collapsing. That is the "drag past the stop" gesture: flip to full width and
      keep the old `columnPx`, so leaving full width restores it. */
-  if (centre < c.centre.min - EPS) return { columnOpen: true, fullWidth: true };
+  if (centre < c.centre.min - SLOP) {
+    return { columnOpen: true, fullWidth: true };
+  }
 
   return {
     columnOpen: true,
