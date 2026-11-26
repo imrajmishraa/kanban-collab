@@ -110,11 +110,22 @@ describe("resolveToaster — layout", () => {
   });
 
   it("clamps the description to the lines asked for", () => {
-    const resolved = resolveToaster({ appearance: { maxLines: 2 } });
+    const resolved = resolveToaster({
+      appearance: { description: { lines: 2 } },
+    });
 
     expect(resolved.toastStyle["--toast-lines"]).toBe(2);
     expect(resolved.descriptionClassName).toBe(
       "!line-clamp-[var(--toast-lines)]",
+    );
+  });
+
+  it("takes a min width as a variable and the matching class", () => {
+    const resolved = resolveToaster({ layout: { minWidth: 280 } });
+
+    expect(resolved.toastStyle["--toast-min-width"]).toBe("280px");
+    expect(resolved.classNames.toast).toContain(
+      "!min-w-[var(--toast-min-width)]",
     );
   });
 
@@ -141,6 +152,43 @@ describe("resolveToaster — appearance", () => {
     expect(
       resolveToaster({ appearance: { shape: "pill" } }).classNames.toast,
     ).toContain("!rounded-full");
+  });
+
+  it("gives the description its own step on the scale", () => {
+    const resolved = resolveToaster({
+      appearance: { size: "lg", description: { size: "xs" } },
+    });
+
+    expect(resolved.classNames.title).toContain("!text-[15px]");
+    expect(resolved.classNames.description).toContain("!text-[10px]");
+    expect(resolved.classNames.description).toContain(
+      "!text-(--toast-description)",
+    );
+  });
+
+  it("takes an explicit ink and description colour over the tone", () => {
+    const resolved = resolveToaster({
+      appearance: {
+        tone: "danger",
+        ink: "var(--text-primary)",
+        description: { color: "var(--warning)" },
+      },
+    });
+
+    expect(resolved.toastStyle["--normal-text"]).toBe("var(--text-primary)");
+    expect(resolved.toastStyle["--toast-description"]).toBe("var(--warning)");
+  });
+
+  it("runs the transition the animation names", () => {
+    expect(resolveToaster().classNames.toast).toContain(
+      "!transition-[transform,opacity]",
+    );
+    expect(
+      resolveToaster({ behaviour: { animation: "fade" } }).classNames.toast,
+    ).toContain("!transition-opacity");
+    expect(
+      resolveToaster({ behaviour: { animation: "none" } }).classNames.toast,
+    ).toContain("!transition-none");
   });
 
   it("never writes the radius as a variable as well", () => {

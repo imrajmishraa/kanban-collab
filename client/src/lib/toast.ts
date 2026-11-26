@@ -50,6 +50,12 @@ export interface ToastOptions {
    * action button, so it is ignored when `action` is set.
    */
   copyValue?: string;
+  /**
+   * Wait this many ms before showing it. A 200ms delay is how a fast save stops
+   * flashing a toast at all; the returned value is the timer, not a toast id, so
+   * pass your own `id` if you need to dismiss it.
+   */
+  delay?: number;
   /** Override the lifetime for this one toast. */
   duration?: number;
   /**
@@ -154,6 +160,22 @@ function build(kind: ToastKind, options: ToastOptions): ExternalToast {
   };
 }
 
+/**
+ * Show now, or in `delay` ms.
+ *
+ * A delayed toast has no id yet, so the timer is what comes back. That is the
+ * honest return: dismissing a toast that has not been created is not a thing.
+ */
+function fire(run: () => string | number, delay?: number): string | number {
+  if (delay === undefined || delay <= 0) return run();
+
+  /* The DOM types say number, the Node types say Timeout; both runtimes hand
+     back something that identifies the timer. */
+  const timer = globalThis.setTimeout(run, delay);
+
+  return typeof timer === "number" ? timer : Number(timer);
+}
+
 /** A description is a second line, not a second toast. */
 const withDescription = (
   built: ExternalToast,
@@ -166,9 +188,13 @@ export function toastSuccess(
   description?: string,
   options: ToastOptions = {},
 ) {
-  return toast.success(
-    message,
-    withDescription(build("success", options), description),
+  return fire(
+    () =>
+      toast.success(
+        message,
+        withDescription(build("success", options), description),
+      ),
+    options.delay,
   );
 }
 
@@ -177,9 +203,10 @@ export function toastInfo(
   description?: string,
   options: ToastOptions = {},
 ) {
-  return toast.info(
-    message,
-    withDescription(build("info", options), description),
+  return fire(
+    () =>
+      toast.info(message, withDescription(build("info", options), description)),
+    options.delay,
   );
 }
 
@@ -188,9 +215,13 @@ export function toastWarning(
   description?: string,
   options: ToastOptions = {},
 ) {
-  return toast.warning(
-    message,
-    withDescription(build("warning", options), description),
+  return fire(
+    () =>
+      toast.warning(
+        message,
+        withDescription(build("warning", options), description),
+      ),
+    options.delay,
   );
 }
 
@@ -206,7 +237,10 @@ export function toastError(
         ? err.message
         : fallback;
 
-  return toast.error(message, build("error", options));
+  return fire(
+    () => toast.error(message, build("error", options)),
+    options.delay,
+  );
 }
 
 /**
@@ -214,10 +248,14 @@ export function toastError(
  * later `toastSuccess(..., { id })`, and the spinner becomes the result in place.
  */
 export function toastLoading(message: string, options: ToastOptions = {}) {
-  return toast.loading(message, {
-    ...build("info", options),
-    duration: options.duration ?? Infinity,
-  });
+  return fire(
+    () =>
+      toast.loading(message, {
+        ...build("info", options),
+        duration: options.duration ?? Infinity,
+      }),
+    options.delay,
+  );
 }
 
 export interface PromiseMessages<Data> {

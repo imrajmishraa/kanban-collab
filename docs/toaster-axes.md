@@ -19,9 +19,9 @@ Seven props, every attribute inside one of them:
 
 | Prop | Owns |
 |---|---|
-| `appearance` | shape, size, tone, fill, theme, icons, maxLines |
-| `layout` | position, width, mobileWidth, maxWidth, height, maxHeight, gap, offset, mobileOffset, expand, visibleToasts |
-| `behaviour` | duration, closeButton, closeButtonShape, swipeDirections, hotkey |
+| `appearance` | shape, size, tone, fill, theme, icons, ink, description |
+| `layout` | position, width, minWidth, mobileWidth, maxWidth, height, maxHeight, gap, offset, mobileOffset, expand, visibleToasts |
+| `behaviour` | duration, closeButton, closeButtonShape, swipeDirections, hotkey, animation |
 | `a11y` | containerLabel, toastLabel, closeLabel |
 | `classNames` | sonner's own slot map, plus `toaster` for the root |
 | `preset` | a whole configuration in one word |
@@ -63,6 +63,13 @@ satisfiable.
 
 `lib/toastTokens.ts` lives in `lib/` because `lib/` may not import `components/`
 (`change-rules.md` §4) and both halves need it.
+
+## Two files, one API
+
+`toasterTypes.ts` is the public shape and `toasterVariants.ts` is the tables; the
+second re-exports the first, so a caller still imports both from one path. They
+were one file until the pair crossed the 300-line budget for a `.ts` — types and
+tables are two responsibilities, and the tables are the half that grows.
 
 ## Where the arithmetic is
 
