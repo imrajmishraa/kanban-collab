@@ -6,18 +6,11 @@ import { useNotifications } from "@/features/dashboard/hooks/useNotifications";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { useSidebarState } from "@/features/dashboard";
 import { useRightPanel } from "@/stores/rightPanel";
-import { useLayoutShellStore } from "@/layouts/stores/layoutShellStore";
-import { scheduleEnd, startPreview } from "@/layouts/railPreview";
 import { NavbarSearchIcon, NotificationsButton } from "@/features/dashboard";
 import { NotificationsPanel } from "@/features/dashboard";
 import { Tooltip } from "@/components/Tooltips/ToolTip";
-import {
-  LayoutAlignLeftIcon,
-  MousePointerOff01Icon,
-  PanelRightIcon,
-} from "@hugeicons/core-free-icons";
+import { PanelLeftIcon, PanelRightIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import KanbanIcon from "@/assets/KanbanIcon";
 
 const isMac =
   typeof navigator !== "undefined" &&
@@ -39,6 +32,9 @@ export default function DashboardNavbar({
   const bellRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
+  const setMode = useSidebarState((state) => state.setMode);
+
+  const sidebarMode = useSidebarState((s) => s.mode);
 
   /* The overview is not scoped to one workspace, so the switcher reads
      "All Workspaces" there and reverts to the active name elsewhere. */
@@ -59,18 +55,6 @@ export default function DashboardNavbar({
     setActiveWorkspace,
     clearActiveWorkspace,
   } = useActiveWorkspace();
-
-  const sidebarMode = useSidebarState((s) => s.mode);
-  const peek = useSidebarState((s) => s.peek);
-  const unpeek = useSidebarState((s) => s.unpeek);
-
-  /*
-   * The rail button is on screen in every mode, and one click always puts the rail
-   * where the reader expects: away if it is visible, back if it is hidden. The
-   * decision itself is the shell's (`toggleRail`), so this surface and the
-   * keyboard cannot disagree about what a toggle means.
-   */
-  const railShown = sidebarMode !== "hidden";
 
   /* The right column's only affordance, on screen in both states — a toggle that
      only appears while the panel is closed makes people hunt for it. */
@@ -164,82 +148,59 @@ export default function DashboardNavbar({
               ].join(" "),
           "items-center gap-1.5 px-3",
           "transition-[left,background-color] duration-200",
-          "border-b border-(--hairline)",
+          scrolled ? "border-b border-(--hairline)" : "",
           scrolled ? "bg-(--bg-root)/85 backdrop-blur-md" : "bg-transparent",
         ].join(" ")}
       >
-        <div className="group/expand relative flex h-12 shrink-0 items-center justify-center">
-          <Tooltip
-            label={railShown ? "Hide sidebar" : "Expand sidebar"}
-            highlight={isMac ? "⌘B" : "Ctrl B"}
-            side="bottom"
-            shape="solid"
-            size="md"
-            gap={10}
-          >
-            <button
-              type="button"
-              /* Hidden rail, and the icon is the only thing left of it: hovering previews
-                   it, a click opens it. Leaving puts it back, unless the click already did. */
-              onMouseEnter={() => {
-                /* Embedded, this icon is the whole trigger: it starts the preview and
-                   the overlay that appears under it is what ends it. */
-                if (embedded) startPreview();
-                else peek();
-              }}
-              /* Embedded, the shell owns the preview: leaving the logo on the way
-                   into the overlay must not close it, so only the old layout unpeeks
-                   here. */
-              onMouseLeave={() => {
-                if (embedded) scheduleEnd();
-                else unpeek();
-              }}
-              onFocus={() => {
-                if (embedded) startPreview();
-                else peek();
-              }}
-              onBlur={() => {
-                if (embedded) scheduleEnd();
-                else unpeek();
-              }}
-              onClick={(event) => {
-                event.stopPropagation();
-                /* One toggle from every state: previewing, open, collapsed or
-                     hidden. The shell decides what that means. */
-                useLayoutShellStore.getState().toggleRail();
-              }}
-              aria-label={railShown ? "Hide sidebar" : "Expand sidebar"}
-              className="
-            group relative ml-2 flex size-9 cursor-pointer
-            items-center justify-center
-            hover:rounded-lg
-            transition-colors
-            hover:bg-(--bg-hover)
-          "
-            >
-              {/* Logo, visible normally, hidden on hover */}
-              <KanbanIcon
-                size={22}
-                variant="upper"
-                className="transition-all duration-150 group-hover:opacity-0 group-focus-within:opacity-0"
-              />
+        {/* hidden all the time only  visible when in hidden mode*/}
+        {sidebarMode === "hidden" ? (
+          <div className="flex h-12 shrink-0 items-center justify-between gap-2.5 px">
+            <div className="flex shrink-0 items-center gap-1">
+              <Tooltip
+                label="Expand sidebar"
+                highlight={isMac ? "⌘B" : "Ctrl B"}
+                side="bottom"
+                shape="solid"
+                size="md"
+              >
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setMode("open");
+                  }}
+                  aria-label="Expand sidebar"
+                  className="
+                    group relative flex size-8 cursor-pointer
+                    items-center ml-1 justify-center
+                    hover:rounded-lg
+                    transition-colors
+                    hover:bg-(--bg-hover)
+                  "
+                >
+                  {/* Hover hint, hidden normally, visible on hover: a pointer when
+                        the rail opens by hovering, an arrow when it opens on click. */}
+                  <HugeiconsIcon
+                    icon={PanelLeftIcon}
+                    size={20}
+                    strokeWidth={1.8}
+                    className="
+                      absolute
+                      hover:text-(--text-hover)
+                      transition-all duration-150
+                      group-hover:scale-100
+                      text-(--text-primary)
+                    "
+                  />
+                </button>
+              </Tooltip>
 
-              {/* Hover hint, hidden normally, visible on hover: a crossed-out pointer
-                    when the rail opens by hovering, an arrow when it opens on click — the
-                    same two icons the rail's own header uses, so the two ends agree. */}
-              <HugeiconsIcon
-                icon={
-                  sidebarMode === "hover"
-                    ? MousePointerOff01Icon
-                    : LayoutAlignLeftIcon
-                }
-                size={18}
-                strokeWidth={1.8}
-                className="absolute text-(--text-muted) opacity-0 scale-75 transition-all duration-150 group-hover:scale-100 group-hover:opacity-100 group-hover:text-(--text-primary) group-focus-within:scale-100 group-focus-within:opacity-100 group-focus-within:text-(--text-primary) focus:opacity-100"
-              />
-            </button>
-          </Tooltip>
-        </div>
+              <Tooltip label="Keep open" side="bottom" shape="solid" size="md">
+                <NavbarSearchIcon />
+              </Tooltip>
+            </div>
+          </div>
+        ) : null}
 
         <nav
           aria-label="Breadcrumb"
@@ -294,7 +255,7 @@ export default function DashboardNavbar({
           {/* Always rendered, and always immediately before notifications.
               It used to appear only when the sidebar was collapsed, so the
               button moved around as the rail was toggled. */}
-          <NavbarSearchIcon />
+          {sidebarMode === "collapsed" ? <NavbarSearchIcon /> : null}
 
           <div ref={bellRef} className="relative">
             <NotificationsButton

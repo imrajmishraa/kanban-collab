@@ -213,7 +213,7 @@ export default function DashboardSidebar({
           "select-none",
         ].join(" ")}
       >
-        <div className="shrink-0">
+        <div className="shrink-0 pb-3">
           <SidebarHeader
             collapsed={!open}
             onToggle={onToggle}

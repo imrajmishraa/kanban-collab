@@ -1,21 +1,23 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 /*
- * The open rail's header, after the logo became the toggle.
+ * The open rail's header, shaped like the column's header.
  *
- * Four things asked for, each asserted here:
- * 1. the logo shows a hover hint (two glyphs in the same 32px box);
- * 2. clicking the logo toggles the rail — collapse, not hide;
- * 3. "Kanban" stays a link to /workspaces, on its own click target;
- * 4. the toggle button on the right of the wordmark is gone.
+ * One shape for both surfaces: a quiet title on the left, the surface's two
+ * controls on the right — the softer one first (collapse to the icon strip, the
+ * rail's analogue of "full width"), the decisive one last (hide, with the filled
+ * background the panel's close button uses).
+ *
+ * The collapsed rail is a different header and is deliberately untouched: its
+ * single logo button is the way back in.
  */
 
-const navigate = vi.fn();
 const setMode = vi.fn();
 const onToggle = vi.fn();
+const navigate = vi.fn();
 
 vi.mock("react-router-dom", async (importOriginal) => {
   const actual = await importOriginal<typeof import("react-router-dom")>();
@@ -23,14 +25,12 @@ vi.mock("react-router-dom", async (importOriginal) => {
   return { ...actual, useNavigate: () => navigate };
 });
 
-/* The feature barrel pulls in the whole dashboard; this header needs one setter. */
 vi.mock("@/features/dashboard", () => ({
   useSidebarState: (
     selector: (state: { setMode: typeof setMode }) => unknown,
   ) => selector({ setMode }),
 }));
 
-/* The tooltip is a portal with analytics behind it — irrelevant to this contract. */
 vi.mock("@/components/Tooltips/ToolTip", () => ({
   Tooltip: ({ children }: { children: React.ReactNode }) => children,
 }));
@@ -44,27 +44,29 @@ import SidebarHeader from "./SidebarHeader";
 const renderOpen = () =>
   render(<SidebarHeader collapsed={false} onToggle={onToggle} />);
 
-/* No globals, so nothing unmounts between cases: eight buttons would pile up. */
-afterEach(cleanup);
-
 beforeEach(() => {
-  navigate.mockClear();
   setMode.mockClear();
   onToggle.mockClear();
+  navigate.mockClear();
 });
 
+afterEach(cleanup);
+
 describe("SidebarHeader — open rail", () => {
-  it("puts the toggle on the logo, with a hover hint beside it", () => {
-    renderOpen();
+  it("has the column's shape: a title on the left, two controls on the right", () => {
+    const { container } = renderOpen();
 
-    const toggle = screen.getByRole("button", { name: /collapse sidebar/i });
+    const header = container.querySelector("header");
+    expect(header).toBeTruthy();
+    /* Same frame as the panel's header. */
+    expect(header?.className).toContain("border-b");
+    expect(header?.className).toContain("h-12");
 
-    /* The logo and the hint share one 32px box: hover swaps them. */
-    expect(within(toggle).getByTestId("kanban-logo")).toBeTruthy();
-    expect(toggle.querySelectorAll("svg").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByRole("heading", { name: /kanban/i })).toBeTruthy();
+    expect(screen.getAllByRole("button")).toHaveLength(2);
   });
 
-  it("collapses the rail when the logo is clicked", async () => {
+  it("collapses to the icon strip from the first control", async () => {
     renderOpen();
 
     await userEvent.click(
@@ -72,27 +74,34 @@ describe("SidebarHeader — open rail", () => {
     );
 
     expect(onToggle).toHaveBeenCalledTimes(1);
-    /* Collapse, not hide: the icon strip is what the reader asked for. */
+    /* Collapse, not hide: the rail keeps its strip and its stored width. */
     expect(setMode).not.toHaveBeenCalledWith("hidden");
+  });
+
+  it("hides the rail from the second control", async () => {
+    renderOpen();
+
+    await userEvent.click(
+      screen.getByRole("button", { name: /hide sidebar/i }),
+    );
+
+    expect(setMode).toHaveBeenCalledWith("hidden");
+  });
+
+  it("no longer carries the wordmark — the navbar owns it", () => {
+    const { container } = renderOpen();
+
+    expect(container.querySelector("[data-testid='kanban-logo']")).toBeNull();
     expect(navigate).not.toHaveBeenCalled();
   });
 
-  it("keeps 'Kanban' as its own target that goes to /workspaces", async () => {
-    renderOpen();
+  it("leaves the collapsed header alone: one logo button, no title", () => {
+    const { container } = render(
+      <SidebarHeader collapsed onToggle={onToggle} />,
+    );
 
-    const wordmark = screen.getByRole("button", { name: /go to workspaces/i });
-    expect(within(wordmark).queryByTestId("kanban-logo")).toBeNull();
-
-    await userEvent.click(wordmark);
-
-    expect(navigate).toHaveBeenCalledWith("/workspaces");
-    expect(onToggle).not.toHaveBeenCalled();
-  });
-
-  it("no longer renders a toggle on the right of the wordmark", () => {
-    renderOpen();
-
-    /* Two targets and no third: the wordmark and the logo. */
-    expect(screen.getAllByRole("button")).toHaveLength(2);
+    expect(container.querySelector("header")).toBeNull();
+    expect(container.querySelector("[data-testid='kanban-logo']")).toBeTruthy();
+    expect(screen.getAllByRole("button")).toHaveLength(1);
   });
 });

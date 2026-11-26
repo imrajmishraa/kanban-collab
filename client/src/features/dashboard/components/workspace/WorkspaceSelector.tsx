@@ -278,8 +278,8 @@ export function WorkspaceSelector({
             "text-[12px] tracking-tight",
             "transition-colors duration-200",
             isOpen
-              ? "bg-(--tint-10) text-(--text-primary)"
-              : "text-(--text-soft) hover:bg-(--tint-6) hover:text-(--text-primary)",
+              ? "bg-(--bg-active) text-(--text-primary)"
+              : "text-(--text-soft) hover:bg-(--bg-hover) hover:text-(--text-primary)",
             triggerClassName,
           ]
             .filter(Boolean)
@@ -292,14 +292,14 @@ export function WorkspaceSelector({
             />
           )}
 
-          <span className="max-w-40 truncate">
+          <span className="max-w-40 text-[12.5px] truncate">
             {resolvedActiveName ?? "All Workspaces"}
           </span>
 
           <HugeiconsIcon
             icon={UnfoldMoreIcon}
-            size={15}
-            strokeWidth={1.8}
+            size={16}
+            strokeWidth={1.5}
             className={[
               "shrink-0 text-(--text-secondary) transition-transform duration-200",
               isOpen && "",
@@ -313,8 +313,8 @@ export function WorkspaceSelector({
             onClick={onOpenActive}
             disabled={!onOpenActive}
             className={[
-              "flex h-7 cursor-pointer items-center gap-2 rounded-md px-2",
-              "text-[11.5px] tracking-tight",
+              "flex h-8.5 cursor-pointer items-center gap-2 rounded-md px-2",
+              "text-[12px] tracking-tight",
               "transition-colors duration-200",
               "text-(--text-soft) ",
               "disabled:cursor-default disabled:hover:bg-transparent",
@@ -344,17 +344,17 @@ export function WorkspaceSelector({
             aria-expanded={isOpen}
             aria-label="Switch workspace"
             className={[
-              "flex size-8 mr-px cursor-pointer items-center justify-center rounded-md",
+              "flex w-6 h-7 mr-px cursor-pointer items-center justify-center rounded-md",
               "transition-colors duration-200",
               isOpen
-                ? "bg-(--tint-10) text-(--text-primary)"
+                ? "bg-(--bg-active) text-(--text-primary)"
                 : "text-(--text-secondary) hover:bg-(--bg-hover) hover:text-(--text-primary)",
             ].join(" ")}
           >
             <HugeiconsIcon
               icon={UnfoldMoreIcon}
               size={16}
-              strokeWidth={1.8}
+              strokeWidth={1.5}
               className={[
                 "shrink-0 transition-transform duration-200",
                 isOpen && "",
@@ -369,25 +369,27 @@ export function WorkspaceSelector({
             <div className="flex items-center opacity-0 transition-opacity duration-200 group-hover/ws:opacity-100 focus-within:opacity-100">
               <span
                 aria-hidden="true"
-                className="mx-0.5 h-4 w-px bg-(--hairline)"
+                className="mx-0.5 h-6 w-0.5 bg-(--bg-active)"
               />
 
               <Tooltip
-                label="Back to project view"
+                label="Clear Workspace"
                 side="bottom"
                 shape="solid"
-                size="md"
+                hideDelay={150}
+                autoHide={3000}
+                size="sm"
               >
                 <button
                   type="button"
                   onClick={onClose}
                   aria-label="Back to project view"
-                  className="flex ml-0.5 size-8 cursor-pointer items-center justify-center rounded-md text-(--text-muted) transition-colors duration-200 hover:bg-(--bg-hover) hover:text-(--text-primary)"
+                  className="flex ml-1.5 size-6 cursor-pointer items-center justify-center rounded-md text-(--text-secondary) transition-colors duration-200 hover:bg-(--bg-active) hover:text-(--text-primary)"
                 >
                   <HugeiconsIcon
                     icon={Cancel01Icon}
-                    size={15}
-                    strokeWidth={1.8}
+                    size={14}
+                    strokeWidth={1.5}
                   />
                 </button>
               </Tooltip>
