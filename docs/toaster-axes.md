@@ -21,7 +21,9 @@ Seven props, every attribute inside one of them:
 |---|---|
 | `appearance` | shape, size, tone, fill, theme, icons, ink, description |
 | `layout` | position, width, minWidth, mobileWidth, maxWidth, height, maxHeight, gap, offset, mobileOffset, expand, visibleToasts |
-| `behaviour` | duration, closeButton, closeButtonShape, swipeDirections, hotkey, animation |
+| `behaviour` | duration, closeButton, closeButtonShape, swipeDirections, hotkey |
+| `animation` | enter, exit, duration, easing, respectReducedMotion |
+| `progress` | visible, position, thickness, color, animated |
 | `a11y` | containerLabel, toastLabel, closeLabel |
 | `classNames` | sonner's own slot map, plus `toaster` for the root |
 | `preset` | a whole configuration in one word |
@@ -70,6 +72,21 @@ satisfiable.
 second re-exports the first, so a caller still imports both from one path. They
 were one file until the pair crossed the 300-line budget for a `.ts` — types and
 tables are two responsibilities, and the tables are the half that grows.
+
+## What is deliberately absent
+
+`interaction`, `responsive` and `sound` were proposed and are not here.
+
+- **`interaction`** — sonner already pauses the timer on hover, on an expanded
+  stack and on document blur; `swipeDirections` is the swipe; `dismissOnClick`
+  and `dismissOnEscape` would mean owning the timer and the toast's click
+  surface, which breaks text selection inside it. Three of its seven fields
+  would be no-ops, and a no-op attribute is worse than an absent one. The one
+  field that works — `preventDuplicate` — lives per toast, where it can.
+- **`responsive`** — `layout.mobileWidth` plus sonner's own 600px breakpoint
+  already cover the three cases the proposal lists.
+- **`sound`** — no caller, and it needs audio assets and an autoplay policy of
+  its own.
 
 ## Where the arithmetic is
 

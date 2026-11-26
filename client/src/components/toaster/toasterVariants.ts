@@ -2,7 +2,7 @@ import { TOAST_MS, type CssVars } from "@/lib/toastTokens";
 
 import type {
   DescriptionSize,
-  ToasterAnimation,
+  ToastAnimation,
   ToasterConfig,
   ToasterPreset,
   ToasterShape,
@@ -91,7 +91,7 @@ export const DESCRIPTION_SIZE_CLASS: Record<DescriptionSize, string> = {
 export const DESCRIPTION_INK = "!text-(--toast-description)";
 
 /** The transition each animation runs on. */
-export const ANIMATION_CLASS: Record<ToasterAnimation, string> = {
+export const ANIMATION_CLASS: Record<ToastAnimation, string> = {
   fade: "!transition-opacity !duration-300 !ease-[cubic-bezier(0.21,0.47,0.32,0.98)]",
   slide:
     "!transition-transform !duration-300 !ease-[cubic-bezier(0.21,0.47,0.32,0.98)]",
@@ -125,6 +125,9 @@ export const SURFACE: CssVars = {
      two places a filled surface used to keep a grey from the page. */
   "--toast-description": "var(--text-muted)",
   "--toast-close": "var(--text-muted)",
+  /* Read only when `progress.visible` is on. */
+  "--toast-progress": "var(--brand)",
+  "--toast-progress-thickness": "2px",
   "--width": `${DEFAULT_WIDTH_PX}px`,
   "--toast-mobile-width": `${MOBILE_WIDTH_PX}px`,
 };

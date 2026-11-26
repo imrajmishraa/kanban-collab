@@ -143,8 +143,6 @@ export interface BehaviourOptions {
   swipeDirections?: SwipeDirection[];
   /** Keyboard shortcut that focuses the stack — one registration, per §6. */
   hotkey?: string[];
-  /** Which property the enter and leave transition runs on. */
-  animation?: ToasterAnimation;
 }
 
 /**
@@ -152,10 +150,54 @@ export interface BehaviourOptions {
  *
  * `scale` is the historical default: transform and opacity together. `fade` and
  * `slide` pick one property each, for a stack that should not draw attention to
- * itself; `none` is for a reader who has asked for no motion, and is the only
- * value that also overrides `prefers-reduced-motion`.
+ * itself; `none` is for a reader who has asked for no motion.
  */
-export type ToasterAnimation = "fade" | "slide" | "scale" | "none";
+export type ToastAnimation = "fade" | "slide" | "scale" | "none";
+
+/**
+ * How a toast arrives and leaves, as a group.
+ *
+ * `enter` and `exit` are separate because a stack that fades in and slides out
+ * is a normal thing to want, and one property for both is the compromise that
+ * makes it impossible. `duration` and `easing` are here rather than in
+ * `behaviour` because they are the same decision.
+ */
+export interface AnimationOptions {
+  /** What the toast does as it arrives. Default `scale`. */
+  enter?: ToastAnimation;
+  /** What it does as it leaves. Defaults to `enter`. */
+  exit?: ToastAnimation;
+  /** Transition length in ms. Default `300`. */
+  duration?: number;
+  /** A CSS timing function. Default the app's spring-ish cubic-bezier. */
+  easing?: string;
+  /**
+   * Collapse to no motion when the reader asks for it, via `motion-reduce`.
+   * Default `true` — an animation that ignores that preference is a bug.
+   */
+  respectReducedMotion?: boolean;
+}
+
+/**
+ * The rail that shows how long a toast has left.
+ *
+ * Drawn as the toast's own `::after`, so it needs no extra element and cannot
+ * be pushed out of the bubble by long content. It runs off `--toast-progress-
+ * duration`, which the resolver sets from the stack's `duration` — the rail and
+ * the timer cannot drift apart because they read the same number.
+ */
+export interface ProgressOptions {
+  /** Show the rail. Default `false`. */
+  visible?: boolean;
+  /** Which edge it hugs. Default `bottom`. */
+  position?: "top" | "bottom";
+  /** Height in px. Default `2`. */
+  thickness?: number;
+  /** Any CSS colour or token. Default `--brand`. */
+  color?: string;
+  /** Run it down over the toast's lifetime. Default `true`. */
+  animated?: boolean;
+}
 
 /** The labels a screen reader reads. Two stacks need two names. */
 export interface A11yOptions {
@@ -170,11 +212,14 @@ export type ToasterPreset =
 /** sonner's own class map, plus the one slot sonner does not name: the root. */
 export type ToasterClassNames = Partial<ToastClassnames> & { toaster?: string };
 
-/** The four attribute groups — what a preset fills. */
+/** The attribute groups — what a preset fills. */
 export interface ToasterConfig {
   appearance?: AppearanceOptions;
   layout?: LayoutOptions;
   behaviour?: BehaviourOptions;
+  /** A shorthand string, or the group when enter and exit differ. */
+  animation?: ToastAnimation | AnimationOptions;
+  progress?: ProgressOptions;
   a11y?: A11yOptions;
 }
 

@@ -183,12 +183,12 @@ describe("resolveToaster — appearance", () => {
     expect(resolveToaster().classNames.toast).toContain(
       "!transition-[transform,opacity]",
     );
-    expect(
-      resolveToaster({ behaviour: { animation: "fade" } }).classNames.toast,
-    ).toContain("!transition-opacity");
-    expect(
-      resolveToaster({ behaviour: { animation: "none" } }).classNames.toast,
-    ).toContain("!transition-none");
+    expect(resolveToaster({ animation: "fade" }).classNames.toast).toContain(
+      "!transition-opacity",
+    );
+    expect(resolveToaster({ animation: "none" }).classNames.toast).toContain(
+      "!transition-none",
+    );
   });
 
   it("never writes the radius as a variable as well", () => {
@@ -196,6 +196,67 @@ describe("resolveToaster — appearance", () => {
 
     expect(resolved.toastStyle["--border-radius"]).toBeUndefined();
     expect(resolved.classNames.toast).toContain("!rounded-[20px]");
+  });
+});
+
+describe("resolveToaster — animation and progress", () => {
+  it("takes the shorthand as both ends", () => {
+    const resolved = resolveToaster({ animation: "fade" });
+
+    expect(resolved.classNames.toast).toContain("!transition-opacity");
+    expect(resolved.toastStyle["--toast-anim-duration"]).toBe("300ms");
+  });
+
+  it("scopes enter and exit when they differ", () => {
+    const resolved = resolveToaster({
+      animation: { enter: "fade", exit: "slide", duration: 500 },
+    });
+
+    expect(resolved.classNames.toast).toContain(
+      "[&[data-mounted=true]]:!transition-opacity",
+    );
+    expect(resolved.classNames.toast).toContain(
+      "[&[data-removed=true]]:!transition-transform",
+    );
+    expect(resolved.toastStyle["--toast-anim-duration"]).toBe("500ms");
+  });
+
+  it("honours reduced motion unless it is told not to", () => {
+    expect(resolveToaster().classNames.toast).toContain(
+      "motion-reduce:!transition-none",
+    );
+    expect(
+      resolveToaster({ animation: { respectReducedMotion: false } }).classNames
+        .toast,
+    ).not.toContain("motion-reduce:!transition-none");
+  });
+
+  it("draws no rail unless asked", () => {
+    expect(resolveToaster().classNames.toast).not.toContain("after:absolute");
+    expect(resolveToaster().toastStyle["--toast-progress-duration"]).toBe(
+      undefined,
+    );
+  });
+
+  it("draws the rail on the edge asked for, timed by the stack", () => {
+    const resolved = resolveToaster({
+      behaviour: { duration: 6000 },
+      progress: { visible: true, position: "top", thickness: 3 },
+    });
+
+    expect(resolved.classNames.toast).toContain("after:top-0");
+    expect(resolved.classNames.toast).toContain("toast-progress_var");
+    expect(resolved.toastStyle["--toast-progress-duration"]).toBe("6000ms");
+    expect(resolved.toastStyle["--toast-progress-thickness"]).toBe("3px");
+  });
+
+  it("leaves the rail still when animation is off", () => {
+    const resolved = resolveToaster({
+      progress: { visible: true, animated: false },
+    });
+
+    expect(resolved.classNames.toast).toContain("after:bottom-0");
+    expect(resolved.classNames.toast).not.toContain("toast-progress_var");
   });
 });
 
