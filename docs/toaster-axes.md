@@ -87,6 +87,21 @@ tables are two responsibilities, and the tables are the half that grows.
   already cover the three cases the proposal lists.
 - **`sound`** — no caller, and it needs audio assets and an autoplay policy of
   its own.
+- **`icons.position` and `icons.animated`** — moving the glyph to the right means
+  re-ordering three slots that sonner lays out itself, against a close button
+  that is already `!order-last`; the doc lists both as "possible extensions to
+  consider", and a slot order I cannot look at is not one to guess at.
+- **`animation.stack`** — the note lists stack-transition control as a future
+  capability; sonner owns how the stack fans out, so this is its decision first.
+
+## Renamed since the first cut
+
+Nothing here has shipped, so nothing is breaking. Two names moved while the API
+was still being built, and both are recorded rather than aliased:
+
+- `appearance.maxLines` → `appearance.description.lines`
+- `behaviour.animation` → `animation` (its own group, because `enter` and `exit`
+  are separate decisions)
 
 ## Where the arithmetic is
 

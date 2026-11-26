@@ -132,6 +132,15 @@ describe("resolveToaster — layout", () => {
   it("leaves the description unclamped by default", () => {
     expect(resolveToaster().descriptionClassName).toBeUndefined();
   });
+
+  it("treats a clamp of zero as no clamp, not as no description", () => {
+    const resolved = resolveToaster({
+      appearance: { description: { lines: 0 } },
+    });
+
+    expect(resolved.descriptionClassName).toBeUndefined();
+    expect(resolved.toastStyle["--toast-lines"]).toBeUndefined();
+  });
 });
 
 describe("resolveToaster — appearance", () => {
@@ -248,6 +257,19 @@ describe("resolveToaster — animation and progress", () => {
     expect(resolved.classNames.toast).toContain("toast-progress_var");
     expect(resolved.toastStyle["--toast-progress-duration"]).toBe("6000ms");
     expect(resolved.toastStyle["--toast-progress-thickness"]).toBe("3px");
+  });
+
+  it("hides the rail on a loading toast when asked", () => {
+    const hidden = resolveToaster({
+      progress: { visible: true, showOnLoading: false },
+    });
+
+    expect(hidden.classNames.toast).toContain(
+      "[&[data-type=loading]]:after:!hidden",
+    );
+    expect(
+      resolveToaster({ progress: { visible: true } }).classNames.toast,
+    ).not.toContain("data-type=loading");
   });
 
   it("leaves the rail still when animation is off", () => {

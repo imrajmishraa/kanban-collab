@@ -84,7 +84,10 @@ export interface DescriptionOptions {
   size?: DescriptionSize;
   /** Any CSS colour or token, overriding `--toast-description`. */
   color?: string;
-  /** Clamp to this many lines. `1` is a single line, undefined is natural. */
+  /**
+   * Clamp to this many lines. `1` is a single line; anything not positive, or
+   * absent, means natural height.
+   */
   lines?: number;
 }
 
@@ -197,6 +200,12 @@ export interface ProgressOptions {
   color?: string;
   /** Run it down over the toast's lifetime. Default `true`. */
   animated?: boolean;
+  /**
+   * Show it on a loading toast. Default `true`, but a loading toast has no
+   * lifetime to count down, so `false` is the honest setting for a stack that
+   * uses `toastLoading`.
+   */
+  showOnLoading?: boolean;
 }
 
 /** The labels a screen reader reads. Two stacks need two names. */
