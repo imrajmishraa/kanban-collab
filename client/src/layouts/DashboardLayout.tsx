@@ -302,7 +302,8 @@ export default function DashboardLayout({
           className="min-w-0"
         >
           <main className="flex h-full flex-col overflow-y-auto scroll-smooth">
-            <div className="sticky top-0 z-50 bg-background">
+            {/* `sticky top-0` chrome sits under the iOS status bar without an inset. */}
+            <div className="sticky top-0 z-50 bg-background pt-[env(safe-area-inset-top)]">
               <DashboardNavbar embedded />
             </div>
 

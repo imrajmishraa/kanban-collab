@@ -243,7 +243,11 @@ export default function DashboardSidebar({
           /* The navbar is z-50 and keeps its collapsed offset, so a rail that
              floats over the page has to sit above it or the two overlap. */
           floating ? "z-60" : "z-40",
-          "bg-(--bg-root) border-r border-(--hairline)",
+          /* Embedded, the group's separator already draws the edge — a border
+             here too was a second line, one pixel apart from the first. */
+          embedded
+            ? "bg-(--bg-root)"
+            : "bg-(--bg-root) border-r border-(--hairline)",
           "transition-[width,border-color] duration-200 ease-out",
           "motion-reduce:transition-none",
           "md:flex",

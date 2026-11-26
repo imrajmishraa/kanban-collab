@@ -262,7 +262,7 @@ export default function RightPanel({
         sheet
           ? "fixed inset-0 z-50 flex w-full flex-col bg-(--bg-root)"
           : embedded
-            ? "relative flex h-full w-full flex-col border-l border-(--hairline) bg-(--bg-root)"
+            ? "relative flex h-full w-full flex-col bg-(--bg-root)"
             : "fixed inset-y-0 right-0 z-30 hidden h-dvh flex-col border-l border-(--hairline) bg-(--bg-root) lg:flex",
         "pb-[env(safe-area-inset-bottom)]",
       )}
