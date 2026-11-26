@@ -22,8 +22,13 @@ const isMode = (value: unknown): value is SidebarMode =>
 /** Modes that show the rail, and so are worth restoring to. */
 type VisibleMode = "open" | "hover";
 
+/*
+ * `lastVisible` is what ⌘B brings back, so only a real open may set it. `hover` is a
+ * glance: recording it meant a preview that closed left the rail reopening in
+ * `hover`, and `collapsed` was never restorable at all.
+ */
 const isVisibleMode = (value: unknown): value is VisibleMode =>
-  value === "open" || value === "hover";
+  value === "open";
 
 interface SidebarState {
   mode: SidebarMode;

@@ -6,6 +6,7 @@ import { useNotifications } from "@/features/dashboard/hooks/useNotifications";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { useSidebarState } from "@/features/dashboard";
 import { useRightPanel } from "@/stores/rightPanel";
+import { useLayoutShellStore } from "@/layouts/stores/layoutShellStore";
 import { NavbarSearchIcon, NotificationsButton } from "@/features/dashboard";
 import { NotificationsPanel } from "@/features/dashboard";
 import { Tooltip } from "@/components/Tooltips/ToolTip";
@@ -59,22 +60,16 @@ export default function DashboardNavbar({
   } = useActiveWorkspace();
 
   const sidebarMode = useSidebarState((s) => s.mode);
-  const toggleHidden = useSidebarState((s) => s.toggleHidden);
   const peek = useSidebarState((s) => s.peek);
-  const openFromPreview = useSidebarState((s) => s.openFromPreview);
   const unpeek = useSidebarState((s) => s.unpeek);
 
   /*
-   * The rail has no way back once it is hidden, so the toggle appears here —
-   * and only here, and only while it is hidden. With the rail on screen the
-   * rail's own header is the control, and a second one would be noise.
+   * The rail button is on screen in every mode, and one click always puts the rail
+   * where the reader expects: away if it is visible, back if it is hidden. The
+   * decision itself is the shell's (`toggleRail`), so this surface and the
+   * keyboard cannot disagree about what a toggle means.
    */
-  /*
-   * The icon is the way back in whenever the rail is not open — hidden, the hover preview's
-   * resting state, or the icon rail itself (Q4: a click on the rail no longer opens it, so
-   * without this the mouse would have no way in).
-   */
-  const showRailToggle = sidebarMode !== "open";
+  const railShown = sidebarMode !== "hidden";
 
   /* The right column's only affordance, on screen in both states — a toggle that
      only appears while the panel is closed makes people hunt for it. */
@@ -172,71 +167,68 @@ export default function DashboardNavbar({
           scrolled ? "bg-(--bg-root)/85 backdrop-blur-md" : "bg-transparent",
         ].join(" ")}
       >
-        {showRailToggle && (
-          <div className="group/expand relative flex h-12 shrink-0 items-center justify-center">
-            <Tooltip
-              label={sidebarMode === "hover" ? "Keep open" : "Expand sidebar"}
-              highlight={isMac ? "⌘B" : "Ctrl B"}
-              side="bottom"
-              shape="solid"
-              size="md"
-              gap={10}
-            >
-              <button
-                type="button"
-                /* Hidden rail, and the icon is the only thing left of it: hovering previews
+        <div className="group/expand relative flex h-12 shrink-0 items-center justify-center">
+          <Tooltip
+            label={railShown ? "Hide sidebar" : "Expand sidebar"}
+            highlight={isMac ? "⌘B" : "Ctrl B"}
+            side="bottom"
+            shape="solid"
+            size="md"
+            gap={10}
+          >
+            <button
+              type="button"
+              /* Hidden rail, and the icon is the only thing left of it: hovering previews
                    it, a click opens it. Leaving puts it back, unless the click already did. */
-                onMouseEnter={() => peek()}
-                /* Embedded, the shell owns the preview: leaving the logo on the way
+              onMouseEnter={() => peek()}
+              /* Embedded, the shell owns the preview: leaving the logo on the way
                    into the overlay must not close it, so only the old layout unpeeks
                    here. */
-                onMouseLeave={() => {
-                  if (!embedded) unpeek();
-                }}
-                onFocus={() => peek()}
-                onBlur={() => {
-                  if (!embedded) unpeek();
-                }}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  /* B5: hovering previewed it, so the click pins what the reader is looking
-                     at instead of collapsing it. */
-                  if (sidebarMode === "hover") openFromPreview();
-                  else toggleHidden();
-                }}
-                aria-label="Expand sidebar"
-                className="
+              onMouseLeave={() => {
+                if (!embedded) unpeek();
+              }}
+              onFocus={() => peek()}
+              onBlur={() => {
+                if (!embedded) unpeek();
+              }}
+              onClick={(event) => {
+                event.stopPropagation();
+                /* One toggle from every state: previewing, open, collapsed or
+                     hidden. The shell decides what that means. */
+                useLayoutShellStore.getState().toggleRail();
+              }}
+              aria-label={railShown ? "Hide sidebar" : "Expand sidebar"}
+              className="
             group relative ml-2 flex size-9 cursor-pointer
             items-center justify-center
             hover:rounded-lg
             transition-colors
             hover:bg-(--bg-hover)
           "
-              >
-                {/* Logo, visible normally, hidden on hover */}
-                <KanbanIcon
-                  size={22}
-                  variant="upper"
-                  className="transition-all duration-150 group-hover:opacity-0 group-focus-within:opacity-0"
-                />
+            >
+              {/* Logo, visible normally, hidden on hover */}
+              <KanbanIcon
+                size={22}
+                variant="upper"
+                className="transition-all duration-150 group-hover:opacity-0 group-focus-within:opacity-0"
+              />
 
-                {/* Hover hint, hidden normally, visible on hover: a crossed-out pointer
+              {/* Hover hint, hidden normally, visible on hover: a crossed-out pointer
                     when the rail opens by hovering, an arrow when it opens on click — the
                     same two icons the rail's own header uses, so the two ends agree. */}
-                <HugeiconsIcon
-                  icon={
-                    sidebarMode === "hover"
-                      ? MousePointerOff01Icon
-                      : LayoutAlignLeftIcon
-                  }
-                  size={18}
-                  strokeWidth={1.8}
-                  className="absolute text-(--text-muted) opacity-0 scale-75 transition-all duration-150 group-hover:scale-100 group-hover:opacity-100 group-hover:text-(--text-primary) group-focus-within:scale-100 group-focus-within:opacity-100 group-focus-within:text-(--text-primary) focus:opacity-100"
-                />
-              </button>
-            </Tooltip>
-          </div>
-        )}
+              <HugeiconsIcon
+                icon={
+                  sidebarMode === "hover"
+                    ? MousePointerOff01Icon
+                    : LayoutAlignLeftIcon
+                }
+                size={18}
+                strokeWidth={1.8}
+                className="absolute text-(--text-muted) opacity-0 scale-75 transition-all duration-150 group-hover:scale-100 group-hover:opacity-100 group-hover:text-(--text-primary) group-focus-within:scale-100 group-focus-within:opacity-100 group-focus-within:text-(--text-primary) focus:opacity-100"
+              />
+            </button>
+          </Tooltip>
+        </div>
 
         <nav
           aria-label="Breadcrumb"

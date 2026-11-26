@@ -1,8 +1,6 @@
 import { useEffect } from "react";
 
-import { useSidebarState } from "@/features/dashboard";
 import { useLayoutShellStore } from "@/layouts/stores/layoutShellStore";
-import { useRightPanel } from "@/stores/rightPanel";
 
 /**
  * The shell's shortcuts, in one place.
@@ -44,28 +42,27 @@ export function useShellShortcuts(): void {
 
       event.preventDefault();
 
-      const rail = useSidebarState.getState();
-      const panel = useRightPanel.getState();
+      const shell = useLayoutShellStore.getState();
 
+      /* Every key goes through the shell's commands, so the fit rules (which pane
+         cannot sit beside which) apply to the keyboard exactly as they do to the
+         buttons. Calling `setMode` here skipped them. */
       if (key === "b") {
-        if (event.shiftKey) {
-          rail.setMode("collapsed");
-          return;
-        }
+        if (event.shiftKey) shell.collapseRail();
+        else shell.toggleRail();
 
-        rail.setMode(rail.mode === "hidden" ? "open" : "hidden");
         return;
       }
 
       if (!event.shiftKey) {
-        panel.setMode(panel.mode === "off" ? "panel" : "off");
+        shell.togglePanel();
         return;
       }
 
       /* Full width: the column takes viewport − rail and the stage yields
          entirely — `remaining` is that state, not a width. One implementation,
          shared with the bar's button, so the two can never disagree. */
-      useLayoutShellStore.getState().toggleLevel();
+      shell.toggleLevel();
     };
 
     window.addEventListener("keydown", onKeyDown);

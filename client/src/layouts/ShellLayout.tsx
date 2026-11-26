@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useMemo } from "react";
 import type { ReactNode } from "react";
 
 import { Group, Panel, Separator, type Layout } from "react-resizable-panels";
@@ -11,6 +11,7 @@ import { MOBILE_MAX_VIEWPORT } from "@/components/layout/panelMetrics";
 import { SHELL } from "@/lib/shellLayout";
 import { useRightPanel } from "@/stores/rightPanel";
 import { useLayoutShellStore } from "@/layouts/stores/layoutShellStore";
+import { useRailPreview } from "@/layouts/useRailPreview";
 import { useShellLayout } from "@/layouts/useShellLayout";
 import { useShellShortcuts } from "@/layouts/useShellShortcuts";
 import { useViewportWidth } from "@/features/dashboard";
@@ -50,59 +51,12 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
   const level = useRightPanel((s) => s.level);
 
   /*
-   * The hover preview.
-   *
-   * A hidden rail is a 0px pane, so there is nothing to paint a preview inside:
-   * the pane's `overflow-hidden` would clip it. The preview is therefore a second,
-   * absolutely-positioned sidebar outside the group, and the pane stays 0 — the
-   * board never moves for a glance, which is the whole point of a preview.
-   *
-   * The mode is borrowed for the duration: `hover` is what `computeRail` reads to
-   * give the sidebar its 288px preview width. `origin` remembers what to put back,
-   * because a preview can start from `hidden` (edge, logo) or from `collapsed`
-   * (the icon strip) and each must return where it came from.
+   * The hover preview: a second sidebar outside the group, because a hidden rail is
+   * a 0px pane and the pane's `overflow-hidden` would clip a preview inside it. The
+   * timing (grace, cooldown, where to return to) lives in `useRailPreview`.
    */
+  const { startPreview, scheduleEnd, cancelClose } = useRailPreview();
   const previewing = railMode === "hover";
-  const origin = useRef<"hidden" | "collapsed" | null>(null);
-  const closeTimer = useRef<number | null>(null);
-
-  const cancelClose = useCallback(() => {
-    if (closeTimer.current !== null) {
-      window.clearTimeout(closeTimer.current);
-      closeTimer.current = null;
-    }
-  }, []);
-
-  const startPreview = useCallback(() => {
-    const rail = useSidebarState.getState();
-    if (rail.mode !== "hidden" && rail.mode !== "collapsed") return;
-
-    cancelClose();
-    origin.current = rail.mode;
-    rail.setMode("hover");
-    rail.setHovering(true);
-  }, [cancelClose]);
-
-  const endPreview = useCallback(() => {
-    const rail = useSidebarState.getState();
-    if (rail.mode !== "hover") return;
-
-    rail.setMode(origin.current ?? "hidden");
-    rail.setHovering(false);
-    origin.current = null;
-  }, []);
-
-  /* A grace period, so the pointer can cross the gap between the edge or the
-     logo and the overlay without the preview closing underneath it. */
-  const scheduleEnd = useCallback(() => {
-    cancelClose();
-    closeTimer.current = window.setTimeout(() => {
-      closeTimer.current = null;
-      endPreview();
-    }, 140);
-  }, [cancelClose, endPreview]);
-
-  useEffect(() => cancelClose, [cancelClose]);
 
   const commit = useLayoutShellStore((s) => s.commit);
   const setGroupPx = useLayoutShellStore((s) => s.setGroupPx);
@@ -111,7 +65,7 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
 
   const state = useMemo(
     () => ({
-      railOpen: railMode !== "hidden",
+      railOpen: railMode !== "hidden" && railMode !== "hover",
       railCollapsed: railMode === "collapsed",
       railPx,
       columnOpen: panelMode !== "off",
@@ -175,14 +129,22 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
           className="min-w-0 overflow-hidden"
         >
           {state.railOpen && !previewing ? (
-            <DashboardSidebar
-              onToggle={() =>
-                useSidebarState
-                  .getState()
-                  .setMode(state.railOpen ? "hidden" : "open")
-              }
-              embedded
-            />
+            <div
+              className="h-full"
+              /* Collapsed, the strip itself is the trigger: 72px of sidebar is what
+                 the pointer lands on, so the handler has to be on its wrapper. */
+              onMouseEnter={state.railCollapsed ? startPreview : undefined}
+              onMouseLeave={state.railCollapsed ? scheduleEnd : undefined}
+            >
+              <DashboardSidebar
+                onToggle={() =>
+                  useSidebarState
+                    .getState()
+                    .setMode(state.railOpen ? "hidden" : "open")
+                }
+                embedded
+              />
+            </div>
           ) : null}
         </Panel>
 
@@ -266,17 +228,6 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
         />
       )}
 
-      {/* Collapsed: the 72px strip is hoverable itself, and the overlay covers it. */}
-      {state.railCollapsed && (
-        <div
-          aria-hidden="true"
-          onMouseEnter={startPreview}
-          onMouseLeave={scheduleEnd}
-          className="absolute inset-y-0 left-0 z-30"
-          style={{ width: RAIL.COLLAPSED }}
-        />
-      )}
-
       {previewing && (
         <div
           onMouseEnter={cancelClose}
@@ -287,8 +238,8 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
           <DashboardSidebar
             /* A click inside the preview pins what the reader is looking at. */
             onToggle={() => {
+              /* A click inside the preview pins what the reader is looking at. */
               useSidebarState.getState().openFromPreview();
-              origin.current = null;
             }}
             embedded
           />

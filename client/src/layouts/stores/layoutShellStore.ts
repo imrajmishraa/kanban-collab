@@ -39,13 +39,21 @@ interface LayoutShellState {
   toggleLevel: () => void;
 }
 
+/**
+ * A group that has not been measured yet is not a group where nothing fits: before
+ * the first layout, `groupPx` is 0 and the fit check would close a pane the reader
+ * just asked for. Until there is a measurement, assume there is room.
+ */
+const measured = (groupPx: number): number =>
+  groupPx > 0 ? groupPx : Number.MAX_SAFE_INTEGER;
+
 /** What the reader chose, read out of the two stores that own it. */
 export function readShellState(): ShellState {
   const rail = useSidebarState.getState();
   const panel = useRightPanel.getState();
 
   return {
-    railOpen: rail.mode !== "hidden",
+    railOpen: rail.mode !== "hidden" && rail.mode !== "hover",
     railCollapsed: rail.mode === "collapsed",
     railPx: rail.width,
     columnOpen: panel.mode !== "off",
@@ -91,15 +99,17 @@ export const useLayoutShellStore = create<LayoutShellState>()((set, get) => ({
   commit: (patch) => commitShell(patch),
 
   toggleRail: () => {
-    commitShell(toggleRailCommand(get().groupPx, readShellState()));
+    commitShell(toggleRailCommand(measured(get().groupPx), readShellState()));
   },
   collapseRail: () => {
     commitShell(collapseRailCommand());
   },
   togglePanel: () => {
-    commitShell(toggleColumnCommand(get().groupPx, readShellState()));
+    commitShell(toggleColumnCommand(measured(get().groupPx), readShellState()));
   },
   toggleLevel: () => {
-    commitShell(toggleFullWidthCommand(get().groupPx, readShellState()));
+    commitShell(
+      toggleFullWidthCommand(measured(get().groupPx), readShellState()),
+    );
   },
 }));
