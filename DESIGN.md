@@ -461,17 +461,25 @@ default), `lg` 15/13px. The description is `--text-muted` at every size; a
 description that competes with the title is a paragraph, and a toast is not a
 place for one.
 
-**Tone** — the surface. `auto` is the elevated panel above. `brand`, `success`
-and `danger` fill with their token and take `--auth-ink` for text, which is why
-that ink exists as a token rather than as white in a class. `neutral` is the flat
-elevated surface with no gradient.
+**Tone** — the surface, and there are nine. `auto` is the elevated panel above;
+`neutral` is the same panel without the gradient. `brand`, `success`, `warning`
+and `danger` fill with their token. `auth` is the blue that belongs to neither
+the accent nor the status set: it marks a moment rather than a result — signing
+in, finishing onboarding — so it fills the whole toast and dismisses faster than
+a success does. `accent` is the one place the accent is allowed to fill, in the
+segmented control's pair (`--accent-fill` with `--accent` text): a single "look
+here" that is not an error. `inverse` is the tooltip's family — a light capsule
+on a dark page, a dark one on a light page — for a toast that has to sit *above* a
+busy board rather than beside it.
 
-**The auth surface** is a tone like the others: `--auth`, a blue that belongs to
-neither the accent nor the status set. It marks a moment rather than a result —
-signing in, finishing onboarding — so it fills the whole toast and dismisses
-faster than a success does. It was a private table in the call layer until it
-became a tone; two writers of the same variable is how a brand toast and an auth
-toast could resolve differently with no warning.
+**A filled tone carries three inks, not one.** The title takes `--normal-text`,
+the description `--toast-description`, the close glyph `--toast-close`, and a
+tone that fills the surface sets all three — otherwise the description keeps the
+page's grey and disappears into the fill. The ink on a status fill is
+`--inverse-text`, not white: the status tokens are bright in the dark theme and
+dark in the light one, and white on `--success` is 1.9:1 where the ink that flips
+with them is 10.3:1. `auth` is the exception — a blue that wants white in both
+themes.
 
 **Width has three numbers, and each has one home.** `width` is sonner's
 `--width` (380px by default). `mobileWidth` is the cap below sonner's own 600px
@@ -501,6 +509,55 @@ reaches one. `tone`, `id` (re-fire replaces instead of stacking), `action` and
 and `testId` live there. `id` is what turns "Saving…" into "Saved" in place
 rather than into two toasts, and `toastPromise` is the same idea for a whole
 async operation.
+
+## Responsive
+
+`docs/change-rules.md` §5 is the gate: what fails the build, and what a reviewer
+checks. This is the design half — where a layout may change shape, and what it
+becomes at each step.
+
+**Mobile first.** Every layout is written as the narrow one and gains columns at
+`sm:`, `md:`, `lg:`. A `lg:` rule with nothing between it and mobile is the shape
+that squeezes at 768px, and the middle surface is the one nobody opens and the
+one this repo has already shipped broken.
+
+**Four breakpoints, not six.** Tailwind's defaults are the whole vocabulary: `sm`
+640, `md` 768, `lg` 1024, `xl` 1280. A fifth value means the content broke
+somewhere the scale did not cover — fix the content, or say in the PR why this
+one needs a step of its own.
+
+**The sweep.** 320, 375, 768, 1024, 1280, 1440, 1920, 2560. Between two widths
+that both look right there is a width that does not, so also open the widths
+where this app changes shape: 700, 720, 920, 1024, 1280, 1920 (`AGENTS.md` §6).
+The usual suspects are 640 and 768, because a library, a layout and a grid each
+pick their own switch — sonner stops reading `--width` at 600, Tailwind's `sm` is
+640, and the board's columns move at a third point.
+
+**Eight checks, in this order.** Horizontal overflow, text overflow, navigation
+transition, stacking order, media scaling, touch targets, whitespace balance,
+primary action above the fold. They are ordered by how often each is the actual
+bug, and all eight vary with width — the rest of accessibility does not, and
+belongs in the audit that does not resize.
+
+**Touch is a size, not a style.** 44×44 is the floor, `h-11` / `size-11`. The
+toast's action buttons are 44 below `sm` and 28 above it; the close glyph is 24,
+and that is a known gap rather than a precedent. Nothing may be revealed by
+hover alone.
+
+**Type does not scale with the viewport.** `clamp()` belongs to marketing
+headlines, where a 40px jump is a composition. The app's dense surfaces keep
+fixed steps — 12 / 13 / 15 inside a toast — because a board column that reflows
+its type is a column that jitters while you drag.
+
+**Height is `dvh`.** `100vh` is wrong on iOS, where the browser chrome lives
+inside the viewport; anything pinned to the bottom also carries
+`env(safe-area-inset-bottom)`.
+
+**What a breakpoint may change:** column count, whether the rail is a drawer or a
+strip, whether a panel sits beside or below, how dense a list is. **What it may
+not change:** what a control does, where the primary action is, or which
+information exists. A narrow screen is a smaller viewport, not a smaller feature
+set.
 
 ## Accessibility
 
