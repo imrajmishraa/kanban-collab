@@ -128,7 +128,9 @@ export function LoginForm() {
   const onSubmit = handleSubmit(async (values) => {
     try {
       await login(values.email, values.password, remember);
-      toastSuccess("Login Success", "Taking you to your workspaces.");
+      toastSuccess("Login Success", "Taking you to your workspaces.", {
+        tone: "auth",
+      });
       navigate(destination, { replace: true });
     } catch (err) {
       toastError(null, loginErrorMessage(err));
