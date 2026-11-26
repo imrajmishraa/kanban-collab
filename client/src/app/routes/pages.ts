@@ -105,3 +105,12 @@ export const FeedbackPage = lazy(
 export const CookiesPage = lazy(() => import("@/pages/marketing/CookiesPage"));
 export const TermsPage = lazy(() => import("@/pages/marketing/TermsPage"));
 export const PrivacyPage = lazy(() => import("@/pages/marketing/PrivacyPage"));
+
+/*
+ * Lab — a dev-only surface for looking at a component. `app/router.tsx` mounts
+ * it behind `import.meta.env.DEV`, and the lazy import sits behind the same
+ * flag, so the chunk is not emitted into a production bundle.
+ */
+export const ToasterLabPage = import.meta.env.DEV
+  ? lazy(() => import("@/pages/lab/ToasterLabPage"))
+  : lazy(() => Promise.resolve({ default: () => null }));

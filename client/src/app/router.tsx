@@ -8,6 +8,7 @@ import { publicRoutes } from "./routes/public.routes";
 import { authRoutes } from "./routes/auth.routes";
 import { appRoutes } from "./routes/app.routes";
 import { docsRoutes } from "./routes/docs.routes";
+import { labRoutes } from "./routes/lab.routes";
 
 /**
  * The route table is assembled here and nowhere else. Each group lives in its
@@ -20,6 +21,11 @@ const routes: RouteObject[] = [
   ...authRoutes,
   ...docsRoutes,
   ...appRoutes,
+  /*
+   * Dev only. `import.meta.env.DEV` is replaced by `false` at build time, so
+   * neither the route nor its chunk exists in a production bundle.
+   */
+  ...(import.meta.env.DEV ? labRoutes : []),
   {
     path: "/",
     element: <Navigate to="/home" replace />,
