@@ -1,12 +1,15 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  MOBILE_WIDTH,
+  MOBILE_WIDTH_PX,
+  PRESET,
   SHAPE_CLASS,
   SIZE_CLASS,
   SURFACE,
-  SURFACE_BY_TONE,
   dimension,
 } from "./toasterVariants";
+import { TOAST_MS } from "@/lib/toastTokens";
 
 /**
  * The variant tables, without a browser.
@@ -14,7 +17,7 @@ import {
  * These run in the node environment so they work everywhere, including the
  * constrained container the render tests cannot run in. They pin the parts that
  * are easy to break by editing a string: which variant maps to which class, and
- * which tone overrides which CSS variable.
+ * which number lives in one place.
  */
 describe("shape variants", () => {
   it("keeps the app's card radius as the default", () => {
@@ -50,39 +53,48 @@ describe("size variants", () => {
   });
 });
 
-describe("tone surfaces", () => {
-  it("leaves the default surface alone", () => {
-    expect(SURFACE_BY_TONE.auto).toEqual({});
+describe("the default surface", () => {
+  it("stays a gradient panel at the default width", () => {
+    expect(SURFACE["--normal-bg"]).toContain("linear-gradient");
+    expect(SURFACE["--width"]).toBe("380px");
   });
 
-  it("paints from tokens, never a raw colour", () => {
-    for (const surface of Object.values(SURFACE_BY_TONE)) {
-      for (const value of Object.values(surface)) {
-        if (typeof value !== "string") continue;
-
-        expect(value).toMatch(/var\(--|color-mix/);
-      }
-    }
+  it("owns no radius — SHAPE_CLASS is the only writer of it", () => {
+    expect(SURFACE["--border-radius"]).toBeUndefined();
   });
 
-  it("gives each tone its own background variable", () => {
-    const backgrounds = Object.values(SURFACE_BY_TONE)
-      .map((surface) => surface["--normal-bg"])
-      .filter(Boolean);
-
-    expect(new Set(backgrounds).size).toBe(backgrounds.length);
+  it("carries the mobile cap as a variable, not a class", () => {
+    expect(SURFACE["--toast-mobile-width"]).toBe(`${MOBILE_WIDTH_PX}px`);
+    expect(MOBILE_WIDTH).toContain("max-w-[var(--toast-mobile-width)]");
+    expect(MOBILE_WIDTH).not.toContain(`${MOBILE_WIDTH_PX}px`);
   });
 
-  it("ships an auth token for the login surface", () => {
-    expect(SURFACE_BY_TONE.brand["--normal-bg"]).toBe("var(--brand)");
+  it("caps the toast below sonner's own breakpoint, not Tailwind's sm", () => {
+    expect(MOBILE_WIDTH).toContain("max-width:600px");
+    expect(MOBILE_WIDTH).not.toContain("sm:");
   });
 });
 
-describe("the default surface", () => {
-  it("stays a gradient panel at 380px", () => {
-    expect(SURFACE["--normal-bg"]).toContain("linear-gradient");
-    expect(SURFACE["--width"]).toBe("380px");
-    expect(SURFACE["--border-radius"]).toBe("12px");
+describe("presets", () => {
+  it("leaves the default preset empty, so it changes nothing", () => {
+    expect(PRESET.default).toEqual({});
+  });
+
+  it("only fills groups the component knows", () => {
+    const groups = new Set(["appearance", "layout", "behaviour", "a11y"]);
+
+    for (const preset of Object.values(PRESET)) {
+      for (const key of Object.keys(preset)) expect(groups).toContain(key);
+    }
+  });
+
+  it("gives quiet the moment lifetime rather than a number of its own", () => {
+    expect(PRESET.quiet.behaviour?.duration).toBe(TOAST_MS.moment);
+  });
+
+  it("shows one toast when quiet, five when assertive", () => {
+    expect(PRESET.quiet.layout?.visibleToasts).toBe(1);
+    expect(PRESET.assertive.layout?.visibleToasts).toBe(5);
   });
 });
 
