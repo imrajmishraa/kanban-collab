@@ -19,7 +19,7 @@ Seven props, every attribute inside one of them:
 
 | Prop | Owns |
 |---|---|
-| `appearance` | shape, size, tone, theme, icons |
+| `appearance` | shape, size, tone, fill, theme, icons, maxLines |
 | `layout` | position, width, mobileWidth, maxWidth, height, maxHeight, gap, offset, mobileOffset, expand, visibleToasts |
 | `behaviour` | duration, closeButton, closeButtonShape, swipeDirections, hotkey |
 | `a11y` | containerLabel, toastLabel, closeLabel |
@@ -72,10 +72,15 @@ elements from its result and nothing else.
 
 ## Per toast, not per stack
 
-A `Toaster` prop reaches every toast. `lib/toast.ts` reaches one: `tone`, `id`
-(re-fire replaces instead of stacking), `action`, `cancel`, `dismissible`,
-`closeButton`, `onDismiss`, `onAutoClose`, `toasterId`, `testId`, plus
-`toastLoading` and `toastPromise` for the two async shapes.
+A `Toaster` prop reaches every toast. `lib/toast.ts` reaches one: `tone` and
+`fill`, `descriptionTone`, `icon`, `copyValue`, `id` (re-fire replaces instead of
+stacking), `action`, `cancel`, `dismissible`, `closeButton`, `onDismiss`,
+`onAutoClose`, `toasterId`, `testId`, plus `toastLoading` and `toastPromise` for
+the two async shapes.
+
+Four of those are the tooltip's attributes carried across: `descriptionTone` (a
+warning line inside a neutral toast), `icon`, `copyValue` (sonner's action button,
+so an explicit `action` wins), and `maxLines` on the stack.
 
 `toastSuccess` and `toastError` keep their signatures. That is what kept this
 change out of the 44 call sites.

@@ -48,6 +48,8 @@ export interface ResolvedToaster {
   toastStyle: CssVars;
   /** Every class sonner puts on each toast, by slot. */
   classNames: ToastClassnames;
+  /** The description's own class, which `classNames` cannot reach. */
+  descriptionClassName?: string;
   /** The toaster's own element — offsets and the mobile cap live here. */
   rootClass: string;
 }
@@ -113,6 +115,7 @@ export function resolveToaster(props: ToasterProps = {}): ResolvedToaster {
     size = "md",
     tone = "auto",
     fill = "solid",
+    maxLines,
     theme = "dark",
   } = appearance;
 
@@ -157,6 +160,7 @@ export function resolveToaster(props: ToasterProps = {}): ResolvedToaster {
       "--toast-max-height": dimension(maxHeight),
     }),
     ...(maxWidth !== undefined && { "--toast-max-width": dimension(maxWidth) }),
+    ...(maxLines !== undefined && { "--toast-lines": maxLines }),
   };
 
   const classNames: ToastClassnames = {
@@ -202,6 +206,9 @@ export function resolveToaster(props: ToasterProps = {}): ResolvedToaster {
     closeButtonAriaLabel: closeLabel,
     toastStyle,
     classNames,
+    ...(maxLines !== undefined && {
+      descriptionClassName: "!line-clamp-[var(--toast-lines)]",
+    }),
     rootClass: join(MOBILE_WIDTH, toaster),
   };
 }

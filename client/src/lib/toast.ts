@@ -1,12 +1,14 @@
+import type { ReactNode } from "react";
 import type { ExternalToast } from "sonner";
 
 import { toast } from "sonner";
 
 import { ApiClientError } from "@/services/client";
 import {
-  TONE_SURFACE,
   TOAST_MS,
+  toneSurface,
   type CssVars,
+  type ToastFill,
   type ToastTone,
 } from "@/lib/toastTokens";
 
@@ -34,6 +36,20 @@ export interface ToastAction {
 export interface ToastOptions {
   /** Surface for this toast. `auth` is the blue moment, not a result. */
   tone?: ToastTone;
+  /** How hard that tone is applied: fill, tint or edge. */
+  fill?: ToastFill;
+  /**
+   * The description's own tone. A neutral toast with one warning line in it is
+   * the reason this exists — the same attribute the tooltip carries.
+   */
+  descriptionTone?: ToastTone;
+  /** A glyph for this one toast, in place of its kind's. */
+  icon?: ReactNode;
+  /**
+   * A value the toast offers to copy — an invite link, an id. Renders sonner's
+   * action button, so it is ignored when `action` is set.
+   */
+  copyValue?: string;
   /** Override the lifetime for this one toast. */
   duration?: number;
   /**
@@ -70,12 +86,26 @@ const DURATION_BY_KIND: Record<ToastKind, number> = {
 };
 
 /**
+ * Writing to the clipboard is best-effort. A denied permission, an insecure
+ * context or a browser without the API is not an error worth a toast about.
+ */
+function copy(value: string) {
+  const written = globalThis.navigator?.clipboard?.writeText(value);
+
+  void written?.catch(() => undefined);
+}
+
+/**
  * The per-toast attributes sonner accepts, built in one place so every kind
  * carries them the same way.
  */
 function build(kind: ToastKind, options: ToastOptions): ExternalToast {
   const {
     tone,
+    fill = "solid",
+    descriptionTone,
+    icon,
+    copyValue,
     duration,
     id,
     action,
@@ -88,14 +118,30 @@ function build(kind: ToastKind, options: ToastOptions): ExternalToast {
     testId,
   } = options;
 
-  const surface: CssVars | undefined = tone && TONE_SURFACE[tone];
-  const hasSurface = surface !== undefined && Object.keys(surface).length > 0;
+  const surface: CssVars = tone === undefined ? {} : toneSurface(tone, fill);
+  const descriptionInk =
+    descriptionTone === undefined
+      ? undefined
+      : toneSurface(descriptionTone)["--toast-description"];
+
+  const style: CssVars = {
+    ...surface,
+    ...(descriptionInk !== undefined && {
+      "--toast-description": descriptionInk,
+    }),
+  };
 
   return {
     /* A moment dismisses faster than a result: `auth` is the short lifetime. */
     duration:
       duration ?? (tone === "auth" ? TOAST_MS.moment : DURATION_BY_KIND[kind]),
-    ...(hasSurface && { style: surface }),
+    ...(Object.keys(style).length > 0 && { style }),
+    ...(icon !== undefined && { icon }),
+    /* One button, not two: an action the caller chose wins over a copy. */
+    ...(copyValue !== undefined &&
+      action === undefined && {
+        action: { label: "Copy", onClick: () => copy(copyValue) },
+      }),
     ...(id !== undefined && { id }),
     ...(action && { action }),
     ...(cancel && { cancel }),

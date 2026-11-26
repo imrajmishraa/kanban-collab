@@ -108,6 +108,19 @@ describe("resolveToaster — layout", () => {
   it("leaves the cap classes off when no cap was asked for", () => {
     expect(resolveToaster().classNames.toast).not.toContain("!min-h-[");
   });
+
+  it("clamps the description to the lines asked for", () => {
+    const resolved = resolveToaster({ appearance: { maxLines: 2 } });
+
+    expect(resolved.toastStyle["--toast-lines"]).toBe(2);
+    expect(resolved.descriptionClassName).toBe(
+      "!line-clamp-[var(--toast-lines)]",
+    );
+  });
+
+  it("leaves the description unclamped by default", () => {
+    expect(resolveToaster().descriptionClassName).toBeUndefined();
+  });
 });
 
 describe("resolveToaster — appearance", () => {

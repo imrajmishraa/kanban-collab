@@ -451,16 +451,29 @@ tone at `lg`), `compact` (320px, tighter gap and offset). A preset is merged
 *under* the explicit groups, never over them: a preset that could override what
 the caller wrote would be a transient mode in a persisted key with a nicer name.
 
-**Shape** — `default` `{rounded.xl}` (the card radius), `sharp` 4px, `soft` 16px,
-`pill` full, `card` 20px, `glass` 16px plus a blur. Only `glass` blurs. The shape
-is the only writer of the radius: the surface table deliberately carries no
+**Shape** — seventeen, in three families, and it is the tooltip's set minus the
+ones that paint a colour. **Radius**: `default` `{rounded.xl}` (the card radius),
+`sharp` 4px, `soft` 16px, `pill` full, `card` 20px, `glass` 16px plus a blur —
+only `glass` blurs. **Silhouette**: `speech` (one square foot, pointing),
+`tab` (square foot, rounded head), `squircle`, `chamfer` (corners cut with a clip
+path), `ticket` (notched edges), `blob`. **Edge**: `dashed`, `double` (a ring
+offset from the border), `keycap` (a 3px bottom edge), `sticker` (2px, tilted a
+degree), `callout` (a 3px left edge in the text's own colour). The two clip-path
+shapes also clip the shadow, as they do on a tooltip. The shape is the only
+writer of the radius: the surface table deliberately carries no
 `--border-radius`, so the two cannot disagree.
+
+What is *not* here is the tooltip's colour-bearing shapes — `neon`, `gradient`,
+`ink`, `paper`, `blueprint`, `terminal`, `badge`, `solid`, `outline`. On a toast
+those are `tone` and `fill`, and a second way to say the same thing is how a
+surface ends up with two writers.
 
 **Size** — the type scale inside the bubble: `sm` 12/11px, `md` 13/12px (the
 default), `lg` 15/13px. The description is `--toast-description` at every size,
-which a filling tone overrides; a
-description that competes with the title is a paragraph, and a toast is not a
-place for one.
+which a filling tone overrides; a description that competes with the title is a
+paragraph, and a toast is not a place for one. `appearance.maxLines` clamps the
+description to that many lines — the tooltip's `maxLines`, carried as
+`--toast-lines` so the clamp follows the number rather than a fixed class.
 
 **Tone** — the surface, and there are eleven. `auto` is the elevated panel above;
 `neutral` is the same panel without the gradient. `brand`, `success`, `warning`,
@@ -525,11 +538,13 @@ hover tint is the only feedback.
 what the design asks for; both are one control.
 
 **Per toast, not per stack.** A `Toaster` prop reaches every toast; `lib/toast.ts`
-reaches one. `tone`, `id` (re-fire replaces instead of stacking), `action` and
-`cancel`, `dismissible`, `closeButton`, `onDismiss`, `onAutoClose`, `toasterId`
-and `testId` live there. `id` is what turns "Saving…" into "Saved" in place
-rather than into two toasts, and `toastPromise` is the same idea for a whole
-async operation.
+reaches one. `tone` and `fill`, `descriptionTone` (a warning line inside a
+neutral toast — the tooltip's attribute of the same name), `icon` (a glyph for
+one toast), `copyValue` (a Copy button, ignored when an `action` is set), `id`
+(re-fire replaces instead of stacking), `action` and `cancel`, `dismissible`,
+`closeButton`, `onDismiss`, `onAutoClose`, `toasterId` and `testId` live there.
+`id` is what turns "Saving…" into "Saved" in place rather than into two toasts,
+and `toastPromise` is the same idea for a whole async operation.
 
 ## Responsive
 

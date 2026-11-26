@@ -19,7 +19,25 @@ export type ToasterSize = "sm" | "md" | "lg";
 
 /** Corner + padding. `default` matches the card radius used across the app. */
 export type ToasterShape =
-  "default" | "sharp" | "soft" | "pill" | "card" | "glass";
+  | "default"
+  | "sharp"
+  | "soft"
+  | "pill"
+  | "card"
+  | "glass"
+  /* Silhouette — the bubble is not a rectangle. */
+  | "speech"
+  | "tab"
+  | "squircle"
+  | "chamfer"
+  | "ticket"
+  | "blob"
+  /* Border — the edge carries the character. */
+  | "dashed"
+  | "double"
+  | "keycap"
+  | "sticker"
+  | "callout";
 
 /** Which surface a toast is painted on. `auto` is the app's elevated panel. */
 export type ToasterTone = ToastTone;
@@ -46,6 +64,8 @@ export interface AppearanceOptions {
   theme?: ToasterTheme;
   /** Replaces the five status glyphs, or sonner's own close glyph. */
   icons?: Partial<Record<ToasterIconName, ReactNode>>;
+  /** Clamp the description to this many lines, the way the tooltip does. */
+  maxLines?: number;
 }
 
 /** The glyphs sonner accepts — the five statuses plus `close`. */
@@ -140,6 +160,27 @@ export const SHAPE_CLASS: Record<ToasterShape, string> = {
   pill: "!rounded-full",
   card: "!rounded-[20px]",
   glass: "!rounded-[16px] !backdrop-blur-md",
+
+  /* Silhouette. `speech` points down-left, `tab` squares its foot, `squircle`
+     leans on the newer corner-shape property, `chamfer` and `ticket` cut the
+     corners with a clip path — which also clips the shadow, as it does on a
+     tooltip. */
+  speech: "!rounded-[14px] !rounded-bl-[2px]",
+  tab: "!rounded-t-[10px] !rounded-b-none",
+  squircle: "!rounded-[22px] [corner-shape:squircle]",
+  chamfer:
+    "!rounded-none [clip-path:polygon(10px_0,calc(100%-10px)_0,100%_10px,100%_calc(100%-10px),calc(100%-10px)_100%,10px_100%,0_calc(100%-10px),0_10px)]",
+  ticket:
+    "!rounded-md [clip-path:radial-gradient(circle_6px_at_0_50%,transparent_98%,black)_left/51%_100%_no-repeat,radial-gradient(circle_6px_at_100%_50%,transparent_98%,black)_right/51%_100%_no-repeat]",
+  blob: "!rounded-[44%_56%_52%_48%/56%_44%_56%_44%]",
+
+  /* Border. The tone still supplies the colour; these change the edge's shape. */
+  dashed: "!rounded-[12px] !border-dashed",
+  double:
+    "!rounded-[12px] !ring-1 !ring-(--hairline-strong) !ring-offset-2 !ring-offset-(--bg-root)",
+  keycap: "!rounded-md !border-b-[3px]",
+  sticker: "!rounded-md !border-2 !-rotate-1",
+  callout: "!rounded-[12px] !border-l-[3px] !border-l-current",
 };
 
 export const SIZE_CLASS: Record<
