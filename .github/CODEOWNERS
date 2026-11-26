@@ -1,0 +1,31 @@
+# Every path is owned by the maintainer. The explicit entries below change no
+# ownership — `*` already matches everything — they exist so that a change to a
+# gate file asks for review by name instead of slipping through on a green CI.
+#
+# A gate file is one whose contents decide whether other changes pass:
+# `docs/change-rules.md` § 1. Changing one re-runs both sides' checks.
+
+*                       @imrajmishraa
+
+# CI and the gates
+/.github/               @imrajmishraa
+/scripts/               @imrajmishraa
+/client/scripts/        @imrajmishraa
+/server/scripts/        @imrajmishraa
+/docs/change-rules.md   @imrajmishraa
+/AGENTS.md              @imrajmishraa
+/CLAUDE.md              @imrajmishraa
+/DESIGN.md              @imrajmishraa
+/docs/constraints.md    @imrajmishraa
+
+# Security and deployment
+/SECURITY.md            @imrajmishraa
+/render.yaml            @imrajmishraa
+/docker-compose.yml     @imrajmishraa
+/server/vercel.json     @imrajmishraa
+/server/Dockerfile      @imrajmishraa
+
+# Dependency surface: a new lockfile is a new supply chain
+**/package.json         @imrajmishraa
+**/package-lock.json    @imrajmishraa
+**/.env.example         @imrajmishraa

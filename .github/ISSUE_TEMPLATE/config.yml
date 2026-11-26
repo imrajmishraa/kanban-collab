@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/imrajmishraa/kanban-collab/security/advisories/new
+    about: Private advisory, never a public issue. See SECURITY.md for scope and safe harbour.
+  - name: Setup and local development
+    url: https://github.com/imrajmishraa/kanban-collab/blob/main/docs/getting-started.md
+    about: Clone, install, run Mongo and Redis, start both packages.
+  - name: How changes are reviewed
+    url: https://github.com/imrajmishraa/kanban-collab/blob/main/docs/change-rules.md
+    about: Change classes, budgets, import rules and the gates that fail the build.

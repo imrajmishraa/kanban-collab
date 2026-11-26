@@ -1,0 +1,88 @@
+name: Bug report
+description: Something in the app does not work as documented
+title: "[bug]: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Security issues do not belong here.** Report them privately via
+        [the advisory flow](https://github.com/imrajmishraa/kanban-collab/security/advisories/new)
+        — see [SECURITY.md](https://github.com/imrajmishraa/kanban-collab/blob/main/SECURITY.md).
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happens
+      description: The observed behaviour. One or two sentences.
+      placeholder: Dragging a card to the last column leaves it in the first one.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+      placeholder: The card should land in the column it was dropped on.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Numbered, starting from a fresh page load. If it only happens on reload, say so.
+      placeholder: |
+        1. Open a board with two columns
+        2. Drag a card from column A to column B
+        3. Reload
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Board / cards / columns
+        - Collaboration (real-time, presence)
+        - Auth (login, OAuth, session, refresh)
+        - Workspace / members / permissions
+        - Comments / notifications
+        - Attachments
+        - Marketing / docs pages
+        - Not sure
+    validations:
+      required: true
+
+  - type: input
+    id: surface
+    attributes:
+      label: Viewport and browser
+      description: The width matters here — layout changes shape at 700, 920, 1024 and 1280 px.
+      placeholder: Chrome 141, 1440×900 (also seen at 390×844)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: How often
+      options:
+        - Every time
+        - Intermittent
+        - Once
+        - Only after a reload or a second tab
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console output or request id
+      description: |
+        The `X-Request-Id` response header ties a client action to a server log line.
+        **Remove tokens, cookies and real user data before pasting.**
+      render: shell
+    validations:
+      required: false
