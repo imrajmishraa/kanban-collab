@@ -1,4 +1,4 @@
-# AGENT.md — how to work in this repo
+# AGENTS.md — how to work in this repo
 
 The method for any agent (or person) who changes, reviews or debugs code here.
 
