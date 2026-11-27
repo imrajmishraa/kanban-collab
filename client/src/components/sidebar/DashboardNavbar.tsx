@@ -61,6 +61,13 @@ export default function DashboardNavbar({
      only appears while the panel is closed makes people hunt for it. */
   const rightPanelOpen = useRightPanel((state) => state.mode) !== "off";
   const toggleRightPanel = useRightPanel((state) => state.toggle);
+  /*
+   * Full width: the column takes everything the rail leaves, so the board — and
+   * this bar, which lives in the board's column — has no width to sit in. It used
+   * to render as a zero-wide strip with its own edge, which reads as a seam across
+   * the column. There is nothing to put a bar over, so there is no bar.
+   */
+  const fullWidth = useRightPanel((state) => state.level) === "remaining";
 
   /*
    * With nothing selected there is no workspace to scope the breadcrumb to, so
@@ -130,6 +137,8 @@ export default function DashboardNavbar({
      updates the bell without a reload. The panel reuses the same key. */
   const { data: notificationsData } = useNotifications();
 
+  if (fullWidth) return null;
+
   return (
     <>
       <div ref={sentinelRef} aria-hidden="true" className="h-px w-full" />
@@ -152,8 +161,15 @@ export default function DashboardNavbar({
               ].join(" "),
           "items-center gap-2.5 px-2",
           "transition-[left,background-color] duration-200",
-          scrolled ? "border-b border-(--hairline)" : "",
-          scrolled ? "bg-(--bg-root)/85 backdrop-blur-md" : "bg-transparent",
+          /*
+           * No border: the bar has no edge of its own. What separates it from the
+           * board is the surface — a gradient that is solid at the bottom, where
+           * the content meets it, and gone by the top, so there is no line to
+           * draw and nothing to misalign by a pixel. The blur joins in once
+           * content is actually passing underneath.
+           */
+          "bg-gradient-to-t from-(--bg-root)/90 via-(--bg-root)/55 to-transparent",
+          scrolled ? "backdrop-blur-md" : "",
         ].join(" ")}
       >
         {/*

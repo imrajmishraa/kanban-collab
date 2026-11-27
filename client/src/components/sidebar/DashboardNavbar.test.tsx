@@ -79,9 +79,11 @@ vi.mock("@/stores/activeWorkspace", () => ({
   }),
 }));
 
+let panelLevel: "normal" | "remaining" = "normal";
+
 vi.mock("@/stores/rightPanel", () => ({
   useRightPanel: (selector: (state: Record<string, unknown>) => unknown) =>
-    selector({ mode: "off", toggle: vi.fn() }),
+    selector({ mode: "off", level: panelLevel, toggle: vi.fn() }),
 }));
 
 const toggleRail = vi.fn();
@@ -145,6 +147,7 @@ const railButton = () =>
   screen.queryByRole("button", { name: /expand sidebar/i });
 
 beforeEach(() => {
+  panelLevel = "normal";
   toggleRail.mockClear();
   railStore.setState({ mode: "hidden", hovering: false });
 });
@@ -172,6 +175,14 @@ describe("DashboardNavbar — the rail button", () => {
 
     /* A control that unmounts under the pointer cannot be clicked. */
     expect(railButton()).toBeTruthy();
+  });
+
+  it("is not on screen at full width — the board has no column to sit in", () => {
+    panelLevel = "remaining";
+    render(<DashboardNavbar embedded />);
+
+    expect(railButton()).toBeNull();
+    expect(screen.queryByRole("navigation")).toBeNull();
   });
 
   it("is not on screen while the rail is collapsed", () => {
