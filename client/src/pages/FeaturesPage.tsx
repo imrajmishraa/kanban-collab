@@ -7,6 +7,11 @@ const CoreFeaturesSection = lazy(() =>
     default: module.CoreFeaturesSection,
   })),
 );
+const BoardDragDemo = lazy(() =>
+  import("@/features/marketing").then((module) => ({
+    default: module.BoardDragDemo,
+  })),
+);
 const CollaborationSection = lazy(() =>
   import("@/features/marketing").then((module) => ({
     default: module.CollaborationSection,
@@ -77,6 +82,10 @@ export default function FeaturesPage() {
         {/* Lazy — each section streams in behind its own fallback */}
         <Suspense fallback={<SectionFallback />}>
           <CoreFeaturesSection />
+        </Suspense>
+
+        <Suspense fallback={<SectionFallback />}>
+          <BoardDragDemo />
         </Suspense>
 
         <Suspense fallback={<SectionFallback />}>
