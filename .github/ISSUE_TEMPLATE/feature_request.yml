@@ -1,0 +1,57 @@
+name: Feature request
+description: Propose a change in behaviour
+title: "[feat]: "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before opening this, read [`docs/change-rules.md`](https://github.com/imrajmishraa/kanban-collab/blob/main/docs/change-rules.md)
+        — a change that crosses a layer boundary or a file budget is class C and
+        needs agreement before anyone writes code.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What you cannot do today, and who it affects. Not the solution — the problem.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you propose
+      description: The smallest change that solves it. If it needs a new dependency, say which and why (constraint 1 applies).
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered
+      description: Including "do nothing" — what breaks if this is not built.
+    validations:
+      required: false
+
+  - type: dropdown
+    id: layer
+    attributes:
+      label: Where it lands
+      multiple: true
+      options:
+        - server — API / use case
+        - server — WebSocket / Yjs
+        - client — UI only
+        - client — state / data layer
+        - docs / tooling / CI
+    validations:
+      required: true
+
+  - type: textarea
+    id: behaviour
+    attributes:
+      label: Anything a user would notice
+      description: Existing behaviour that changes, including mobile / tablet / desktop differences.
+    validations:
+      required: false

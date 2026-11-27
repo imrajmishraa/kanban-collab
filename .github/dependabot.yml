@@ -11,7 +11,7 @@ updates:
         patterns: ["*"]
         update-types: ["minor", "patch"]
     # Majors are reviewed by hand: an ESM-only major is what took the API down
-    # once already (@octokit/*). See AGENTS.md, constraint 1.
+    # once already (@octokit/*). See docs/constraints.md, constraint 1.
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]

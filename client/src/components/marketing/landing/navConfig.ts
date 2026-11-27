@@ -383,7 +383,7 @@ export const FOOTER_COLUMNS: FooterColumn[] = [
     links: [
       {
         title: "Design tokens",
-        href: `${REPO}/blob/main/design.md`,
+        href: `${REPO}/blob/main/DESIGN.md`,
         external: true,
       },
       {

@@ -14,7 +14,7 @@
 
 ## Checklist
 
-- [ ] No new ESM-only dependency (see AGENTS.md, constraint 1)
+- [ ] No new ESM-only dependency (see `docs/constraints.md`, constraint 1)
 - [ ] Any new env var added to `.env.example` **and** to the hosting platform
 - [ ] `docs/` updated if a documented behaviour changed
 - [ ] Nothing secret in the diff (tokens, keys, real user data in logs)

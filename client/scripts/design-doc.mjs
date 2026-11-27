@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Keeps the token half of `Design.md` in step with `src/index.css`.
+ * Keeps the token half of `DESIGN.md` in step with `src/index.css`.
  *
  * The stylesheet is the source of truth: every `--token: value;` in `:root` is a
  * documented token, every override in `.light` is a documented light value, and
@@ -9,7 +9,7 @@
  * spacing, motion and component recipes — exactly as written, because none of
  * that is derivable from a stylesheet.
  *
- * Run: node scripts/design-doc.mjs            rewrite Design.md in place
+ * Run: node scripts/design-doc.mjs            rewrite DESIGN.md in place
  *      node scripts/design-doc.mjs --check    exit 1 if it is out of date
  *      node scripts/design-doc.mjs --dry-run  show the diff, write nothing
  *
@@ -20,7 +20,7 @@ import { resolve } from "node:path";
 
 const CLIENT = resolve(new URL("..", import.meta.url).pathname);
 const CSS = resolve(CLIENT, "src/index.css");
-const DOC = resolve(CLIENT, "..", "design.md");
+const DOC = resolve(CLIENT, "..", "DESIGN.md");
 
 const check = process.argv.includes("--check");
 const dryRun = process.argv.includes("--dry-run");
@@ -164,7 +164,7 @@ for (const [token, field] of [
 /* ── report ────────────────────────────────────────────────────────────── */
 
 if (changes.length === 0) {
-  console.log("Design.md is in step with index.css — nothing to write");
+  console.log("DESIGN.md is in step with index.css — nothing to write");
   process.exit(0);
 }
 
@@ -174,7 +174,7 @@ console.log(
 for (const change of changes) console.log(`   ${change}`);
 
 if (check) {
-  console.error("\nDesign.md is out of date — run: npm run design:doc");
+  console.error("\nDESIGN.md is out of date — run: npm run design:doc");
   process.exit(1);
 }
 if (!dryRun) {
