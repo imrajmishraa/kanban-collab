@@ -442,7 +442,29 @@ A component that cannot say which question its motion answers has none.
 
 ## Layout
 
-A fixed rail on the left (256px, or 72px collapsed), a 56px navbar that blurs as content scrolls beneath it, and one scrolling content column. The rail is the page colour, separated by a hairline — it is not a panel. Below `md` the rail becomes a sheet and the navbar keeps the menu affordance; nothing else in the layout changes.
+Two layouts ship side by side, chosen by a flag (`?shell=1`, or `kanban.shell` in
+localStorage; `?shell=0` overrides for a session). The old one is still the
+default until the shell has run in the wild.
+
+**The shell.** The rail, the board and the column are three panes of a resizable
+group, and one writer decides their widths (`useShellLayout` →
+`Group.setLayout()`). The numbers live in `lib/shellLayout.ts`: rail 200 / 280 /
+360 with a 72px icon strip, a 400px board floor, column 320 / 400 / 560. A release
+within 32px of a floor means the floor; past that a rail becomes the strip and a
+column closes. The rail has three modes — `collapsed`, `expanded`, `hidden` — and
+a hover preview is a flag, not a mode: it opens over the page at the width the
+rail is stored at, reserves nothing, and ends 140ms after the pointer leaves it.
+The navbar belongs to the board's column, fixed to the top and bounded by the two
+pane widths; its surface is a gradient that fades upward rather than a border, and
+at full width there is no bar. Dividers are hairlines: the column's edge is always
+drawn, the rail's edge is not, and both grow a 2px gradient line under the pointer
+or during a drag. The shell is exactly one viewport tall (`h-dvh`), so only the
+board scrolls.
+
+**The old layout.** A fixed rail on the left (240–420px, 288 by default, or a 72px
+strip), a 56px navbar offset by the rail and the column, and one scrolling page.
+The panes are `fixed` and driven by CSS variables. Below `md` the rail becomes a
+sheet and the navbar keeps the menu affordance.
 
 Content max-widths are per-route rather than global: a board is as wide as the viewport because columns are the unit of work, while settings and marketing pages cap at a reading width.
 
