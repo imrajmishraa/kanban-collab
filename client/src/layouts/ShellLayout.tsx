@@ -125,12 +125,24 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
    * line is the element's own 1px; the grab area is a pseudo-element, so it costs
    * the panes no width.
    */
-  const dividerClass = (open: boolean) =>
+  const dividerClass = (open: boolean, restLine: boolean) =>
     open
       ? [
-          "relative w-px shrink-0 bg-(--hairline)",
-          "transition-colors duration-150 motion-reduce:transition-none",
-          "hover:bg-(--link) focus-visible:bg-(--link)",
+          "relative w-px shrink-0",
+          /* The two dividers differ at rest: the column's edge is a hairline, the
+             rail's edge is bare. Neither is drawn as a border — the line that
+             appears is a 2px gradient that fades at both ends, and it is only
+             there while the pointer is on the divider or the divider is being
+             dragged. */
+          restLine ? "bg-(--hairline)" : "bg-transparent",
+          "after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] after:-translate-x-1/2",
+          "after:bg-gradient-to-b after:from-transparent after:via-(--hairline-strong) after:to-transparent",
+          "after:opacity-0 after:transition-opacity after:duration-150",
+          "motion-reduce:after:transition-none",
+          "hover:after:opacity-100 focus-visible:after:opacity-100 active:after:opacity-100",
+          /* A drag that leaves the divider keeps the line: `active` is not reliable
+             once the pointer travels, so the shell's own flag does it too. */
+          "group-data-[resizing=true]:after:opacity-100",
           "before:absolute before:inset-y-0 before:-left-1 before:w-2 before:content-['']",
         ].join(" ")
       : "pointer-events-none w-0 shrink-0 overflow-hidden opacity-0";
@@ -205,7 +217,7 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
     >
       <div
         ref={groupEl}
-        className="relative min-h-0 flex-1"
+        className="group relative min-h-0 flex-1"
         data-resizing={resizing ? "true" : undefined}
       >
         <Group
@@ -252,7 +264,7 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
               setResizing(true);
             }}
             onPointerUp={() => setResizing(false)}
-            className={dividerClass(state.railOpen)}
+            className={dividerClass(state.railOpen, false)}
             /* Inline: `base.css` sets `cursor: pointer` unlayered, and unlayered CSS
                beats every Tailwind `@layer utilities` class. */
             style={{ cursor: state.railOpen ? "col-resize" : undefined }}
@@ -288,7 +300,7 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
               setResizing(true);
             }}
             onPointerUp={() => setResizing(false)}
-            className={dividerClass(state.columnOpen)}
+            className={dividerClass(state.columnOpen, true)}
             style={{ cursor: state.columnOpen ? "col-resize" : undefined }}
             disabled={!state.columnOpen}
           />
