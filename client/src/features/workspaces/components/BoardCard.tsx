@@ -11,10 +11,8 @@ import {
   StarIcon,
 } from "@hugeicons/core-free-icons";
 
-import {
-  DeleteBoardDialog,
-  EditBoardDialog,
-} from "@/features/workspaces/components/board-dialogs";
+import { DeleteBoardDialog } from "./DeleteBoardDialog";
+import { EditBoardDialog } from "./EditBoardDialog";
 import { ShareBoardDialog } from "@/components/sidebar/ShareBoardDialog";
 
 import {

@@ -9,19 +9,15 @@ export { workspaceApi } from "./api/workspaceApi";
 export { BoardCard } from "./components/BoardCard";
 export { WorkspaceDeletionNotice } from "./components/WorkspaceDeletionNotice";
 export { BoardSearch } from "./components/BoardSearch";
-export {
-  AddColumnDialog,
-  DeleteBoardDialog,
-  EditBoardDialog,
-  EditColumnDialog,
-} from "./components/board-dialogs";
-export {
-  AddMemberDialog,
-  CreateBoardDialog,
-  DialogShell,
-  EditWorkspaceDialog,
-  WorkspaceAvatarDialog,
-} from "./components/workspace-dialogs";
+export { AddColumnDialog } from "./components/AddColumnDialog";
+export { DeleteBoardDialog } from "./components/DeleteBoardDialog";
+export { EditBoardDialog } from "./components/EditBoardDialog";
+export { EditColumnDialog } from "./components/EditColumnDialog";
+export { AddMemberDialog } from "./components/AddMemberDialog";
+export { CreateBoardDialog } from "./components/CreateBoardDialog";
+export { DialogShell } from "./components/DialogShell";
+export { EditWorkspaceDialog } from "./components/EditWorkspaceDialog";
+export { WorkspaceAvatarDialog } from "./components/WorkspaceAvatarDialog";
 export { useStarredWorkspaces } from "./stores/starredWorkspaces";
 export { useWorkspaceSwitcher } from "./stores/workspaceSwitcher";
 export {
