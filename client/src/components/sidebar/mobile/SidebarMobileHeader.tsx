@@ -15,7 +15,7 @@ import KanbanIcon from "@/assets/KanbanIcon";
 import { Tooltip } from "@/components/Tooltips/ToolTip";
 import { cn } from "@/lib/cn";
 
-import { useNotifications } from "@/features/dashboard/hooks/useNotifications";
+import { useNotifications } from "@/features/dashboard";
 import { useSearchStore } from "@/features/search";
 
 interface SidebarMobileHeaderProps {

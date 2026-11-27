@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { WorkspaceSelector } from "@/features/dashboard";
-import { useNotifications } from "@/features/dashboard/hooks/useNotifications";
+import { useNotifications } from "@/features/dashboard";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { useSidebarState } from "@/features/dashboard";
 import { NavbarSearchIcon, NotificationsButton } from "@/features/dashboard";

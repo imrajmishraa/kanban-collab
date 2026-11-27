@@ -33,12 +33,13 @@ import { useActiveWorkspace } from "@/stores/activeWorkspace";
 
 import type { AppNotification } from "@/types/notification";
 
-import { NotificationRowMenu } from "./NotificationRowMenu";
-import { notificationPreferencesApi } from "@/features/settings/api/notificationPreferencesApi";
 import {
   notificationPreferenceKeys,
+  notificationPreferencesApi,
   useNotificationPreferences,
-} from "@/features/settings/hooks/useNotificationPreferences";
+} from "@/features/settings";
+
+import { NotificationRowMenu } from "./NotificationRowMenu";
 import { WorkspaceAvatarTile } from "./WorkspaceAvatarTile";
 
 const TABS = ["Inbox", "Unread", "Comments"] as const;

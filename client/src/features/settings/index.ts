@@ -5,7 +5,9 @@
  * use a relative path from inside the feature, and add to this list only
  * when something outside genuinely needs it.
  */
+export { notificationPreferencesApi } from "./api/notificationPreferencesApi";
 export {
+  notificationPreferenceKeys,
   useNotificationPreferences,
   useUpdateNotificationPreferences,
 } from "./hooks/useNotificationPreferences";

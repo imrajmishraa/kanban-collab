@@ -11,10 +11,10 @@ const RightPanel = lazy(() => import("@components/layout/RightPanel"));
 
 import { NewWorkspaceDialogProvider } from "@/components/dashboard/workspace/create/NewWorkspaceDialogProvider";
 
-import { useSidebarState } from "@/features/dashboard/stores/sidebarState";
+import { useSidebarState } from "@/features/dashboard";
 import { useRailLayout } from "@/features/dashboard";
 import { useRightPanel } from "@/stores/rightPanel";
-import { useSearchStore } from "@/features/search/stores/searchStore";
+import { useSearchStore } from "@/features/search";
 import { useEnsureActiveWorkspace } from "@/hooks/useEnsureActiveWorkspace";
 import { useSyncSavedBoards } from "@/hooks/useSyncSavedBoards";
 
