@@ -2,14 +2,16 @@ import { describe, expect, it } from "vitest";
 
 import {
   collapseRail,
-  computeLayout,
-  fitsBoth,
   openColumn,
-  settleDrag,
-  SHELL,
   toggleColumn,
   toggleFullWidth,
   toggleRail,
+} from "./shellCommands";
+import {
+  computeLayout,
+  fitsBoth,
+  settleDrag,
+  SHELL,
   type ShellState,
 } from "./shellLayout";
 
@@ -120,6 +122,46 @@ describe("computeLayout", () => {
     const big = computeLayout(2560, open({ railPx: 900, columnPx: 900 }));
     expect(px(big.leftPanel, 2560)).toBeCloseTo(SHELL.left.max, 6);
     expect(px(big.rightPanel, 2560)).toBeCloseTo(SHELL.right.max, 6);
+  });
+});
+
+/*
+ * The fit check has to use the rail's *real* width, not its floor.
+ *
+ * `fitsBoth` assumed 200 whatever the rail was doing. Two consequences, one in
+ * each direction: a column refused beside the 72px icon strip where 72+320+400
+ * fits, and a rail opened beside a column at a stored 280 that the group could
+ * not actually hold — the library then silently did nothing (F3).
+ */
+it("opens the column beside the icon strip when 72 + 320 + 400 fits", () => {
+  /* 792 of 800: the strip leaves room the rail's floor does not. */
+  expect(
+    toggleColumn(800, open({ railCollapsed: true, columnOpen: false })),
+  ).toEqual({ columnOpen: true });
+});
+
+it("closes the column when the rail cannot reopen beside it", () => {
+  /* 280 + 400 + 320 = 1000, so 999 does not fit — though the rail's 200 floor
+       would have said 920 and opened both. */
+  expect(
+    toggleRail(
+      999,
+      open({ railOpen: false, railCollapsed: false, railPx: 280 }),
+    ),
+  ).toEqual({
+    railOpen: true,
+    railCollapsed: false,
+    columnOpen: false,
+    fullWidth: false,
+  });
+});
+
+it("still closes the rail when the column does not fit beside it", () => {
+  /* 280 + 320 + 400 = 1000 > 800. */
+  expect(toggleColumn(800, open({ columnOpen: false }))).toEqual({
+    columnOpen: true,
+    railOpen: false,
+    railCollapsed: false,
   });
 });
 

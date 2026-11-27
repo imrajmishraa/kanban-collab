@@ -54,7 +54,7 @@ export type ShellState = {
 
 export type Edge = "left" | "right";
 
-const clamp = (n: number, lo: number, hi: number) =>
+export const clamp = (n: number, lo: number, hi: number) =>
   Math.min(hi, Math.max(lo, n));
 
 /** Percentages that always sum to exactly 100: the board takes the remainder. */
@@ -84,7 +84,24 @@ export function railWidth(s: ShellState, c: ShellConfig = SHELL): number {
  * answer to an unsatisfiable request is to do nothing (F3).
  */
 export function fitsBoth(groupPx: number, c: ShellConfig = SHELL): boolean {
-  return groupPx >= c.left.min + c.centre.min + c.right.min;
+  return fitsWithRail(groupPx, c.left.min, c);
+}
+
+/**
+ * The same question, for a rail that is a known width.
+ *
+ * `fitsBoth` answers it for the rail's floor, which is only right when the rail is
+ * about to open at its minimum. Asked of a *collapsed* rail it is too strict — the
+ * 72px strip leaves room the 200px floor does not, so a column that fits was
+ * refused; asked of a rail reopening at a stored 280 it is too loose, and the
+ * library answered an unsatisfiable request by doing nothing (F3).
+ */
+export function fitsWithRail(
+  groupPx: number,
+  railPx: number,
+  c: ShellConfig = SHELL,
+): boolean {
+  return groupPx >= railPx + c.centre.min + c.right.min;
 }
 
 /**
@@ -229,66 +246,3 @@ export function divergence(want: Layout, got: Record<string, number>): number {
 }
 
 /* ── Commands ─────────────────────────────────────────────────────────────── */
-
-/**
- * ⌘B: open ↔ hidden. Opening at a width where both cannot fit closes the column
- * in the same state change: the group cannot satisfy every `minSize`, so it must
- * never be asked (F3).
- */
-export function toggleRail(
-  groupPx: number,
-  s: ShellState,
-  c: ShellConfig = SHELL,
-): Partial<ShellState> {
-  if (s.railOpen) return { railOpen: false, railCollapsed: false };
-
-  if (!s.columnOpen || fitsBoth(groupPx, c)) {
-    return { railOpen: true, railCollapsed: false };
-  }
-
-  return {
-    railOpen: true,
-    railCollapsed: false,
-    columnOpen: false,
-    fullWidth: false,
-  };
-}
-
-/** ⌘⇧B: the icon strip. */
-export function collapseRail(): Partial<ShellState> {
-  return { railOpen: true, railCollapsed: true };
-}
-
-export function openColumn(
-  groupPx: number,
-  s: ShellState,
-  c: ShellConfig = SHELL,
-): Partial<ShellState> {
-  if (!s.railOpen || fitsBoth(groupPx, c)) return { columnOpen: true };
-
-  return { columnOpen: true, railOpen: false, railCollapsed: false };
-}
-
-/** ⌘J: open ↔ closed. */
-export function toggleColumn(
-  groupPx: number,
-  s: ShellState,
-  c: ShellConfig = SHELL,
-): Partial<ShellState> {
-  if (s.columnOpen) return { columnOpen: false, fullWidth: false };
-
-  return openColumn(groupPx, s, c);
-}
-
-/** ⌘⇧J: full width ↔ normal. Opens the column first, so one key always works. */
-export function toggleFullWidth(
-  groupPx: number,
-  s: ShellState,
-  c: ShellConfig = SHELL,
-): Partial<ShellState> {
-  if (!s.columnOpen) {
-    return { ...openColumn(groupPx, s, c), fullWidth: true };
-  }
-
-  return { fullWidth: !s.fullWidth };
-}

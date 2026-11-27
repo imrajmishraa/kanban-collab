@@ -7,8 +7,8 @@ import {
   toggleColumn as toggleColumnCommand,
   toggleFullWidth as toggleFullWidthCommand,
   toggleRail as toggleRailCommand,
-  type ShellState,
-} from "@/lib/shellLayout";
+} from "@/lib/shellCommands";
+import type { ShellState } from "@/lib/shellLayout";
 
 /**
  * The shell's runtime state: what the reader chose lives in `sidebarState` and

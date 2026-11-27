@@ -4,17 +4,17 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 /*
- * The navbar's rail button.
+ * The navbar's rail button, as the navbar actually is.
  *
- * The rule: it is on screen in every rail mode, and a click toggles the rail —
- * from any state the reader can be in, one click puts it away; from hidden, one
- * click brings it back. The command is the shell's own `toggleRail`, so this file
- * only has to prove the button is there and wired, not re-test the model.
+ * It lives in the hidden state only: with the rail on screen the rail's own
+ * header carries the controls, so a second copy in the bar would be the same
+ * control twice. What it must do:
+ *
+ * - appear while the rail is hidden, and only then;
+ * - open the rail on click (a choice);
+ * - preview it on hover (a glance) — through `layouts/railPreview.ts`, so the
+ *   pointer and the click cannot disagree about what the rail is doing.
  */
-
-const toggleRail = vi.fn();
-
-let mode: "open" | "collapsed" | "hidden" | "hover" = "open";
 
 vi.mock("react-router-dom", async (importOriginal) => {
   const actual = await importOriginal<typeof import("react-router-dom")>();
@@ -27,11 +27,8 @@ vi.mock("react-router-dom", async (importOriginal) => {
 });
 
 /*
- * The feature barrel drags in the whole dashboard; the navbar needs five names.
- *
- * `useSidebarState` is a real store, not a stub: the embedded navbar starts the
- * preview through `layouts/railPreview.ts`, which reads and writes the store
- * (`getState`), so a plain selector function would throw on hover.
+ * A real store: the hover path goes through `railPreview.ts`, which reads and
+ * writes the sidebar state (`getState`), so a plain selector stub would throw.
  */
 vi.mock("@/features/dashboard", async () => {
   const { createStore } = await import("zustand/vanilla");
@@ -46,7 +43,7 @@ vi.mock("@/features/dashboard", async () => {
     peek: () => void;
     unpeek: () => void;
   }>()((set) => ({
-    mode: "open",
+    mode: "hidden",
     hovering: false,
     setMode: (mode) => set({ mode }),
     setHovering: (hovering) => set({ hovering }),
@@ -87,19 +84,37 @@ vi.mock("@/stores/rightPanel", () => ({
     selector({ mode: "off", toggle: vi.fn() }),
 }));
 
+const toggleRail = vi.fn();
+
 vi.mock("@/layouts/stores/layoutShellStore", () => ({
   useLayoutShellStore: { getState: () => ({ toggleRail }) },
 }));
 
-vi.mock("@/components/Tooltips/ToolTip", () => ({
-  Tooltip: ({ children }: { children: React.ReactNode }) => children,
-}));
+/*
+ * jsdom has no matchMedia and `ToolTip` reads it at module scope. `vi.hoisted`
+ * runs before the imports are evaluated — a plain top-level statement would run
+ * after them, because ES imports are hoisted.
+ */
+vi.hoisted(() => {
+  if (typeof window === "undefined") return;
+  /* jsdom leaves it undefined; a real browser has it. */
+  if ("matchMedia" in window && typeof window.matchMedia === "function") return;
 
-vi.mock("@/assets/KanbanIcon", () => ({
-  default: () => <svg data-testid="kanban-logo" />,
-}));
+  Object.defineProperty(window, "matchMedia", {
+    writable: true,
+    value: (query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+    }),
+  });
+});
 
-/* jsdom ships neither observer; the navbar and the shell both use them. */
 class Observer {
   observe() {}
   unobserve() {}
@@ -126,46 +141,59 @@ const railStore = (
   }
 ).__railStore;
 
-afterEach(cleanup);
+const railButton = () =>
+  screen.queryByRole("button", { name: /expand sidebar/i });
 
 beforeEach(() => {
   toggleRail.mockClear();
-  railStore.setState({ mode: "open" });
+  railStore.setState({ mode: "hidden" });
 });
 
+afterEach(cleanup);
+
 describe("DashboardNavbar — the rail button", () => {
-  for (const state of ["open", "collapsed", "hidden", "hover"] as const) {
-    it(`is on screen while the rail is ${state}`, () => {
-      mode = state;
-      render(<DashboardNavbar embedded />);
+  it("is on screen while the rail is hidden", () => {
+    render(<DashboardNavbar embedded />);
 
-      expect(screen.getByRole("button", { name: /sidebar/i })).toBeTruthy();
-    });
-  }
+    expect(railButton()).toBeTruthy();
+  });
 
-  it("toggles the rail on click, from any state", async () => {
-    for (const state of ["open", "collapsed", "hidden"] as const) {
-      mode = state;
-      const { unmount } = render(<DashboardNavbar embedded />);
+  it("is not on screen while the rail is open", () => {
+    railStore.setState({ mode: "open" });
+    render(<DashboardNavbar embedded />);
 
-      await userEvent.click(screen.getByRole("button", { name: /sidebar/i }));
+    /* The rail's own header carries the controls then. */
+    expect(railButton()).toBeNull();
+  });
 
-      unmount();
-      cleanup();
-    }
+  it("stays on screen while its own preview is showing", () => {
+    railStore.setState({ mode: "hover" });
+    render(<DashboardNavbar embedded />);
 
-    expect(toggleRail).toHaveBeenCalledTimes(3);
+    /* A control that unmounts under the pointer cannot be clicked. */
+    expect(railButton()).toBeTruthy();
+  });
+
+  it("is not on screen while the rail is collapsed", () => {
+    railStore.setState({ mode: "collapsed" });
+    render(<DashboardNavbar embedded />);
+
+    expect(railButton()).toBeNull();
+  });
+
+  it("opens the rail on click", async () => {
+    render(<DashboardNavbar embedded />);
+
+    await userEvent.click(railButton()!);
+
+    expect(railStore.getState().mode).toBe("open");
   });
 
   it("previews the rail on hover, without opening it", async () => {
-    railStore.setState({ mode: "hidden" });
     render(<DashboardNavbar embedded />);
 
-    await userEvent.hover(screen.getByRole("button", { name: /sidebar/i }));
+    await userEvent.hover(railButton()!);
 
-    /* The icon starts a preview through `railPreview.ts`: the mode becomes
-       `hover`, the rail stays off the page, and nothing is toggled. */
     expect(railStore.getState().mode).toBe("hover");
-    expect(toggleRail).not.toHaveBeenCalled();
   });
 });

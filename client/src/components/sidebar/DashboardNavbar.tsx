@@ -6,6 +6,7 @@ import { useNotifications } from "@/features/dashboard/hooks/useNotifications";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { useSidebarState } from "@/features/dashboard";
 import { useRightPanel } from "@/stores/rightPanel";
+import { scheduleEnd, startPreview } from "@/layouts/railPreview";
 import { NavbarSearchIcon, NotificationsButton } from "@/features/dashboard";
 import { NotificationsPanel } from "@/features/dashboard";
 import { Tooltip } from "@/components/Tooltips/ToolTip";
@@ -146,59 +147,68 @@ export default function DashboardNavbar({
                    at any width instead of two fixed offsets. */
                 "md:left-(--rail-width)",
               ].join(" "),
-          "items-center gap-1.5 px-3",
+          "items-center gap-2.5 px-2",
           "transition-[left,background-color] duration-200",
           scrolled ? "border-b border-(--hairline)" : "",
           scrolled ? "bg-(--bg-root)/85 backdrop-blur-md" : "bg-transparent",
         ].join(" ")}
       >
-        {/* hidden all the time only  visible when in hidden mode*/}
+        {/*
+          The rail's way back in: on screen while the rail is off the page, and
+          while a preview is showing — the preview is what the pointer did, and a
+          control that vanishes under the pointer cannot be clicked.
+        */}
         {sidebarMode === "hidden" ? (
-          <div className="flex h-12 shrink-0 items-center justify-between gap-2.5 px">
-            <div className="flex shrink-0 items-center gap-1">
-              <Tooltip
-                label="Expand sidebar"
-                highlight={isMac ? "⌘B" : "Ctrl B"}
-                side="bottom"
-                shape="solid"
-                size="md"
-              >
-                <button
-                  type="button"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    setMode("open");
-                  }}
-                  aria-label="Expand sidebar"
-                  className="
+          <div className="flex shrink-0 items-center gap-1">
+            <Tooltip
+              label="Expand sidebar"
+              highlight={isMac ? "⌘B" : "Ctrl B"}
+              side="bottom"
+              shape="solid"
+              size="md"
+            >
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setMode("open");
+                }}
+                /* A pointer gets a preview; the click above is the choice. The
+                     overlay that appears under this icon is what ends the preview,
+                     so leaving the icon needs no handler of its own — but a pointer
+                     that leaves the icon without entering the overlay must not leave
+                     it stuck, so the leave is scheduled with the usual grace. */
+                onMouseEnter={startPreview}
+                onMouseLeave={scheduleEnd}
+                onFocus={startPreview}
+                onBlur={scheduleEnd}
+                aria-label="Expand sidebar"
+                className="
                     group relative flex size-8 cursor-pointer
                     items-center ml-1 justify-center
                     hover:rounded-lg
                     transition-colors
                     hover:bg-(--bg-hover)
                   "
-                >
-                  {/* Hover hint, hidden normally, visible on hover: a pointer when
+              >
+                {/* Hover hint, hidden normally, visible on hover: a pointer when
                         the rail opens by hovering, an arrow when it opens on click. */}
-                  <HugeiconsIcon
-                    icon={PanelLeftIcon}
-                    size={20}
-                    strokeWidth={1.8}
-                    className="
+                <HugeiconsIcon
+                  icon={PanelLeftIcon}
+                  size={20}
+                  strokeWidth={1.8}
+                  className="
                       absolute
                       hover:text-(--text-hover)
                       transition-all duration-150
                       group-hover:scale-100
                       text-(--text-primary)
                     "
-                  />
-                </button>
-              </Tooltip>
+                />
+              </button>
+            </Tooltip>
 
-              <Tooltip label="Keep open" side="bottom" shape="solid" size="md">
-                <NavbarSearchIcon />
-              </Tooltip>
-            </div>
+            <NavbarSearchIcon />
           </div>
         ) : null}
 
