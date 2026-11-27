@@ -580,6 +580,22 @@ the kind and the message, so a poll that fails every tick is one error),
 `id` is what turns "Saving…" into "Saved" in place rather than into two toasts,
 and `toastPromise` is the same idea for a whole async operation.
 
+**One import for callers.** `useToast()` returns all seven calls as one object —
+`toast.success`, `toast.error`, `toast.promise` — so a component imports the
+thing it uses rather than remembering which of seven names to bring in, and a
+later line that needs `toast.warning` costs no import change. The object is
+built once at module scope and its signatures are `typeof` the library's own
+functions, so it cannot drift from them. `lib/toast.ts` stays the place a
+service imports from, because `hooks/` is above it in the import matrix.
+
+**One import for callers.** `useToast()` returns all seven calls as one object —
+`toast.success`, `toast.error`, `toast.promise` — so a component imports the
+thing it uses rather than remembering which of seven names to bring in, and a
+later line that needs `toast.warning` costs no import change. The object is
+built once at module scope and its signatures are `typeof` the library's own
+functions, so it cannot drift from them. `lib/toast.ts` stays the place a
+service imports from, because `hooks/` is above it in the import matrix.
+
 ## Responsive
 
 `docs/change-rules.md` §5 is the gate: what fails the build, and what a reviewer

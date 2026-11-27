@@ -117,6 +117,20 @@ stacking), `action`, `cancel`, `dismissible`, `closeButton`, `onDismiss`,
 `onAutoClose`, `toasterId`, `testId`, plus `toastLoading` and `toastPromise` for
 the two async shapes.
 
+A component reaches all seven through one import — `const toast = useToast()`,
+then `toast.success(...)` — from `hooks/useToast.ts`. That file holds no logic:
+its signatures are `typeof` the library's functions, so a new option on
+`toastSuccess` appears there for free, and the object is built once at module
+scope so no component re-renders because of it. Services keep importing
+`@/lib/toast` directly, because `hooks/` sits above them in the import matrix.
+
+A component reaches all seven through one import — `const toast = useToast()`,
+then `toast.success(...)` — from `hooks/useToast.ts`. That file holds no logic:
+its signatures are `typeof` the library's functions, so a new option on
+`toastSuccess` appears there for free, and the object is built once at module
+scope so no component re-renders because of it. Services keep importing
+`@/lib/toast` directly, because `hooks/` sits above them in the import matrix.
+
 Four of those are the tooltip's attributes carried across: `descriptionTone` (a
 warning line inside a neutral toast), `icon`, `copyValue` (sonner's action button,
 so an explicit `action` wins), and `maxLines` on the stack.
