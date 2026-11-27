@@ -66,6 +66,22 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
   const setResizing = useLayoutShellStore((s) => s.setResizing);
   const resizing = useLayoutShellStore((s) => s.resizing);
 
+  /*
+   * The divider, as the old layout drew it: a hairline at rest, the link colour
+   * under the pointer or the keyboard, and a grab area wider than the line. The
+   * line is the element's own 1px; the grab area is a pseudo-element, so it costs
+   * the panes no width.
+   */
+  const dividerClass = (open: boolean) =>
+    open
+      ? [
+          "relative w-px shrink-0 bg-(--hairline)",
+          "transition-colors duration-150 motion-reduce:transition-none",
+          "hover:bg-(--link) focus-visible:bg-(--link)",
+          "before:absolute before:inset-y-0 before:-left-1 before:w-2 before:content-['']",
+        ].join(" ")
+      : "pointer-events-none w-0 shrink-0 overflow-hidden opacity-0";
+
   const state = useMemo(
     () => ({
       railOpen: railMode !== "hidden",
@@ -186,11 +202,10 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
               setResizing(true);
             }}
             onPointerUp={() => setResizing(false)}
-            className={
-              state.railOpen
-                ? "w-px shrink-0"
-                : "pointer-events-none w-0 shrink-0 overflow-hidden opacity-0"
-            }
+            className={dividerClass(state.railOpen)}
+            /* Inline: `base.css` sets `cursor: pointer` unlayered, and unlayered CSS
+               beats every Tailwind `@layer utilities` class. */
+            style={{ cursor: state.railOpen ? "col-resize" : undefined }}
             disabled={!state.railOpen}
           />
 
@@ -214,11 +229,8 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
               setResizing(true);
             }}
             onPointerUp={() => setResizing(false)}
-            className={
-              state.columnOpen
-                ? "w-px shrink-0"
-                : "pointer-events-none w-0 shrink-0 overflow-hidden opacity-0"
-            }
+            className={dividerClass(state.columnOpen)}
+            style={{ cursor: state.columnOpen ? "col-resize" : undefined }}
             disabled={!state.columnOpen}
           />
 
