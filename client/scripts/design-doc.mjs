@@ -17,8 +17,9 @@
  */
 import { readFileSync, statSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const CLIENT = resolve(new URL("..", import.meta.url).pathname);
+const CLIENT = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const CSS = resolve(CLIENT, "src/index.css");
 const DOC = resolve(CLIENT, "..", "DESIGN.md");
 
@@ -76,7 +77,7 @@ if (dark.size === 0) {
 
 /* ── read the doc ──────────────────────────────────────────────────────── */
 
-const doc = readText(DOC, "Design.md");
+const doc = readText(DOC, "DESIGN.md");
 
 /** The indented entries of one top-level block, as [name, value] pairs. */
 function readSection(source, key) {

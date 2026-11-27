@@ -19,10 +19,11 @@
  */
 import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const ROOT = new URL("../src", import.meta.url).pathname;
+const ROOT = fileURLToPath(new URL("../src", import.meta.url));
 const BASELINE_FILE = resolve(
-  new URL("./theme-colors-baseline.json", import.meta.url).pathname,
+  fileURLToPath(new URL("./theme-colors-baseline.json", import.meta.url)),
 );
 
 const strict = process.argv.includes("--strict");

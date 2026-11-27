@@ -17,8 +17,9 @@
  */
 import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve, sep } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const ROOT = resolve(new URL("../src", import.meta.url).pathname);
+const ROOT = resolve(fileURLToPath(new URL("../src", import.meta.url)));
 const dryRun = process.argv.includes("--dry-run");
 
 const ALIASES = [
