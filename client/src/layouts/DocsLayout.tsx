@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 
-import DocsNav from "@/components/docs/DocsNavbar";
+import DocsNavbar from "@/components/docs/DocsNavbar";
 import DocsPagination from "@/components/docs/DocsPagination";
 import DocsSidebarLeft from "@/components/docs/DocsSidebarLeft";
 import DocsSidebarMobile from "@/components/docs/DocsSidebarMobile";
@@ -31,7 +31,7 @@ export default function DocsLayout() {
 
   return (
     <div className="min-h-screen bg-(--bg-root) font-sans">
-      <DocsNav
+      <DocsNavbar
         onOpenNav={() => setNavOpen((value) => !value)}
         navOpen={navOpen}
       />

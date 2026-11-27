@@ -35,7 +35,6 @@
   "orphan:components/dashboard/workspace/create/SidebarNewWorkspace.tsx",
   "orphan:components/sidebar/SidebarBoards.tsx",
   "orphan:components/sidebar/SidebarSelectMode.tsx",
-  "orphan:components/sidebar/mobile/MobileSidebarHeader.tsx",
   "orphan:features/boards/api/attachmentApi.ts",
   "orphan:features/boards/components/WorkspaceBoardCard.tsx",
   "orphan:features/dashboard/components/notifications/NotificationRow.tsx",

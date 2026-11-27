@@ -20,7 +20,7 @@ interface DocsNavProps {
   navOpen: boolean;
 }
 
-export default function DocsNav({ onOpenNav, navOpen }: DocsNavProps) {
+export default function DocsNavbar({ onOpenNav, navOpen }: DocsNavProps) {
   return (
     <header
       className="
