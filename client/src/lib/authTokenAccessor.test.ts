@@ -6,7 +6,7 @@ import {
   setAccessToken,
   setAuthSession,
 } from "./authTokenAccessor";
-import { useAuthStore } from "./useAuthStore";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 const user = {
   id: "u1",
