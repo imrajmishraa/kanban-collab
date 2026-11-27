@@ -137,10 +137,11 @@ export default function DashboardNavbar({
       <header
         className={[
           embedded
-            ? /* In the shell the panes are the offsets. Sticky, not fixed: the
-                 bar lives inside the board's scroll container, and the sentinel
-                 above it has to keep scrolling for the blurred state to arrive. */
-              "sticky top-0 z-30 flex h-12 w-full shrink-0"
+            ? /* Fixed to the viewport so it never scrolls, and bounded by the
+                 centre column so it never sits over the rail or the column: the
+                 shell publishes those two widths as variables, because they are
+                 live pixels rather than the old layout's fixed offsets. */
+              "fixed top-0 right-(--shell-column,0px) left-(--shell-rail,0px) z-30 flex h-12 shrink-0"
             : [
                 "fixed top-0 right-0 z-50 hidden h-12 md:flex",
                 /* Ends where the right column begins instead of running under it. */

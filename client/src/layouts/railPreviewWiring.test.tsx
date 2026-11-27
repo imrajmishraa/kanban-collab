@@ -29,15 +29,17 @@ vi.mock("@/features/dashboard", async () => {
   const { useSyncExternalStore } = await import("react");
 
   const store = createStore<{
-    mode: "open" | "collapsed" | "hidden" | "hover";
-    setMode: (mode: "open" | "collapsed" | "hidden" | "hover") => void;
+    mode: "collapsed" | "expanded" | "hidden";
+    hovering: boolean;
+    setMode: (mode: "collapsed" | "expanded" | "hidden") => void;
     setHovering: (hovering: boolean) => void;
     openFromPreview: () => void;
   }>()((set) => ({
     mode: "hidden",
+    hovering: false,
     setMode: (mode) => set({ mode }),
-    setHovering: () => {},
-    openFromPreview: () => set({ mode: "open" }),
+    setHovering: (hovering: boolean) => set({ hovering }),
+    openFromPreview: () => set({ mode: "expanded", hovering: false }),
   }));
 
   return {
@@ -57,20 +59,21 @@ import { cancelClose, scheduleEnd, startPreview } from "./railPreview";
 const railStore = (
   dashboard as unknown as {
     __railStore: {
-      getState: () => { mode: string };
-      setState: (partial: { mode: string }) => void;
+      getState: () => { mode: string; hovering: boolean };
+      setState: (partial: { mode?: string; hovering?: boolean }) => void;
     };
   }
 ).__railStore;
 const useSidebarState = dashboard.useSidebarState as unknown as (
-  selector: (state: { mode: string }) => unknown,
+  selector: (state: { mode: string; hovering: boolean }) => unknown,
 ) => unknown;
 
 const mode = () => railStore.getState().mode;
+const hovering = () => railStore.getState().hovering;
 
 /** The shell's preview wiring, reduced to the elements that matter. */
 function PreviewHarness() {
-  const previewing = useSidebarState((state) => state.mode) === "hover";
+  const previewing = useSidebarState((state) => state.hovering) as boolean;
 
   return (
     <div className="flex h-96 w-96 flex-col">
@@ -103,7 +106,7 @@ const overlay = () => screen.queryByTestId("overlay");
 
 beforeEach(() => {
   vi.useFakeTimers();
-  railStore.setState({ mode: "hidden" });
+  railStore.setState({ mode: "hidden", hovering: false });
 });
 
 afterEach(() => {
@@ -117,7 +120,9 @@ describe("the rail preview's wiring", () => {
 
     fireEvent.mouseEnter(trigger()!);
 
-    expect(mode()).toBe("hover");
+    expect(hovering()).toBe(true);
+    /* The mode is untouched: a preview is a glance, not a place to return to. */
+    expect(mode()).toBe("hidden");
     expect(overlay()).toBeTruthy();
     /* The icon lives in the navbar, above the group: it is not covered by the
        overlay, so it never receives a `mouseleave` it did not cause. */
@@ -133,7 +138,9 @@ describe("the rail preview's wiring", () => {
     fireEvent.mouseMove(overlay()!);
     act(() => vi.advanceTimersByTime(1000));
 
-    expect(mode()).toBe("hover");
+    expect(hovering()).toBe(true);
+    /* The mode is untouched: a preview is a glance, not a place to return to. */
+    expect(mode()).toBe("hidden");
     expect(overlay()).toBeTruthy();
   });
 
@@ -144,10 +151,12 @@ describe("the rail preview's wiring", () => {
     fireEvent.mouseLeave(overlay()!);
 
     act(() => vi.advanceTimersByTime(100));
-    expect(mode()).toBe("hover");
+    expect(hovering()).toBe(true);
+    /* The mode is untouched: a preview is a glance, not a place to return to. */
+    expect(mode()).toBe("hidden");
 
     act(() => vi.advanceTimersByTime(100));
-    expect(mode()).toBe("hidden");
+    expect(hovering()).toBe(false);
     expect(overlay()).toBeNull();
   });
 
@@ -158,7 +167,28 @@ describe("the rail preview's wiring", () => {
     fireEvent.mouseLeave(trigger()!);
     act(() => vi.advanceTimersByTime(200));
 
-    expect(mode()).toBe("hidden");
+    /* The flag, not the mode: the mode never leaves `hidden`, so asserting it
+       passed even when the preview stayed open. */
+    expect(hovering()).toBe(false);
+    expect(overlay()).toBeNull();
+  });
+
+  it("does not push the deadline ahead while the pointer keeps moving", () => {
+    render(<PreviewHarness />);
+    fireEvent.mouseEnter(trigger()!);
+
+    fireEvent.mouseLeave(trigger()!);
+
+    /* A browser re-fires moves after a layout change; each one used to restart the
+       grace, so the preview only closed once the pointer stopped for the whole of
+       it. */
+    act(() => vi.advanceTimersByTime(60));
+    fireEvent.mouseLeave(trigger()!);
+    act(() => vi.advanceTimersByTime(60));
+    fireEvent.mouseLeave(trigger()!);
+
+    act(() => vi.advanceTimersByTime(40));
+    expect(hovering()).toBe(false);
   });
 
   it("does not reopen from the icon until the cooldown is over", () => {
@@ -174,6 +204,8 @@ describe("the rail preview's wiring", () => {
 
     act(() => vi.advanceTimersByTime(400));
     fireEvent.mouseEnter(trigger()!);
-    expect(mode()).toBe("hover");
+    expect(hovering()).toBe(true);
+    /* The mode is untouched: a preview is a glance, not a place to return to. */
+    expect(mode()).toBe("hidden");
   });
 });

@@ -94,7 +94,7 @@ describe("requiredViewport", () => {
 describe("computeRail", () => {
   const at = (overrides: Partial<Parameters<typeof computeRail>[0]> = {}) =>
     computeRail({
-      mode: "open",
+      mode: "expanded",
       width: RAIL.DEFAULT,
       hovering: false,
       viewportWidth: 1440,
@@ -115,36 +115,40 @@ describe("computeRail", () => {
     expect(layout.reserved).toBe(RAIL.COLLAPSED);
   });
 
-  it("hover opens at the default width, and reserves nothing", () => {
-    /* The pinned rail was dragged to 300; the preview still arrives at DEFAULT — a preview
-       that changes width with the pinned rail is a surprise, not a shortcut. And it reserves
-       nothing: at rest hover mode is off the page entirely (B1). */
-    const open = at({ mode: "hover", hovering: true, width: 300 });
+  it("a preview opens at the stored width, and reserves nothing", () => {
+    /* The rail is 300 when pinned; the preview arrives at 300. One width rule for
+       both, so a reader who dragged the rail does not get a second number when they
+       hover it. And it reserves nothing: the preview is an overlay. */
+    const open = at({ mode: "hidden", hovering: true, width: 300 });
 
     expect(open.hoverOpen).toBe(true);
-    expect(open.railWidth).toBe(RAIL.DEFAULT);
+    expect(open.railWidth).toBe(300);
     expect(open.reserved).toBe(0);
   });
 
-  it("hover is 288 even when the rail is dragged wide", () => {
-    const open = at({ mode: "hover", hovering: true, width: RAIL.MAX });
-
-    expect(open.railWidth).toBe(288);
+  it("a preview is clamped like the rail it previews", () => {
+    expect(
+      at({ mode: "hidden", hovering: true, width: RAIL.MAX }).railWidth,
+    ).toBe(RAIL.MAX);
+    expect(at({ mode: "hidden", hovering: true, width: 900 }).railWidth).toBe(
+      RAIL.MAX,
+    );
   });
 
-  /*
-   * The mode is the owner now, so "hover at rest" is no longer a state the app can
-   * be in: `mode: "hover"` means a preview is open, and the shell closes it by
-   * leaving that mode. The old assertion encoded the second owner — the sidebar
-   * clearing `hovering` while the overlay was still on screen, which is exactly the
-   * collapse-to-nothing the shell was showing.
-   */
-  it("a preview stays 288 for as long as the mode says hover", () => {
-    const rest = at({ mode: "hover", hovering: false });
+  it("the preview is the flag: without it the rail is off the page", () => {
+    const rest = at({ mode: "hidden", hovering: false });
 
-    expect(rest.railWidth).toBe(RAIL.DEFAULT);
-    /* Still nothing reserved: the preview is an overlay, not a column. */
+    expect(rest.hoverOpen).toBe(false);
+    expect(rest.railWidth).toBe(0);
     expect(rest.reserved).toBe(0);
+  });
+
+  it("the icon strip previews too, from its own 72", () => {
+    const open = at({ mode: "collapsed", hovering: true, width: 320 });
+
+    expect(open.hoverOpen).toBe(true);
+    expect(open.railWidth).toBe(320);
+    expect(open.reserved).toBe(0);
   });
 
   it("hidden is off the page entirely", () => {
@@ -155,7 +159,7 @@ describe("computeRail", () => {
   });
 
   it("a drag overrides the mode: the width follows the pointer", () => {
-    const layout = at({ mode: "hover", hovering: false, resizing: true });
+    const layout = at({ mode: "hidden", hovering: false, resizing: true });
 
     expect(layout.railWidth).toBe(RAIL.DEFAULT);
     expect(layout.reserved).toBe(RAIL.DEFAULT);
@@ -164,23 +168,5 @@ describe("computeRail", () => {
   it("clamps a hostile stored width", () => {
     expect(at({ width: 900 }).railWidth).toBe(RAIL.MAX);
     expect(at({ width: 4 }).railWidth).toBe(RAIL.MIN);
-  });
-
-  /*
-   * The shell sets `mode: "hover"` for the whole preview, so the mode already says
-   * "the reader is looking at the rail". Requiring `hovering` as well gave the same
-   * fact a second owner — the sidebar cleared it 140ms after the pointer left the
-   * aside, and the rail collapsed to 0 inside a still-open overlay.
-   */
-  it("keeps the preview width while the mode says hover, even with hovering off", () => {
-    const layout = computeRail({
-      mode: "hover",
-      width: 280,
-      hovering: false,
-      viewportWidth: 1440,
-    });
-
-    expect(layout.hoverOpen).toBe(true);
-    expect(layout.railWidth).toBe(RAIL.DEFAULT);
   });
 });

@@ -5,7 +5,7 @@ import { useSidebarState } from "./sidebarState";
 /** Reset to the store's own defaults between cases. */
 function reset() {
   useSidebarState.setState({
-    mode: "open",
+    mode: "expanded",
     collapsed: false,
     hovering: false,
     boardsOpen: true,
@@ -16,17 +16,17 @@ describe("useSidebarState", () => {
   beforeEach(reset);
 
   it("derives `collapsed` from `mode` for every mode", () => {
-    for (const mode of ["open", "collapsed", "hover"] as const) {
+    for (const mode of ["expanded", "collapsed", "hidden"] as const) {
       useSidebarState.getState().setMode(mode);
 
       const state = useSidebarState.getState();
       expect(state.mode).toBe(mode);
-      expect(state.collapsed).toBe(mode !== "open");
+      expect(state.collapsed).toBe(mode !== "expanded");
     }
   });
 
-  it("clears `hovering` when leaving hover mode", () => {
-    useSidebarState.getState().setMode("hover");
+  it("clears `hovering` when the mode really changes", () => {
+    useSidebarState.getState().setMode("hidden");
     useSidebarState.getState().setHovering(true);
     expect(useSidebarState.getState().hovering).toBe(true);
 
@@ -37,24 +37,39 @@ describe("useSidebarState", () => {
     expect(state.hovering).toBe(false);
   });
 
-  it("toggles between open and collapsed", () => {
+  /*
+   * The bug this pins: the shell re-asserts the mode after every commit, and a
+   * `setMode` that clears `hovering` even when the mode did not change ended a
+   * preview the pointer was still inside.
+   */
+  it("leaves a preview alone when the mode is re-asserted", () => {
+    useSidebarState.getState().setMode("hidden");
+    useSidebarState.getState().setHovering(true);
+
+    useSidebarState.getState().setMode("hidden");
+
+    expect(useSidebarState.getState().hovering).toBe(true);
+    expect(useSidebarState.getState().mode).toBe("hidden");
+  });
+
+  it("toggles between expanded and collapsed", () => {
     useSidebarState.getState().toggleCollapsed();
     expect(useSidebarState.getState().mode).toBe("collapsed");
     expect(useSidebarState.getState().collapsed).toBe(true);
 
     useSidebarState.getState().toggleCollapsed();
-    expect(useSidebarState.getState().mode).toBe("open");
+    expect(useSidebarState.getState().mode).toBe("expanded");
     expect(useSidebarState.getState().collapsed).toBe(false);
   });
 
-  it("expands out of hover mode and drops the hover flag", () => {
-    useSidebarState.getState().setMode("hover");
+  it("pins a preview and drops the hover flag", () => {
+    useSidebarState.getState().setMode("hidden");
     useSidebarState.getState().setHovering(true);
 
     useSidebarState.getState().expand();
 
     const state = useSidebarState.getState();
-    expect(state.mode).toBe("open");
+    expect(state.mode).toBe("expanded");
     expect(state.collapsed).toBe(false);
     expect(state.hovering).toBe(false);
   });
@@ -62,7 +77,7 @@ describe("useSidebarState", () => {
   it("toggles the boards section independently of the rail", () => {
     useSidebarState.getState().toggleBoards();
     expect(useSidebarState.getState().boardsOpen).toBe(false);
-    expect(useSidebarState.getState().mode).toBe("open");
+    expect(useSidebarState.getState().mode).toBe("expanded");
 
     useSidebarState.getState().openBoards();
     expect(useSidebarState.getState().boardsOpen).toBe(true);

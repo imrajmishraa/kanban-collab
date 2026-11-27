@@ -8,13 +8,9 @@ import { Tooltip } from "@/components/Tooltips/ToolTip";
 import {
   NavbarSearchIcon,
   useSidebarState,
-  WorkspaceSelector,
   type SidebarMode,
 } from "@/features/dashboard";
-import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { startPreview } from "@/layouts/railPreview";
-
-import { useNavigate } from "react-router-dom";
 
 interface SidebarHeaderProps {
   collapsed: boolean;
@@ -31,23 +27,10 @@ const isMac =
   /Mac|iPhone|iPad|iPod/.test(navigator.platform);
 
 const SidebarHeader = ({ collapsed }: SidebarHeaderProps) => {
-  const navigate = useNavigate();
   const setMode = useSidebarState((state) => state.setMode);
   const sidebarMode = useSidebarState((s) => s.mode);
   /* A preview is a flag, not a mode: the mode stays where the reader left it. */
   const hovering = useSidebarState((s) => s.hovering);
-
-  const onOverview = location.pathname === "/workspaces";
-  const onWorkspaceRoute = location.pathname.startsWith("/workspaces/");
-
-  const {
-    activeWorkspaceId,
-    activeWorkspaceName,
-    setActiveWorkspace,
-    clearActiveWorkspace,
-  } = useActiveWorkspace();
-
-  const showAllWorkspaces = onOverview || !activeWorkspaceId;
 
   if (collapsed) {
     return (
@@ -205,46 +188,6 @@ const SidebarHeader = ({ collapsed }: SidebarHeaderProps) => {
         )}
 
         <NavbarSearchIcon />
-
-        <div aria-label="Breadcrumb" className="flex items-center mr-1 gap-0.5">
-          {hovering ? (
-            <WorkspaceSelector
-              activeWorkspaceId={
-                showAllWorkspaces ? null : (activeWorkspaceId ?? null)
-              }
-              activeWorkspaceName={
-                showAllWorkspaces
-                  ? "All Workspaces"
-                  : (activeWorkspaceName ?? null)
-              }
-              onWorkspaceChange={(id, name) => {
-                setActiveWorkspace(id, name);
-                // Picking a workspace takes you to its page.
-                navigate(`/workspaces/${id}`);
-              }}
-              // One pill that opens the list, no close button.
-              unified={showAllWorkspaces}
-              // Workspace: the name opens it, the close button leaves it.
-              onOpenActive={
-                showAllWorkspaces
-                  ? undefined
-                  : () => navigate(`/workspaces/${activeWorkspaceId}`)
-              }
-
-              onClose={
-                !showAllWorkspaces && activeWorkspaceId
-                  ? () => {
-                      clearActiveWorkspace();
-
-                      if (onWorkspaceRoute) {
-                        navigate("/workspaces", { replace: true });
-                      }
-                    }
-                  : undefined
-              }
-            />
-          ) : null}
-        </div>
       </div>
     </header>
   );

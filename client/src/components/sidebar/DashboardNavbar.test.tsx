@@ -35,9 +35,9 @@ vi.mock("@/features/dashboard", async () => {
   const { useSyncExternalStore } = await import("react");
 
   const store = createStore<{
-    mode: "open" | "collapsed" | "hidden" | "hover";
+    mode: "collapsed" | "expanded" | "hidden";
     hovering: boolean;
-    setMode: (mode: "open" | "collapsed" | "hidden" | "hover") => void;
+    setMode: (mode: "collapsed" | "expanded" | "hidden") => void;
     setHovering: (hovering: boolean) => void;
     openFromPreview: () => void;
     peek: () => void;
@@ -47,8 +47,8 @@ vi.mock("@/features/dashboard", async () => {
     hovering: false,
     setMode: (mode) => set({ mode }),
     setHovering: (hovering) => set({ hovering }),
-    openFromPreview: () => set({ mode: "open", hovering: false }),
-    peek: () => set({ mode: "hover", hovering: true }),
+    openFromPreview: () => set({ mode: "expanded", hovering: false }),
+    peek: () => set({ hovering: true }),
     unpeek: () => set({ mode: "hidden", hovering: false }),
   }));
 
@@ -135,8 +135,8 @@ import DashboardNavbar from "./DashboardNavbar";
 const railStore = (
   dashboard as unknown as {
     __railStore: {
-      getState: () => { mode: string };
-      setState: (partial: { mode: string }) => void;
+      getState: () => { mode: string; hovering: boolean };
+      setState: (partial: { mode?: string; hovering?: boolean }) => void;
     };
   }
 ).__railStore;
@@ -146,7 +146,7 @@ const railButton = () =>
 
 beforeEach(() => {
   toggleRail.mockClear();
-  railStore.setState({ mode: "hidden" });
+  railStore.setState({ mode: "hidden", hovering: false });
 });
 
 afterEach(cleanup);
@@ -158,8 +158,8 @@ describe("DashboardNavbar — the rail button", () => {
     expect(railButton()).toBeTruthy();
   });
 
-  it("is not on screen while the rail is open", () => {
-    railStore.setState({ mode: "open" });
+  it("is not on screen while the rail is expanded", () => {
+    railStore.setState({ mode: "expanded" });
     render(<DashboardNavbar embedded />);
 
     /* The rail's own header carries the controls then. */
@@ -167,7 +167,7 @@ describe("DashboardNavbar — the rail button", () => {
   });
 
   it("stays on screen while its own preview is showing", () => {
-    railStore.setState({ mode: "hover" });
+    railStore.setState({ mode: "hidden", hovering: true });
     render(<DashboardNavbar embedded />);
 
     /* A control that unmounts under the pointer cannot be clicked. */
@@ -186,7 +186,7 @@ describe("DashboardNavbar — the rail button", () => {
 
     await userEvent.click(railButton()!);
 
-    expect(railStore.getState().mode).toBe("open");
+    expect(railStore.getState().mode).toBe("expanded");
   });
 
   it("previews the rail on hover, without opening it", async () => {
@@ -194,6 +194,8 @@ describe("DashboardNavbar — the rail button", () => {
 
     await userEvent.hover(railButton()!);
 
-    expect(railStore.getState().mode).toBe("hover");
+    /* The flag goes up; the mode does not move. */
+    expect(railStore.getState().hovering).toBe(true);
+    expect(railStore.getState().mode).toBe("hidden");
   });
 });

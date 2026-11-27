@@ -57,7 +57,12 @@ export function endPreview(): void {
 
 /** Close after the grace period, so the pointer can reach the overlay. */
 export function scheduleEnd(): void {
-  cancelClose();
+  /* Already pending? Leave it. Restarting on every call meant a pointer that was
+     still moving — or a browser re-firing a move after a layout change — pushed
+     the deadline ahead of itself, and the preview only closed once the pointer
+     happened to stop for the whole grace period. */
+  if (closeTimer !== null) return;
+
   closeTimer = window.setTimeout(() => {
     closeTimer = null;
     endPreview();

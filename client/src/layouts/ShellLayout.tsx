@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef } from "react";
-import type { ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 import { Group, Panel, Separator, type Layout } from "react-resizable-panels";
 
@@ -156,6 +156,17 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
   const { groupRef, groupEl, onLayoutChanged, separatorProps, initial } =
     useShellLayout({ state, commit, onWidth: report });
 
+  /*
+   * The panes' widths, kept as numbers because the bar is `fixed`: it has to know
+   * where the centre column starts and ends, and those are live pixels, not the
+   * old layout's CSS variables. Seeded from the first-frame defaults so the bar is
+   * in the right place before the first measurement lands.
+   */
+  const [pane, setPane] = useState(() => ({
+    left: initial.rail,
+    right: initial.column,
+  }));
+
   const onLayoutChange = useCallback(
     (layout: Layout) => {
       const width = groupEl.current?.clientWidth ?? 0;
@@ -168,6 +179,11 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
         right: px("rightPanel"),
       };
 
+      setPane((current) =>
+        current.left === next.left && current.right === next.right
+          ? current
+          : { left: next.left, right: next.right },
+      );
       onSizes?.(next);
     },
     [groupEl, onSizes],
@@ -178,7 +194,15 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
   }
 
   return (
-    <div className="flex h-dvh min-h-0 flex-col">
+    <div
+      className="flex h-dvh min-h-0 flex-col"
+      style={
+        {
+          "--shell-rail": `${pane.left}px`,
+          "--shell-column": `${pane.right}px`,
+        } as CSSProperties
+      }
+    >
       <div
         ref={groupEl}
         className="relative min-h-0 flex-1"
@@ -251,7 +275,9 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
                   background. */}
               <DashboardNavbar embedded />
 
-              <div className="flex-1">{children}</div>
+              {/* `fixed` takes the bar out of the flow, so its height is reserved
+                  here instead. */}
+              <div className="flex-1 pt-12">{children}</div>
             </main>
           </Panel>
 

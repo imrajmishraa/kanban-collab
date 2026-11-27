@@ -2,20 +2,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 /*
- * Three rules the review caught, each one a way the shell and the stores disagreed:
+ * A preview is not an open rail.
  *
- * 1. A preview is not an open rail. Reading `hover` as open made the pane reserve
- *    the rail's width for a glance, so the board moved for a hover.
- * 2. A preview must not become `lastVisible`, or the next ⌘B reopens the rail in
- *    `hover` — a mode that only exists while the pointer is inside.
- * 3. The shortcuts go through the shell's commands, so the fit rules apply to the
- *    keyboard exactly as they do to the buttons.
+ * Reading a preview as open made the pane reserve the rail's width for a glance, so
+ * the board moved for a hover. The mode is the only thing that decides "open": the
+ * `hovering` flag cannot, and there is no preview mode to mistake for one.
  */
 
 const setModeSpy = vi.fn();
 
 vi.mock("@/features/dashboard", () => ({
-  useSidebarState: { getState: () => ({ mode: "hidden" }) },
+  useSidebarState: { getState: () => ({ mode: "hidden", hovering: true }) },
 }));
 
 vi.mock("@/stores/rightPanel", () => ({
@@ -29,12 +26,12 @@ beforeEach(() => setModeSpy.mockClear());
 afterEach(() => vi.restoreAllMocks());
 
 describe("readShellState", () => {
-  it("does not read a hover preview as an open rail", () => {
+  it("does not read a preview as an open rail", () => {
     const store = useSidebarState as unknown as {
-      getState: () => { mode: string };
+      getState: () => { mode: string; hovering: boolean };
     };
     const original = store.getState;
-    store.getState = () => ({ mode: "hover" });
+    store.getState = () => ({ mode: "hidden", hovering: true });
 
     expect(readShellState().railOpen).toBe(false);
 
@@ -43,11 +40,11 @@ describe("readShellState", () => {
 
   it("still reads open and collapsed as open", () => {
     const store = useSidebarState as unknown as {
-      getState: () => { mode: string };
+      getState: () => { mode: string; hovering?: boolean };
     };
     const original = store.getState;
 
-    for (const mode of ["open", "collapsed"]) {
+    for (const mode of ["expanded", "collapsed"]) {
       store.getState = () => ({ mode });
       expect(readShellState().railOpen).toBe(true);
     }
