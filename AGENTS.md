@@ -9,9 +9,12 @@ Read in this order:
    per-package commands, the conventions and the gates.
 2. [`docs/change-rules.md`](docs/change-rules.md) — how big a change may be, and
    the gates that fail the build.
-3. **This file** — how to get from "something is wrong" to "it is fixed, and here
+3. [`docs/component-creation.md`](docs/component-creation.md) — how to add one
+   component, and what an artifact builder may and may not produce here.
+4. **This file** — how to get from "something is wrong" to "it is fixed, and here
    is the proof". It does not repeat the two above; it is the order of work.
-4. [`DESIGN.md`](DESIGN.md) — before touching the shell (rail, board, column).
+5. [`DESIGN.md`](DESIGN.md) — before touching the shell (rail, board, column)
+   **or adding motion**.
 
 ---
 
@@ -202,7 +205,32 @@ Check for these before you call something done.
 
 ---
 
-## 7. Definition of done
+## 7. Skills, and reporting the ones you did not use
+
+Skills are tools for the loop in §1, not extra authority. Where one disagrees
+with `DESIGN.md`, `DESIGN.md` wins.
+
+| Skill | Use when | Does not apply to |
+|---|---|---|
+| `frontend-design` | planning a new surface: write the plan, critique it against the brief, then build | picking a new palette or type for the app |
+| `web-artifacts-builder` | a multi-screen **prototype**; port, never paste (`docs/component-creation.md` §2) | a single component; anything committed under `client/src/` |
+| `theme-factory` | a throwaway artifact, on request | the app (two themes, in `DESIGN.md`) |
+| `stageshow` | marketing and docs illustrations of the product | app code |
+| `webapp-testing` | the width / keyboard / theme sweep of §6, when a browser is available | claiming a pass it did not run |
+| `vercel-composition-patterns` | component API shape: variants, compound parts, lifted state | exceeding the 8-prop budget |
+| `ui-sdk` | only after its contents have been read | — |
+
+Motion follows `DESIGN.md` → *Motion principles* (ten principles, at most two per
+component).
+
+If a skill from this list applies and you did not use it, say so in the report,
+one line each: **skill · not used · why** (`no network`, `not applicable`,
+`superseded by DESIGN.md`). Do not list a skill as used because you read its
+description.
+
+---
+
+## 8. Definition of done
 
 In addition to [`docs/constraints.md`](docs/constraints.md) and
 `docs/change-rules.md` §6–7:
@@ -213,3 +241,4 @@ In addition to [`docs/constraints.md`](docs/constraints.md) and
 3. Every gate passed, or the report names the gate you could not run.
 4. `DESIGN.md` / `docs/` updated if a documented behaviour moved.
 5. The report lists what was **not** covered.
+6. Skills that applied but were not used are listed, with the reason.
