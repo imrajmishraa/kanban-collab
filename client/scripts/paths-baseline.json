@@ -1,12 +1,4 @@
 [
-  "boundary:components/sidebar/DashboardNavbar.tsx",
-  "boundary:components/sidebar/SidebarNotifications.tsx",
-  "boundary:components/sidebar/mobile/SidebarMobileHeader.tsx",
-  "boundary:features/dashboard/components/notifications/NotificationsFeed.tsx",
-  "boundary:hooks/useWorkspace.ts",
-  "boundary:hooks/useWorkspaces.ts",
-  "boundary:layouts/AppLayout.tsx",
-  "boundary:pages/shared/SharedBoardPage.tsx",
   "multi:components/board/BoardAvatar.tsx",
   "multi:components/docs/DocsSidebarLeft.tsx",
   "multi:components/sidebar/DashboardSidebar.tsx",

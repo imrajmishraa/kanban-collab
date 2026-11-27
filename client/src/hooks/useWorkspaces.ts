@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
-import { workspaceApi } from "@/features/workspaces/api/workspaceApi";
+import { workspaceApi } from "@/features/workspaces";
 import type { Workspace, WorkspacePagination } from "@/types/workspace";
 
 export interface WorkspacesPage {

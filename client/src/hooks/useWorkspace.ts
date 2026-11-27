@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { workspaceApi } from "@/features/workspaces/api/workspaceApi";
+import { workspaceApi } from "@/features/workspaces";
 import { workspaceKeys } from "@/hooks/useWorkspaces";
 
 import type { Workspace } from "@/types/workspace";

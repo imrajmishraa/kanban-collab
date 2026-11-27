@@ -2,7 +2,7 @@ import { useEffect } from "react";
 
 import { cn } from "@/lib/cn";
 
-import NotificationsFeed from "@/features/dashboard/components/notifications/NotificationsFeed";
+import { NotificationsFeed } from "@/features/dashboard";
 
 interface SidebarNotificationsProps {
   open: boolean;

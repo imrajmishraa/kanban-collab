@@ -10,7 +10,7 @@ import {
 
 import { useCallback, useMemo } from "react";
 
-import { boardApi } from "@/features/boards/api/boardApi";
+import { boardApi } from "@/features/boards";
 import { readBoard } from "@/services/collaboration/boardDoc";
 import {
   buildCollaborationWsUrl,
