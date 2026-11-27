@@ -23,10 +23,11 @@
  */
 import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve, sep } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const ROOT = resolve(new URL("../src", import.meta.url).pathname);
+const ROOT = resolve(fileURLToPath(new URL("../src", import.meta.url)));
 const BASELINE_FILE = resolve(
-  new URL("./paths-baseline.json", import.meta.url).pathname,
+  fileURLToPath(new URL("./paths-baseline.json", import.meta.url)),
 );
 
 /** A file may be at most this many folders under src/ — except pages, where the

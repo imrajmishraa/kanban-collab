@@ -28,10 +28,11 @@
  */
 import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const ROOT = resolve(new URL("../src", import.meta.url).pathname);
+const ROOT = resolve(fileURLToPath(new URL("../src", import.meta.url)));
 const BASELINE_FILE = resolve(
-  new URL("./surface-baseline.json", import.meta.url).pathname,
+  fileURLToPath(new URL("./surface-baseline.json", import.meta.url)),
 );
 
 /**
