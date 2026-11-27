@@ -448,8 +448,8 @@ default until the shell has run in the wild.
 
 **The shell.** The rail, the board and the column are three panes of a resizable
 group, and one writer decides their widths (`useShellLayout` →
-`Group.setLayout()`). The numbers live in `lib/shellLayout.ts`: rail 200 / 280 /
-360 with a 72px icon strip, a 400px board floor, column 320 / 400 / 560. A release
+`Group.setLayout()`). The numbers live in `lib/shellLayout.ts`: rail 220 / 280 /
+420 with a 72px icon strip, a 420px board floor, column 320 / 420 / 600. A release
 within 32px of a floor means the floor; past that a rail becomes the strip and a
 column closes. The rail has three modes — `collapsed`, `expanded`, `hidden` — and
 a hover preview is a flag, not a mode: it opens over the page at the width the

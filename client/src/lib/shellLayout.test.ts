@@ -96,10 +96,16 @@ describe("computeLayout", () => {
   });
 
   it("keeps every floor at every width where both panes fit", () => {
-    for (let w = 920; w <= 2560; w += 7) {
+    /* From the width the two panes under test actually need, upwards. */
+    const need = SHELL.left.max + SHELL.right.max + SHELL.centre.min;
+
+    for (let w = need; w <= 2560; w += 7) {
       expect(fitsBoth(w)).toBe(true);
 
-      const l = computeLayout(w, open({ railPx: 360, columnPx: 560 }));
+      const l = computeLayout(
+        w,
+        open({ railPx: SHELL.left.max, columnPx: SHELL.right.max }),
+      );
       expect(px(l.leftPanel, w)).toBeGreaterThanOrEqual(SHELL.left.min - 1e-6);
       expect(px(l.rightPanel, w)).toBeGreaterThanOrEqual(
         SHELL.right.min - 1e-6,
@@ -133,16 +139,16 @@ describe("computeLayout", () => {
  * fits, and a rail opened beside a column at a stored 280 that the group could
  * not actually hold — the library then silently did nothing (F3).
  */
-it("opens the column beside the icon strip when 72 + 320 + 400 fits", () => {
-  /* 792 of 800: the strip leaves room the rail's floor does not. */
+it("opens the column beside the icon strip when 72 + 320 + 420 fits", () => {
+  /* 812 of 820: the strip leaves room the rail's floor does not. */
   expect(
-    toggleColumn(800, open({ railCollapsed: true, columnOpen: false })),
+    toggleColumn(820, open({ railCollapsed: true, columnOpen: false })),
   ).toEqual({ columnOpen: true });
 });
 
 it("closes the column when the rail cannot reopen beside it", () => {
-  /* 280 + 400 + 320 = 1000, so 999 does not fit — though the rail's 200 floor
-       would have said 920 and opened both. */
+  /* 280 + 420 + 320 = 1020, so 999 does not fit — though the rail's 220 floor
+       would have said 860 and opened both. */
   expect(
     toggleRail(
       999,
@@ -251,7 +257,7 @@ describe("settleDrag", () => {
     const w = 1280;
     const layout = {
       leftPanel: (280 / w) * 100,
-      centreLayout: (380 / w) * 100, // 20px under the 400 floor
+      centreLayout: (400 / w) * 100, // 20px under the 420 floor
       rightPanel: ((w - 280 - 380) / w) * 100,
     };
 

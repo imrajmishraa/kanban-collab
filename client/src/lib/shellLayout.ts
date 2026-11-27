@@ -18,10 +18,10 @@
  */
 
 export const SHELL = {
-  left: { min: 200, max: 360, default: 280, collapsed: 72 },
-  centre: { min: 400 },
+  left: { min: 220, max: 420, default: 280, collapsed: 72 },
+  centre: { min: 420 },
   /** `max` is the *soft* maximum: what a normal (non-full-width) drag keeps. */
-  right: { min: 320, max: 560, default: 400 },
+  right: { min: 320, max: 600, default: 420 },
 } as const;
 
 export type ShellConfig = typeof SHELL;
