@@ -197,6 +197,13 @@ motion:
   reveal-collapse: 900ms
   reveal-curve-grow: 'cubic-bezier(0.22, 1, 0.36, 1)'
   reveal-curve-collapse: 'cubic-bezier(0.6, 0, 0.4, 1)'
+  # Proposed. They need a matching entry in client/src/styles/theme.css (@theme)
+  # before any component uses them; nothing reads them yet.
+  ease-in-out: 'cubic-bezier(0.4, 0, 0.2, 1)'
+  ease-settle: 'cubic-bezier(0.34, 1.3, 0.64, 1)'
+  press-scale: 0.97
+  press-duration: 100ms
+  feedback-shake: 240ms
 components:
   button-solid:
     backgroundColor: '{colors.solid-bg}'
@@ -406,11 +413,38 @@ Animate `transform`, `opacity`, `width`, `max-height` and `clip-path`. Never ani
 
 **One reduced-motion switch.** `MotionConfig reducedMotion="user"` wraps the router in `app/App.tsx`, so every framer-motion transform and layout animation is dropped for a reader who asked for none, while opacity steps stay. Components that animate imperatively (`BoardDragDemo`) check the same media query and show their poster instead of their loop.
 
-**The marketing layer.** The public pages share four primitives in `features/marketing/motion/`: `Stagger` (the container that owns the timing), `Rise` (one item, entering on a shallow arc), `Press` (a control's wind-up and release) and the numbers in `motionTokens.ts`. They spend ten named principles, each with one home: squash and stretch and anticipation on a press (0.97 down, 1.015 on release), staging through a 60ms stagger, pose-to-pose from two named variants, follow-through on the settle spring, slow-in and slow-out on the 0.7s reveal curve, arcs on every entrance, a secondary action 140ms behind the primary one, snappy 150–200ms interactive timing, and feedback capped at 1.5% scale. A principle with no surface is decoration; `PRINCIPLES` in `motionTokens.ts` lists where each one is used, and its test fails if one loses its number.
+**The marketing layer.** The public pages share four primitives in `features/marketing/motion/`: `Stagger` (the container that owns the timing), `Rise` (one item, entering on a shallow arc), `Press` (a control's wind-up and release) and the numbers in `motionTokens.ts`. They spend ten named principles, each with one home: squash and stretch and anticipation on a press (0.97 down, 1.015 on release), staging through a 60ms stagger, pose-to-pose from two named variants, follow-through on the settle spring, slow-in and slow-out on the 0.7s reveal curve, arcs on every entrance, a secondary action 140ms behind the primary one, snappy 150–200ms interactive timing, and feedback capped at 1.5% scale. A principle with no surface is decoration; `PRINCIPLES` in `motionTokens.ts` lists where each one is used, and its test fails if one loses its number. The one number over principle 9's ceiling is the 0.7s section entrance: it is a scroll reveal read once, not feedback to input, and it is the same order as the 0.9s `Reveal` the home page already shipped.
 
 **The drag demo** on the features page is authored, not automated: `BoardDragDemo` measures the card and the open slot with `getBoundingClientRect`, lifts the card into a ghost, and drives one arc with `animate()`. Nothing is hard-coded in pixels, it runs only while in view, and reduced motion gets the poster — the card already in Done, the toast on screen — as a still.
 
 The one piece of choreography is the **theme reveal**: the class flip is wrapped in a View Transition and the snapshot is clipped to a circle centred on the control that was pressed. Going light, the new frame opens out of the button over 1200ms on `cubic-bezier(0.22, 1, 0.36, 1)`; going dark, the old frame closes back into it over 900ms on `cubic-bezier(0.6, 0, 0.4, 1)`. Both start and end at the button's own radius, so the two directions mirror each other. Two rules keep it honest: the origin is published as `--vt-x`, `--vt-y` and `--vt-seed` *before* the transition starts, so the incoming frame is already clipped on its first paint and the page never flashes whole; and a reveal that is still running is torn down rather than stacked, so a second press never leaves two irises fighting over the same snapshot. With no View Transitions support, or reduced motion, the theme changes with no animation at all.
+
+## Motion principles
+
+Ten principles of animation, each translated into what it may do in a dense work
+surface. They are tools for the single rule above: **motion answers a question or
+it does not ship.** A component picks at most two. None overrides reduced motion,
+and none carries information that is not also in text, colour or position.
+
+| # | Principle | Here it means | Limit |
+|---|---|---|---|
+| 1 | Squash & stretch | A press: `scale(0.97)` for 100ms on `:active`, back on release. Controls only. | Never on entry (the rule above stands), never on a text-bearing surface mid-layout. |
+| 2 | Anticipation | A 2px lift and the hairline firming up the instant a card is picked up, before it moves. | ≤ 100ms. Only for drag, delete and other moves a person might regret. |
+| 3 | Staging the focus | One thing moves; the rest holds still. The new card, the remote cursor, the dialog over a scrim. | One focal animation per region at a time. A second one waits or is dropped. |
+| 4 | Pose to pose | Write two states, `data-state="open\|closed"`, and let CSS interpolate. | No JS-driven per-frame interpolation. No keyframes where a transition will do. |
+| 5 | Follow through | A dropped card or an arriving toast settles on `ease-settle` and stops. | Overshoot ≤ 2px or 4%. Drop and arrival only. |
+| 6 | Slow in, slow out | Entering: `ease-out`. Leaving: `ease-in`. Travelling across the screen: `ease-in-out`. | `linear` only for a progress rail or a spinner. |
+| 7 | Arcs | A card sent to a column more than one away follows a curve (translate on x with an offset ease on y). | Everything else is a straight line. The theme reveal is already an arc. |
+| 8 | Secondary action | A count ticking while a card lands; a dot appearing on the rail. | One supporting motion per primary one. It never delays the primary, and it is never the only signal. |
+| 9 | Snappy timing | Feedback within 100ms of input; 150ms colour and hover; 200ms layout; 300ms is the ceiling. | Over 300ms needs a reason in the PR. The theme reveal (1200 / 900) is the only standing exception. |
+| 10 | Exaggerated feedback | Make the *size* of a result larger, not its duration: a rejected field shakes ±4px for 240ms. A save confirms on the button itself. | Always paired with the `--danger` edge and message. Under reduced motion, only the edge and the message remain. |
+
+Two consequences worth stating. **Squash & stretch does not contradict "nothing
+scales on entry":** it is feedback to an action, and an entry is not one. And
+**exaggeration is about amplitude, not length:** a longer animation reads as
+slower software, a larger one reads as a clearer answer.
+
+A component that cannot say which question its motion answers has none.
 
 ## Layout
 
