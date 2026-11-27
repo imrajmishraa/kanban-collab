@@ -178,7 +178,7 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
+    <div className="flex h-dvh min-h-0 flex-col">
       <div
         ref={groupEl}
         className="relative min-h-0 flex-1"
