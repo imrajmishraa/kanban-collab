@@ -34,6 +34,8 @@ const SidebarHeader = ({ collapsed }: SidebarHeaderProps) => {
   const navigate = useNavigate();
   const setMode = useSidebarState((state) => state.setMode);
   const sidebarMode = useSidebarState((s) => s.mode);
+  /* A preview is a flag, not a mode: the mode stays where the reader left it. */
+  const hovering = useSidebarState((s) => s.hovering);
 
   const onOverview = location.pathname === "/workspaces";
   const onWorkspaceRoute = location.pathname.startsWith("/workspaces/");
@@ -127,7 +129,7 @@ const SidebarHeader = ({ collapsed }: SidebarHeaderProps) => {
               type="button"
               onClick={(event) => {
                 event.stopPropagation();
-                setMode("open");
+                setMode("expanded");
               }}
               /* A pointer gets a preview; the click above is the choice. The
                      overlay that appears under this icon is what ends the preview,
@@ -165,7 +167,7 @@ const SidebarHeader = ({ collapsed }: SidebarHeaderProps) => {
           </Tooltip>
         ) : (
           <Tooltip
-            label={sidebarMode === "hover" ? "Expand sidebar" : "Hide sidebar"}
+            label={hovering ? "Expand sidebar" : "Hide sidebar"}
             highlight={isMac ? "⌘B" : "Ctrl B"}
             side="bottom"
             shape="solid"
@@ -207,7 +209,7 @@ const SidebarHeader = ({ collapsed }: SidebarHeaderProps) => {
         <NavbarSearchIcon />
 
         <div aria-label="Breadcrumb" className="flex items-center mr-1 gap-0.5">
-          {sidebarMode === "hover" ? (
+          {hovering ? (
             <WorkspaceSelector
               activeWorkspaceId={
                 showAllWorkspaces ? null : (activeWorkspaceId ?? null)

@@ -8,9 +8,9 @@ import { useSidebarState } from "@/features/dashboard";
  * give each of them its own timers and origin, which is exactly how the preview
  * ended up closing itself.
  *
- * The preview is not a mode of its own in the store: `computeRail` reads `hover`
- * to give the sidebar its 288px preview width, so the mode is borrowed for the
- * duration and put back where it came from.
+ * The preview is not a mode: `computeRail` reads the `hovering` flag to give the
+ * sidebar its 288px preview width, and the reader's mode stays exactly where they
+ * left it.
  */
 
 /** How long the pointer may take to cross the gap between the icon and the overlay. */
@@ -22,9 +22,6 @@ const CLOSE_GRACE_MS = 140;
  */
 const REOPEN_COOLDOWN_MS = 350;
 
-type Origin = "hidden" | "collapsed";
-
-let origin: Origin | null = null;
 let closeTimer: number | null = null;
 let closedAt = 0;
 
@@ -39,23 +36,22 @@ export function cancelClose(): void {
 export function startPreview(): void {
   const rail = useSidebarState.getState();
 
+  /* Only a rail that is off the page previews. Expanded is expanded. */
   if (rail.mode !== "hidden" && rail.mode !== "collapsed") return;
   if (Date.now() - closedAt < REOPEN_COOLDOWN_MS) return;
 
   cancelClose();
-  origin = rail.mode;
-  rail.setMode("hover");
+  /* The mode is not borrowed: the preview is the flag, so nothing has to be put
+     back when it ends — and nothing transient can be persisted. */
   rail.setHovering(true);
 }
 
 /** Put the mode back and remember when, for the cooldown. */
 export function endPreview(): void {
   const rail = useSidebarState.getState();
-  if (rail.mode !== "hover") return;
+  if (!rail.hovering) return;
 
-  rail.setMode(origin ?? "hidden");
   rail.setHovering(false);
-  origin = null;
   closedAt = Date.now();
 }
 
@@ -71,6 +67,5 @@ export function scheduleEnd(): void {
 /** A click inside the preview pins what the reader is looking at. */
 export function pinPreview(): void {
   cancelClose();
-  origin = null;
   useSidebarState.getState().openFromPreview();
 }

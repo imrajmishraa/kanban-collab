@@ -107,7 +107,7 @@ export const requiredViewport = (width: number): number =>
   Math.max(RAIL.MIN_VIEWPORT, Math.ceil(clampWidth(width)) + RAIL.GUTTER);
 
 export interface RailLayoutInput {
-  mode: "open" | "collapsed" | "hover" | "hidden";
+  mode: "collapsed" | "expanded" | "hidden";
   width: number;
   hovering: boolean;
   viewportWidth: number;
@@ -122,7 +122,7 @@ export interface RailLayout {
   hidden: boolean;
   /** The viewport cannot afford the expanded rail, so it falls back to icons. */
   autoRail: boolean;
-  /** Hover mode, pointer inside: an overlay at MIN. */
+  /** The pointer is on the rail: an overlay at the preview width. */
   hoverOpen: boolean;
   /** What the rail actually renders at. 0 means "not on the page". */
   railWidth: number;
@@ -133,10 +133,10 @@ export interface RailLayout {
 /**
  * The whole state machine, pure.
  *
- * `hover` opens to `RAIL.DEFAULT` — not to the stored width. It is a preview, and a preview
+ * A preview opens to `RAIL.DEFAULT` — not to the stored width. It is a glance, and a glance
  * that arrives at whatever width the pinned rail was dragged to is a surprise. It is also an
- * overlay, so the page keeps reserving only the icon rail and never reflows. Only a drag can
- * take the rail down to MIN. `autoRail` wins over both `open` and `hover`.
+ * overlay, so the page reserves nothing and never reflows. Only a drag can take the rail down
+ * to MIN. `autoRail` wins over both `expanded` and a preview.
  */
 export function computeRail({
   mode,
@@ -160,18 +160,16 @@ export function computeRail({
    */
   const collapsedPreview = mode === "collapsed" && hovering && !autoRail;
   /*
-   * `hover` is the shell's own mode for a preview, so it already means "the reader
-   * is looking at the rail". Requiring `hovering` as well made a second, quieter
-   * owner of the same fact: the sidebar set it false 140ms after the pointer left
-   * the aside, which collapsed the rail to width 0 inside a still-open 288px
-   * overlay — an instant close, and a flicker when the pointer moved back in.
+   * A preview is a flag, not a mode: `hovering` says the pointer is on the rail,
+   * and the mode stays where the reader left it. From `hidden` that means the rail
+   * appears over the page; from `collapsed` the strip widens to the same overlay.
    */
-  const hoverOpen = (mode === "hover" || collapsedPreview) && !autoRail;
+  const hoverOpen = hovering && !autoRail;
 
   /* C1: the preview is 288 on desktop and 240 on a tablet — the rail's own default there. */
   const previewWidth =
     viewportWidth <= 1023 ? TABLET_RAIL_PREVIEW : RAIL.DEFAULT;
-  const expanded = mode === "open" && !autoRail;
+  const expanded = mode === "expanded" && !autoRail;
 
   let railWidth: number;
 
@@ -190,7 +188,7 @@ export function computeRail({
      `resizing` override is for widths, and "off the page" is not a width. */
   /* B1: hover mode rests at zero. Nothing visible, nothing reserved — the icon in the
      navbar is the trigger, so a strip on the page would be a second, quieter one. */
-  if (hidden || (mode === "hover" && !hoverOpen && !resizing)) railWidth = 0;
+  if (hidden && !hoverOpen && !resizing) railWidth = 0;
   else if (resizing) railWidth = clamped;
   else if (expanded) railWidth = clamped;
   /* Hover is a preview at the default width, whatever the pinned rail was dragged to. A
@@ -210,9 +208,9 @@ export function computeRail({
    */
   const reserved = resizing
     ? railWidth
-    : mode === "hover"
-      ? /* B1: nothing to reserve — the board gets the whole width. */
-        0
+    : /* A preview is an overlay: nothing to reserve, the board keeps its width. */
+      hoverOpen
+      ? 0
       : railWidth;
 
   return {

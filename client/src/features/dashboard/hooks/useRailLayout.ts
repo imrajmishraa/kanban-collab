@@ -60,7 +60,7 @@ export function useRailLayout(): RailLayout {
     const came = previousMode.current;
     previousMode.current = mode;
 
-    if (shellOwnsRail || !panelOpen || mode !== "open") return;
+    if (shellOwnsRail || !panelOpen || mode !== "expanded") return;
     if (came !== "hidden" && came !== "collapsed") return;
 
     const rail = useSidebarState.getState();

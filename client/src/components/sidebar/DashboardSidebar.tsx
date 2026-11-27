@@ -83,6 +83,7 @@ export default function DashboardSidebar({
   /* Expanded over the page rather than beside it: that is the only case where
      the rail needs to read as a layer. */
   const floating = layout.hoverOpen;
+  const hovering = useSidebarState((state) => state.hovering);
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -246,7 +247,7 @@ export default function DashboardSidebar({
             is opening it. The divider is not rendered, so there is nothing to grab. */}
         {/* A2: the divider belongs to a column, not to the icon rail. On 72px there is
             nothing to grab, so nothing is drawn — a line you cannot drag is a lie. */}
-        {!embedded && railWidth > RAIL.COLLAPSED && mode !== "hover" && (
+        {!embedded && railWidth > RAIL.COLLAPSED && !hovering && (
           <RailResizeHandle
             renderedWidth={railWidth}
             width={layout.width}
@@ -287,7 +288,7 @@ export default function DashboardSidebar({
             /* Always offered, including collapsed: that is the state you need
                it in to get back out of. */
             showSidebarMode
-            hoverMode={mode === "hover"}
+            hoverMode={hovering}
           />
         </div>
       </aside>

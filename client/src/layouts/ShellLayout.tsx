@@ -57,7 +57,9 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
    * navbar's icon starts a preview and the overlay ends it — two components, one
    * controller.
    */
-  const previewing = railMode === "hover";
+  const hovering = useSidebarState((s) => s.hovering);
+  /* A preview is the pointer, not a mode: the reader's mode is untouched. */
+  const previewing = hovering;
 
   const commit = useLayoutShellStore((s) => s.commit);
   const setGroupPx = useLayoutShellStore((s) => s.setGroupPx);
@@ -66,7 +68,7 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
 
   const state = useMemo(
     () => ({
-      railOpen: railMode !== "hidden" && railMode !== "hover",
+      railOpen: railMode !== "hidden",
       railCollapsed: railMode === "collapsed",
       railPx,
       columnOpen: panelMode !== "off",
@@ -151,7 +153,7 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
                   onToggle={() =>
                     useSidebarState
                       .getState()
-                      .setMode(state.railOpen ? "hidden" : "open")
+                      .setMode(state.railOpen ? "hidden" : "expanded")
                   }
                   embedded
                 />

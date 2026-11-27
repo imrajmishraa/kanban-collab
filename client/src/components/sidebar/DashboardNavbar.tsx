@@ -158,99 +158,102 @@ export default function DashboardNavbar({
           while a preview is showing — the preview is what the pointer did, and a
           control that vanishes under the pointer cannot be clicked.
         */}
-        {sidebarMode === "hidden" ? (
-          <div className="flex shrink-0 items-center gap-1">
-            <Tooltip
-              label="Expand sidebar"
-              highlight={isMac ? "⌘B" : "Ctrl B"}
-              side="bottom"
-              shape="solid"
-              size="md"
-            >
-              <button
-                type="button"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  setMode("open");
-                }}
-                /* A pointer gets a preview; the click above is the choice. The
+
+        <nav
+          aria-label="Breadcrumb"
+          className="flex min-w-0 items-center gap-0.5"
+        >
+          <div className="flex items">
+            {sidebarMode === "hidden" ? (
+              <div className="flex shrink-0 items-center gap-1">
+                <Tooltip
+                  label="Expand sidebar"
+                  highlight={isMac ? "⌘B" : "Ctrl B"}
+                  side="bottom"
+                  shape="solid"
+                  size="md"
+                >
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setMode("expanded");
+                    }}
+                    /* A pointer gets a preview; the click above is the choice. The
                      overlay that appears under this icon is what ends the preview,
                      so leaving the icon needs no handler of its own — but a pointer
                      that leaves the icon without entering the overlay must not leave
                      it stuck, so the leave is scheduled with the usual grace. */
-                onMouseEnter={startPreview}
-                onMouseLeave={scheduleEnd}
-                onFocus={startPreview}
-                onBlur={scheduleEnd}
-                aria-label="Expand sidebar"
-                className="
+                    onMouseEnter={startPreview}
+                    onMouseLeave={scheduleEnd}
+                    onFocus={startPreview}
+                    onBlur={scheduleEnd}
+                    aria-label="Expand sidebar"
+                    className="
                     group relative flex size-8 cursor-pointer
                     items-center ml-1 justify-center
                     hover:rounded-lg
                     transition-colors
                     hover:bg-(--bg-hover)
                   "
-              >
-                {/* Hover hint, hidden normally, visible on hover: a pointer when
+                  >
+                    {/* Hover hint, hidden normally, visible on hover: a pointer when
                         the rail opens by hovering, an arrow when it opens on click. */}
-                <HugeiconsIcon
-                  icon={PanelLeftIcon}
-                  size={20}
-                  strokeWidth={1.8}
-                  className="
+                    <HugeiconsIcon
+                      icon={PanelLeftIcon}
+                      size={20}
+                      strokeWidth={1.8}
+                      className="
                       absolute
                       hover:text-(--text-hover)
                       transition-all duration-150
                       group-hover:scale-100
                       text-(--text-primary)
                     "
-                />
-              </button>
-            </Tooltip>
+                    />
+                  </button>
+                </Tooltip>
 
-            <NavbarSearchIcon />
-          </div>
-        ) : null}
+                <NavbarSearchIcon />
+              </div>
+            ) : null}
 
-        <nav
-          aria-label="Breadcrumb"
-          className="flex min-w-0 items-center gap-0.5"
-        >
-          <WorkspaceSelector
-            activeWorkspaceId={
-              showAllWorkspaces ? null : (activeWorkspaceId ?? null)
-            }
-            activeWorkspaceName={
-              showAllWorkspaces
-                ? "All Workspaces"
-                : (activeWorkspaceName ?? null)
-            }
-            onWorkspaceChange={(id, name) => {
-              setActiveWorkspace(id, name);
-              // Picking a workspace takes you to its page.
-              navigate(`/workspaces/${id}`);
-            }}
-            // One pill that opens the list, no close button.
-            unified={showAllWorkspaces}
-            // Workspace: the name opens it, the close button leaves it.
-            onOpenActive={
-              showAllWorkspaces
-                ? undefined
-                : () => navigate(`/workspaces/${activeWorkspaceId}`)
-            }
+            <WorkspaceSelector
+              activeWorkspaceId={
+                showAllWorkspaces ? null : (activeWorkspaceId ?? null)
+              }
+              activeWorkspaceName={
+                showAllWorkspaces
+                  ? "All Workspaces"
+                  : (activeWorkspaceName ?? null)
+              }
+              onWorkspaceChange={(id, name) => {
+                setActiveWorkspace(id, name);
+                // Picking a workspace takes you to its page.
+                navigate(`/workspaces/${id}`);
+              }}
+              // One pill that opens the list, no close button.
+              unified={showAllWorkspaces}
+              // Workspace: the name opens it, the close button leaves it.
+              onOpenActive={
+                showAllWorkspaces
+                  ? undefined
+                  : () => navigate(`/workspaces/${activeWorkspaceId}`)
+              }
 
-            onClose={
-              !showAllWorkspaces && activeWorkspaceId
-                ? () => {
-                    clearActiveWorkspace();
+              onClose={
+                !showAllWorkspaces && activeWorkspaceId
+                  ? () => {
+                      clearActiveWorkspace();
 
-                    if (onWorkspaceRoute) {
-                      navigate("/workspaces", { replace: true });
+                      if (onWorkspaceRoute) {
+                        navigate("/workspaces", { replace: true });
+                      }
                     }
-                  }
-                : undefined
-            }
-          />
+                  : undefined
+              }
+            />
+          </div>
         </nav>
 
         {/* Centred page title: the workspace name inside a workspace, and a

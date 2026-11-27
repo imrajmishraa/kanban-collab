@@ -53,7 +53,7 @@ export function readShellState(): ShellState {
   const panel = useRightPanel.getState();
 
   return {
-    railOpen: rail.mode !== "hidden" && rail.mode !== "hover",
+    railOpen: rail.mode !== "hidden",
     railCollapsed: rail.mode === "collapsed",
     railPx: rail.width,
     columnOpen: panel.mode !== "off",
@@ -74,7 +74,7 @@ export function commitShell(patch: Partial<ShellState>): void {
 
   if (patch.railOpen === false) rail.setMode("hidden");
   else if (patch.railCollapsed === true) rail.setMode("collapsed");
-  else if (patch.railOpen === true) rail.setMode("open");
+  else if (patch.railOpen === true) rail.setMode("expanded");
 
   if (typeof patch.railPx === "number") rail.setWidth(patch.railPx);
 
