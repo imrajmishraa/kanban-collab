@@ -3,6 +3,10 @@ import { useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Tick02Icon } from "@hugeicons/core-free-icons";
 
+import Press from "../../motion/Press";
+import Rise from "../../motion/Rise";
+import Stagger from "../../motion/Stagger";
+
 type Cycle = "monthly" | "yearly";
 
 interface Plan {
@@ -167,76 +171,82 @@ export default function HomePricing({ themeLock = "dark" }: HomePricingProps) {
 
           {/* Plans: three columns sharing the frame, divided by hairlines
               rather than floated as separate cards. */}
-          <div className="grid grid-cols-1 divide-y divide-(--hairline) lg:grid-cols-3 lg:divide-x lg:divide-y-0">
-            {PLANS.map((plan) => {
+          <Stagger className="grid grid-cols-1 divide-y divide-(--hairline) lg:grid-cols-3 lg:divide-x lg:divide-y-0">
+            {PLANS.map((plan, index) => {
               const amount = cycle === "yearly" ? plan.yearly : plan.monthly;
 
               return (
-                <section
+                <Rise
                   key={plan.name}
-                  className="relative flex h-full min-w-0 flex-col"
+                  index={index}
+                  count={PLANS.length}
+                  className="flex min-w-0"
                 >
-                  <div className="flex flex-col px-4 pt-8 pb-5 sm:px-8 sm:pt-10 sm:pb-6 md:px-12 md:pt-12 lg:px-10 lg:pt-12">
-                    <h3 className="text-xl font-semibold text-(--text-primary)">
-                      {plan.name}
-                    </h3>
+                  <section className="relative flex h-full min-w-0 flex-col">
+                    <div className="flex flex-col px-4 pt-8 pb-5 sm:px-8 sm:pt-10 sm:pb-6 md:px-12 md:pt-12 lg:px-10 lg:pt-12">
+                      <h3 className="text-xl font-semibold text-(--text-primary)">
+                        {plan.name}
+                      </h3>
 
-                    <div className="mt-4 flex flex-wrap items-end gap-x-3 gap-y-2">
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-4xl font-bold tracking-tight tabular-nums text-(--text-primary)">
-                          {amount === null ? plan.note : price(amount)}
-                        </span>
-                        {amount !== null && amount > 0 ? (
-                          <span className="text-sm font-medium text-(--text-secondary)">
-                            / {cycle === "yearly" ? "year" : "month"}
+                      <div className="mt-4 flex flex-wrap items-end gap-x-3 gap-y-2">
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="text-4xl font-bold tracking-tight tabular-nums text-(--text-primary)">
+                            {amount === null ? plan.note : price(amount)}
                           </span>
-                        ) : null}
+                          {amount !== null && amount > 0 ? (
+                            <span className="text-sm font-medium text-(--text-secondary)">
+                              / {cycle === "yearly" ? "year" : "month"}
+                            </span>
+                          ) : null}
+                        </div>
                       </div>
+
+                      <p className="mt-2 text-sm leading-6 text-(--text-secondary)">
+                        {amount === 0 ? plan.note : plan.tagline}
+                      </p>
                     </div>
 
-                    <p className="mt-2 text-sm leading-6 text-(--text-secondary)">
-                      {amount === 0 ? plan.note : plan.tagline}
-                    </p>
-                  </div>
-
-                  <div className="px-4 pb-8 sm:px-8 sm:pb-10 md:px-12 md:pb-12 lg:px-10">
-                    <a
-                      href={plan.href}
-                      className="inline-flex min-h-10 w-full items-center justify-center gap-2 whitespace-nowrap rounded-none rounded-tl-lg rounded-br-lg border border-(--hairline-strong) px-4 text-center text-sm font-medium text-(--text-soft) transition-colors duration-200 hover:bg-(--tint-4) hover:text-(--text-primary) motion-reduce:transition-none"
-                    >
-                      {plan.cta}
-                    </a>
-                  </div>
-
-                  <div className="relative flex flex-1 flex-col border-t border-(--hairline) px-4 py-8 sm:px-8 sm:py-10 md:px-12 md:py-12 lg:px-10">
-                    <ul className="grid gap-3 text-sm">
-                      {plan.features.map((feature) => (
-                        <li
-                          key={feature}
-                          className="grid min-w-0 grid-cols-[1rem_minmax(0,1fr)] items-start gap-3"
+                    <div className="px-4 pb-8 sm:px-8 sm:pb-10 md:px-12 md:pb-12 lg:px-10">
+                      <Press className="w-full">
+                        <a
+                          href={plan.href}
+                          className="inline-flex min-h-10 w-full items-center justify-center gap-2 whitespace-nowrap rounded-none rounded-tl-lg rounded-br-lg border border-(--hairline-strong) px-4 text-center text-sm font-medium text-(--text-soft) transition-colors duration-200 hover:bg-(--tint-4) hover:text-(--text-primary) motion-reduce:transition-none"
                         >
-                          <span
-                            className="flex h-6 items-center"
-                            aria-hidden="true"
+                          {plan.cta}
+                        </a>
+                      </Press>
+                    </div>
+
+                    <div className="relative flex flex-1 flex-col border-t border-(--hairline) px-4 py-8 sm:px-8 sm:py-10 md:px-12 md:py-12 lg:px-10">
+                      <ul className="grid gap-3 text-sm">
+                        {plan.features.map((feature) => (
+                          <li
+                            key={feature}
+                            className="grid min-w-0 grid-cols-[1rem_minmax(0,1fr)] items-start gap-3"
                           >
-                            <HugeiconsIcon
-                              icon={Tick02Icon}
-                              size={16}
-                              strokeWidth={2}
-                              className="text-(--text-primary)"
-                            />
-                          </span>
-                          <span className="min-w-0 leading-6 text-(--text-secondary)">
-                            {feature}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </section>
+                            <span
+                              className="flex h-6 items-center"
+                              aria-hidden="true"
+                            >
+                              <HugeiconsIcon
+                                icon={Tick02Icon}
+                                size={16}
+                                strokeWidth={2}
+                                className="text-(--text-primary)"
+                              />
+                            </span>
+                            <span className="min-w-0 leading-6 text-(--text-secondary)">
+                              {feature}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </section>
+                </Rise>
               );
             })}
-          </div>
+          </Stagger>
         </div>
       </div>
     </section>
