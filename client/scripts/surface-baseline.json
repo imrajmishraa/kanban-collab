@@ -46,7 +46,6 @@
   "surface/size|features/marketing/components/howItWorks/StepThreeSection.tsx": 1,
   "surface/size|features/marketing/components/howItWorks/StepTwoSection.tsx": 1,
   "surface/vh-not-dvh|features/marketing/components/shared/PageShell.tsx": 1,
-  "surface/size|features/workspaces/components/workspace-dialogs.tsx": 1,
   "surface/persist-version|features/workspaces/stores/starredWorkspaces.ts": 1,
   "surface/vh-not-dvh|layouts/AppLayout.tsx": 2,
   "surface/vh-not-dvh|layouts/DocsLayout.tsx": 1,
