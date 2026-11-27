@@ -11,12 +11,14 @@ Where a file lives in `client/src` is decided by **who owns it**, not by what ki
 | `pages/` | One file per route, laid out like the URL | Is it mounted by the router? |
 | `features/<feature>/` | Everything a domain needs, including its own api, state and types | Would it survive deleting one screen? |
 | `components/` | Shared UI: chrome, primitives, cross-feature vocabulary | Do two or more areas import it? |
-| `hooks/`, `stores/`, `types/`, `utils/` | Shared non-UI code | Same question |
+| `hooks/`, `stores/`, `types/` | Shared non-UI code | Same question |
 | `services/` | Transport and providers — the HTTP client, the realtime layer | Does it know about the network? |
 | `layouts/` | The shells pages render inside | Does it wrap more than one page? |
-| `lib/` | Third-party configuration and app-wide helpers | Is it wrapping someone else's library? |
+| `lib/` | Third-party configuration **and** app-wide helpers — the one home for a helper that is not UI | Is it wrapping someone else's library, or is it a helper two areas need? |
 | `app/` | Bootstrap: router, route tables, guards, providers | Is it wiring rather than UI? |
 | `validations/` | Schemas shared by more than one feature | Two or more features? |
+
+There is no `utils/`. It existed beside `lib/` and both rows said "shared helper", so a file could sit in either and nobody could say which was right. A helper two areas need is a `lib/` file; a helper one feature needs stays inside that feature, next to its api and state.
 
 ## Pages mirror the routes
 

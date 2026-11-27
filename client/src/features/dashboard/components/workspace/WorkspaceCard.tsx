@@ -10,7 +10,7 @@ import {
   UserGroupIcon,
 } from "@hugeicons/core-free-icons";
 
-import { alpha, getWorkspaceColor } from "@/utils/workspaceColor";
+import { alpha, getWorkspaceColor } from "@/lib/workspaceColor";
 
 interface WorkspaceCardProps {
   id: string;

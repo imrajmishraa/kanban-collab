@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowUp01Icon } from "@hugeicons/core-free-icons";
 
-import { cn } from "@/utils/cn";
+import { cn } from "@/lib/cn";
 
 import type { TocItem } from "./useTableOfContents.ts";
 

@@ -16,7 +16,7 @@ import {
   Tick02Icon,
 } from "@hugeicons/core-free-icons";
 
-import { cn } from "@/utils/cn";
+import { cn } from "@/lib/cn";
 import { estimateMenuHeight, placeMenu } from "@/lib/menuPlacement";
 
 interface NotificationRowMenuProps {

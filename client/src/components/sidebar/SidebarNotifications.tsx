@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import { cn } from "@/utils/cn";
+import { cn } from "@/lib/cn";
 
 import NotificationsFeed from "@/features/dashboard/components/notifications/NotificationsFeed";
 

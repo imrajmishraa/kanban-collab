@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 
-import { cn } from "@/utils/cn";
+import { cn } from "@/lib/cn";
 
 import DocsSearch from "./DocsSearch";
 import { DocsNavList, ThemeSwitch } from "./DocsSidebarLeft";

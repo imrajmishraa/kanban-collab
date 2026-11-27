@@ -5,7 +5,7 @@ import MobileFind from "@/components/sidebar/mobile/MobileFind";
 import SidebarFooter from "@/components/sidebar/SidebarFooter";
 import MobileNavList from "@/components/sidebar/mobile/MobileNavList";
 import MobileWorkspaceSwitch from "@/components/sidebar/mobile/MobileWorkspaceSwitch";
-import { cn } from "@/utils/cn";
+import { cn } from "@/lib/cn";
 
 import type { MobileSidebarProps } from "@/types/mobileSidebar";
 

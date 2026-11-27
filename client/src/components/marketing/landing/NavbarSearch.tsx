@@ -17,7 +17,7 @@ import {
 
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { Tooltip } from "@/components/Tooltips/ToolTip";
-import { cn } from "@/utils/cn";
+import { cn } from "@/lib/cn";
 
 import {
   DEFAULT_PROTECTED,
