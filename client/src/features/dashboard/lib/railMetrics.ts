@@ -100,9 +100,6 @@ export function snapWidth(
  * enough room. The `700` floor short-circuits the narrow case: at MIN the rail
  * plus gutter is under 700, and refusing to show it there would be silly.
  */
-/** C1: a tablet's preview is 240 — its own open width, not the desktop's 288. */
-const TABLET_RAIL_PREVIEW = 240;
-
 export const requiredViewport = (width: number): number =>
   Math.max(RAIL.MIN_VIEWPORT, Math.ceil(clampWidth(width)) + RAIL.GUTTER);
 
@@ -166,9 +163,6 @@ export function computeRail({
    */
   const hoverOpen = hovering && !autoRail;
 
-  /* C1: the preview is 288 on desktop and 240 on a tablet — the rail's own default there. */
-  const previewWidth =
-    viewportWidth <= 1023 ? TABLET_RAIL_PREVIEW : RAIL.DEFAULT;
   const expanded = mode === "expanded" && !autoRail;
 
   let railWidth: number;
@@ -193,8 +187,10 @@ export function computeRail({
   else if (expanded) railWidth = clamped;
   /* Hover is a preview at the default width, whatever the pinned rail was dragged to. A
      reader who dragged the rail to 400 did not ask the overlay to be 400 too. */
-  else if (hoverOpen) railWidth = previewWidth;
-  else if (collapsedPreview) railWidth = previewWidth;
+  /* The preview is the rail at the width the reader gave it: a preview that
+     arrived at some other number would be a second, quieter width rule. */
+  else if (hoverOpen) railWidth = clamped;
+  else if (collapsedPreview) railWidth = clamped;
   else railWidth = RAIL.COLLAPSED;
 
   /*

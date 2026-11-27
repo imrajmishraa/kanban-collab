@@ -6,7 +6,7 @@ import { Group, Panel, Separator, type Layout } from "react-resizable-panels";
 import RightPanel from "@/components/layout/RightPanel";
 import DashboardNavbar from "@/components/sidebar/DashboardNavbar";
 import DashboardSidebar from "@/components/sidebar/DashboardSidebar";
-import { RAIL, useSidebarState } from "@/features/dashboard";
+import { clampWidth, useSidebarState } from "@/features/dashboard";
 import { MOBILE_MAX_VIEWPORT } from "@/components/layout/panelMetrics";
 import { SHELL } from "@/lib/shellLayout";
 import { useRightPanel } from "@/stores/rightPanel";
@@ -123,6 +123,24 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
         ref={groupEl}
         className="relative min-h-0 flex-1"
         data-resizing={resizing ? "true" : undefined}
+        /*
+         * The preview ends where the rail ends. Reading the pointer's x against the
+         * rail's box is deterministic; `mouseleave` on the overlay is not — it is
+         * missed when the overlay appears under a stationary pointer, and a stray
+         * move can cancel the close that was scheduled.
+         */
+        onMouseMove={(event) => {
+          if (!previewing) return;
+
+          const left = event.currentTarget.getBoundingClientRect().left;
+          if (event.clientX - left > clampWidth(railPx)) scheduleEnd();
+          else cancelClose();
+        }}
+        /* Out of the group altogether — up into the navbar, or off the window —
+           is out of the rail too, and there will be no further move to say so. */
+        onMouseLeave={() => {
+          if (previewing) scheduleEnd();
+        }}
       >
         <Group
           id="dashboard-shell"
@@ -227,9 +245,10 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
         {previewing && (
           <div
             onMouseEnter={cancelClose}
-            onMouseLeave={scheduleEnd}
             className="absolute inset-y-0 left-0 z-40"
-            style={{ width: RAIL.DEFAULT }}
+            /* The stored width, clamped — the same number `computeRail` gives the
+               sidebar inside, so the box and its contents cannot disagree. */
+            style={{ width: clampWidth(railPx) }}
           >
             <DashboardSidebar
               /* A click inside the preview pins what the reader is looking at. */

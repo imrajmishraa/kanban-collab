@@ -2,38 +2,16 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 import { RAIL, clampWidth } from "../lib/railMetrics";
+import { sidebarPersist } from "./sidebarPersist";
+import {
+  isVisibleMode,
+  type SidebarMode,
+  type VisibleMode,
+} from "./sidebarMode";
 
-/**
- * How the rail behaves.
- *
- * open      the expanded rail at its stored width
- * collapsed icons only, always
- * expanded  the rail at its stored width, pushing the page
- * hidden    not on the page at all; the navbar toggle is the way back
- *
- * A preview is not a fourth mode: hovering shows the rail over the page while the
- * mode stays where it was, so nothing has to be restored afterwards and no
- * transient value can be persisted. `hovering` is that flag.
- */
-export type SidebarMode = "collapsed" | "expanded" | "hidden";
+export type { SidebarMode };
 
-const MODES: readonly SidebarMode[] = ["collapsed", "expanded", "hidden"];
-
-const isMode = (value: unknown): value is SidebarMode =>
-  MODES.includes(value as SidebarMode);
-
-/** Modes that show the rail, and so are worth restoring to. */
-type VisibleMode = "expanded" | "collapsed";
-
-/*
- * `lastVisible` is what ⌘B brings back, so only a real open may set it. `hover` is a
- * glance: recording it meant a preview that closed left the rail reopening in
- * `hover`, and `collapsed` was never restorable at all.
- */
-const isVisibleMode = (value: unknown): value is VisibleMode =>
-  value === "expanded" || value === "collapsed";
-
-interface SidebarState {
+export interface SidebarState {
   mode: SidebarMode;
   /** Stored width. Always clamped on read and on write. */
   width: number;
@@ -94,14 +72,22 @@ export const useSidebarState = create<SidebarState>()(
       resizing: false,
       boardsOpen: true,
 
-      setMode: (mode) =>
+      /*
+       * Asking for the mode it already has is not a change, and must not carry a
+       * change's side effects: `hovering` is the preview, and a command that
+       * re-asserts "hidden" (the shell commits its layout after every drag and
+       * every resize) would otherwise end a preview the pointer is still in.
+       */
+      setMode: (mode) => {
+        if (get().mode === mode) return;
+
         set({
           mode,
           collapsed: mode !== "expanded",
-          /* Leaving hover mode should not leave the rail looking hovered. */
           hovering: false,
           ...(isVisibleMode(mode) ? { lastVisible: mode } : {}),
-        }),
+        });
+      },
 
       setHovering: (hovering) => set({ hovering }),
       setResizing: (resizing) => set({ resizing }),
@@ -210,91 +196,7 @@ export const useSidebarState = create<SidebarState>()(
        * derived from `mode`.
        */
       version: 3,
-      partialize: (state) => ({
-        mode: state.mode,
-        width: state.width,
-        lastVisible: state.lastVisible,
-        boardsOpen: state.boardsOpen,
-      }),
-      migrate: (persisted, version) => {
-        const old = persisted as
-          | {
-              collapsed?: boolean;
-              boardsOpen?: boolean;
-              mode?: SidebarMode;
-              width?: number;
-              lastVisible?: VisibleMode;
-            }
-          | undefined;
-
-        /* v0 stored a bare `collapsed` boolean; v2 had four modes. `open` became
-           `expanded`, and `hover` — a preview, never a state worth restoring —
-           becomes `hidden`. */
-        const legacy = old?.mode as string | undefined;
-        const carried: SidebarMode | undefined =
-          legacy === "open"
-            ? "expanded"
-            : legacy === "hover"
-              ? "hidden"
-              : isMode(legacy)
-                ? legacy
-                : undefined;
-
-        const mode: SidebarMode =
-          version === 0
-            ? old?.collapsed
-              ? "collapsed"
-              : "expanded"
-            : (carried ?? "expanded");
-
-        return {
-          mode,
-          boardsOpen: old?.boardsOpen ?? true,
-          width:
-            typeof old?.width === "number"
-              ? clampWidth(old.width)
-              : RAIL.DEFAULT,
-          lastVisible: isVisibleMode(old?.lastVisible)
-            ? old.lastVisible
-            : "expanded",
-        };
-      },
-      /*
-       * `collapsed` is derived, never persisted, and a stored value from an
-       * older build is validated rather than trusted: a hand-edited
-       * `kanban.sidebar` must not be able to render a 4px rail or an unknown
-       * mode.
-       */
-      merge: (persisted, current) => {
-        const saved = persisted as
-          | {
-              mode?: unknown;
-              width?: unknown;
-              lastVisible?: unknown;
-              boardsOpen?: unknown;
-            }
-          | undefined;
-
-        const mode = isMode(saved?.mode) ? saved.mode : current.mode;
-
-        return {
-          ...current,
-          mode,
-          width:
-            typeof saved?.width === "number"
-              ? clampWidth(saved.width)
-              : current.width,
-          lastVisible: isVisibleMode(saved?.lastVisible)
-            ? saved.lastVisible
-            : current.lastVisible,
-          boardsOpen:
-            typeof saved?.boardsOpen === "boolean"
-              ? saved.boardsOpen
-              : current.boardsOpen,
-          collapsed: mode !== "expanded",
-          hovering: false,
-        };
-      },
+      ...sidebarPersist,
     },
   ),
 );

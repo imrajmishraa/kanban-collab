@@ -12,7 +12,7 @@ import {
   type SidebarMode,
 } from "@/features/dashboard";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
-import { scheduleEnd, startPreview } from "@/layouts/railPreview";
+import { startPreview } from "@/layouts/railPreview";
 
 import { useNavigate } from "react-router-dom";
 
@@ -137,9 +137,7 @@ const SidebarHeader = ({ collapsed }: SidebarHeaderProps) => {
                      that leaves the icon without entering the overlay must not leave
                      it stuck, so the leave is scheduled with the usual grace. */
               onMouseEnter={startPreview}
-              onMouseLeave={scheduleEnd}
               onFocus={startPreview}
-              onBlur={scheduleEnd}
               aria-label="Expand sidebar"
               className="
                     group relative flex size-8 cursor-pointer
