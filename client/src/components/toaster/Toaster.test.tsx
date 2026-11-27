@@ -179,6 +179,26 @@ describe("Toaster — the attribute groups", () => {
     expect(el.style.getPropertyValue("--width")).toBe("400px");
   });
 
+  it("removes a status icon when it is set to null", async () => {
+    render(<Toaster appearance={{ icons: { success: null } }} />);
+
+    const el = await fire(() => toastSuccess("No icon"));
+
+    expect(el.querySelector("[data-icon]")).toBeNull();
+  });
+
+  it("takes a replacement glyph", async () => {
+    render(
+      <Toaster
+        appearance={{ icons: { success: <span data-testid="mine" /> } }}
+      />,
+    );
+
+    const el = await fire(() => toastSuccess("Mine"));
+
+    expect(el.querySelector('[data-testid="mine"]')).toBeTruthy();
+  });
+
   it("renames the region for a second stack", async () => {
     render(<Toaster a11y={{ containerLabel: "Board alerts" }} />);
 

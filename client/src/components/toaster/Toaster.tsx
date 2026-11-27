@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import { Toaster as SonnerToaster } from "sonner";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
 import {
@@ -9,7 +11,7 @@ import {
 } from "@hugeicons/core-free-icons";
 
 import { resolveToaster } from "./toasterResolve";
-import type { ToasterProps } from "./toasterVariants";
+import type { ToasterIconName, ToasterProps } from "./toasterVariants";
 
 export type {
   A11yOptions,
@@ -99,6 +101,19 @@ export function Toaster(props: ToasterProps = {}) {
   const resolved = resolveToaster(props);
   const overrides = props.appearance?.icons;
 
+  /**
+   * An icon the caller *set* wins, including `null`.
+   *
+   * sonner's contract is that `null` removes the icon, and `??` cannot express
+   * it: `null ?? fallback` puts the default badge back. `Object.hasOwn` rather
+   * than `in`, because `in` also matches `constructor` and `__proto__`
+   * (`AGENTS.md` §4, the trap that was found twice).
+   */
+  const icon = (name: ToasterIconName, fallback: ReactNode) =>
+    overrides !== undefined && Object.hasOwn(overrides, name)
+      ? overrides[name]
+      : fallback;
+
   return (
     <SonnerToaster
       {...(resolved.id !== undefined && { id: resolved.id })}
@@ -120,12 +135,14 @@ export function Toaster(props: ToasterProps = {}) {
       })}
       className={resolved.rootClass}
       icons={{
-        success: overrides?.success ?? <IconBadge tone="success" />,
-        error: overrides?.error ?? <IconBadge tone="error" />,
-        warning: overrides?.warning ?? <IconBadge tone="warning" />,
-        info: overrides?.info ?? <IconBadge tone="info" />,
-        loading: overrides?.loading ?? <IconBadge tone="loading" />,
-        ...(overrides?.close ? { close: overrides.close } : {}),
+        success: icon("success", <IconBadge tone="success" />),
+        error: icon("error", <IconBadge tone="error" />),
+        warning: icon("warning", <IconBadge tone="warning" />),
+        info: icon("info", <IconBadge tone="info" />),
+        loading: icon("loading", <IconBadge tone="loading" />),
+        ...(overrides !== undefined && Object.hasOwn(overrides, "close")
+          ? { close: overrides.close }
+          : {}),
       }}
       toastOptions={{
         unstyled: false,
