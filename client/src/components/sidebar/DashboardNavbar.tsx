@@ -5,22 +5,37 @@ import { WorkspaceSelector } from "@/features/dashboard";
 import { useNotifications } from "@/features/dashboard";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { useSidebarState } from "@/features/dashboard";
+import { useRightPanel } from "@/stores/rightPanel";
+import { scheduleEnd, startPreview } from "@/layouts/railPreview";
 import { NavbarSearchIcon, NotificationsButton } from "@/features/dashboard";
 import { NotificationsPanel } from "@/features/dashboard";
 import { Tooltip } from "@/components/Tooltips/ToolTip";
-import { LayoutLeftIcon } from "@hugeicons/core-free-icons";
+import { PanelLeftIcon, PanelRightIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import KanbanIcon from "@/assets/KanbanIcon";
 
 const isMac =
   typeof navigator !== "undefined" &&
   /Mac|iPhone|iPad|iPod/.test(navigator.platform);
 
-export default function DashboardNavbar() {
+interface DashboardNavbarProps {
+  /**
+   * Rendered inside a shell that already places the rail and the column, so the
+   * header stops being `fixed` and stops offsetting itself by `--rail-width` —
+   * the pane next to it is the offset. Default false: `AppLayout` is unchanged.
+   */
+  embedded?: boolean;
+}
+
+export default function DashboardNavbar({
+  embedded = false,
+}: DashboardNavbarProps = {}) {
   const sentinelRef = useRef<HTMLDivElement>(null);
   const bellRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
+  const setMode = useSidebarState((state) => state.setMode);
+
+  const sidebarMode = useSidebarState((s) => s.mode);
 
   /* The overview is not scoped to one workspace, so the switcher reads
      "All Workspaces" there and reverts to the active name elsewhere. */
@@ -42,15 +57,17 @@ export default function DashboardNavbar() {
     clearActiveWorkspace,
   } = useActiveWorkspace();
 
-  const sidebarMode = useSidebarState((s) => s.mode);
-  const toggleHidden = useSidebarState((s) => s.toggleHidden);
-
+  /* The right column's only affordance, on screen in both states — a toggle that
+     only appears while the panel is closed makes people hunt for it. */
+  const rightPanelOpen = useRightPanel((state) => state.mode) !== "off";
+  const toggleRightPanel = useRightPanel((state) => state.toggle);
   /*
-   * The rail has no way back once it is hidden, so the toggle appears here —
-   * and only here, and only while it is hidden. With the rail on screen the
-   * rail's own header is the control, and a second one would be noise.
+   * Full width: the column takes everything the rail leaves, so the board — and
+   * this bar, which lives in the board's column — has no width to sit in. It used
+   * to render as a zero-wide strip with its own edge, which reads as a seam across
+   * the column. There is nothing to put a bar over, so there is no bar.
    */
-  const showRailToggle = sidebarMode === "hidden";
+  const fullWidth = useRightPanel((state) => state.level) === "remaining";
 
   /*
    * With nothing selected there is no workspace to scope the breadcrumb to, so
@@ -120,106 +137,143 @@ export default function DashboardNavbar() {
      updates the bell without a reload. The panel reuses the same key. */
   const { data: notificationsData } = useNotifications();
 
+  if (fullWidth) return null;
+
   return (
     <>
       <div ref={sentinelRef} aria-hidden="true" className="h-px w-full" />
 
       <header
         className={[
-          "fixed top-0 right-0 z-50 hidden h-14 md:flex",
-          "items-center gap-2 px-5 ",
+          embedded
+            ? /* Fixed to the viewport so it never scrolls, and bounded by the
+                 centre column so it never sits over the rail or the column: the
+                 shell publishes those two widths as variables, because they are
+                 live pixels rather than the old layout's fixed offsets. */
+              "fixed top-0 right-(--shell-column,0px) left-(--shell-rail,0px) z-30 flex h-12 shrink-0"
+            : [
+                "fixed top-0 right-0 z-50 hidden h-12 md:flex",
+                /* Ends where the right column begins instead of running under it. */
+                "lg:right-(--panel-width)",
+                /* Same variable the layout reserves, so the navbar follows the rail
+                   at any width instead of two fixed offsets. */
+                "md:left-(--rail-width)",
+              ].join(" "),
+          "items-center gap-2.5 px-2",
           "transition-[left,background-color] duration-200",
-          "border-b border-(--hairline)",
-          /* Same variable the layout reserves, so the navbar follows the rail
-             at any width instead of two fixed offsets. */
-          "md:left-(--rail-width)",
-          scrolled ? "bg-(--bg-root)/85 backdrop-blur-md" : "bg-transparent",
+          /*
+           * No border: the bar has no edge of its own. What separates it from the
+           * board is the surface — a gradient that is solid at the bottom, where
+           * the content meets it, and gone by the top, so there is no line to
+           * draw and nothing to misalign by a pixel. The blur joins in once
+           * content is actually passing underneath.
+           */
+          "bg-gradient-to-t from-(--bg-root)/90 via-(--bg-root)/55 to-transparent",
+          scrolled ? "backdrop-blur-md" : "",
         ].join(" ")}
       >
-        {showRailToggle && (
-          <div className="group/expand relative flex h-14 shrink-0 items-center justify-center">
-            <Tooltip
-              label="Expand sidebar"
-              highlight={isMac ? "⌘B" : "Ctrl B"}
-              side="bottom"
-              shape="solid"
-              size="md"
-              gap={10}
-            >
-              <button
-                type="button"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  toggleHidden();
-                }}
-                aria-label="Expand sidebar"
-                className="
-            group relative flex size-8 cursor-pointer
-            items-center justify-center
-            hover:rounded-lg
-            transition-colors
-            hover:bg-(--bg-hover)
-          "
-              >
-                {/* Logo, visible normally, hidden on hover */}
-                <KanbanIcon
-                  size={22}
-                  variant="upper"
-                  className="transition-all duration-150 group-hover:opacity-0 group-focus-within:opacity-0"
-                />
-
-                {/* Hover hint, hidden normally, visible on hover: a pointer when
-                the rail opens by hovering, an arrow when it opens on click. */}
-                <HugeiconsIcon
-                  icon={LayoutLeftIcon}
-                  size={16}
-                  strokeWidth={1.8}
-                  className="absolute text-(--text-muted) opacity-0 scale-75 transition-all duration-150 group-hover:scale-100 group-hover:opacity-100 group-hover:text-(--text-primary) group-focus-within:scale-100 group-focus-within:opacity-100 group-focus-within:text-(--text-primary) focus:opacity-100"
-                />
-              </button>
-            </Tooltip>
-          </div>
-        )}
+        {/*
+          The rail's way back in: on screen while the rail is off the page, and
+          while a preview is showing — the preview is what the pointer did, and a
+          control that vanishes under the pointer cannot be clicked.
+        */}
 
         <nav
           aria-label="Breadcrumb"
           className="flex min-w-0 items-center gap-0.5"
         >
-          <WorkspaceSelector
-            activeWorkspaceId={
-              showAllWorkspaces ? null : (activeWorkspaceId ?? null)
-            }
-            activeWorkspaceName={
-              showAllWorkspaces
-                ? "All Workspaces"
-                : (activeWorkspaceName ?? null)
-            }
-            onWorkspaceChange={(id, name) => {
-              setActiveWorkspace(id, name);
-              // Picking a workspace takes you to its page.
-              navigate(`/workspaces/${id}`);
-            }}
-            // One pill that opens the list, no close button.
-            unified={showAllWorkspaces}
-            // Workspace: the name opens it, the close button leaves it.
-            onOpenActive={
-              showAllWorkspaces
-                ? undefined
-                : () => navigate(`/workspaces/${activeWorkspaceId}`)
-            }
+          <div className="flex items">
+            {sidebarMode === "hidden" ? (
+              <div className="flex shrink-0 items-center gap-1">
+                <Tooltip
+                  label="Expand sidebar"
+                  highlight={isMac ? "⌘B" : "Ctrl B"}
+                  side="bottom"
+                  shape="solid"
+                  size="md"
+                >
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setMode("expanded");
+                    }}
+                    /* A pointer gets a preview; the click above is the choice. The
+                     overlay that appears under this icon is what ends the preview,
+                     so leaving the icon needs no handler of its own — but a pointer
+                     that leaves the icon without entering the overlay must not leave
+                     it stuck, so the leave is scheduled with the usual grace. */
+                    onMouseEnter={startPreview}
+                    onMouseLeave={scheduleEnd}
+                    onFocus={startPreview}
+                    onBlur={scheduleEnd}
+                    aria-label="Expand sidebar"
+                    data-rail-trigger
+                    className="
+                    group relative flex size-8 cursor-pointer
+                    items-center ml-1 justify-center
+                    hover:rounded-lg
+                    transition-colors
+                    hover:bg-(--bg-hover)
+                  "
+                  >
+                    {/* Hover hint, hidden normally, visible on hover: a pointer when
+                        the rail opens by hovering, an arrow when it opens on click. */}
+                    <HugeiconsIcon
+                      icon={PanelLeftIcon}
+                      size={20}
+                      strokeWidth={1.8}
+                      className="
+                      absolute
+                      hover:text-(--text-hover)
+                      transition-all duration-150
+                      group-hover:scale-100
+                      text-(--text-primary)
+                    "
+                    />
+                  </button>
+                </Tooltip>
 
-            onClose={
-              !showAllWorkspaces && activeWorkspaceId
-                ? () => {
-                    clearActiveWorkspace();
+                <NavbarSearchIcon />
+              </div>
+            ) : null}
 
-                    if (onWorkspaceRoute) {
-                      navigate("/workspaces", { replace: true });
+            <WorkspaceSelector
+              activeWorkspaceId={
+                showAllWorkspaces ? null : (activeWorkspaceId ?? null)
+              }
+              activeWorkspaceName={
+                showAllWorkspaces
+                  ? "All Workspaces"
+                  : (activeWorkspaceName ?? null)
+              }
+              onWorkspaceChange={(id, name) => {
+                setActiveWorkspace(id, name);
+                // Picking a workspace takes you to its page.
+                navigate(`/workspaces/${id}`);
+              }}
+              // One pill that opens the list, no close button.
+              unified={showAllWorkspaces}
+              // Workspace: the name opens it, the close button leaves it.
+              onOpenActive={
+                showAllWorkspaces
+                  ? undefined
+                  : () => navigate(`/workspaces/${activeWorkspaceId}`)
+              }
+
+              onClose={
+                !showAllWorkspaces && activeWorkspaceId
+                  ? () => {
+                      clearActiveWorkspace();
+
+                      if (onWorkspaceRoute) {
+                        navigate("/workspaces", { replace: true });
+                      }
                     }
-                  }
-                : undefined
-            }
-          />
+                  : undefined
+              }
+            />
+          </div>
         </nav>
 
         {/* Centred page title: the workspace name inside a workspace, and a
@@ -234,7 +288,7 @@ export default function DashboardNavbar() {
           {/* Always rendered, and always immediately before notifications.
               It used to appear only when the sidebar was collapsed, so the
               button moved around as the rail was toggled. */}
-          <NavbarSearchIcon />
+          {sidebarMode === "collapsed" ? <NavbarSearchIcon /> : null}
 
           <div ref={bellRef} className="relative">
             <NotificationsButton
@@ -248,6 +302,37 @@ export default function DashboardNavbar() {
               ignoreRef={bellRef}
             />
           </div>
+
+          {/* Only while the panel is closed. Open, the panel's own header carries
+              the same toggle — two of them on screen is the same control twice. */}
+          {!rightPanelOpen && (
+            <Tooltip
+              label="Show panel"
+              highlight={isMac ? "⌘J" : "Ctrl J"}
+              side="bottom"
+              shape="solid"
+              size="md"
+            >
+              <button
+                type="button"
+                onClick={toggleRightPanel}
+                aria-label="Show panel"
+                aria-controls="right-panel"
+                aria-keyshortcuts="Meta+J Control+J"
+                className={[
+                  "grid size-8 place-items-center rounded-lg",
+                  "hover:bg-(--bg-active) text-(--text-primary)",
+                  "focus-visible:outline-2 focus-visible:outline-(--brand)",
+                ].join(" ")}
+              >
+                <HugeiconsIcon
+                  icon={PanelRightIcon}
+                  size={18}
+                  strokeWidth={1.6}
+                />
+              </button>
+            </Tooltip>
+          )}
         </div>
       </header>
     </>
