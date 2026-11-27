@@ -433,32 +433,217 @@ The recipes in the front matter are the contract. A few rules sit behind them.
 ## Toasts
 
 A toast is the one surface with variants, because it carries a different job
-depending on why it appeared. `components/toaster/Toaster.tsx` takes them as
-props; the tables that back them live beside it in `toasterVariants.ts`.
+depending on why it appeared. The tables that back them live beside the
+component in `toasterVariants.ts`; the two facts both halves of the toast need —
+the surfaces and the lifetimes — live in `lib/toastTokens.ts`, because the call
+(`lib/toast.ts`) and the surface (`components/toaster/`) may not import each
+other.
 
-**Shape** — `default` `{rounded.xl}` (the card radius), `sharp` 4px, `soft` 16px,
-`pill` full, `card` 20px, `glass` 16px plus a blur. Only `glass` blurs.
+**Seven axes, not twenty props.** `Toaster` takes `appearance`, `layout`,
+`behaviour`, `a11y`, `classNames`, `preset` and `id`. Everything painted is in
+`appearance`, everything measured in `layout`, everything timed in `behaviour`,
+every label in `a11y`. A new attribute is a field inside a group, so the API
+cannot creep back over the eight-prop cap in `docs/change-rules.md` §3.
 
-**Size** — the type scale inside the bubble: `sm` 12/11px, `md` 13/12px (the
-default), `lg` 15/13px. The description is `--text-muted` at every size; a
-description that competes with the title is a paragraph, and a toast is not a
-place for one.
+**Presets** — `default`, `quiet` (one visible toast, a `soft` fill, no dismiss
+button, the moment lifetime), `assertive` (five visible, expanded, 8s), `auth` (the auth
+tone at `lg`), `compact` (320px, tighter gap and offset). A preset is merged
+*under* the explicit groups, never over them: a preset that could override what
+the caller wrote would be a transient mode in a persisted key with a nicer name.
 
-**Tone** — the surface. `auto` is the elevated panel above. `brand`, `success`
-and `danger` fill with their token and take `--auth-ink` for text, which is why
-that ink exists as a token rather than as white in a class. `neutral` is the flat
-elevated surface with no gradient.
+**Shape** — seventeen, in three families, and it is the tooltip's set minus the
+ones that paint a colour. **Radius**: `default` `{rounded.xl}` (the card radius),
+`sharp` 4px, `soft` 16px, `pill` full, `card` 20px, `glass` 16px plus a blur —
+only `glass` blurs. **Silhouette**: `speech` (one square foot, pointing),
+`tab` (square foot, rounded head), `squircle`, `chamfer` (corners cut with a clip
+path), `ticket` (notched edges), `blob`. **Edge**: `dashed`, `double` (a ring
+offset from the border), `keycap` (a 3px bottom edge), `sticker` (2px, tilted a
+degree), `callout` (a 3px left edge in the text's own colour). The two clip-path
+shapes also clip the shadow, as they do on a tooltip. The shape is the only
+writer of the radius: the surface table deliberately carries no
+`--border-radius`, so the two cannot disagree.
 
-**The auth surface** is the one tone with a name of its own: `--auth`, a blue
-that belongs to neither the accent nor the status set. It marks a moment rather
-than a result — signing in, finishing onboarding — so it fills the whole toast
-and dismisses faster than a success does.
+What is *not* here is the tooltip's colour-bearing shapes — `neon`, `gradient`,
+`ink`, `paper`, `blueprint`, `terminal`, `badge`, `solid`, `outline`. On a toast
+those are `tone` and `fill`, and a second way to say the same thing is how a
+surface ends up with two writers.
+
+**Size** — five steps of the type scale inside the bubble, title over
+description: `xs` 11/10px, `sm` 12/11px, `md` 13/12px (the default), `lg` 15/13px,
+`xl` 17/14px. The description is `--toast-description` at every size, which a
+filling tone overrides; a description that competes with the title is a
+paragraph, and a toast is not a place for one.
+
+**The description is its own slot.** `appearance.description` takes `size` (a
+step of its own, `xs`–`lg`, so a `lg` title can carry an `xs` footnote), `color`
+(any token or CSS colour, written to `--toast-description`) and `lines` (the
+tooltip's `maxLines`, carried as `--toast-lines` so the clamp follows the number
+rather than a fixed class — `1` is a single line, and anything not positive or
+absent is natural height). `ink` does
+the same for the title: an explicit `--normal-text` for a colour the tone table
+does not have. Both go through variables, never a generated class, because a
+class built from a runtime string is never compiled.
+
+**Tone** — the surface, and there are eleven. `auto` is the elevated panel above;
+`neutral` is the same panel without the gradient. `brand`, `success`, `warning`,
+`danger` and `info` fill with their token — the last four are the tooltip's tone
+table, `info` on `--link`, which the toast had been missing while `toastInfo`
+painted a plain panel. `muted` is the surface a toast takes when it should
+recede: `--bg-surface` with a hairline, the inks the tooltip's `outline` variant
+uses. `auth` is the blue that belongs to neither the accent nor the status set:
+it marks a moment rather than a result — signing in, finishing onboarding — so it
+fills the whole toast and dismisses faster than a success does. `accent` is the
+one place the accent is allowed to fill, in the segmented control's pair
+(`--accent-fill` with `--accent` text): a single "look here" that is not an error.
+`inverse` is the tooltip's family — a light capsule on a dark page, a dark one on
+a light page — for a toast that has to sit *above* a busy board rather than
+beside it.
+
+**Fill** — how hard a tone is applied, three strengths, each one a recipe this
+document already had for something else:
+
+| Fill | Recipe | Where it comes from |
+|---|---|---|
+| `solid` | the tone fills the surface | `button-solid`, the status buttons |
+| `soft` | the tone tints the panel and edges it; the ink stays the page's | `chip`, `brand-muted` + `brand-border`, `accent-soft` |
+| `outline` | no fill; the tone is only the edge | `button-danger`, the tooltip's `outline` |
+
+Ten tones at three strengths is thirty surfaces — `auto` has no colour to
+soften, so it stays the gradient panel at every strength — and it is one table
+plus one function (`toneSurface`) rather than thirty rows. `solid` is the
+default, so a tone alone keeps the surface it always had. `soft` and `outline`
+deliberately leave the text in the page's ink: colour is information here — it
+edges the surface and backs the icon, it does not become the text.
+
+**A filled tone carries three inks, not one.** The title takes `--normal-text`,
+the description `--toast-description`, the close glyph `--toast-close`, and a
+tone that fills the surface sets all three — otherwise the description keeps the
+page's grey and disappears into the fill. The ink on a status fill is
+`--inverse-text`, not white: the status tokens are bright in the dark theme and
+dark in the light one, and white on `--success` is 1.9:1 where the ink that flips
+with them is 10.3:1. `auth` is the exception — a blue that wants white in both
+themes.
+
+**Width has four numbers, and each has one home.** `width` is sonner's `--width`
+(380px by default). `mobileWidth` is the cap below sonner's own 600px breakpoint,
+where it stops reading `--width` and gives each toast
+`calc(100% - 2 × mobileOffset)`; the cap travels as `--toast-mobile-width`
+because a class built by interpolation is never generated at build time.
+`maxWidth` is a cap on top of either, and `minWidth` is the floor below which the
+content wraps rather than shrinks — the one of the four that stops a narrow toast
+from breaking a long word across three lines.
+
+**Lifetimes** — one table, in ms: a success is read at a glance (3s), an error
+has to be read *and* acted on (6s), a moment is briefest (2.5s), and the stack's
+default is 4s. A per-toast duration still wins, and a per-toast `delay` holds the
+toast back — 200ms is how a save that usually finishes in 40 stops flashing a
+toast at all.
+
+**Motion** — its own group, because `enter` and `exit` are separate decisions: a
+stack that fades in and slides out is a normal thing to want, and one property
+for both is the compromise that makes it impossible. `animation` takes a
+shorthand string (`"fade"`) or the group — `enter`, `exit`, `duration` in ms,
+`easing` as any CSS timing function, and `respectReducedMotion` (default on),
+which adds `motion-reduce:!transition-none`. The four properties are `scale`
+(transform and opacity together, the default), `fade`, `slide` and `none`; when
+enter and exit differ they become state-scoped classes on sonner's own
+`data-mounted` and `data-removed`, which is the only place those two can diverge.
+
+**Progress** — `progress.visible` draws a rail along one edge of the toast, from
+`--toast-progress`, `--toast-progress-thickness` and `--toast-progress-duration`.
+It is the toast's own `::after`: no extra element, nothing long content can push
+out of the bubble, and no second timer — the rail reads the same `duration` the
+dismissal does, so the two cannot drift. `animated: false` leaves a still
+hairline instead, for a toast that is a label rather than a countdown, and
+`showOnLoading: false` hides it on a loading toast — which has no lifetime to
+count down — off sonner's own `data-type="loading"`.
 
 **The dismiss button sits inside the bubble.** Sonner anchors it to the outside
 corner by default, floating on the page; here it is a flex child, so it is
 centred for any content height, and ordered last so it stays at the right edge.
 24px, `{rounded.md}`, no fill, no border: the glyph is the affordance, and the
 hover tint is the only feedback.
+
+**The action buttons are 44px tall below `sm` and 28px above it.** A toast with
+"Undo" on it is the one control a thumb reaches for in a hurry, and
+`docs/change-rules.md` §5.1 sets the touch floor at 44×44. The desktop height is
+what the design asks for; both are one control.
+
+**Per toast, not per stack.** A `Toaster` prop reaches every toast; `lib/toast.ts`
+reaches one. `tone` and `fill`, `descriptionTone` (a warning line inside a
+neutral toast — the tooltip's attribute of the same name), `icon` (a glyph for
+one toast), `copyValue` (a Copy button, ignored when an `action` is set), `id`
+(re-fire replaces instead of stacking), `preventDuplicate` (derives that id from
+the kind and the message, so a poll that fails every tick is one error),
+`action` and `cancel`, `dismissible`,
+`closeButton`, `onDismiss`, `onAutoClose`, `toasterId` and `testId` live there.
+`id` is what turns "Saving…" into "Saved" in place rather than into two toasts,
+and `toastPromise` is the same idea for a whole async operation.
+
+**One import for callers.** `useToast()` returns all seven calls as one object —
+`toast.success`, `toast.error`, `toast.promise` — so a component imports the
+thing it uses rather than remembering which of seven names to bring in, and a
+later line that needs `toast.warning` costs no import change. The object is
+built once at module scope and its signatures are `typeof` the library's own
+functions, so it cannot drift from them. `lib/toast.ts` stays the place a
+service imports from, because `hooks/` is above it in the import matrix.
+
+**One import for callers.** `useToast()` returns all seven calls as one object —
+`toast.success`, `toast.error`, `toast.promise` — so a component imports the
+thing it uses rather than remembering which of seven names to bring in, and a
+later line that needs `toast.warning` costs no import change. The object is
+built once at module scope and its signatures are `typeof` the library's own
+functions, so it cannot drift from them. `lib/toast.ts` stays the place a
+service imports from, because `hooks/` is above it in the import matrix.
+
+## Responsive
+
+`docs/change-rules.md` §5 is the gate: what fails the build, and what a reviewer
+checks. This is the design half — where a layout may change shape, and what it
+becomes at each step.
+
+**Mobile first.** Every layout is written as the narrow one and gains columns at
+`sm:`, `md:`, `lg:`. A `lg:` rule with nothing between it and mobile is the shape
+that squeezes at 768px, and the middle surface is the one nobody opens and the
+one this repo has already shipped broken.
+
+**Four breakpoints, not six.** Tailwind's defaults are the whole vocabulary: `sm`
+640, `md` 768, `lg` 1024, `xl` 1280. A fifth value means the content broke
+somewhere the scale did not cover — fix the content, or say in the PR why this
+one needs a step of its own.
+
+**The sweep.** 320, 375, 768, 1024, 1280, 1440, 1920, 2560. Between two widths
+that both look right there is a width that does not, so also open the widths
+where this app changes shape: 700, 720, 920, 1024, 1280, 1920 (`AGENTS.md` §6).
+The usual suspects are 640 and 768, because a library, a layout and a grid each
+pick their own switch — sonner stops reading `--width` at 600, Tailwind's `sm` is
+640, and the board's columns move at a third point.
+
+**Eight checks, in this order.** Horizontal overflow, text overflow, navigation
+transition, stacking order, media scaling, touch targets, whitespace balance,
+primary action above the fold. They are ordered by how often each is the actual
+bug, and all eight vary with width — the rest of accessibility does not, and
+belongs in the audit that does not resize.
+
+**Touch is a size, not a style.** 44×44 is the floor, `h-11` / `size-11`. The
+toast's action buttons are 44 below `sm` and 28 above it; the close glyph is 24,
+and that is a known gap rather than a precedent. Nothing may be revealed by
+hover alone.
+
+**Type does not scale with the viewport.** `clamp()` belongs to marketing
+headlines, where a 40px jump is a composition. The app's dense surfaces keep
+fixed steps — 12 / 13 / 15 inside a toast — because a board column that reflows
+its type is a column that jitters while you drag.
+
+**Height is `dvh`.** `100vh` is wrong on iOS, where the browser chrome lives
+inside the viewport; anything pinned to the bottom also carries
+`env(safe-area-inset-bottom)`.
+
+**What a breakpoint may change:** column count, whether the rail is a drawer or a
+strip, whether a panel sits beside or below, how dense a list is. **What it may
+not change:** what a control does, where the primary action is, or which
+information exists. A narrow screen is a smaller viewport, not a smaller feature
+set.
 
 ## Accessibility
 

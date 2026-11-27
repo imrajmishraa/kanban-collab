@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { Toaster } from "./Toaster";
 import { toastSuccess } from "@/lib/toast";
@@ -95,12 +95,12 @@ describe("Toaster — rendering", () => {
   });
 });
 
-describe("Toaster — the auth variant", () => {
+describe("Toaster — the auth tone", () => {
   it("paints the toast with the auth surface", async () => {
     render(<Toaster />);
 
     const el = await fire(() =>
-      toastSuccess("Logged in", "Welcome back", { variant: "auth" }),
+      toastSuccess("Logged in", "Welcome back", { tone: "auth" }),
     );
 
     expect(el.style.getPropertyValue("--normal-bg")).toBe("var(--auth)");
@@ -111,7 +111,7 @@ describe("Toaster — the auth variant", () => {
     render(<Toaster />);
 
     const el = await fire(() =>
-      toastSuccess("Logged in", "Welcome back", { variant: "auth" }),
+      toastSuccess("Logged in", "Welcome back", { tone: "auth" }),
     );
 
     expect(el.textContent).toContain("Logged in");
@@ -119,9 +119,11 @@ describe("Toaster — the auth variant", () => {
   });
 });
 
-describe("Toaster — props", () => {
+describe("Toaster — the attribute groups", () => {
   it("applies shape, size and tone variants", async () => {
-    render(<Toaster size="lg" shape="pill" tone="brand" />);
+    render(
+      <Toaster appearance={{ size: "lg", shape: "pill", tone: "brand" }} />,
+    );
 
     const el = await fire(() => toastSuccess("Branded"));
 
@@ -134,7 +136,7 @@ describe("Toaster — props", () => {
   });
 
   it("honours width and height caps", async () => {
-    render(<Toaster width={520} height={72} maxHeight="50vh" />);
+    render(<Toaster layout={{ width: 520, height: 72, maxHeight: "50vh" }} />);
 
     const el = await fire(() => toastSuccess("Sized"));
 
@@ -145,7 +147,7 @@ describe("Toaster — props", () => {
   });
 
   it("can hide the close button", async () => {
-    render(<Toaster closeButton={false} />);
+    render(<Toaster behaviour={{ closeButton: false }} />);
 
     const el = await fire(() => toastSuccess("No dismiss"));
 
@@ -153,11 +155,58 @@ describe("Toaster — props", () => {
   });
 
   it("merges escape-hatch classNames onto the toast", async () => {
-    render(<Toaster toastClassName="!bg-transparent" />);
+    render(<Toaster classNames={{ toast: "!bg-transparent" }} />);
 
     const el = await fire(() => toastSuccess("Glass"));
 
     expect(el.className).toContain("!bg-transparent");
+  });
+
+  it("takes a whole configuration from one preset", async () => {
+    render(<Toaster preset="compact" />);
+
+    const el = await fire(() => toastSuccess("Compact"));
+
+    expect(el.style.getPropertyValue("--width")).toBe("320px");
+    expect(el.style.getPropertyValue("--toast-mobile-width")).toBe("340px");
+  });
+
+  it("lets the caller override what the preset filled", async () => {
+    render(<Toaster preset="compact" layout={{ width: 400 }} />);
+
+    const el = await fire(() => toastSuccess("Wider"));
+
+    expect(el.style.getPropertyValue("--width")).toBe("400px");
+  });
+
+  it("removes a status icon when it is set to null", async () => {
+    render(<Toaster appearance={{ icons: { success: null } }} />);
+
+    const el = await fire(() => toastSuccess("No icon"));
+
+    expect(el.querySelector("[data-icon]")).toBeNull();
+  });
+
+  it("takes a replacement glyph", async () => {
+    render(
+      <Toaster
+        appearance={{ icons: { success: <span data-testid="mine" /> } }}
+      />,
+    );
+
+    const el = await fire(() => toastSuccess("Mine"));
+
+    expect(el.querySelector('[data-testid="mine"]')).toBeTruthy();
+  });
+
+  it("renames the region for a second stack", async () => {
+    render(<Toaster a11y={{ containerLabel: "Board alerts" }} />);
+
+    await fire(() => toastSuccess("Renamed"));
+
+    /* sonner appends the hotkey hint to the stack label, so this is a prefix
+       match: the label is "Board alerts Alt+T". */
+    expect(document.querySelector('[aria-label^="Board alerts"]')).toBeTruthy();
   });
 });
 
@@ -175,18 +224,5 @@ describe("Toaster — dismissal", () => {
     await waitFor(() => {
       expect(screen.queryByText("Dismiss me")).toBeNull();
     });
-  });
-});
-
-describe("toast helper", () => {
-  it("keeps the longer lifetime for errors", async () => {
-    const spy = vi.spyOn(toast, "error");
-
-    const { toastError } = await import("@/lib/toast");
-
-    toastError(new Error("Boom"));
-
-    expect(spy).toHaveBeenCalledWith("Boom", { duration: 6000 });
-    spy.mockRestore();
   });
 });

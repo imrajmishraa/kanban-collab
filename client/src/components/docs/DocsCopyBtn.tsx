@@ -10,7 +10,7 @@ import {
   Tick02Icon,
 } from "@hugeicons/core-free-icons";
 
-import { toastError, toastSuccess } from "@/lib/toast";
+import { useToast } from "@/hooks/useToast";
 import { cn } from "@/utils/cn";
 
 const BLOCK = {
@@ -63,6 +63,7 @@ export default function DocsCopyBtn({ contentRef }: DocsCopyPageProps) {
   const [copied, setCopied] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
   const resetTimer = useRef<number | null>(null);
+  const toast = useToast();
 
   const copy = useCallback(async () => {
     const article = contentRef.current;
@@ -72,7 +73,7 @@ export default function DocsCopyBtn({ contentRef }: DocsCopyPageProps) {
       await navigator.clipboard.writeText(toMarkdown(article));
       setCopied(true);
       setMenuOpen(false);
-      toastSuccess(
+      toast.success(
         "Copied page as Markdown",
         "Paste it into ChatGPT, Claude, an issue or a doc.",
       );
@@ -86,12 +87,12 @@ export default function DocsCopyBtn({ contentRef }: DocsCopyPageProps) {
          that missed. A DOMException's message is browser internals, so it is
          swapped for the fallback rather than shown. */
       setCopied(false);
-      toastError(
+      toast.error(
         error instanceof DOMException ? undefined : error,
         "Couldn't copy — the browser refused clipboard access.",
       );
     }
-  }, [contentRef]);
+  }, [contentRef, toast]);
 
   useEffect(
     () => () => {

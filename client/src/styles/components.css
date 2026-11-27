@@ -538,3 +538,20 @@ textarea::placeholder {
 body:has([aria-modal="true"]) .rail-handle {
   display: none;
 }
+
+/*
+ * The toast's progress rail.
+ *
+ * The element is the toast's own `::after`, so the geometry comes from utility
+ * classes and only the motion has to exist here. It runs off
+ * `--toast-progress-duration`, set from the stack's lifetime — one number, so
+ * the rail and the dismissal cannot drift apart.
+ */
+@keyframes toast-progress {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
