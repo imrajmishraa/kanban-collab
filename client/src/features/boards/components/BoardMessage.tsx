@@ -1,19 +1,6 @@
-import type { ReactNode } from "react";
-
 import { ui } from "@/features/boards";
+import { BoardShell } from "./BoardShell";
 
-/** Dashboard-style page container (padding + max width). */
-export function BoardShell({ children }: { children: ReactNode }) {
-  return (
-    <div className="min-h-screen bg-(--bg-root) text-(--text-primary)">
-      <div className="mx-auto w-full max-w-7xl px-5 py-6 sm:px-6 lg:px-8">
-        {children}
-      </div>
-    </div>
-  );
-}
-
-/** Empty / informational state shown when there is nothing to render. */
 export function BoardMessage({ title, body }: { title: string; body: string }) {
   return (
     <BoardShell>
