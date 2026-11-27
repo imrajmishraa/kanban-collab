@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import type { ReactNode } from "react";
 
 import { Group, Panel, Separator, type Layout } from "react-resizable-panels";
@@ -60,6 +60,59 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
   const hovering = useSidebarState((s) => s.hovering);
   /* A preview is the pointer, not a mode: the reader's mode is untouched. */
   const previewing = hovering;
+  const overlayRef = useRef<HTMLDivElement>(null);
+
+  /*
+   * The preview ends where the rail ends — decided from the pointer's position,
+   * watched on the window rather than from `mouseleave` on an element.
+   *
+   * Element leave events are missed exactly when they matter: the overlay can
+   * appear under a stationary pointer, a re-render replaces the node, and a
+   * portaled panel can swallow the event on its way out. A global watcher with the
+   * overlay's rect has no such holes, and it also covers the two ends no element
+   * can see: the pointer leaving the window, and the window losing focus.
+   */
+  useEffect(() => {
+    if (!previewing) return;
+
+    let box = overlayRef.current?.getBoundingClientRect() ?? null;
+    const measure = () => {
+      box = overlayRef.current?.getBoundingClientRect() ?? null;
+    };
+
+    const inside = (x: number, y: number) =>
+      !!box &&
+      x >= box.left &&
+      x <= box.right &&
+      y >= box.top &&
+      y <= box.bottom;
+
+    const onMove = (event: MouseEvent) => {
+      const overTrigger = (event.target as Element | null)?.closest?.(
+        "[data-rail-trigger]",
+      );
+
+      if (inside(event.clientX, event.clientY) || overTrigger) cancelClose();
+      else scheduleEnd();
+    };
+
+    const onWindowLeave = (event: MouseEvent) => {
+      /* No `relatedTarget`: the pointer left the window, not one of its elements. */
+      if (!event.relatedTarget) scheduleEnd();
+    };
+
+    window.addEventListener("mousemove", onMove, true);
+    window.addEventListener("resize", measure);
+    document.addEventListener("mouseleave", onWindowLeave);
+    window.addEventListener("blur", scheduleEnd);
+
+    return () => {
+      window.removeEventListener("mousemove", onMove, true);
+      window.removeEventListener("resize", measure);
+      document.removeEventListener("mouseleave", onWindowLeave);
+      window.removeEventListener("blur", scheduleEnd);
+    };
+  }, [previewing]);
 
   const commit = useLayoutShellStore((s) => s.commit);
   const setGroupPx = useLayoutShellStore((s) => s.setGroupPx);
@@ -126,37 +179,10 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      {/*
-        One navbar for the whole shell, always, full width — the rail and the column
-        are panes *below* it, so nothing has to offset itself against a rail width and
-        no sticky wrapper can sit above the preview overlay. Its rail icon is the only
-        way into the preview: no invisible edge strip, so nothing can open and close
-        the rail by itself.
-      */}
-      <DashboardNavbar embedded />
-
       <div
         ref={groupEl}
         className="relative min-h-0 flex-1"
         data-resizing={resizing ? "true" : undefined}
-        /*
-         * The preview ends where the rail ends. Reading the pointer's x against the
-         * rail's box is deterministic; `mouseleave` on the overlay is not — it is
-         * missed when the overlay appears under a stationary pointer, and a stray
-         * move can cancel the close that was scheduled.
-         */
-        onMouseMove={(event) => {
-          if (!previewing) return;
-
-          const left = event.currentTarget.getBoundingClientRect().left;
-          if (event.clientX - left > clampWidth(railPx)) scheduleEnd();
-          else cancelClose();
-        }}
-        /* Out of the group altogether — up into the navbar, or off the window —
-           is out of the rail too, and there will be no further move to say so. */
-        onMouseLeave={() => {
-          if (previewing) scheduleEnd();
-        }}
       >
         <Group
           id="dashboard-shell"
@@ -218,6 +244,13 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
             className="min-w-0"
           >
             <main className="flex h-full flex-col overflow-y-auto scroll-smooth">
+              {/* The bar belongs to the board's column, as it does in the old
+                  layout: the rail and the column are its neighbours, not its
+                  parents. It sticks to the top of this scroll container while its
+                  own sentinel scrolls away, which is what turns on the blurred
+                  background. */}
+              <DashboardNavbar embedded />
+
               <div className="flex-1">{children}</div>
             </main>
           </Panel>
@@ -256,7 +289,7 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
 
         {previewing && (
           <div
-            onMouseEnter={cancelClose}
+            ref={overlayRef}
             className="absolute inset-y-0 left-0 z-40"
             /* The stored width, clamped — the same number `computeRail` gives the
                sidebar inside, so the box and its contents cannot disagree. */

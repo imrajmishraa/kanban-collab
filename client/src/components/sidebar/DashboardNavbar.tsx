@@ -137,8 +137,10 @@ export default function DashboardNavbar({
       <header
         className={[
           embedded
-            ? /* In the shell the panes are the offsets. */
-              "relative z-30 flex h-12 w-full shrink-0"
+            ? /* In the shell the panes are the offsets. Sticky, not fixed: the
+                 bar lives inside the board's scroll container, and the sentinel
+                 above it has to keep scrolling for the blurred state to arrive. */
+              "sticky top-0 z-30 flex h-12 w-full shrink-0"
             : [
                 "fixed top-0 right-0 z-50 hidden h-12 md:flex",
                 /* Ends where the right column begins instead of running under it. */
@@ -189,6 +191,7 @@ export default function DashboardNavbar({
                     onFocus={startPreview}
                     onBlur={scheduleEnd}
                     aria-label="Expand sidebar"
+                    data-rail-trigger
                     className="
                     group relative flex size-8 cursor-pointer
                     items-center ml-1 justify-center
