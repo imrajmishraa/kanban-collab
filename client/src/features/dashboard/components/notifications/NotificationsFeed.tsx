@@ -22,7 +22,7 @@ import {
   UserIcon,
 } from "@hugeicons/core-free-icons";
 
-import { cn } from "@/utils/cn";
+import { cn } from "@/lib/cn";
 import { relativeTime } from "@/lib/relativeTime";
 
 import { notificationKeys, notificationsApi } from "@/features/dashboard";

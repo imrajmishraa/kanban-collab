@@ -6,7 +6,7 @@ import {
   useSpring,
   useTransform,
 } from "framer-motion";
-import { cn } from "@/utils/cn";
+import { cn } from "@/lib/cn";
 
 interface TiltCardProps {
   children: ReactNode;

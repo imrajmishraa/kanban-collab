@@ -19,7 +19,7 @@ import {
   Tick02Icon,
   UserGroupIcon,
 } from "@hugeicons/core-free-icons";
-import { cn } from "@/utils/cn";
+import { cn } from "@/lib/cn";
 import { useMediaQuery } from "./useMediaQuery";
 
 /* ── Hand-written annotation.

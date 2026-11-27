@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Search01Icon } from "@hugeicons/core-free-icons";
 
-import { cn } from "@/utils/cn";
+import { cn } from "@/lib/cn";
 
 import { DOCS_NAV, isSection } from "./docsConfig";
 

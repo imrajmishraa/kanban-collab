@@ -29,5 +29,5 @@ export interface MobileSidebarProps {
 
   // Actions
   onLogout: () => Promise<void>;
-  // onSearch removed — MobileSidebarHeader reads useSearchStore directly
+  // onSearch removed — SidebarMobileHeader reads useSearchStore directly
 }

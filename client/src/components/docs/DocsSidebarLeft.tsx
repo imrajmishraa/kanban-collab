@@ -13,7 +13,7 @@ import {
 } from "@hugeicons/core-free-icons";
 
 import { useThemeStore } from "@/stores/theme";
-import { cn } from "@/utils/cn";
+import { cn } from "@/lib/cn";
 
 import {
   DOCS_NAV,

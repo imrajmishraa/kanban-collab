@@ -5,7 +5,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowRight01Icon } from "@hugeicons/core-free-icons";
 
 import { Tooltip } from "#components/Tooltips/ToolTip";
-import { cn } from "@/utils/cn";
+import { cn } from "@/lib/cn";
 
 import {
   FOOTER_AI,

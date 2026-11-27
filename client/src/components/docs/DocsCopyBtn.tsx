@@ -11,7 +11,7 @@ import {
 } from "@hugeicons/core-free-icons";
 
 import { useToast } from "@/hooks/useToast";
-import { cn } from "@/utils/cn";
+import { cn } from "@/lib/cn";
 
 const BLOCK = {
   h1: (text: string) => `# ${text}`,

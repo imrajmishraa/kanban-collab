@@ -10,7 +10,7 @@ import {
   useImperativeHandle,
 } from "react";
 import { createPortal } from "react-dom";
-import { cn } from "@/utils/cn";
+import { cn } from "@/lib/cn";
 import type { TooltipProps } from "./types";
 import { useTooltipPosition } from "./useTooltip";
 import { TooltipContent } from "./TooltipContent";

@@ -1,6 +1,6 @@
 import { forwardRef, useState, type CSSProperties } from "react";
 import { announce } from "@/lib/announce";
-import { cn } from "@/utils/cn";
+import { cn } from "@/lib/cn";
 import type { TooltipProps, PlacementState } from "./types"; // Import PlacementState
 import {
   CARETLESS_SHAPES,

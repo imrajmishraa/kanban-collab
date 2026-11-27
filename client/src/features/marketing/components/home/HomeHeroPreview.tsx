@@ -13,7 +13,7 @@ import {
   useSpring,
 } from "framer-motion";
 
-import { cn } from "@/utils/cn";
+import { cn } from "@/lib/cn";
 import HomeBoardPanel from "./HomeBoardPanel";
 
 /* ── Screenshots ────────────────────────────────────────────────────

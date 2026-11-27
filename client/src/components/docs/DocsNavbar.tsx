@@ -10,7 +10,7 @@ import {
 import KanbanIcon from "@/assets/KanbanIcon";
 
 import { Tooltip } from "@/components/Tooltips/ToolTip";
-import { cn } from "@/utils/cn";
+import { cn } from "@/lib/cn";
 
 import DocsSearch from "./DocsSearch";
 import { GITHUB_URL } from "./docsConfig";
@@ -20,7 +20,7 @@ interface DocsNavProps {
   navOpen: boolean;
 }
 
-export default function DocsNav({ onOpenNav, navOpen }: DocsNavProps) {
+export default function DocsNavbar({ onOpenNav, navOpen }: DocsNavProps) {
   return (
     <header
       className="

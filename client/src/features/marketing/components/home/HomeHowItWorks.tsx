@@ -19,7 +19,7 @@ import {
   ServerIcon,
 } from "@hugeicons/core-free-icons";
 
-import { cn } from "@/utils/cn";
+import { cn } from "@/lib/cn";
 import { Reveal } from "./Reveal";
 
 /* ── Copy ───────────────────────────────────────────────────────────── */
