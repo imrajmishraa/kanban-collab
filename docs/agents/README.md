@@ -18,6 +18,8 @@ lives outside this repository and changes without this repository knowing.
 | [`patterns/ui-design.md`](patterns/ui-design.md) | what decides the look, and where a design skill may act |
 | [`patterns/component-development.md`](patterns/component-development.md) | one component, in the order that makes it reviewable |
 | [`patterns/state-management.md`](patterns/state-management.md) | where client state lives, and the shape of a store |
+| [`patterns/realtime-collaboration.md`](patterns/realtime-collaboration.md) | the line between the client's CRDT and the server's socket |
+| [`patterns/error-handling.md`](patterns/error-handling.md) | designing an error, and handling one |
 
 ## The one rule
 
@@ -52,9 +54,9 @@ what `AGENTS.md` §7 already is.
 |---|---|---|---|
 | 1 | the registry, the selection rules, the CI check | — | landed |
 | 2 | `patterns/ui-design.md`, `patterns/component-development.md` | — (written from the repository) | landed |
-| 3 | `patterns/state-management.md` | the eleven stores read (the zustand skills are still unread) | landed |
-| 4 | `patterns/realtime-collaboration.md`, `patterns/error-handling.md` | the yjs and socket skills, `docs/realtime-collaboration.md` | next |
-| 5 | `workflows/` — feature, bug, review, docs | nothing new; they compose the patterns | — |
+| 3 | `patterns/state-management.md` | the eleven stores read | landed |
+| 4 | `patterns/realtime-collaboration.md`, `patterns/error-handling.md` | `docs/realtime-collaboration.md`, the error factories | landed |
+| 5 | `workflows/` — feature, bug, review, docs | nothing new; they compose the patterns | next |
 | 6 | `skills/<name>/` — one folder per skill, domain by domain | that skill's source | — |
 | — | registry rows → `Verified` as sources arrive | the skill's own `SKILL.md` | ongoing |
 
