@@ -8,7 +8,7 @@ import {
   requiredViewport,
   snapWidth,
   snapZone,
-} from "./railMetrics";
+} from "@/lib/railMetrics";
 
 /**
  * The app rail's numbers and its state machine.
@@ -94,7 +94,7 @@ describe("requiredViewport", () => {
 describe("computeRail", () => {
   const at = (overrides: Partial<Parameters<typeof computeRail>[0]> = {}) =>
     computeRail({
-      mode: "open",
+      mode: "expanded",
       width: RAIL.DEFAULT,
       hovering: false,
       viewportWidth: 1440,
@@ -115,18 +115,40 @@ describe("computeRail", () => {
     expect(layout.reserved).toBe(RAIL.COLLAPSED);
   });
 
-  it("hover opens at the stored width and reserves only the icon rail", () => {
-    const open = at({ mode: "hover", hovering: true, width: 300 });
+  it("a preview opens at the stored width, and reserves nothing", () => {
+    /* The rail is 300 when pinned; the preview arrives at 300. One width rule for
+       both, so a reader who dragged the rail does not get a second number when they
+       hover it. And it reserves nothing: the preview is an overlay. */
+    const open = at({ mode: "hidden", hovering: true, width: 300 });
 
     expect(open.hoverOpen).toBe(true);
     expect(open.railWidth).toBe(300);
-    expect(open.reserved).toBe(RAIL.COLLAPSED);
+    expect(open.reserved).toBe(0);
   });
 
-  it("hover at rest is the icon rail", () => {
-    expect(at({ mode: "hover", hovering: false }).railWidth).toBe(
-      RAIL.COLLAPSED,
+  it("a preview is clamped like the rail it previews", () => {
+    expect(
+      at({ mode: "hidden", hovering: true, width: RAIL.MAX }).railWidth,
+    ).toBe(RAIL.MAX);
+    expect(at({ mode: "hidden", hovering: true, width: 900 }).railWidth).toBe(
+      RAIL.MAX,
     );
+  });
+
+  it("the preview is the flag: without it the rail is off the page", () => {
+    const rest = at({ mode: "hidden", hovering: false });
+
+    expect(rest.hoverOpen).toBe(false);
+    expect(rest.railWidth).toBe(0);
+    expect(rest.reserved).toBe(0);
+  });
+
+  it("the icon strip previews too, from its own 72", () => {
+    const open = at({ mode: "collapsed", hovering: true, width: 320 });
+
+    expect(open.hoverOpen).toBe(true);
+    expect(open.railWidth).toBe(320);
+    expect(open.reserved).toBe(0);
   });
 
   it("hidden is off the page entirely", () => {
@@ -137,7 +159,7 @@ describe("computeRail", () => {
   });
 
   it("a drag overrides the mode: the width follows the pointer", () => {
-    const layout = at({ mode: "hover", hovering: false, resizing: true });
+    const layout = at({ mode: "hidden", hovering: false, resizing: true });
 
     expect(layout.railWidth).toBe(RAIL.DEFAULT);
     expect(layout.reserved).toBe(RAIL.DEFAULT);

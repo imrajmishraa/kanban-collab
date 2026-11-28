@@ -31,9 +31,9 @@ export { default as SidebarNewProject } from "./components/workspace/SidebarNewP
 export { WorkspaceSelector } from "./components/workspace/WorkspaceSelector";
 export { useDashboard } from "./hooks/useDashboard";
 export { usePinnedBoards } from "./stores/pinnedBoards";
-export { useSidebarState } from "./stores/sidebarState";
+export { usePanelState } from "@/stores/panelState";
 export { useNotifications } from "./hooks/useNotifications";
-export type { SidebarMode } from "./stores/sidebarState";
+export type { SidebarMode } from "@/lib/sidebarMode";
 export { useRailLayout, useViewportWidth } from "./hooks/useRailLayout";
 export {
   RAIL,
@@ -43,9 +43,9 @@ export {
   requiredViewport,
   snapWidth,
   snapZone,
-} from "./lib/railMetrics";
-export type { RailZone } from "./lib/railMetrics";
-export type { RailLayout } from "./lib/railMetrics";
+} from "@/lib/railMetrics";
+export type { RailZone } from "@/lib/railMetrics";
+export type { RailLayout } from "@/lib/railMetrics";
 
 export { formatDay } from "./components/search/formatDay";
 export type { PaletteRow, Scope } from "./components/search/types";

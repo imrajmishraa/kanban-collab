@@ -4,7 +4,9 @@ import { cn } from "@/lib/cn";
 
 import { Tooltip } from "@/components/Tooltips/ToolTip";
 
-import { RAIL, clampWidth, snapWidth, snapZone } from "@/features/dashboard";
+import { RAIL, clampWidth, snapWidth } from "@/features/dashboard";
+import { couple } from "@/lib/panelCouple";
+import { DRAG_DAMPING } from "@/lib/railDrag";
 
 interface RailResizeHandleProps {
   /** The width on screen right now — which is not always the stored width. */
@@ -12,10 +14,14 @@ interface RailResizeHandleProps {
   /** Stored width, for the aria value. */
   width: number;
   onWidth: (width: number) => void;
-  /** The drag went below MID: snap to the icon rail. */
-  onCollapse: () => void;
-  /** Double-click while collapsed: come back out at the default width. */
-  onExpand: () => void;
+  /**
+   * The column's width while it is open, and a way to change it.
+   *
+   * Given these, the rail's drag is coupled: every pixel the rail takes is a pixel the
+   * column gives up. Omitted (column closed) and the rail is on its own.
+   */
+  panelWidth?: number;
+  onPanelWidth?: (width: number) => void;
   /** Pulling past the minimum means "get this out of my way". */
   onHide: () => void;
   /** Dragging from hover/collapsed promotes the rail to open. */
@@ -36,9 +42,9 @@ interface RailResizeHandleProps {
 export default function RailResizeHandle({
   renderedWidth,
   width,
+  panelWidth,
+  onPanelWidth,
   onWidth,
-  onCollapse,
-  onExpand,
   onHide,
   onResizeStart,
   onResizeEnd,
@@ -48,9 +54,10 @@ export default function RailResizeHandle({
   /** The pointer has actually travelled: this is a drag, not a click. */
   const [moving, setMoving] = useState(false);
   /** The drag is under MID, so the rail is sitting collapsed. */
-  const [belowMid, setBelowMid] = useState(false);
 
   const startX = useRef(0);
+  /** The column's width when this drag began — the pair the coupling keeps constant. */
+  const startPanelWidth = useRef<number | null>(null);
   const startWidth = useRef(0);
 
   /*
@@ -63,11 +70,7 @@ export default function RailResizeHandle({
    */
   const atStop =
     moving &&
-    (belowMid ||
-      width === RAIL.MIN ||
-      width === RAIL.MIN ||
-      width === RAIL.DEFAULT ||
-      width === RAIL.MAX);
+    (width === RAIL.MIN || width === RAIL.DEFAULT || width === RAIL.MAX);
 
   const onPointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
     /* The rail itself is a click target while collapsed (click it to expand),
@@ -82,12 +85,11 @@ export default function RailResizeHandle({
        width is larger, and grabbing the divider must not make it jump. */
     startX.current = event.clientX;
     startWidth.current = clampWidth(renderedWidth || width);
+    startPanelWidth.current = panelWidth ?? null;
 
     event.currentTarget.setPointerCapture(event.pointerId);
     setDragging(true);
     setMoving(false);
-    setBelowMid(false);
-
     /*
      * Nothing else happens here, deliberately.
      *
@@ -110,65 +112,69 @@ export default function RailResizeHandle({
       onResizeStart(startWidth.current);
     }
 
-    const travel = (event.clientX - startX.current) * RAIL.DRAG_DAMPING;
+    const travel = (event.clientX - startX.current) * DRAG_DAMPING;
     const raw = startWidth.current + travel;
-    const zone = snapZone(raw);
 
-    /* The rail snaps instead of sliding: below MID it collapses to the icon
-       rail, and a deliberate pull past that takes it off the page. Only the
-       expanded range stores a width. */
-    if (zone === "hidden") {
-      setDragging(false);
-      setMoving(false);
-      setBelowMid(false);
-      onHide();
-      onResizeEnd();
-      return;
-    }
-
-    if (zone === "collapsed") {
-      /*
-       * Rebase the drag on the collapsed stop.
-       *
-       * Without this the hide target was unreachable: the origin stayed at the
-       * width the drag began at, so pulling left was measured against e.g. 288
-       * and MIN - HIDE_SLOP sat 300-odd px away — further than the pointer can
-       * travel before it hits the edge of the screen. From here a further
-       * HIDE_SLOP px of hand movement is exactly that.
-       */
-      if (!belowMid) {
-        startX.current = event.clientX;
-        startWidth.current = RAIL.MIN;
-      }
-
-      setBelowMid(true);
-      onCollapse();
-      return;
-    }
-
-    setBelowMid(false);
-
-    /* Coming out of collapsed or hover: the first move into the expanded range
-       is what promotes the rail, so the drag and the mode change together. */
-    if (renderedWidth <= RAIL.COLLAPSED || belowMid) onExpand();
+    /* A drag resizes; it never collapses, never hides, and never promotes the icon rail.
+       All three are a click or a keyboard action — a divider that turns an icon rail into a
+       column on a stray drag is a divider you cannot aim at. */
 
     /* Magnetic stops: MID, DEFAULT and MAX hold the width for SNAP_TOLERANCE px
        before it moves on, so the drag pauses at each one instead of sliding
        through. */
-    onWidth(snapWidth(raw));
+    const snapped = snapWidth(raw);
+
+    if (startPanelWidth.current !== null && onPanelWidth) {
+      const pair = couple({
+        active: "rail",
+        railWanted: snapped,
+        panelWanted: startPanelWidth.current,
+        viewport: window.innerWidth,
+      });
+
+      /*
+       * Written when it differs from what is on screen — not from what the pointer asked
+       * for.
+       *
+       * The guard used to compare `pair.rail` with `snapped`, and those are equal whenever
+       * the column still has room to give: the write was skipped and the rail froze at
+       * whatever width the column had pushed it to (240). Comparing against the *current*
+       * width keeps the 2px jitter protection and lets the drag actually move.
+       */
+      const railNow = renderedWidth || width;
+      const panelNow = panelWidth ?? startPanelWidth.current;
+
+      if (Math.abs(pair.rail - railNow) >= 1) onWidth(pair.rail);
+      if (Math.abs(pair.panel - panelNow) >= 2) onPanelWidth(pair.panel);
+
+      return;
+    }
+
+    onWidth(snapped);
   };
 
-  const endDrag = () => {
+  /**
+   * Ends a drag — and treats a press that never moved as a click.
+   *
+   * `fromPointerUp` is a parameter rather than a check on the event because the same
+   * handler is bound to `pointercancel`: a cancelled pointer (an OS gesture, a window
+   * blur) must not put the rail away.
+   */
+  const endDrag = (fromPointerUp = false) => {
     if (!dragging) return;
 
     const wasMoving = moving;
 
     setDragging(false);
     setMoving(false);
-    setBelowMid(false);
+    if (wasMoving) {
+      onResizeEnd();
+      return;
+    }
 
-    /* A click that never became a drag changed nothing, so it has nothing to end. */
-    if (wasMoving) onResizeEnd();
+    /* A single click on the divider is "put it away" — the same place a long pull-left
+       reaches, without the pull. */
+    if (fromPointerUp) onHide();
   };
 
   /* A drag can end without a pointerup on this element — the rail can be hidden
@@ -183,6 +189,36 @@ export default function RailResizeHandle({
   }, [onResizeEnd]);
 
   useEffect(() => () => endRef.current(), []);
+
+  /*
+   * The drag must end wherever the pointer goes.
+   *
+   * `onPointerUp` on the button only fires if the release happens *on* the button. Release
+   * outside the window, on another element, or after the capture is lost, and `dragging`
+   * and `moving` stayed set: the amber line stayed lit and the next hover moved the rail,
+   * because the handler still believed a drag was in progress.
+   */
+  const endDragRef = useRef(endDrag);
+
+  useEffect(() => {
+    endDragRef.current = endDrag;
+  });
+
+  useEffect(() => {
+    if (!dragging) return;
+
+    const stop = () => endDragRef.current();
+
+    window.addEventListener("pointerup", stop);
+    window.addEventListener("pointercancel", stop);
+    window.addEventListener("blur", stop);
+
+    return () => {
+      window.removeEventListener("pointerup", stop);
+      window.removeEventListener("pointercancel", stop);
+      window.removeEventListener("blur", stop);
+    };
+  }, [dragging]);
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
     const step = event.shiftKey ? 32 : 8;
@@ -217,14 +253,13 @@ export default function RailResizeHandle({
       label={"Drag to resize"}
       description={"Click to hide"}
       descriptionTone="brand"
+      followCursor={"y"}
+      autoHide={5000}
       side="right"
+      magnetic={true}
       shape="glass"
       size="md"
-      caret="none"
-      trigger={["hover", "click"]}
       gap={6}
-      maxLines={2}
-      followCursor={"y"}
       disabled={dragging}
       /* `rail-handle` is what `components.css` targets to take the divider off
          the page while a dialog is open — the anchor and the bubble with it. */
@@ -243,17 +278,13 @@ export default function RailResizeHandle({
         tabIndex={0}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
-        onPointerUp={endDrag}
-        onPointerCancel={endDrag}
+        onPointerUp={() => endDrag(true)}
+        onPointerCancel={() => endDrag()}
         /* Belt and braces: a click can be synthesised even when the pointer
            moved, and it must not reach the rail's own click-to-expand. */
         onClick={(event) => event.stopPropagation()}
-        onDoubleClick={() => {
-          /* Double-click puts the rail away — the same place a long pull-left
-             reaches, without having to drag for it. A single click deliberately
-             does nothing: the border is far too easy to hit by accident. */
-          onHide();
-        }}
+        /* No double-click: with a single click closing the rail, the first click
+           of a double-click has already done the closing. */
         onKeyDown={onKeyDown}
         /* Inline, not a utility: `base.css` sets `cursor: pointer` on `button`
            unlayered, and unlayered CSS beats every Tailwind `@layer utilities`

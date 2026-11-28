@@ -1,7 +1,6 @@
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Cursor02Icon,
-  CursorInWindowIcon,
   LayoutAlignLeftIcon,
   LayoutLeftIcon,
   SidebarLeftIcon,
@@ -20,9 +19,8 @@ const MODES: Array<{
   label: string;
   icon: typeof Cursor02Icon;
 }> = [
-  { mode: "open", label: "Expanded", icon: LayoutLeftIcon },
+  { mode: "expanded", label: "Expanded", icon: LayoutLeftIcon },
   { mode: "collapsed", label: "Collapsed", icon: SidebarLeftIcon },
-  { mode: "hover", label: "Hover", icon: CursorInWindowIcon },
   { mode: "hidden", label: "Hidden", icon: LayoutAlignLeftIcon },
 ];
 
