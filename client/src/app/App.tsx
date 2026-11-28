@@ -1,4 +1,5 @@
 import { BrowserRouter } from "react-router-dom";
+import { MotionConfig } from "framer-motion";
 
 import { AppRouter } from "@app/router";
 import RouteErrorBoundary from "@/components/feedback/RouteErrorBoundary";
@@ -13,9 +14,14 @@ export default function App() {
       <QueryProvider>
         {/* A route that fails to render — most often a lazy chunk that never
             arrived — shows the retry card instead of a blank page. */}
-        <RouteErrorBoundary>
-          <AppRouter />
-        </RouteErrorBoundary>
+        {/* One place decides what a reader who asked for reduced motion
+            gets: transforms and layout animations are dropped, opacity
+            steps stay, so nothing ever moves without a cause. */}
+        <MotionConfig reducedMotion="user">
+          <RouteErrorBoundary>
+            <AppRouter />
+          </RouteErrorBoundary>
+        </MotionConfig>
       </QueryProvider>
 
       {/* Outside the provider tree on purpose: the splash must not remount when

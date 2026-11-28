@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform, type Variants } from "framer-motion";
 
+import { Press } from "../../motion/Press";
 import HomeHeroPreview from "./HomeHeroPreview";
 
 /* ── Entrance choreography ──────────────────────────────────────────── */
@@ -64,9 +65,11 @@ export default function HomeHero() {
             </motion.p>
 
             <motion.div variants={item} className="mt-8">
-              <Link to="/workspaces" className="m-btn">
-                Explore a live board
-              </Link>
+              <Press>
+                <Link to="/workspaces" className="m-btn">
+                  Explore a live board
+                </Link>
+              </Press>
             </motion.div>
 
             {/* Proof */}

@@ -7,6 +7,7 @@
  */
 export { default as DeferredSection } from "./components/DeferredSection";
 export { default as FeaturesHero } from "./components/features/FeaturesHero";
+export { default as BoardDragDemo } from "./components/features/BoardDragDemo";
 export { default as HowItWorksHero } from "./components/howItWorks/HowItWorksHero";
 export { default as HomeHero } from "./components/home/HomeHero";
 export { default as HomePricing } from "./components/home/HomePricing";
