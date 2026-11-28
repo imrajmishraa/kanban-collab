@@ -236,6 +236,20 @@ with `DESIGN.md`, `DESIGN.md` wins.
 | `vercel-react-best-practices` | React structure: hooks, state, rendering | the layout model in `lib/shellLayout.ts` |
 | `vercel-deploy` | Vercel-side deploy steps only — the API project | the web service: that is Render, per `docs/deploy-split.md` |
 | `better-auth-best-practices` | a review of the sign-in flow's shape | this repo's auth is its own helper (`lib/authTokenAccessor`), not better-auth |
+| `zustand` | the shape of a new store: slices, selectors, subscriptions | the layout model — that is a pure module in `lib/shellLayout.ts`, not a store |
+| `zustand-state-management` | a store's lifecycle: persistence, migrations, devtools, a reset between sessions | one store per component; the 15 stores share one pattern already |
+| `zustand-patterns` | cross-store work: one action that has to touch two stores | a fourth way to write a store |
+| `yjs` | the shared document's model: `Y.Map` / `Y.Array`, and what is shared rather than local | the socket layer — that is `y-websocket` |
+| `yjs-best-practices` | awareness, undo scope, garbage collection, and what must never enter a shared doc | the editor's own UI state |
+| `websocket-engineer` | the server side of the socket: reconnect, backoff, presence, fan-out | REST endpoints |
+| `api-error-design` | the shape of an error the API returns: code, message, and what the client can act on | the copy in the client's error UI |
+| `error-handling-patterns` | where a failure is caught, retried or surfaced, on both sides | swallowing a failure — see §4 |
+| `doc-coauthoring` | writing or restructuring a document in passes: outline, draft, critique | code comments; `docs/comments.md` decides those |
+| `ln-114-frontend-docs-creator` | a page about a component or a feature | API and deploy pages |
+| `ln-115-devops-docs-creator` | deploy, CI and environment pages | product pages |
+| `ln-120-reference-docs-creator` | reference pages: an API surface, options, tables of facts | tutorials |
+| `ln-130-tasks-docs-creator` | runbooks and checklists someone executes | design rationale |
+| `ln-140-test-docs-creator` | what a suite covers, and why | the tests themselves |
 
 Motion follows `DESIGN.md` → *Motion principles* (ten principles, at most two per
 component).
