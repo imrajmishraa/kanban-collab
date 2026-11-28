@@ -259,6 +259,13 @@ one line each: **skill · not used · why** (`no network`, `not applicable`,
 `superseded by DESIGN.md`). Do not list a skill as used because you read its
 description.
 
+If **no** row applies, run `find-skills` and look for one that does — then ask
+before using it. Say which skill, which repository it comes from, and what it
+would do in this change; the answer decides, not the search. A skill that is not
+in this table and was used without that question is a tool nobody agreed to, and
+one the next reader cannot look up. If the answer is yes, add the row to this
+table in the same change.
+
 ---
 
 ## 8. Definition of done
