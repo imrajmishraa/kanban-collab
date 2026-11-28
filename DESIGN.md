@@ -112,23 +112,25 @@ light:
   unread-dot: 'rgb(59, 130, 246)'
 typography:
   font-ui:
+    fontFamily: "\"Inter Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif"
+  font-display:
     fontFamily: "\"Plus Jakarta Sans Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif"
   font-mono:
     fontFamily: "\"JetBrains Mono Variable\", ui-monospace, SFMono-Regular, Menlo, monospace"
   display-lg:
-    fontFamily: '{typography.font-ui.fontFamily}'
+    fontFamily: '{typography.font-display.fontFamily}'
     fontSize: 26px
     fontWeight: '700'
     lineHeight: 32px
     letterSpacing: '-0.02em'
   headline-lg:
-    fontFamily: '{typography.font-ui.fontFamily}'
+    fontFamily: '{typography.font-display.fontFamily}'
     fontSize: 22px
     fontWeight: '700'
     lineHeight: 28px
     letterSpacing: '-0.02em'
   headline-md:
-    fontFamily: '{typography.font-ui.fontFamily}'
+    fontFamily: '{typography.font-display.fontFamily}'
     fontSize: 19px
     fontWeight: '600'
     lineHeight: 26px
@@ -391,7 +393,18 @@ Status colour (`--success`, `--warning`, `--danger`) is text and border only. A 
 
 ## Typography
 
-Plus Jakarta Sans carries the interface; JetBrains Mono is reserved for numbers, keys, timestamps and micro-labels where alignment matters. Both ship as dependencies (`@fontsource-variable/*`, imported in `main.tsx`) and are bound to `font-sans` and `font-mono` by the `@theme` block in `index.css` — so no font is fetched from a CDN, and a component that writes `font-mono` gets the mono face rather than the browser's default. Body copy never uses the mono face. Numeric columns get `tabular-nums` so a live counter does not shuffle sideways as it counts.
+Three faces, three jobs. **Inter** carries the interface (12.5–14px): it is
+drawn for small screen text, and its narrower set fits more cards in a column
+than a wide geometric sans does. **Plus Jakarta Sans** is for headings only
+(19–26px), where its personality shows and its width costs nothing. **JetBrains
+Mono** is reserved for numbers, keys, timestamps and micro-labels. All three ship
+as dependencies (`@fontsource-variable/*`, imported in `main.tsx`) and are bound
+to `font-sans`, `font-display` and `font-mono` by the `@theme` block in
+`styles/theme.css`, so no font is fetched from a CDN. A fourth family needs a
+reason in the PR. Body copy never uses the mono face or the display face. Numeric
+columns get `tabular-nums` so a live counter does not shuffle sideways as it
+counts. Inputs are 16px below `sm` (`change-rules.md` §5) even though the desktop
+recipe is 14px, or iOS zooms on focus.
 
 The scale is deliberately short — five UI sizes and one mono size. A screen that needs a sixth is usually a screen that needs fewer things on it. Headings are tight (`-0.01em` to `-0.02em`) because at 19–26px the default spacing looks loose beside 12.5px body text.
 

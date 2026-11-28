@@ -219,6 +219,10 @@ with `DESIGN.md`, `DESIGN.md` wins.
 | `webapp-testing` | the width / keyboard / theme sweep of §6, when a browser is available | claiming a pass it did not run |
 | `vercel-composition-patterns` | component API shape: variants, compound parts, lifted state | exceeding the 8-prop budget |
 | `ui-sdk` | only after its contents have been read | — |
+| `better-typography` | checking spacing, tracking, line length and numerals of a text surface | choosing a new family: §Typography in `DESIGN.md` decides |
+| `web-typography` | the same, as a second reading when a type scale looks wrong | adding a fourth family |
+| `transitions.dev` | picking a duration and curve for a transition | anything outside `DESIGN.md` → *Motion principles* (300ms ceiling, reduced motion) |
+| `uizze-ui` | ideas for component structure in a prototype | the app's tokens, radii and shadows (hairlines, no shadows) |
 
 Motion follows `DESIGN.md` → *Motion principles* (ten principles, at most two per
 component).
