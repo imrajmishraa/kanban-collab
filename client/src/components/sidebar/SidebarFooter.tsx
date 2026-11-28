@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { MoreHorizontalIcon } from "@hugeicons/core-free-icons";
 
-import { Avatar } from "@/components/board/BoardAvatar";
+import { Avatar } from "@/components/board/Avatar";
 import { Tooltip } from "@/components/Tooltips/ToolTip";
 
 import SidebarAccountMenu from "./SidebarAccountMenu";

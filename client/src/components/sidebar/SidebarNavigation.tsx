@@ -8,7 +8,7 @@ import {
 } from "@hugeicons/core-free-icons";
 
 import { SidebarItem } from "@/features/dashboard";
-import { Avatar } from "@/components/board/BoardAvatar";
+import { Avatar } from "@/components/board/Avatar";
 
 import { avatarColor } from "@/features/boards";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";

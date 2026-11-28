@@ -1,11 +1,15 @@
 import { useMemo, useState } from "react";
-
 import {
-  avatarColor,
   initials,
   type BoardMember,
   useActiveWorkspaceMembers,
 } from "@/features/boards";
+
+interface AvatarProps {
+  member: BoardMember;
+  size?: number;
+  ring?: boolean;
+}
 
 interface AvatarProps {
   member: BoardMember;
@@ -70,46 +74,5 @@ export function Avatar({ member, size = 24, ring = true }: AvatarProps) {
     >
       {initials(label)}
     </span>
-  );
-}
-
-interface AvatarStackProps {
-  /** Optional — some card payloads omit this field entirely. */
-  ids?: string[];
-  size?: number;
-  max?: number;
-}
-
-/** Renders avatars for raw member ids — color/initials derive from the id. */
-export function AvatarStack({ ids, size = 24, max = 3 }: AvatarStackProps) {
-  const list = ids ?? [];
-  if (list.length === 0) return null;
-
-  const shown = list.slice(0, max);
-  const extra = list.length - shown.length;
-
-  return (
-    <div className="flex items-center">
-      {shown.map((id, index) => (
-        <span key={id} style={{ marginLeft: index === 0 ? 0 : -6 }}>
-          <Avatar member={{ id, color: avatarColor(id) }} size={size} />
-        </span>
-      ))}
-
-      {extra > 0 && (
-        <span
-          className="inline-flex items-center justify-center rounded-full border border-(--hairline) bg-(--tint-6) font-mono text-(--text-secondary)"
-          style={{
-            width: size,
-            height: size,
-            fontSize: Math.round(size * 0.36),
-            marginLeft: -6,
-            boxShadow: "0 0 0 2px var(--bg-root)",
-          }}
-        >
-          +{extra}
-        </span>
-      )}
-    </div>
   );
 }

@@ -11,7 +11,7 @@ import {
   Search01Icon,
 } from "@hugeicons/core-free-icons";
 
-import { Avatar } from "@/components/board/BoardAvatar";
+import { Avatar } from "@/components/board/Avatar";
 
 import { useNewWorkspaceDialog } from "@/components/dashboard/workspace/create/newWorkspaceDialog.context";
 import { avatarColor } from "@/features/boards";

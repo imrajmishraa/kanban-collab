@@ -1,4 +1,4 @@
-import { AvatarStack } from "@/components/board/BoardAvatar";
+import { AvatarStack } from "@/components/board/AvatarStack";
 
 import { formatDue, isOverdue } from "@/features/boards";
 

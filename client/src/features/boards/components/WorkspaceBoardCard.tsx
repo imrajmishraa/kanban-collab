@@ -2,7 +2,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowRight01Icon, UserGroupIcon } from "@hugeicons/core-free-icons";
 import { Link } from "react-router-dom";
 
-import { AvatarStack } from "@/components/board/BoardAvatar";
+import { AvatarStack } from "@/components/board/AvatarStack";
 
 import {
   formatDue,
