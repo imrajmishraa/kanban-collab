@@ -1,4 +1,4 @@
-import { useSidebarState } from "@/features/dashboard";
+import { usePanelState } from "@/stores/panelState";
 
 /**
  * The rail preview's controller.
@@ -34,7 +34,7 @@ export function cancelClose(): void {
 
 /** Start a preview. Only from a rail that is off the page; open is open. */
 export function startPreview(): void {
-  const rail = useSidebarState.getState();
+  const rail = usePanelState.getState().leftPanel;
 
   /* Only a rail that is off the page previews. Expanded is expanded. */
   if (rail.mode !== "hidden" && rail.mode !== "collapsed") return;
@@ -48,7 +48,7 @@ export function startPreview(): void {
 
 /** Put the mode back and remember when, for the cooldown. */
 export function endPreview(): void {
-  const rail = useSidebarState.getState();
+  const rail = usePanelState.getState().leftPanel;
   if (!rail.hovering) return;
 
   rail.setHovering(false);
@@ -72,5 +72,5 @@ export function scheduleEnd(): void {
 /** A click inside the preview pins what the reader is looking at. */
 export function pinPreview(): void {
   cancelClose();
-  useSidebarState.getState().openFromPreview();
+  usePanelState.getState().leftPanel.openFromPreview();
 }

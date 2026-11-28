@@ -5,11 +5,8 @@ import KanbanIcon from "@/assets/KanbanIcon";
 
 import { Tooltip } from "@/components/Tooltips/ToolTip";
 
-import {
-  NavbarSearchIcon,
-  useSidebarState,
-  type SidebarMode,
-} from "@/features/dashboard";
+import { NavbarSearchIcon, type SidebarMode } from "@/features/dashboard";
+import { usePanelState } from "@/stores/panelState";
 import { startPreview } from "@/layouts/railPreview";
 
 interface SidebarHeaderProps {
@@ -27,10 +24,10 @@ const isMac =
   /Mac|iPhone|iPad|iPod/.test(navigator.platform);
 
 const SidebarHeader = ({ collapsed }: SidebarHeaderProps) => {
-  const setMode = useSidebarState((state) => state.setMode);
-  const sidebarMode = useSidebarState((s) => s.mode);
+  const setMode = usePanelState((state) => state.leftPanel.setMode);
+  const sidebarMode = usePanelState((s) => s.leftPanel.mode);
   /* A preview is a flag, not a mode: the mode stays where the reader left it. */
-  const hovering = useSidebarState((s) => s.hovering);
+  const hovering = usePanelState((s) => s.leftPanel.hovering);
 
   if (collapsed) {
     return (

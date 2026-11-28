@@ -30,42 +30,73 @@ vi.mock("react-router-dom", async (importOriginal) => {
  * A real store: the hover path goes through `railPreview.ts`, which reads and
  * writes the sidebar state (`getState`), so a plain selector stub would throw.
  */
-vi.mock("@/features/dashboard", async () => {
+vi.mock("@/stores/panelState", async () => {
   const { createStore } = await import("zustand/vanilla");
   const { useSyncExternalStore } = await import("react");
 
+  /* One store, three slices; the bar reads the rail's mode and the column's mode. */
   const store = createStore<{
-    mode: "collapsed" | "expanded" | "hidden";
-    hovering: boolean;
-    setMode: (mode: "collapsed" | "expanded" | "hidden") => void;
-    setHovering: (hovering: boolean) => void;
-    openFromPreview: () => void;
-    peek: () => void;
-    unpeek: () => void;
+    leftPanel: {
+      mode: "collapsed" | "expanded" | "hidden";
+      hovering: boolean;
+      width: number;
+      setMode: (mode: "collapsed" | "expanded" | "hidden") => void;
+      setHovering: (hovering: boolean) => void;
+      openFromPreview: () => void;
+      peek: () => void;
+      unpeek: () => void;
+    };
+    centrePanel: { scrollTop: number };
+    rightPanel: {
+      mode: "off" | "panel";
+      level: string;
+      width: number;
+      toggle: () => void;
+    };
   }>()((set) => ({
-    mode: "hidden",
-    hovering: false,
-    setMode: (mode) => set({ mode }),
-    setHovering: (hovering) => set({ hovering }),
-    openFromPreview: () => set({ mode: "expanded", hovering: false }),
-    peek: () => set({ hovering: true }),
-    unpeek: () => set({ mode: "hidden", hovering: false }),
+    leftPanel: {
+      mode: "hidden",
+      hovering: false,
+      width: 288,
+      setMode: (mode) => set((s) => ({ leftPanel: { ...s.leftPanel, mode } })),
+      setHovering: (hovering) =>
+        set((s) => ({ leftPanel: { ...s.leftPanel, hovering } })),
+      openFromPreview: () =>
+        set((s) => ({
+          leftPanel: { ...s.leftPanel, mode: "expanded", hovering: false },
+        })),
+      peek: () =>
+        set((s) => ({ leftPanel: { ...s.leftPanel, hovering: true } })),
+      unpeek: () =>
+        set((s) => ({
+          leftPanel: { ...s.leftPanel, mode: "hidden", hovering: false },
+        })),
+    },
+    centrePanel: { scrollTop: 0 },
+    rightPanel: { mode: "off", level: "normal", width: 420, toggle: vi.fn() },
   }));
 
   return {
-    useSidebarState: Object.assign(
-      (selector: (state: { mode: string }) => unknown) =>
+    usePanelState: Object.assign(
+      (selector: (state: unknown) => unknown) =>
         useSyncExternalStore(store.subscribe, () => selector(store.getState())),
-      { getState: store.getState, subscribe: store.subscribe },
+      {
+        getState: store.getState,
+        subscribe: store.subscribe,
+        setState: store.setState,
+      },
     ),
-    __railStore: store,
-    useNotifications: () => ({ data: { unreadCount: 0 } }),
-    WorkspaceSelector: () => null,
-    NavbarSearchIcon: () => null,
-    NotificationsButton: () => null,
-    NotificationsPanel: () => null,
+    __panelStore: store,
   };
 });
+
+vi.mock("@/features/dashboard", () => ({
+  useNotifications: () => ({ data: { unreadCount: 0 } }),
+  WorkspaceSelector: () => null,
+  NavbarSearchIcon: () => null,
+  NotificationsButton: () => null,
+  NotificationsPanel: () => null,
+}));
 
 vi.mock("@/stores/activeWorkspace", () => ({
   useActiveWorkspace: () => ({
@@ -74,13 +105,6 @@ vi.mock("@/stores/activeWorkspace", () => ({
     setActiveWorkspace: vi.fn(),
     clearActiveWorkspace: vi.fn(),
   }),
-}));
-
-let panelLevel: "normal" | "remaining" = "normal";
-
-vi.mock("@/stores/rightPanel", () => ({
-  useRightPanel: (selector: (state: Record<string, unknown>) => unknown) =>
-    selector({ mode: "off", level: panelLevel, toggle: vi.fn() }),
 }));
 
 const toggleRail = vi.fn();
@@ -127,26 +151,37 @@ globalThis.IntersectionObserver =
   Observer as unknown as typeof IntersectionObserver;
 globalThis.ResizeObserver = Observer as unknown as typeof ResizeObserver;
 
-import * as dashboard from "@/features/dashboard";
+import * as panels from "@/stores/panelState";
 
 import DashboardNavbar from "./DashboardNavbar";
 
 const railStore = (
-  dashboard as unknown as {
-    __railStore: {
-      getState: () => { mode: string; hovering: boolean };
-      setState: (partial: { mode?: string; hovering?: boolean }) => void;
+  panels as unknown as {
+    __panelStore: {
+      getState: () => { leftPanel: { mode: string; hovering: boolean } };
+      setState: (partial: unknown) => void;
     };
   }
-).__railStore;
+).__panelStore;
+
+/* A slice patch, not a slice replacement: replacing `leftPanel` would drop its
+   actions along with its values. */
+const setLeft = (patch: Record<string, unknown>) =>
+  railStore.setState((state: { leftPanel: Record<string, unknown> }) => ({
+    leftPanel: { ...state.leftPanel, ...patch },
+  }));
+const setRight = (patch: Record<string, unknown>) =>
+  railStore.setState((state: { rightPanel: Record<string, unknown> }) => ({
+    rightPanel: { ...state.rightPanel, ...patch },
+  }));
 
 const railButton = () =>
   screen.queryByRole("button", { name: /expand sidebar/i });
 
 beforeEach(() => {
-  panelLevel = "normal";
+  setRight({ level: "normal" });
   toggleRail.mockClear();
-  railStore.setState({ mode: "hidden", hovering: false });
+  setLeft({ mode: "hidden", hovering: false });
 });
 
 afterEach(cleanup);
@@ -159,7 +194,7 @@ describe("DashboardNavbar — the rail button", () => {
   });
 
   it("is not on screen while the rail is expanded", () => {
-    railStore.setState({ mode: "expanded" });
+    setLeft({ mode: "expanded" });
     render(<DashboardNavbar embedded />);
 
     /* The rail's own header carries the controls then. */
@@ -167,7 +202,7 @@ describe("DashboardNavbar — the rail button", () => {
   });
 
   it("stays on screen while its own preview is showing", () => {
-    railStore.setState({ mode: "hidden", hovering: true });
+    setLeft({ mode: "hidden", hovering: true });
     render(<DashboardNavbar embedded />);
 
     /* A control that unmounts under the pointer cannot be clicked. */
@@ -175,7 +210,7 @@ describe("DashboardNavbar — the rail button", () => {
   });
 
   it("is not on screen at full width — the board has no column to sit in", () => {
-    panelLevel = "remaining";
+    setRight({ level: "remaining" });
     render(<DashboardNavbar embedded />);
 
     expect(railButton()).toBeNull();
@@ -183,7 +218,7 @@ describe("DashboardNavbar — the rail button", () => {
   });
 
   it("is not on screen while the rail is collapsed", () => {
-    railStore.setState({ mode: "collapsed" });
+    setLeft({ mode: "collapsed" });
     render(<DashboardNavbar embedded />);
 
     expect(railButton()).toBeNull();
@@ -194,7 +229,7 @@ describe("DashboardNavbar — the rail button", () => {
 
     await userEvent.click(railButton()!);
 
-    expect(railStore.getState().mode).toBe("expanded");
+    expect(railStore.getState().leftPanel.mode).toBe("expanded");
   });
 
   it("previews the rail on hover, without opening it", async () => {
@@ -203,7 +238,7 @@ describe("DashboardNavbar — the rail button", () => {
     await userEvent.hover(railButton()!);
 
     /* The flag goes up; the mode does not move. */
-    expect(railStore.getState().hovering).toBe(true);
-    expect(railStore.getState().mode).toBe("hidden");
+    expect(railStore.getState().leftPanel.hovering).toBe(true);
+    expect(railStore.getState().leftPanel.mode).toBe("hidden");
   });
 });

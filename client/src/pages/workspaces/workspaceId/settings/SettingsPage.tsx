@@ -7,7 +7,8 @@ import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { useAuth } from "@/hooks/useAuth";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { NotificationPreferences } from "@/features/dashboard";
-import { RIGHT_PANEL_MODES, useRightPanel } from "@/stores/rightPanel";
+import { usePanelState } from "@/stores/panelState";
+import { RIGHT_PANEL_MODES } from "@/stores/rightPanelTypes";
 
 function SettingsPage() {
   const { user } = useAuth();
@@ -21,8 +22,8 @@ function SettingsPage() {
 
   /* Layout, not workspace data: this is stored per browser and applies to every
      workspace the reader opens. */
-  const rightPanelMode = useRightPanel((state) => state.mode);
-  const setRightPanelMode = useRightPanel((state) => state.setMode);
+  const rightPanelMode = usePanelState((state) => state.rightPanel.mode);
+  const setRightPanelMode = usePanelState((state) => state.rightPanel.setMode);
 
   const deleteWorkspace = useMutation({
     mutationFn: (workspaceId: string) =>

@@ -17,9 +17,9 @@ import { useWorkspaces } from "@/hooks/useWorkspaces";
 import { useBoards, boardKeys, BOARDS_LIST_LIMIT } from "@/hooks/useBoards";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
 import { cn } from "@/lib/cn";
-import { RAIL, useRailLayout, useSidebarState } from "@/features/dashboard";
+import { RAIL, useRailLayout } from "@/features/dashboard";
+import { usePanelState } from "@/stores/panelState";
 import RailResizeHandle from "./RailResizeHandle";
-import { useRightPanel } from "@/stores/rightPanel";
 import { useAuth } from "@/hooks/useAuth";
 import { boardApi } from "@/features/boards";
 import { useQueryClient } from "@tanstack/react-query";
@@ -49,21 +49,23 @@ export default function DashboardSidebar({
   embedded = false,
 }: DashboardSidebarProps) {
   const { user, logout } = useAuth();
-  const { boardsOpen, toggleBoards, openBoards } = useSidebarState();
+  const { boardsOpen, toggleBoards, openBoards } = usePanelState(
+    (s) => s.leftPanel,
+  );
   const queryClient = useQueryClient();
 
   /* Hover mode: the rail stays narrow and opens over the page while the
      pointer is inside it. */
-  const mode = useSidebarState((state) => state.mode);
-  const setHovering = useSidebarState((state) => state.setHovering);
-  const setWidth = useSidebarState((state) => state.setWidth);
+  const mode = usePanelState((state) => state.leftPanel.mode);
+  const setHovering = usePanelState((state) => state.leftPanel.setHovering);
+  const setWidth = usePanelState((state) => state.leftPanel.setWidth);
 
   /* The column, if it is on screen: its width is what the rail's drag pays out of. */
-  const panelOpen = useRightPanel((state) => state.mode !== "off");
-  const panelWidth = useRightPanel((state) => state.width);
-  const setPanelWidth = useRightPanel((state) => state.setWidth);
-  const hide = useSidebarState((state) => state.hide);
-  const setResizing = useSidebarState((state) => state.setResizing);
+  const panelOpen = usePanelState((state) => state.rightPanel.mode !== "off");
+  const panelWidth = usePanelState((state) => state.rightPanel.width);
+  const setPanelWidth = usePanelState((state) => state.rightPanel.setWidth);
+  const hide = usePanelState((state) => state.leftPanel.hide);
+  const setResizing = usePanelState((state) => state.leftPanel.setResizing);
 
   /* One computation decides the width; `AppLayout` reads the same one so the
      page reserves exactly what the rail takes. */
@@ -83,7 +85,7 @@ export default function DashboardSidebar({
   /* Expanded over the page rather than beside it: that is the only case where
      the rail needs to read as a layer. */
   const floating = layout.hoverOpen;
-  const hovering = useSidebarState((state) => state.hovering);
+  const hovering = usePanelState((state) => state.leftPanel.hovering);
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 

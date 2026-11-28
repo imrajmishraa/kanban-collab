@@ -6,10 +6,10 @@ import { Group, Panel, Separator, type Layout } from "react-resizable-panels";
 import RightPanel from "@/components/layout/RightPanel";
 import DashboardNavbar from "@/components/sidebar/DashboardNavbar";
 import DashboardSidebar from "@/components/sidebar/DashboardSidebar";
-import { clampWidth, useSidebarState } from "@/features/dashboard";
+import { clampWidth } from "@/features/dashboard";
 import { MOBILE_MAX_VIEWPORT } from "@/components/layout/panelMetrics";
 import { SHELL, giveWay, toLayout } from "@/lib/shellLayout";
-import { useRightPanel } from "@/stores/rightPanel";
+import { usePanelState } from "@/stores/panelState";
 import { useLayoutShellStore } from "@/layouts/stores/layoutShellStore";
 import { cancelClose, scheduleEnd, startPreview } from "@/layouts/railPreview";
 import { useShellLayout } from "@/layouts/useShellLayout";
@@ -44,11 +44,11 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
      the shell is not the layout for a phone, so the page gets the window. */
   const phone = viewport < MOBILE_MAX_VIEWPORT;
 
-  const railMode = useSidebarState((s) => s.mode);
-  const railPx = useSidebarState((s) => s.width);
-  const panelMode = useRightPanel((s) => s.mode);
-  const panelPx = useRightPanel((s) => s.width);
-  const level = useRightPanel((s) => s.level);
+  const railMode = usePanelState((s) => s.leftPanel.mode);
+  const railPx = usePanelState((s) => s.leftPanel.width);
+  const panelMode = usePanelState((s) => s.rightPanel.mode);
+  const panelPx = usePanelState((s) => s.rightPanel.width);
+  const level = usePanelState((s) => s.rightPanel.level);
 
   /*
    * The hover preview: a second sidebar outside the group, because a hidden rail is
@@ -57,7 +57,7 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
    * navbar's icon starts a preview and the overlay ends it — two components, one
    * controller.
    */
-  const hovering = useSidebarState((s) => s.hovering);
+  const hovering = usePanelState((s) => s.leftPanel.hovering);
   /* A preview is the pointer, not a mode: the reader's mode is untouched. */
   const previewing = hovering;
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -268,9 +268,9 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
               >
                 <DashboardSidebar
                   onToggle={() =>
-                    useSidebarState
+                    usePanelState
                       .getState()
-                      .setMode(state.railOpen ? "hidden" : "expanded")
+                      .leftPanel.setMode(state.railOpen ? "hidden" : "expanded")
                   }
                   embedded
                 />
@@ -358,7 +358,7 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
               /* A click inside the preview pins what the reader is looking at. */
               onToggle={() => {
                 /* A click inside the preview pins what the reader is looking at. */
-                useSidebarState.getState().openFromPreview();
+                usePanelState.getState().leftPanel.openFromPreview();
               }}
               embedded
             />

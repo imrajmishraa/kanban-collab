@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 
-import { useSidebarState } from "../stores/sidebarState";
-import { useRightPanel } from "@/stores/rightPanel";
+import { usePanelState } from "@/stores/panelState";
 import { useShellFlag } from "@/layouts/useShellFlag";
-import { computeRail, RAIL, type RailLayout } from "../lib/railMetrics";
+import { computeRail, RAIL, type RailLayout } from "@/lib/railMetrics";
 
 /** D3: the rail steps aside for the column above this width. */
 const PANEL_RAIL_LIMIT = 320;
@@ -16,10 +15,10 @@ const PANEL_RAIL_LIMIT = 320;
  * rather than in both, where the two would drift.
  */
 export function useRailLayout(): RailLayout {
-  const mode = useSidebarState((state) => state.mode);
-  const width = useSidebarState((state) => state.width);
-  const hovering = useSidebarState((state) => state.hovering);
-  const resizing = useSidebarState((state) => state.resizing);
+  const mode = usePanelState((state) => state.leftPanel.mode);
+  const width = usePanelState((state) => state.leftPanel.width);
+  const hovering = usePanelState((state) => state.leftPanel.hovering);
+  const resizing = usePanelState((state) => state.leftPanel.resizing);
   const viewportWidth = useViewportWidth();
 
   /*
@@ -30,7 +29,7 @@ export function useRailLayout(): RailLayout {
    * it starts at MIN — the default width would take the space straight back, so the column
    * would shrink by itself and read as a bug.
    */
-  const panelOpen = useRightPanel((state) => state.mode !== "off");
+  const panelOpen = usePanelState((state) => state.rightPanel.mode !== "off");
 
   /* With the shell on, the model owns visibility and widths: its `computeLayout`
      decides fit, and `settleDrag` restores what a drag disturbed. These two rules
@@ -41,7 +40,7 @@ export function useRailLayout(): RailLayout {
   useEffect(() => {
     if (shellOwnsRail || !panelOpen) return;
 
-    const rail = useSidebarState.getState();
+    const rail = usePanelState.getState().leftPanel;
     /* D3: above the icon rail's *default* is the rule — 320, not 288. A rail sitting at the
        default is already the width the board was designed around; anything wider is what
        leaves the board a sliver. */
@@ -63,7 +62,7 @@ export function useRailLayout(): RailLayout {
     if (shellOwnsRail || !panelOpen || mode !== "expanded") return;
     if (came !== "hidden" && came !== "collapsed") return;
 
-    const rail = useSidebarState.getState();
+    const rail = usePanelState.getState().leftPanel;
     if (rail.width > RAIL.MIN) rail.setWidth(RAIL.MIN);
   }, [mode, panelOpen, shellOwnsRail]);
 

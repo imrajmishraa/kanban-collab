@@ -1,7 +1,6 @@
 import { create } from "zustand";
 
-import { useSidebarState } from "@/features/dashboard";
-import { useRightPanel } from "@/stores/rightPanel";
+import { usePanelState } from "@/stores/panelState";
 import {
   collapseRail as collapseRailCommand,
   toggleColumn as toggleColumnCommand,
@@ -49,8 +48,8 @@ const measured = (groupPx: number): number =>
 
 /** What the reader chose, read out of the two stores that own it. */
 export function readShellState(): ShellState {
-  const rail = useSidebarState.getState();
-  const panel = useRightPanel.getState();
+  const rail = usePanelState.getState().leftPanel;
+  const panel = usePanelState.getState().rightPanel;
 
   return {
     railOpen: rail.mode !== "hidden",
@@ -69,8 +68,8 @@ export function readShellState(): ShellState {
  * this writes exactly that.
  */
 export function commitShell(patch: Partial<ShellState>): void {
-  const rail = useSidebarState.getState();
-  const panel = useRightPanel.getState();
+  const rail = usePanelState.getState().leftPanel;
+  const panel = usePanelState.getState().rightPanel;
 
   if (patch.railOpen === false) rail.setMode("hidden");
   else if (patch.railCollapsed === true) rail.setMode("collapsed");

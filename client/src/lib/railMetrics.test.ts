@@ -8,7 +8,7 @@ import {
   requiredViewport,
   snapWidth,
   snapZone,
-} from "./railMetrics";
+} from "@/lib/railMetrics";
 
 /**
  * The app rail's numbers and its state machine.

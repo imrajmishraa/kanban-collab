@@ -11,15 +11,18 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const setModeSpy = vi.fn();
 
-vi.mock("@/features/dashboard", () => ({
-  useSidebarState: { getState: () => ({ mode: "hidden", hovering: true }) },
+/* One store, three slices: `readShellState` reads the rail's and the column's. */
+vi.mock("@/stores/panelState", () => ({
+  usePanelState: {
+    getState: () => ({
+      leftPanel: { mode: "hidden", hovering: true, width: 288 },
+      centrePanel: { scrollTop: 0 },
+      rightPanel: { mode: "panel", width: 400, level: "normal" },
+    }),
+  },
 }));
 
-vi.mock("@/stores/rightPanel", () => ({
-  useRightPanel: { getState: () => ({ mode: "panel", width: 400 }) },
-}));
-
-import { useSidebarState } from "@/features/dashboard";
+import { usePanelState } from "@/stores/panelState";
 import { readShellState } from "./layoutShellStore";
 
 beforeEach(() => setModeSpy.mockClear());
@@ -27,11 +30,14 @@ afterEach(() => vi.restoreAllMocks());
 
 describe("readShellState", () => {
   it("does not read a preview as an open rail", () => {
-    const store = useSidebarState as unknown as {
-      getState: () => { mode: string; hovering: boolean };
+    const store = usePanelState as unknown as {
+      getState: () => { leftPanel: { mode: string; hovering: boolean } };
     };
     const original = store.getState;
-    store.getState = () => ({ mode: "hidden", hovering: true });
+    store.getState = () => ({
+      leftPanel: { mode: "hidden", hovering: true },
+      rightPanel: { mode: "panel", width: 400 },
+    });
 
     expect(readShellState().railOpen).toBe(false);
 
@@ -39,13 +45,16 @@ describe("readShellState", () => {
   });
 
   it("still reads open and collapsed as open", () => {
-    const store = useSidebarState as unknown as {
-      getState: () => { mode: string; hovering?: boolean };
+    const store = usePanelState as unknown as {
+      getState: () => { leftPanel: { mode: string; hovering?: boolean } };
     };
     const original = store.getState;
 
     for (const mode of ["expanded", "collapsed"]) {
-      store.getState = () => ({ mode });
+      store.getState = () => ({
+        leftPanel: { mode },
+        rightPanel: { mode: "panel", width: 400 },
+      });
       expect(readShellState().railOpen).toBe(true);
     }
 

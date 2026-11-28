@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { cn } from "@/lib/cn";
 
-import { useRightPanel } from "@/stores/rightPanel";
+import { usePanelState } from "@/stores/panelState";
 import PanelHeader from "@/components/layout/PanelHeader";
 import { useSheetDismiss } from "@/components/layout/useSheetDismiss";
 import {
@@ -13,7 +13,7 @@ import {
 } from "@/components/layout/panelMetrics";
 import { dampedWidth, snapToStops } from "@/lib/railDrag";
 import { RAIL_MIN, besideMax, couple, panelDragLevel } from "@/lib/panelCouple";
-import { useNotifications, useSidebarState } from "@/features/dashboard";
+import { useNotifications } from "@/features/dashboard";
 
 interface RightPanelProps {
   /** What the app rail reserves, so this column can touch it but never cover it. */
@@ -41,19 +41,19 @@ export default function RightPanel({
   onResizeStart,
   onResizeEnd,
 }: RightPanelProps) {
-  const mode = useRightPanel((state) => state.mode);
-  const width = useRightPanel((state) => state.width);
-  const setWidth = useRightPanel((state) => state.setWidth);
-  const setMode = useRightPanel((state) => state.setMode);
-  const level = useRightPanel((state) => state.level);
-  const setLevel = useRightPanel((state) => state.setLevel);
-  const toggleLevel = useRightPanel((state) => state.toggleLevel);
+  const mode = usePanelState((state) => state.rightPanel.mode);
+  const width = usePanelState((state) => state.rightPanel.width);
+  const setWidth = usePanelState((state) => state.rightPanel.setWidth);
+  const setMode = usePanelState((state) => state.rightPanel.setMode);
+  const level = usePanelState((state) => state.rightPanel.level);
+  const setLevel = usePanelState((state) => state.rightPanel.setLevel);
+  const toggleLevel = usePanelState((state) => state.rightPanel.toggleLevel);
 
   const [viewport, setViewport] = useState(() =>
     typeof window === "undefined" ? 1440 : window.innerWidth,
   );
   /* The rail is pushed by this drag, so the column needs its setter. */
-  const railSetWidth = useSidebarState((state) => state.setWidth);
+  const railSetWidth = usePanelState((state) => state.leftPanel.setWidth);
 
   const [dragging, setDragging] = useState(false);
   const [moving, setMoving] = useState(false);

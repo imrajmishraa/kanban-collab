@@ -24,56 +24,96 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
  * had just opened.
  */
 
-vi.mock("@/features/dashboard", async () => {
+vi.mock("@/stores/panelState", async () => {
   const { createStore } = await import("zustand/vanilla");
   const { useSyncExternalStore } = await import("react");
 
+  /* The store is one object with three slices; the test only needs the rail's. */
   const store = createStore<{
-    mode: "collapsed" | "expanded" | "hidden";
-    hovering: boolean;
-    setMode: (mode: "collapsed" | "expanded" | "hidden") => void;
-    setHovering: (hovering: boolean) => void;
-    openFromPreview: () => void;
-  }>()((set) => ({
-    mode: "hidden",
-    hovering: false,
-    setMode: (mode) => set({ mode }),
-    setHovering: (hovering: boolean) => set({ hovering }),
-    openFromPreview: () => set({ mode: "expanded", hovering: false }),
+    leftPanel: {
+      mode: "collapsed" | "expanded" | "hidden";
+      hovering: boolean;
+      width: number;
+      setMode: (mode: "collapsed" | "expanded" | "hidden") => void;
+      setHovering: (hovering: boolean) => void;
+      openFromPreview: () => void;
+      peek: () => void;
+      unpeek: () => void;
+    };
+    centrePanel: { scrollTop: number };
+    rightPanel: { mode: "off" | "panel"; level: string; width: number };
+  }>()((set, get) => ({
+    leftPanel: {
+      mode: "hidden",
+      hovering: false,
+      width: 288,
+      setMode: (mode) => set((s) => ({ leftPanel: { ...s.leftPanel, mode } })),
+      setHovering: (hovering) =>
+        set((s) => ({ leftPanel: { ...s.leftPanel, hovering } })),
+      openFromPreview: () =>
+        set((s) => ({
+          leftPanel: { ...s.leftPanel, mode: "expanded", hovering: false },
+        })),
+      peek: () =>
+        set((s) =>
+          s.leftPanel.mode === "hidden"
+            ? { leftPanel: { ...s.leftPanel, hovering: true } }
+            : {},
+        ),
+      unpeek: () =>
+        set((s) => ({ leftPanel: { ...s.leftPanel, hovering: false } })),
+    },
+    centrePanel: { scrollTop: 0 },
+    rightPanel: { mode: "off", level: "normal", width: 420 },
+    get left() {
+      return get().leftPanel;
+    },
   }));
 
   return {
-    RAIL: { COLLAPSED: 72, DEFAULT: 288, MIN: 200, MAX: 420 },
-    useSidebarState: Object.assign(
-      (selector: (state: { mode: string }) => unknown) =>
+    usePanelState: Object.assign(
+      (selector: (state: { leftPanel: unknown }) => unknown) =>
         useSyncExternalStore(store.subscribe, () => selector(store.getState())),
-      { getState: store.getState, subscribe: store.subscribe },
+      {
+        getState: store.getState,
+        subscribe: store.subscribe,
+        setState: store.setState,
+      },
     ),
-    __railStore: store,
+    __panelStore: store,
   };
 });
 
-import * as dashboard from "@/features/dashboard";
+import * as panels from "@/stores/panelState";
 import { cancelClose, scheduleEnd, startPreview } from "./railPreview";
 
 const railStore = (
-  dashboard as unknown as {
-    __railStore: {
-      getState: () => { mode: string; hovering: boolean };
-      setState: (partial: { mode?: string; hovering?: boolean }) => void;
+  panels as unknown as {
+    __panelStore: {
+      getState: () => { leftPanel: { mode: string; hovering: boolean } };
+      setState: (partial: unknown) => void;
     };
   }
-).__railStore;
-const useSidebarState = dashboard.useSidebarState as unknown as (
-  selector: (state: { mode: string; hovering: boolean }) => unknown,
+).__panelStore;
+const useLeftPanel = panels.usePanelState as unknown as (
+  selector: (state: {
+    leftPanel: { mode: string; hovering: boolean };
+  }) => unknown,
 ) => unknown;
 
-const mode = () => railStore.getState().mode;
-const hovering = () => railStore.getState().hovering;
+const setLeft = (patch: Record<string, unknown>) =>
+  railStore.setState((state: { leftPanel: Record<string, unknown> }) => ({
+    leftPanel: { ...state.leftPanel, ...patch },
+  }));
+
+const mode = () => railStore.getState().leftPanel.mode;
+const hovering = () => railStore.getState().leftPanel.hovering;
 
 /** The shell's preview wiring, reduced to the elements that matter. */
 function PreviewHarness() {
-  const previewing = useSidebarState((state) => state.hovering) as boolean;
+  const previewing = useLeftPanel(
+    (state) => state.leftPanel.hovering,
+  ) as boolean;
 
   return (
     <div className="flex h-96 w-96 flex-col">
@@ -106,7 +146,7 @@ const overlay = () => screen.queryByTestId("overlay");
 
 beforeEach(() => {
   vi.useFakeTimers();
-  railStore.setState({ mode: "hidden", hovering: false });
+  setLeft({ mode: "hidden", hovering: false });
 });
 
 afterEach(() => {

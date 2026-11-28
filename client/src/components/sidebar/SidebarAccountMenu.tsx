@@ -21,7 +21,7 @@ import {
 
 import { Tooltip } from "@/components/Tooltips/ToolTip";
 
-import { useSidebarState } from "@/features/dashboard";
+import { usePanelState } from "@/stores/panelState";
 import { useThemeStore, type ThemeMode } from "@/stores/theme";
 
 import SidebarModeMenu from "./SidebarModeMenu";
@@ -86,8 +86,8 @@ function SidebarAccountMenu({
   const themeMode = useThemeStore((state) => state.mode);
   const setThemeMode = useThemeStore((state) => state.setMode);
 
-  const sidebarMode = useSidebarState((state) => state.mode);
-  const setSidebarMode = useSidebarState((state) => state.setMode);
+  const sidebarMode = usePanelState((state) => state.leftPanel.mode);
+  const setSidebarMode = usePanelState((state) => state.leftPanel.setMode);
 
   /* Where the child panel sits, in viewport coordinates. Null means closed.
      Computed on click, never during render. */

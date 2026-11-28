@@ -28,14 +28,19 @@ vi.mock("react-router-dom", async (importOriginal) => {
   return { ...actual, useNavigate: () => navigate };
 });
 
-vi.mock("@/features/dashboard", () => ({
-  useSidebarState: (
+vi.mock("@/stores/panelState", () => ({
+  usePanelState: (
     selector: (state: {
-      mode: string;
-      hovering: boolean;
-      setMode: typeof setMode;
+      leftPanel: {
+        mode: string;
+        hovering: boolean;
+        setMode: typeof setMode;
+      };
     }) => unknown,
-  ) => selector({ mode: "expanded", hovering: false, setMode }),
+  ) => selector({ leftPanel: { mode: "expanded", hovering: false, setMode } }),
+}));
+
+vi.mock("@/features/dashboard", () => ({
   /* The rail's "keep open" hint, and the pill the preview carries. */
   NavbarSearchIcon: () => null,
   WorkspaceSelector: () => null,

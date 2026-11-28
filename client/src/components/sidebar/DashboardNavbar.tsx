@@ -4,8 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { WorkspaceSelector } from "@/features/dashboard";
 import { useNotifications } from "@/features/dashboard";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";
-import { useSidebarState } from "@/features/dashboard";
-import { useRightPanel } from "@/stores/rightPanel";
+import { usePanelState } from "@/stores/panelState";
 import { scheduleEnd, startPreview } from "@/layouts/railPreview";
 import { NavbarSearchIcon, NotificationsButton } from "@/features/dashboard";
 import { NotificationsPanel } from "@/features/dashboard";
@@ -33,9 +32,9 @@ export default function DashboardNavbar({
   const bellRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
-  const setMode = useSidebarState((state) => state.setMode);
+  const setMode = usePanelState((state) => state.leftPanel.setMode);
 
-  const sidebarMode = useSidebarState((s) => s.mode);
+  const sidebarMode = usePanelState((s) => s.leftPanel.mode);
 
   /* The overview is not scoped to one workspace, so the switcher reads
      "All Workspaces" there and reverts to the active name elsewhere. */
@@ -59,15 +58,17 @@ export default function DashboardNavbar({
 
   /* The right column's only affordance, on screen in both states — a toggle that
      only appears while the panel is closed makes people hunt for it. */
-  const rightPanelOpen = useRightPanel((state) => state.mode) !== "off";
-  const toggleRightPanel = useRightPanel((state) => state.toggle);
+  const rightPanelOpen =
+    usePanelState((state) => state.rightPanel.mode) !== "off";
+  const toggleRightPanel = usePanelState((state) => state.rightPanel.toggle);
   /*
    * Full width: the column takes everything the rail leaves, so the board — and
    * this bar, which lives in the board's column — has no width to sit in. It used
    * to render as a zero-wide strip with its own edge, which reads as a seam across
    * the column. There is nothing to put a bar over, so there is no bar.
    */
-  const fullWidth = useRightPanel((state) => state.level) === "remaining";
+  const fullWidth =
+    usePanelState((state) => state.rightPanel.level) === "remaining";
 
   /*
    * With nothing selected there is no workspace to scope the breadcrumb to, so

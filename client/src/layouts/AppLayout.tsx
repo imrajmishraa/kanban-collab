@@ -11,9 +11,8 @@ const RightPanel = lazy(() => import("@components/layout/RightPanel"));
 
 import { NewWorkspaceDialogProvider } from "@/components/dashboard/workspace/create/NewWorkspaceDialogProvider";
 
-import { useSidebarState } from "@/features/dashboard";
+import { usePanelState } from "@/stores/panelState";
 import { useRailLayout } from "@/features/dashboard";
-import { useRightPanel } from "@/stores/rightPanel";
 import { computePanel } from "@/components/layout/panelMetrics";
 import { useSearchStore } from "@/features/search";
 import { MOBILE_MAX_VIEWPORT } from "@/components/layout/panelMetrics";
@@ -42,9 +41,9 @@ export default function AppLayout() {
     typeof window !== "undefined" &&
     window.innerWidth >= MOBILE_MAX_VIEWPORT;
 
-  const toggleSidebar = useSidebarState((s) => s.toggleCollapsed);
-  const toggleOpenHidden = useSidebarState((s) => s.toggleOpenHidden);
-  const collapse = useSidebarState((s) => s.collapse);
+  const toggleSidebar = usePanelState((s) => s.leftPanel.toggleCollapsed);
+  const toggleOpenHidden = usePanelState((s) => s.leftPanel.toggleOpenHidden);
+  const collapse = usePanelState((s) => s.leftPanel.collapse);
 
   /*
    * The rail's width is data now, not two Tailwind classes. One computation
@@ -53,18 +52,18 @@ export default function AppLayout() {
    * two cannot drift.
    */
   const rail = useRailLayout();
-  const resizing = useSidebarState((s) => s.resizing);
-  const setResizing = useSidebarState((s) => s.setResizing);
+  const resizing = usePanelState((s) => s.leftPanel.resizing);
+  const setResizing = usePanelState((s) => s.leftPanel.setResizing);
 
   /* Off by default (`stores/rightPanel.ts`), so an existing reader's layout is
      unchanged until they choose a column in Settings → Appearance. The panel
      itself only exists from `lg:` up; below that it renders nothing. */
-  const rightPanelMode = useRightPanel((s) => s.mode);
-  const rightPanelWidth = useRightPanel((s) => s.width);
-  const rightPanelLevel = useRightPanel((s) => s.level);
+  const rightPanelMode = usePanelState((s) => s.rightPanel.mode);
+  const rightPanelWidth = usePanelState((s) => s.rightPanel.width);
+  const rightPanelLevel = usePanelState((s) => s.rightPanel.level);
   const rightPanelOpen = rightPanelMode !== "off";
 
-  const toggleRightPanel = useRightPanel((s) => s.toggle);
+  const toggleRightPanel = usePanelState((s) => s.rightPanel.toggle);
 
   const panelLayout = computePanel({
     mode: rightPanelMode,
@@ -130,7 +129,7 @@ export default function AppLayout() {
 
       /* Taking the remaining width implies the panel is open. It never touches the
          rail: the rail keeps its width, and the column takes what is left. */
-      const panel = useRightPanel.getState();
+      const panel = usePanelState.getState().rightPanel;
 
       if (panel.mode === "off") panel.setMode("panel");
       panel.toggleLevel();
