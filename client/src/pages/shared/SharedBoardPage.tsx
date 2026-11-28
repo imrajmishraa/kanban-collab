@@ -159,7 +159,7 @@ export default function SharedBoardPage() {
                 </span>
               )}
             </p>
-            <h1 className="mt-2 truncate text-[22px] font-semibold text-(--text-primary)">
+            <h1 className="font-display mt-2 truncate text-[22px] font-semibold text-(--text-primary)">
               {board.name}
             </h1>
             {board.description && (

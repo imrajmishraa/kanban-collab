@@ -150,7 +150,7 @@ export default function BoardHeader({
           </p>
         )}
 
-        <h1 className="mt-2 flex items-center gap-2 text-[22px] font-semibold tracking-tight text-(--text-primary) sm:text-[26px]">
+        <h1 className="font-display mt-2 flex items-center gap-2 text-[22px] font-semibold tracking-tight text-(--text-primary) sm:text-[26px]">
           <span className="truncate">{name}</span>
           {isPinned && (
             <HugeiconsIcon
