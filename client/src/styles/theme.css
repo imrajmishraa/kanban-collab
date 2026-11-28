@@ -1,10 +1,15 @@
 @theme {
-  /* Every family here is in the bundle: Figtree and JetBrains Mono both come
-     from @fontsource-variable packages, imported once in `main.tsx`. Nothing
-     has to be dropped in later, so the stack is exactly what ships. */
+  /* Every family here is in the bundle: Inter, Plus Jakarta Sans and JetBrains
+     Mono all come from @fontsource-variable packages, imported once in
+     `main.tsx`. Nothing has to be dropped in later, so the stack is exactly what
+     ships. Inter is the interface face (12.5–14px); Plus Jakarta is headings
+     only, through `font-display`. */
   --font-sans:
-    "Figtree Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
     sans-serif;
+  --font-display:
+    "Plus Jakarta Sans Variable", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", sans-serif;
   --font-mono:
     "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, monospace;
 }

@@ -174,7 +174,7 @@ export default function ActivityLogsPage() {
             {activeWorkspaceName || "Workspace"}
           </p>
 
-          <h1 className="text-[22px] font-semibold tracking-tight text-(--text-primary) sm:text-[26px]">
+          <h1 className="font-display text-[22px] font-semibold tracking-tight text-(--text-primary) sm:text-[26px]">
             Activity logs
           </h1>
 

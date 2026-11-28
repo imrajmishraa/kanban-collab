@@ -139,7 +139,7 @@ export function LoginForm() {
 
   return (
     <div className="mx-auto w-full max-w-105">
-      <h2 className="text-[24px] font-semibold leading-[1.2] tracking-[-0.6px] text-(--text-primary) sm:text-[26px]">
+      <h2 className="font-display text-[24px] font-semibold leading-[1.2] tracking-[-0.6px] text-(--text-primary) sm:text-[26px]">
         Log in to Kanban
       </h2>
 

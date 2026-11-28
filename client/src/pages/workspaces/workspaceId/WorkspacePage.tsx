@@ -207,7 +207,7 @@ export function WorkspacePage() {
           </span>
 
           <div className="flex min-w-0 flex-col gap-1.5">
-            <h1 className="flex items-center gap-2 text-[22px] font-semibold tracking-tight text-(--text-primary) sm:text-[26px]">
+            <h1 className="font-display flex items-center gap-2 text-[22px] font-semibold tracking-tight text-(--text-primary) sm:text-[26px]">
               <span className="truncate">{name}</span>
               {isStarred && (
                 <HugeiconsIcon

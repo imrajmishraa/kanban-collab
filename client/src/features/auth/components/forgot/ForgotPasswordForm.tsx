@@ -304,7 +304,7 @@ export function ForgotPasswordForm() {
       <div className="mx-auto flex w-full max-w-105 flex-col">
         <BackLink to="/auth/login">Back to log in</BackLink>
 
-        <h2 className="mt-3 text-[26px] leading-[1.15] font-semibold tracking-[-0.7px] text-(--text-primary) sm:text-[28px]">
+        <h2 className="font-display mt-3 text-[26px] leading-[1.15] font-semibold tracking-[-0.7px] text-(--text-primary) sm:text-[28px]">
           Forgot your password?
         </h2>
         <p className="mt-2.5 text-[13.5px] leading-[1.6] text-(--text-secondary)">
@@ -418,7 +418,7 @@ export function ForgotPasswordForm() {
       <div className="mx-auto flex w-full max-w-105 flex-col">
         <BackLink onClick={handleChangeEmail}>Use a different email</BackLink>
 
-        <h2 className="mt-3 text-[26px] leading-[1.15] font-semibold tracking-[-0.7px] text-(--text-primary) sm:text-[28px]">
+        <h2 className="font-display mt-3 text-[26px] leading-[1.15] font-semibold tracking-[-0.7px] text-(--text-primary) sm:text-[28px]">
           Enter the code
         </h2>
         <p className="mt-2.5 text-[13.5px] leading-[1.6] text-(--text-secondary)">
@@ -508,7 +508,7 @@ export function ForgotPasswordForm() {
       <div className="mx-auto flex w-full max-w-105 flex-col">
         <BackLink onClick={() => setStep("code")}>Back to the code</BackLink>
 
-        <h2 className="mt-3 text-[26px] leading-[1.15] font-semibold tracking-[-0.7px] text-(--text-primary) sm:text-[28px]">
+        <h2 className="font-display mt-3 text-[26px] leading-[1.15] font-semibold tracking-[-0.7px] text-(--text-primary) sm:text-[28px]">
           Choose a new password
         </h2>
         <p className="mt-2.5 text-[13.5px] leading-[1.6] text-(--text-secondary)">
@@ -608,7 +608,7 @@ export function ForgotPasswordForm() {
         <HugeiconsIcon icon={CheckmarkCircle02Icon} size={28} />
       </span>
 
-      <h2 className="mt-6 text-[26px] leading-[1.15] font-semibold tracking-[-0.7px] text-(--text-primary) sm:text-[28px]">
+      <h2 className="font-display mt-6 text-[26px] leading-[1.15] font-semibold tracking-[-0.7px] text-(--text-primary) sm:text-[28px]">
         Password updated
       </h2>
       <p className="mt-2.5 max-w-80 text-[13.5px] leading-[1.6] text-(--text-secondary)">

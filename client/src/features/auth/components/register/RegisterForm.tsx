@@ -361,7 +361,7 @@ export function RegisterForm() {
         All sign-up options
       </button>
 
-      <h2 className="mt-3 text-[24px] leading-[1.2] font-semibold tracking-[-0.6px] text-(--text-primary) sm:text-[26px]">
+      <h2 className="font-display mt-3 text-[24px] leading-[1.2] font-semibold tracking-[-0.6px] text-(--text-primary) sm:text-[26px]">
         Create your account
       </h2>
 
