@@ -228,7 +228,7 @@ which one wins when two disagree is in
 | `transitions.dev` | picking a duration and curve for a transition | anything outside `DESIGN.md` → *Motion principles* (300ms ceiling, reduced motion) |
 | `uizze-ui` | ideas for component structure in a prototype | the app's tokens, radii and shadows (hairlines, no shadows) |
 | `impeccable` (`typeset` mode) | a typography pass over a surface: hierarchy, role scale, measure, weight — audit first, then edit | replacing the three families in `DESIGN.md`; the mode improves what is there |
-| `hugeicons` | choosing, sizing and stroking an icon from the library already in 139 files | a second icon library: this app has one |
+| `hugeicons` | choosing, sizing and stroking an icon from the library already in 144 files | a second icon library: this app has one |
 | `icons-badges` | icon and badge patterns, and the motion that carries them | inventing a second icon set |
 | `better-icons` | a second reading when an icon is ambiguous or a set looks inconsistent | swapping the library |
 | `pikaicons-skills` | icon motion: how an icon animates on hover, press, arrival | its icon library; this app draws from Hugeicons |

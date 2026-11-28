@@ -15,6 +15,8 @@ lives outside this repository and changes without this repository knowing.
 | [`AGENTS.md`](../../AGENTS.md) | the order of work, the evidence labels, the traps |
 | [`skill-registry.md`](skill-registry.md) | where each skill came from, and how much of it was actually read |
 | [`skill-selection.md`](skill-selection.md) | which skill wins when two disagree, and how to compose them |
+| [`patterns/ui-design.md`](patterns/ui-design.md) | what decides the look, and where a design skill may act |
+| [`patterns/component-development.md`](patterns/component-development.md) | one component, in the order that makes it reviewable |
 
 ## The one rule
 
@@ -34,6 +36,11 @@ the row.
 This is deliberate. A registry that marks everything "verified" is a registry
 that has stopped being read.
 
+The pattern pages are a different kind of claim: they document **this
+repository**, which was read in full, and name the skills where their boundary
+matters. They do not restate a skill's instructions — that is what a guide under
+`skills/<name>/` will do, and it is why those are still missing.
+
 ## How the rest of it lands
 
 Per-skill guides (`docs/agents/skills/<name>/`) are written one domain at a time,
@@ -41,18 +48,21 @@ because each one needs the skill's source open and the repository's matching
 files open beside it. A guide written without both is a summary, and a summary is
 what `AGENTS.md` §7 already is.
 
-| Change | Adds | Needs |
-|---|---|---|
-| 1 (this one) | the registry, the selection rules, the CI check | — |
-| 2 | `patterns/ui-design.md`, `patterns/component-development.md` | `impeccable`, `hugeicons`, `vercel-ui-skills` sources |
-| 3 | `patterns/state-management.md` | the three zustand skills, and the fifteen stores read |
-| 4 | `patterns/realtime-collaboration.md`, `patterns/error-handling.md` | the yjs and socket skills, `docs/realtime-collaboration.md` |
-| 5 | `workflows/` — feature, bug, review, docs | nothing new; they compose the patterns |
-| 6 | `skills/<name>/` — one folder per skill, domain by domain | that skill's source |
+| Change | Adds | Needs | Status |
+|---|---|---|---|
+| 1 | the registry, the selection rules, the CI check | — | landed |
+| 2 | `patterns/ui-design.md`, `patterns/component-development.md` | — (written from the repository) | landed |
+| 3 | `patterns/state-management.md` | the three zustand skills, and the fifteen stores read | next |
+| 4 | `patterns/realtime-collaboration.md`, `patterns/error-handling.md` | the yjs and socket skills, `docs/realtime-collaboration.md` | — |
+| 5 | `workflows/` — feature, bug, review, docs | nothing new; they compose the patterns | — |
+| 6 | `skills/<name>/` — one folder per skill, domain by domain | that skill's source | — |
 
 Each is a class-B change on its own (`docs/change-rules.md` §2). Doing them in
 one pull request would be class C with no review path, and the budget gate
 already refuses it.
+
+`skill-guide-template.md` is the shape a `skills/<name>/` folder takes. Copy it,
+fill it, and add the two rows the gate checks.
 
 ## The gate
 
