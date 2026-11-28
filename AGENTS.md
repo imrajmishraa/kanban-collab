@@ -223,6 +223,19 @@ with `DESIGN.md`, `DESIGN.md` wins.
 | `web-typography` | the same, as a second reading when a type scale looks wrong | adding a fourth family |
 | `transitions.dev` | picking a duration and curve for a transition | anything outside `DESIGN.md` → *Motion principles* (300ms ceiling, reduced motion) |
 | `uizze-ui` | ideas for component structure in a prototype | the app's tokens, radii and shadows (hairlines, no shadows) |
+| `impeccable` (`typeset` mode) | a typography pass over a surface: hierarchy, role scale, measure, weight — audit first, then edit | replacing the three families in `DESIGN.md`; the mode improves what is there |
+| `hugeicons` | choosing, sizing and stroking an icon from the library already in 139 files | a second icon library: this app has one |
+| `icons-badges` | icon and badge patterns, and the motion that carries them | inventing a second icon set |
+| `better-icons` | a second reading when an icon is ambiguous or a set looks inconsistent | swapping the library |
+| `pikaicons-skills` | icon motion: how an icon animates on hover, press, arrival | its icon library; this app draws from Hugeicons |
+| `doodle` | the notes surfaces: a sketch or hand-drawn accent inside a note | the app's chrome; notes are the only place a sketch belongs |
+| `vercel-ui-skills` | component structure for a new surface | the token system |
+| `writing-guidelines` | reviewing `docs/` and prose for voice, tone and house style | app copy in components; that follows `DESIGN.md` |
+| `find-skills` | finding out whether a skill exists before writing the work by hand | — |
+| `web-design-guidelines` | a design review of a surface against a published checklist | overriding `DESIGN.md` |
+| `vercel-react-best-practices` | React structure: hooks, state, rendering | the layout model in `lib/shellLayout.ts` |
+| `vercel-deploy` | Vercel-side deploy steps only — the API project | the web service: that is Render, per `docs/deploy-split.md` |
+| `better-auth-best-practices` | a review of the sign-in flow's shape | this repo's auth is its own helper (`lib/authTokenAccessor`), not better-auth |
 
 Motion follows `DESIGN.md` → *Motion principles* (ten principles, at most two per
 component).
