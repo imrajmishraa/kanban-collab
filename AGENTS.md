@@ -247,6 +247,8 @@ which one wins when two disagree is in
 | `yjs` | the shared document's model: `Y.Map` / `Y.Array`, and what is shared rather than local | the socket layer — that is `y-websocket` |
 | `yjs-best-practices` | awareness, undo scope, garbage collection, and what must never enter a shared doc | the editor's own UI state |
 | `websocket-engineer` | the server side of the socket: reconnect, backoff, presence, fan-out | REST endpoints |
+| `redis-connections` | the Redis client: pooling, multiplexing, pipelining, socket timeouts, and the commands never to call in production (`KEYS`, `HGETALL`) | a Redis data model — that is `redis-core`; and anything outside `server/src/infrastructure/cache` |
+| `redis-core` | the data model: which structure for which job, and colon-separated key names | the cache's connection lifecycle, and the app's zustand keys — those are browser storage, not Redis |
 | `api-and-interface-design` | the shape of a boundary: a REST contract, a module's public surface, the types either side of it | the client's error copy, and an endpoint's business rules |
 | `api-error-design` | the shape of an error the API returns: code, message, and what the client can act on | the copy in the client's error UI |
 | `error-handling-patterns` | where a failure is caught, retried or surfaced, on both sides | swallowing a failure — see §4 |

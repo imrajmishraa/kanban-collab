@@ -42,6 +42,8 @@ in the report which parts you relied on and that its source was not inspected.
 | `vercel-react-best-practices` | vercel-labs/agent-skills `skills/react-best-practices/SKILL.md` | Verified | React structure and rendering performance | — |
 | `web-design-guidelines` | vercel-labs/agent-skills `skills/web-design-guidelines/SKILL.md` | Verified | a review of UI code against the Web Interface Guidelines | — |
 | `find-skills` | vercel-labs/skills `skills/find-skills/SKILL.md` | Verified | discovering whether a skill exists before writing the work by hand | — |
+| `redis-connections` | redis/agent-skills `skills/redis-connections/SKILL.md` (Redis, Inc., v0.1.0) | Verified | the Redis client: shared connections, pipelining, client-side caching, socket timeouts, and the commands never to call in production | — |
+| `redis-core` | redis/agent-skills `skills/redis-core/SKILL.md` (Redis, Inc., v0.1.0) | Verified | the data model: which structure for which job, and colon-separated key names | — |
 | `icons-badges` | not inspected | Unverified | icon and badge patterns, and the motion that carries them | — |
 | `better-icons` | not inspected | Unverified | a second reading when an icon is ambiguous | — |
 | `pikaicons-skills` | not inspected | Unverified | icon motion only — not an icon set | — |
@@ -65,6 +67,7 @@ in the report which parts you relied on and that its source was not inspected.
 | `ln-120-reference-docs-creator` | not inspected | Unverified | reference pages: an API surface, options, tables of facts | — |
 | `ln-130-tasks-docs-creator` | not inspected | Unverified | runbooks and checklists someone executes | — |
 | `ln-140-test-docs-creator` | not inspected | Unverified | what a suite covers, and why | — |
+| `scheduling-and-queue` | social-media-skills/skills `skills/scheduling-and-queue/SKILL.md` (v1.0.0) | Rejected | scheduling and publishing **social media** posts through WoopSocial — not applicable: this app schedules no social content and has no connected-account surface. Its one transferable rule is already this repo's: never take a side-effectful action without showing exactly what will happen | — |
 | `platform-encryption-configure` | forcedotcom/sf-skills `skills/platform-encryption-configure/SKILL.md` | Rejected | Salesforce Platform Encryption — not applicable: this repository is Express and MongoDB, with no Salesforce surface | — |
 | `popups` | coreyhaines31/marketingskills `skills/popups/SKILL.md` (v2.0.4) | Rejected | popup, modal and banner conversion work — not applicable yet: no popups, no email capture, no CRO experiments in `client/`. Revisit if a waitlist or announcement surface is added | — |
 
