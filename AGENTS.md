@@ -208,12 +208,16 @@ Check for these before you call something done.
 ## 7. Skills, and reporting the ones you did not use
 
 Skills are tools for the loop in §1, not extra authority. Where one disagrees
-with `DESIGN.md`, `DESIGN.md` wins.
+with `DESIGN.md`, `DESIGN.md` wins. Where each came from, and how much of it was
+actually read, is in [`docs/agents/skill-registry.md`](docs/agents/skill-registry.md);
+which one wins when two disagree is in
+[`docs/agents/skill-selection.md`](docs/agents/skill-selection.md).
 
 | Skill | Use when | Does not apply to |
 |---|---|---|
 | `frontend-design` | planning a new surface: write the plan, critique it against the brief, then build | picking a new palette or type for the app |
 | `web-artifacts-builder` | a multi-screen **prototype**; port, never paste (`docs/component-creation.md` §2) | a single component; anything committed under `client/src/` |
+| `prototype` | throwaway code that answers one design question — a state model, a layout — before it is built for real | anything that ships: a prototype that reaches `client/src/` was not a prototype |
 | `theme-factory` | a throwaway artifact, on request | the app (two themes, in `DESIGN.md`) |
 | `stageshow` | marketing and docs illustrations of the product | app code |
 | `webapp-testing` | the width / keyboard / theme sweep of §6, when a browser is available | claiming a pass it did not run |
@@ -242,6 +246,7 @@ with `DESIGN.md`, `DESIGN.md` wins.
 | `yjs` | the shared document's model: `Y.Map` / `Y.Array`, and what is shared rather than local | the socket layer — that is `y-websocket` |
 | `yjs-best-practices` | awareness, undo scope, garbage collection, and what must never enter a shared doc | the editor's own UI state |
 | `websocket-engineer` | the server side of the socket: reconnect, backoff, presence, fan-out | REST endpoints |
+| `api-and-interface-design` | the shape of a boundary: a REST contract, a module's public surface, the types either side of it | the client's error copy, and an endpoint's business rules |
 | `api-error-design` | the shape of an error the API returns: code, message, and what the client can act on | the copy in the client's error UI |
 | `error-handling-patterns` | where a failure is caught, retried or surfaced, on both sides | swallowing a failure — see §4 |
 | `doc-coauthoring` | writing or restructuring a document in passes: outline, draft, critique | code comments; `docs/comments.md` decides those |

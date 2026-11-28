@@ -1,0 +1,36 @@
+name: Transitions Motion Agent
+
+# Scans a pull request for missing or janky UI transitions and posts a motion
+# score comment on it.
+#
+# The score gate is off (`min-score: "0"`), so this reports and never blocks a
+# merge. Turn it on by raising min-score once the score has been watched for a
+# few PRs — the number to pass is the score the current `main` gets.
+#
+# The comment needs `pull-requests: write` only. `auto-fix` is off: it opens a
+# fix pull request, which needs a license and `contents: write`, and it must not
+# be on before the report has been read for a while.
+#
+# Nothing else in this repository depends on it; delete the file to remove it.
+
+on:
+  pull_request:
+    # Only a client change can add or alter a transition. A docs-only PR gets
+    # no motion comment.
+    paths:
+      - "client/**"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  motion:
+    name: Motion score
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: Jakubantalik/transitions.dev/agent@main
+        with:
+          min-score: "0"
+          license: ${{ secrets.TRANSITIONS_AGENT_LICENSE }}
