@@ -223,6 +223,33 @@ with `DESIGN.md`, `DESIGN.md` wins.
 | `web-typography` | the same, as a second reading when a type scale looks wrong | adding a fourth family |
 | `transitions.dev` | picking a duration and curve for a transition | anything outside `DESIGN.md` → *Motion principles* (300ms ceiling, reduced motion) |
 | `uizze-ui` | ideas for component structure in a prototype | the app's tokens, radii and shadows (hairlines, no shadows) |
+| `impeccable` (`typeset` mode) | a typography pass over a surface: hierarchy, role scale, measure, weight — audit first, then edit | replacing the three families in `DESIGN.md`; the mode improves what is there |
+| `hugeicons` | choosing, sizing and stroking an icon from the library already in 139 files | a second icon library: this app has one |
+| `icons-badges` | icon and badge patterns, and the motion that carries them | inventing a second icon set |
+| `better-icons` | a second reading when an icon is ambiguous or a set looks inconsistent | swapping the library |
+| `pikaicons-skills` | icon motion: how an icon animates on hover, press, arrival | its icon library; this app draws from Hugeicons |
+| `doodle` | the notes surfaces: a sketch or hand-drawn accent inside a note | the app's chrome; notes are the only place a sketch belongs |
+| `vercel-ui-skills` | component structure for a new surface | the token system |
+| `writing-guidelines` | reviewing `docs/` and prose for voice, tone and house style | app copy in components; that follows `DESIGN.md` |
+| `find-skills` | finding out whether a skill exists before writing the work by hand | — |
+| `web-design-guidelines` | a design review of a surface against a published checklist | overriding `DESIGN.md` |
+| `vercel-react-best-practices` | React structure: hooks, state, rendering | the layout model in `lib/shellLayout.ts` |
+| `vercel-deploy` | Vercel-side deploy steps only — the API project | the web service: that is Render, per `docs/deploy-split.md` |
+| `better-auth-best-practices` | a review of the sign-in flow's shape | this repo's auth is its own helper (`lib/authTokenAccessor`), not better-auth |
+| `zustand` | the shape of a new store: slices, selectors, subscriptions | the layout model — that is a pure module in `lib/shellLayout.ts`, not a store |
+| `zustand-state-management` | a store's lifecycle: persistence, migrations, devtools, a reset between sessions | one store per component; the 15 stores share one pattern already |
+| `zustand-patterns` | cross-store work: one action that has to touch two stores | a fourth way to write a store |
+| `yjs` | the shared document's model: `Y.Map` / `Y.Array`, and what is shared rather than local | the socket layer — that is `y-websocket` |
+| `yjs-best-practices` | awareness, undo scope, garbage collection, and what must never enter a shared doc | the editor's own UI state |
+| `websocket-engineer` | the server side of the socket: reconnect, backoff, presence, fan-out | REST endpoints |
+| `api-error-design` | the shape of an error the API returns: code, message, and what the client can act on | the copy in the client's error UI |
+| `error-handling-patterns` | where a failure is caught, retried or surfaced, on both sides | swallowing a failure — see §4 |
+| `doc-coauthoring` | writing or restructuring a document in passes: outline, draft, critique | code comments; `docs/comments.md` decides those |
+| `ln-114-frontend-docs-creator` | a page about a component or a feature | API and deploy pages |
+| `ln-115-devops-docs-creator` | deploy, CI and environment pages | product pages |
+| `ln-120-reference-docs-creator` | reference pages: an API surface, options, tables of facts | tutorials |
+| `ln-130-tasks-docs-creator` | runbooks and checklists someone executes | design rationale |
+| `ln-140-test-docs-creator` | what a suite covers, and why | the tests themselves |
 
 Motion follows `DESIGN.md` → *Motion principles* (ten principles, at most two per
 component).
@@ -231,6 +258,13 @@ If a skill from this list applies and you did not use it, say so in the report,
 one line each: **skill · not used · why** (`no network`, `not applicable`,
 `superseded by DESIGN.md`). Do not list a skill as used because you read its
 description.
+
+If **no** row applies, run `find-skills` and look for one that does — then ask
+before using it. Say which skill, which repository it comes from, and what it
+would do in this change; the answer decides, not the search. A skill that is not
+in this table and was used without that question is a tool nobody agreed to, and
+one the next reader cannot look up. If the answer is yes, add the row to this
+table in the same change.
 
 ---
 
