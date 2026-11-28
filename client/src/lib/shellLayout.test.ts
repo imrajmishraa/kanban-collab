@@ -10,6 +10,7 @@ import {
 import {
   computeLayout,
   fitsBoth,
+  giveWay,
   settleDrag,
   SHELL,
   type ShellState,
@@ -197,10 +198,12 @@ describe("settleDrag", () => {
     });
   });
 
-  it("collapses the rail between the strip and the open floor", () => {
+  it("hides the rail between the strip and the open floor", () => {
+    /* A drag that ends under the floor means "off the page". The strip is left to
+       `toggleRail` and the mode menu, so a gesture cannot land on it by accident. */
     expect(settleDrag(1280, at(1280, 120, 400), "left", open())).toEqual({
-      railOpen: true,
-      railCollapsed: true,
+      railOpen: false,
+      railCollapsed: false,
     });
   });
 
@@ -224,33 +227,83 @@ describe("settleDrag", () => {
    * full width, and a column released just under 320 closed itself: two big
    * consequences for a 5px overshoot.
    */
-  it("a rail left just under its floor stays open at the floor", () => {
+  it("hides the rail the moment a drag goes under its floor", () => {
     const w = 1280;
     const layout = {
-      leftPanel: (190 / w) * 100, // 10px under 200
-      centreLayout: ((w - 190 - 400) / w) * 100,
+      leftPanel: ((SHELL.left.min - 1) / w) * 100,
+      centreLayout: ((w - (SHELL.left.min - 1) - 400) / w) * 100,
       rightPanel: (400 / w) * 100,
     };
 
     expect(settleDrag(w, layout, "left", open())).toEqual({
-      railOpen: true,
+      railOpen: false,
       railCollapsed: false,
-      railPx: SHELL.left.min,
     });
   });
 
-  it("a rail dragged well under its floor becomes the icon strip", () => {
+  it("never rests on the icon strip from a drag — only a command does that", () => {
     const w = 1280;
     const layout = {
-      leftPanel: (120 / w) * 100, // 80px under: past the slop
+      leftPanel: (100 / w) * 100,
+      centreLayout: ((w - 100 - 400) / w) * 100,
+      rightPanel: (400 / w) * 100,
+    };
+
+    expect(settleDrag(w, layout, "left", open())).toEqual({
+      railOpen: false,
+      railCollapsed: false,
+    });
+  });
+
+  it("hides a rail dragged well under its floor", () => {
+    const w = 1280;
+    const layout = {
+      leftPanel: (120 / w) * 100, // 100px under the 220 floor
       centreLayout: ((w - 120 - 400) / w) * 100,
       rightPanel: (400 / w) * 100,
     };
 
     expect(settleDrag(w, layout, "left", open())).toEqual({
-      railOpen: true,
-      railCollapsed: true,
+      railOpen: false,
+      railCollapsed: false,
     });
+  });
+
+  it("takes the width from the column when the rail is dragged past the board's floor", () => {
+    /* The board is 40px under its 420 floor; the column has 60px of slack above
+       its own floor, so all 40 come from the column. */
+    const got = giveWay(
+      1280,
+      { left: 520, centre: 380, right: 380 },
+      "left",
+      open(),
+    );
+
+    expect(got).toEqual({ left: 520, right: 340 });
+  });
+
+  it("takes the width from the rail when the column is dragged past the board's floor", () => {
+    const got = giveWay(
+      1280,
+      { left: 300, centre: 380, right: 600 },
+      "right",
+      open(),
+    );
+
+    expect(got).toEqual({ left: 260, right: 600 });
+  });
+
+  it("leaves both panes alone while the board is above its floor", () => {
+    expect(
+      giveWay(1280, { left: 280, centre: 420, right: 580 }, "left", open()),
+    ).toBeNull();
+  });
+
+  it("stops giving once the other pane is on its own floor", () => {
+    /* Column already at 320: nothing left to take, so the drag stops instead. */
+    expect(
+      giveWay(1280, { left: 540, centre: 420, right: 320 }, "left", open()),
+    ).toBeNull();
   });
 
   it("a board left just under its floor does not flip to full width", () => {

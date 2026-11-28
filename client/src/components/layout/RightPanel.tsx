@@ -1,14 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 
 import { cn } from "@/lib/cn";
-import { HugeiconsIcon } from "@hugeicons/react";
-import {
-  CollapseIcon,
-  ExpandIcon,
-  LayoutAlignRightIcon,
-} from "@hugeicons/core-free-icons";
 
 import { useRightPanel } from "@/stores/rightPanel";
+import PanelHeader from "@/components/layout/PanelHeader";
 import { useSheetDismiss } from "@/components/layout/useSheetDismiss";
 import {
   PANEL,
@@ -18,8 +13,7 @@ import {
 } from "@/components/layout/panelMetrics";
 import { dampedWidth, snapToStops } from "@/lib/railDrag";
 import { RAIL_MIN, besideMax, couple, panelDragLevel } from "@/lib/panelCouple";
-import { useSidebarState } from "@/features/dashboard";
-import { Tooltip } from "@/components/Tooltips/ToolTip";
+import { useNotifications, useSidebarState } from "@/features/dashboard";
 
 interface RightPanelProps {
   /** What the app rail reserves, so this column can touch it but never cover it. */
@@ -63,6 +57,9 @@ export default function RightPanel({
 
   const [dragging, setDragging] = useState(false);
   const [moving, setMoving] = useState(false);
+  /* The bell lives in this column while the column is open — see the header. */
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const { data: notificationsData } = useNotifications();
 
   const startX = useRef(0);
   const startWidth = useRef(0);
@@ -298,81 +295,15 @@ export default function RightPanel({
         />
       )}
 
-      <header className="flex h-12 shrink-0 items-center justify-between gap-2 border-b border-(--hairline) px-3">
-        <h2 className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-(--text-muted)"></h2>
-
-        <div className="flex shrink-0 items-center gap-1">
-          {/* Full width: everything the app rail leaves, never the rail itself.
-              Two shapes, one control: a bare square while the panel is a column,
-              icon + label once it owns the window. */}
-          <Tooltip
-            label={level === "remaining" ? "Show page" : "Full width"}
-            highlight={isMac ? "⌘⇧J" : "Ctrl⇧J"}
-            side="bottom"
-            shape="solid"
-            size="md"
-          >
-            <button
-              type="button"
-              onClick={toggleLevel}
-              aria-label={
-                level === "remaining"
-                  ? "Show the page"
-                  : "Take the remaining width"
-              }
-              aria-pressed={level === "remaining"}
-              aria-keyshortcuts="Meta+Shift+J Control+Shift+J"
-              className={cn(
-                /* `h-8` + `w-8`, never `size-8`: `size-*` sets both, and it would
-                   fight the `px-*` that the labelled state needs. */
-                "flex h-8 items-center justify-center rounded-lg",
-                "text-(--text-primary) hover:bg-(--bg-hover)",
-                "focus-visible:outline-2 focus-visible:outline-(--brand)",
-                level === "remaining"
-                  ? "gap-1.25 px-2.5 mr-1 border border-(--hairline) hover:border-(--hairline-strong)"
-                  : "w-8",
-              )}
-            >
-              <HugeiconsIcon
-                icon={level === "remaining" ? CollapseIcon : ExpandIcon}
-                size={level === "remaining" ? 16 : 18}
-                strokeWidth={1.6}
-              />
-
-              {level === "remaining" && (
-                <span className="whitespace-nowrap text-[12px] leading-none ">
-                  Show page
-                </span>
-              )}
-            </button>
-          </Tooltip>
-
-          {/* The same control that opens the panel, where the close button used to
-              be: the icon is never a mystery. */}
-
-          <Tooltip
-            label="Hide panel"
-            highlight={isMac ? "⌘J" : "Ctrl J"}
-            side="bottom"
-            shape="solid"
-            size="md"
-          >
-            <button
-              type="button"
-              onClick={() => setMode("off")}
-              aria-label="Hide panel"
-              aria-controls="right-panel"
-              className={cn(
-                "grid size-8 shrink-0 place-items-center rounded-lg bg-(--bg-hover)",
-                "text-(--text-primary) transition-colors hover:bg-(--bg-active)",
-                "focus-visible:outline-2 focus-visible:outline-(--brand)",
-              )}
-            >
-              <HugeiconsIcon icon={LayoutAlignRightIcon} size={18} />
-            </button>
-          </Tooltip>
-        </div>
-      </header>
+      <PanelHeader
+        level={level}
+        isMac={isMac}
+        notificationsOpen={notificationsOpen}
+        unreadCount={notificationsData?.unreadCount ?? 0}
+        onToggleLevel={toggleLevel}
+        onToggleNotifications={() => setNotificationsOpen((open) => !open)}
+        onClose={() => setMode("off")}
+      />
 
       <div className="min-h-0 flex-1 overflow-y-auto">
         {/* The empty state is the panel's whole content for now, so it is centred

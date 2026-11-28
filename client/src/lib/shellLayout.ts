@@ -58,7 +58,11 @@ export const clamp = (n: number, lo: number, hi: number) =>
   Math.min(hi, Math.max(lo, n));
 
 /** Percentages that always sum to exactly 100: the board takes the remainder. */
-function toLayout(groupPx: number, railPx: number, columnPx: number): Layout {
+export function toLayout(
+  groupPx: number,
+  railPx: number,
+  columnPx: number,
+): Layout {
   const left = (railPx / groupPx) * 100;
   const right = (columnPx / groupPx) * 100;
 
@@ -114,6 +118,46 @@ export function fitsWithRail(
  *   rail, each only down to its own floor. The board's floor is never spent, and
  *   the stored widths are never rewritten by this squeeze.
  */
+/**
+ * Whose width gives way while a divider is being dragged.
+ *
+ * The library only resizes the two panes beside the divider it is moving, so a
+ * rail dragged wider eats the board and nothing else. The board has a floor, and
+ * the pane at the other end has slack: this is the pure answer to "take it from
+ * there instead", so the drag never has to stop dead.
+ *
+ * Returns the corrected `left`/`right` in pixels, or `null` when the board is
+ * still above its floor and nothing has to move.
+ */
+export function giveWay(
+  groupPx: number,
+  px: { left: number; centre: number; right: number },
+  edge: Edge,
+  s: ShellState,
+  c: ShellConfig = SHELL,
+): { left: number; right: number } | null {
+  const short = c.centre.min - px.centre;
+  if (!(groupPx > 0) || short <= 0.5) return null;
+
+  /* The dragged pane keeps what it has; the other one gives. */
+  const other = edge === "left" ? px.right : px.left;
+  const floor =
+    edge === "left"
+      ? s.columnOpen
+        ? c.right.min
+        : 0
+      : s.railCollapsed
+        ? c.left.collapsed
+        : c.left.min;
+
+  const take = Math.min(short, Math.max(0, other - floor));
+  if (take <= 0.5) return null;
+
+  return edge === "left"
+    ? { left: px.left, right: px.right - take }
+    : { left: px.left - take, right: px.right };
+}
+
 export function computeLayout(
   groupPx: number,
   s: ShellState,
@@ -189,11 +233,12 @@ export function settleDrag(
        before stays stored, so reopening gives it back (F1). */
     if (rail <= EPS) return { railOpen: false, railCollapsed: false };
 
-    /* Between the icon strip and the open floor: the strip, not a broken
-       half-open rail — unless the release only just missed the floor, in which
-       case it meant the floor. */
-    if (rail < c.left.min - SLOP) {
-      return { railOpen: true, railCollapsed: true };
+    /* Under the floor is a hide, not a half-open rail and not the icon strip:
+       the strip is a command's business (`toggleRail`, the mode menu), and a
+       drag that goes under the floor has said what it wants. No slop here — the
+       floor is the wall, and one pixel under it is one pixel past it. */
+    if (rail < c.left.min) {
+      return { railOpen: false, railCollapsed: false };
     }
 
     return {

@@ -165,6 +165,8 @@ export function useShellLayout({ state, commit, onWidth }: Args) {
   return {
     groupRef,
     groupEl,
+    /** Which divider the pointer is on, so a live drag can rebalance. */
+    edgeRef: edge,
     onLayoutChanged,
     separatorProps,
     /** Pixel `defaultSize`s for the first frame (numbers are pixels in v4). */

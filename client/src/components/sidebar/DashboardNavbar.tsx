@@ -160,6 +160,11 @@ export default function DashboardNavbar({
                 "md:left-(--rail-width)",
               ].join(" "),
           "items-center gap-2.5 px-2",
+          /* Chrome, not content: a double-click on the bar was selecting the
+             workspace name. `min-w-0` is not needed here — the bar is `fixed`, so
+             its width comes from `left`/`right`, and the title's own container
+             already carries it. */
+          "select-none",
           "transition-[left,background-color] duration-200",
           /*
            * No border: the bar has no edge of its own. What separates it from the
@@ -290,7 +295,9 @@ export default function DashboardNavbar({
               button moved around as the rail was toggled. */}
           {sidebarMode === "collapsed" ? <NavbarSearchIcon /> : null}
 
-          <div ref={bellRef} className="relative">
+          {/* The column carries the bell while it is open, so the bar drops its
+              own copy rather than pointing two bells at one panel. */}
+          <div ref={bellRef} className="relative" hidden={rightPanelOpen}>
             <NotificationsButton
               isOpen={notificationsOpen}
               unreadCount={notificationsData?.unreadCount ?? 0}

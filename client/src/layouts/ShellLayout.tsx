@@ -8,7 +8,7 @@ import DashboardNavbar from "@/components/sidebar/DashboardNavbar";
 import DashboardSidebar from "@/components/sidebar/DashboardSidebar";
 import { clampWidth, useSidebarState } from "@/features/dashboard";
 import { MOBILE_MAX_VIEWPORT } from "@/components/layout/panelMetrics";
-import { SHELL } from "@/lib/shellLayout";
+import { SHELL, giveWay, toLayout } from "@/lib/shellLayout";
 import { useRightPanel } from "@/stores/rightPanel";
 import { useLayoutShellStore } from "@/layouts/stores/layoutShellStore";
 import { cancelClose, scheduleEnd, startPreview } from "@/layouts/railPreview";
@@ -165,8 +165,14 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
     [setGroupPx],
   );
 
-  const { groupRef, groupEl, onLayoutChanged, separatorProps, initial } =
-    useShellLayout({ state, commit, onWidth: report });
+  const {
+    groupRef,
+    groupEl,
+    edgeRef,
+    onLayoutChanged,
+    separatorProps,
+    initial,
+  } = useShellLayout({ state, commit, onWidth: report });
 
   /*
    * The panes' widths, kept as numbers because the bar is `fixed`: it has to know
@@ -197,8 +203,23 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
           : { left: next.left, right: next.right },
       );
       onSizes?.(next);
+
+      /*
+       * The library only resizes the two panes beside the divider it is moving, so
+       * a drag that runs the board into its floor would just stop. While a divider
+       * is held, the pane at the other end gives way instead — the model decides
+       * how much, and the corrected layout goes back in one write. Reading it back
+       * next frame finds nothing left to give, so this settles after one pass.
+       */
+      const edge = edgeRef.current;
+      if (!edge) return;
+
+      const given = giveWay(width, next, edge, state);
+      if (!given) return;
+
+      groupRef.current?.setLayout(toLayout(width, given.left, given.right));
     },
-    [groupEl, onSizes],
+    [groupEl, groupRef, edgeRef, state, onSizes],
   );
 
   if (phone) {
