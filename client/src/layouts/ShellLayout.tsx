@@ -1,17 +1,21 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 
-import { Group, Panel, Separator, type Layout } from "react-resizable-panels";
+import { Group, type Layout } from "react-resizable-panels";
 
-import RightPanel from "@/components/layout/RightPanel";
-import DashboardNavbar from "@/components/sidebar/DashboardNavbar";
 import DashboardSidebar from "@/components/sidebar/DashboardSidebar";
-import { clampWidth } from "@/features/dashboard";
+import {
+  CentrePanelLayout,
+  LeftPanelLayout,
+  PaneChromeContext,
+  RightPanelLayout,
+} from "@/components/layout/appLayout";
 import { MOBILE_MAX_VIEWPORT } from "@/components/layout/panelMetrics";
-import { SHELL, giveWay, toLayout } from "@/lib/shellLayout";
+import { clampWidth } from "@/features/dashboard";
+import { giveWay, toLayout } from "@/lib/shellLayout";
 import { usePanelState } from "@/stores/panelState";
 import { useLayoutShellStore } from "@/layouts/stores/layoutShellStore";
-import { cancelClose, scheduleEnd, startPreview } from "@/layouts/railPreview";
+import { cancelClose, scheduleEnd } from "@/layouts/railPreview";
 import { useShellLayout } from "@/layouts/useShellLayout";
 import { useShellShortcuts } from "@/layouts/useShellShortcuts";
 import { useViewportWidth } from "@/features/dashboard";
@@ -23,17 +27,23 @@ interface ShellLayoutProps {
 }
 
 /**
- * Grok-style three-region shell — see Layout.md.
+ * The shell's engine, and nothing else.
  *
- * The layout is not written here. `computeLayout` decides the three widths from
- * what the reader chose, and `useShellLayout` applies them in one
+ * What is here: the group, the one writer that applies the model's answer, the
+ * measured pane widths, and the preview overlay that has to sit outside the group.
+ * What is not here: the three panes. Each one draws its own `Panel` and
+ * `Separator` in `components/layout/appLayout/`, reads its own slice of
+ * `usePanelState`, and knows nothing about its neighbours.
+ *
+ * The layout is not written here either. `computeLayout` decides the three widths
+ * from what the reader chose, and `useShellLayout` applies them in one
  * `Group.setLayout()`. Nothing in this file calls `expand()`, `resize()` or
  * `collapse()`, and nothing infers a mode from a measured width: those four
  * writers racing each other is what the brief's F1–F4 were.
  *
  * Constraints are constant and permissive (`minSize={0}`, `maxSize="100%"`) on
- * purpose. The library can then always satisfy a request, and the floors (200px
- * rail, 400px board, 320px column) are the model's rules rather than a constraint
+ * purpose. The library can then always satisfy a request, and the floors (220px
+ * rail, 420px board, 320px column) are the model's rules rather than a constraint
  * it silently fails to meet.
  */
 export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
@@ -53,13 +63,11 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
   /*
    * The hover preview: a second sidebar outside the group, because a hidden rail is
    * a 0px pane and the pane's `overflow-hidden` would clip a preview inside it. The
-   * timing (grace, cooldown, where to return to) lives in `railPreview.ts`, because the
-   * navbar's icon starts a preview and the overlay ends it — two components, one
-   * controller.
+   * timing (grace, cooldown, where to return to) lives in `railPreview.ts`, because
+   * the navbar's icon starts a preview and the overlay ends it — two components,
+   * one controller.
    */
-  const hovering = usePanelState((s) => s.leftPanel.hovering);
-  /* A preview is the pointer, not a mode: the reader's mode is untouched. */
-  const previewing = hovering;
+  const previewing = usePanelState((s) => s.leftPanel.hovering);
   const overlayRef = useRef<HTMLDivElement>(null);
 
   /*
@@ -118,34 +126,6 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
   const setGroupPx = useLayoutShellStore((s) => s.setGroupPx);
   const setResizing = useLayoutShellStore((s) => s.setResizing);
   const resizing = useLayoutShellStore((s) => s.resizing);
-
-  /*
-   * The divider, as the old layout drew it: a hairline at rest, the link colour
-   * under the pointer or the keyboard, and a grab area wider than the line. The
-   * line is the element's own 1px; the grab area is a pseudo-element, so it costs
-   * the panes no width.
-   */
-  const dividerClass = (open: boolean, restLine: boolean) =>
-    open
-      ? [
-          "relative w-px shrink-0",
-          /* The two dividers differ at rest: the column's edge is a hairline, the
-             rail's edge is bare. Neither is drawn as a border — the line that
-             appears is a 2px gradient that fades at both ends, and it is only
-             there while the pointer is on the divider or the divider is being
-             dragged. */
-          restLine ? "bg-(--hairline)" : "bg-transparent",
-          "after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] after:-translate-x-1/2",
-          "after:bg-gradient-to-b after:from-transparent after:via-(--hairline-strong) after:to-transparent",
-          "after:opacity-0 after:transition-opacity after:duration-150",
-          "motion-reduce:after:transition-none",
-          "hover:after:opacity-100 focus-visible:after:opacity-100 active:after:opacity-100",
-          /* A drag that leaves the divider keeps the line: `active` is not reliable
-             once the pointer travels, so the shell's own flag does it too. */
-          "group-data-[resizing=true]:after:opacity-100",
-          "before:absolute before:inset-y-0 before:-left-1 before:w-2 before:content-['']",
-        ].join(" ")
-      : "pointer-events-none w-0 shrink-0 overflow-hidden opacity-0";
 
   const state = useMemo(
     () => ({
@@ -222,6 +202,11 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
     [groupEl, groupRef, edgeRef, state, onSizes],
   );
 
+  const chrome = useMemo(
+    () => ({ initial, separatorProps, resizing, setResizing }),
+    [initial, separatorProps, resizing, setResizing],
+  );
+
   if (phone) {
     return <div className="h-full min-h-0">{children}</div>;
   }
@@ -241,125 +226,37 @@ export default function ShellLayout({ children, onSizes }: ShellLayoutProps) {
         className="group relative min-h-0 flex-1"
         data-resizing={resizing ? "true" : undefined}
       >
-        <Group
-          id="dashboard-shell"
-          orientation="horizontal"
-          className="h-full"
-          groupRef={groupRef}
-          onLayoutChange={onLayoutChange}
-          onLayoutChanged={onLayoutChanged}
-        >
-          <Panel
-            id="leftPanel"
-            defaultSize={initial.rail}
-            minSize={0}
-            maxSize={SHELL.left.max}
-            collapsible
-            collapsedSize={0}
-            className="min-w-0 overflow-hidden"
+        <PaneChromeContext.Provider value={chrome}>
+          <Group
+            id="dashboard-shell"
+            orientation="horizontal"
+            className="h-full"
+            groupRef={groupRef}
+            onLayoutChange={onLayoutChange}
+            onLayoutChanged={onLayoutChanged}
           >
-            {state.railOpen && !previewing ? (
-              <div
-                className="h-full"
-                /* Collapsed, the strip itself is the trigger: 72px of sidebar is what
-                 the pointer lands on, so the handler has to be on its wrapper. */
-                onMouseEnter={state.railCollapsed ? startPreview : undefined}
-                onMouseLeave={state.railCollapsed ? scheduleEnd : undefined}
-              >
-                <DashboardSidebar
-                  onToggle={() =>
-                    usePanelState
-                      .getState()
-                      .leftPanel.setMode(state.railOpen ? "hidden" : "expanded")
-                  }
-                  embedded
-                />
-              </div>
-            ) : null}
-          </Panel>
-
-          <Separator
-            {...separatorProps("left")}
-            onPointerDown={() => {
-              separatorProps("left").onPointerDown();
-              setResizing(true);
-            }}
-            onPointerUp={() => setResizing(false)}
-            className={dividerClass(state.railOpen, false)}
-            /* Inline: `base.css` sets `cursor: pointer` unlayered, and unlayered CSS
-               beats every Tailwind `@layer utilities` class. */
-            style={{ cursor: state.railOpen ? "col-resize" : undefined }}
-            disabled={!state.railOpen}
-          />
-
-          <Panel
-            id="centreLayout"
-            minSize={0}
-            maxSize="100%"
-            collapsible
-            collapsedSize={0}
-            className="min-w-0"
-          >
-            <main className="flex h-full flex-col overflow-y-auto scroll-smooth">
-              {/* The bar belongs to the board's column, as it does in the old
-                  layout: the rail and the column are its neighbours, not its
-                  parents. It sticks to the top of this scroll container while its
-                  own sentinel scrolls away, which is what turns on the blurred
-                  background. */}
-              <DashboardNavbar embedded />
-
-              {/* `fixed` takes the bar out of the flow, so its height is reserved
-                  here instead. */}
-              <div className="flex-1 pt-12">{children}</div>
-            </main>
-          </Panel>
-
-          <Separator
-            {...separatorProps("right")}
-            onPointerDown={() => {
-              separatorProps("right").onPointerDown();
-              setResizing(true);
-            }}
-            onPointerUp={() => setResizing(false)}
-            className={dividerClass(state.columnOpen, true)}
-            style={{ cursor: state.columnOpen ? "col-resize" : undefined }}
-            disabled={!state.columnOpen}
-          />
-
-          <Panel
-            id="rightPanel"
-            defaultSize={initial.column}
-            minSize={0}
-            maxSize="100%"
-            collapsible
-            collapsedSize={0}
-            className="min-w-0 overflow-hidden"
-          >
-            {state.columnOpen ? (
-              <RightPanel
-                appRailWidth={state.railOpen ? railPx : 0}
-                embedded
-                onResizeStart={() => setResizing(true)}
-                onResizeEnd={() => setResizing(false)}
-              />
-            ) : null}
-          </Panel>
-        </Group>
+            <LeftPanelLayout />
+            <CentrePanelLayout>{children}</CentrePanelLayout>
+            <RightPanelLayout />
+          </Group>
+        </PaneChromeContext.Provider>
 
         {previewing && (
           <div
             ref={overlayRef}
-            className="absolute inset-y-0 left-0 z-40"
+            /* A preview is on the page while it is showing, so it wears the same
+               open surface as an expanded rail. */
+            className="panel-surface absolute inset-y-0 left-0 z-40"
+            data-open
             /* The stored width, clamped — the same number `computeRail` gives the
                sidebar inside, so the box and its contents cannot disagree. */
             style={{ width: clampWidth(railPx) }}
           >
             <DashboardSidebar
               /* A click inside the preview pins what the reader is looking at. */
-              onToggle={() => {
-                /* A click inside the preview pins what the reader is looking at. */
-                usePanelState.getState().leftPanel.openFromPreview();
-              }}
+              onToggle={() =>
+                usePanelState.getState().leftPanel.openFromPreview()
+              }
               embedded
             />
           </div>

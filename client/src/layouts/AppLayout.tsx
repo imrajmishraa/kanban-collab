@@ -17,7 +17,8 @@ import { computePanel } from "@/components/layout/panelMetrics";
 import { useSearchStore } from "@/features/search";
 import { MOBILE_MAX_VIEWPORT } from "@/components/layout/panelMetrics";
 import ShellLayout from "@/layouts/ShellLayout";
-import { useShellFlag } from "@/layouts/useShellFlag";
+import { useShellMode } from "@/layouts/useShellFlag";
+import ShellLayoutV1 from "@/layouts/ShellLayoutV1";
 import { useEnsureActiveWorkspace } from "@/hooks/useEnsureActiveWorkspace";
 import { useSyncSavedBoards } from "@/hooks/useSyncSavedBoards";
 
@@ -35,9 +36,9 @@ export default function AppLayout() {
   /* The resizable shell, behind a flag until it has run in the wild. The rail and
      the column become panes of a group, and the layout is written once per change
      by \`useShellLayout\` instead of by CSS variables on three elements. */
-  const shellOn = useShellFlag();
+  const shellMode = useShellMode();
   const shellActive =
-    shellOn &&
+    shellMode !== "off" &&
     typeof window !== "undefined" &&
     window.innerWidth >= MOBILE_MAX_VIEWPORT;
 
@@ -176,11 +177,16 @@ export default function AppLayout() {
   }, []);
 
   if (shellActive) {
+    /* `?shell=1` draws the split shell; `?shell=0` the one that came before it.
+       Both read the same store, so switching between them is a different drawing
+       of the same state, not a different state. */
+    const Shell = shellMode === "v2" ? ShellLayout : ShellLayoutV1;
+
     return (
       <NewWorkspaceDialogProvider>
-        <ShellLayout>
+        <Shell>
           <Outlet />
-        </ShellLayout>
+        </Shell>
 
         {searchOpen && (
           <Suspense fallback={null}>

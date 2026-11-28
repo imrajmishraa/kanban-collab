@@ -407,7 +407,7 @@ Radius encodes what a thing is, not how big it is:
 
 ## Motion
 
-Motion answers a question or it does not ship. Colour, hover and focus transitions run 150ms on `ease`; layout shifts and widths 200ms on `ease-out`; menus and popovers 150–200ms as opacity plus a 2px translate. Nothing scales on entry — scaled text reads as a zoom bug.
+Motion answers a question or it does not ship. Colour, hover and focus transitions start at 150ms on `ease`; layout shifts and widths at 200ms on `ease-out`; menus and popovers at 150–200ms as opacity plus a 2px translate. **Those are where to start, not where to stop**: a duration is the component's call, and there is no floor or ceiling here to hold it to. A skill may set its own set — say which one in the report (`AGENTS.md` §7). Nothing scales on entry — scaled text reads as a zoom bug.
 
 Animate `transform`, `opacity`, `width`, `max-height` and `clip-path`. Never animate `box-shadow`. Every transition carries `motion-reduce:transition-none`, and the whole system degrades to instant under `prefers-reduced-motion`.
 
@@ -417,7 +417,10 @@ The one piece of choreography is the **theme reveal**: the class flip is wrapped
 
 Ten principles of animation, each translated into what it may do in a dense work
 surface. They are tools for the single rule above: **motion answers a question or
-it does not ship.** A component picks at most two. None overrides reduced motion,
+it does not ship.** A component picks at most two — and **a minor sub-component is
+not counted**: an icon that rotates, a chevron that flips, a dot that pulses has its
+own small motion, chosen for it, as long as it answers a question of its own and does
+not compete with the region's focal animation. None overrides reduced motion,
 and none carries information that is not also in text, colour or position.
 
 | # | Principle | Here it means | Limit |
@@ -430,8 +433,8 @@ and none carries information that is not also in text, colour or position.
 | 6 | Slow in, slow out | Entering: `ease-out`. Leaving: `ease-in`. Travelling across the screen: `ease-in-out`. | `linear` only for a progress rail or a spinner. |
 | 7 | Arcs | A card sent to a column more than one away follows a curve (translate on x with an offset ease on y). | Everything else is a straight line. The theme reveal is already an arc. |
 | 8 | Secondary action | A count ticking while a card lands; a dot appearing on the rail. | One supporting motion per primary one. It never delays the primary, and it is never the only signal. |
-| 9 | Snappy timing | Feedback within 100ms of input; 150ms colour and hover; 200ms layout; 300ms is the ceiling. | Over 300ms needs a reason in the PR. The theme reveal (1200 / 900) is the only standing exception. |
-| 10 | Exaggerated feedback | Make the *size* of a result larger, not its duration: a rejected field shakes ±4px for 240ms. A save confirms on the button itself. | Always paired with the `--danger` edge and message. Under reduced motion, only the edge and the message remain. |
+| 9 | Snappy timing | Start at 100ms for feedback, 150ms for colour and hover, 200ms for layout. | None of those is a limit. The component decides its durations, and a skill may set them; what is not allowed is a duration nobody chose. |
+| 10 | Exaggerated feedback | Make the *size* of a result larger, not its duration: a rejected field shakes ±4px. A save confirms on the button itself. | Always paired with the `--danger` edge and message. Under reduced motion, only the edge and the message remain. |
 
 Two consequences worth stating. **Squash & stretch does not contradict "nothing
 scales on entry":** it is feedback to an action, and an entry is not one. And

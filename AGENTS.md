@@ -220,8 +220,11 @@ with `DESIGN.md`, `DESIGN.md` wins.
 | `vercel-composition-patterns` | component API shape: variants, compound parts, lifted state | exceeding the 8-prop budget |
 | `ui-sdk` | only after its contents have been read | — |
 
-Motion follows `DESIGN.md` → *Motion principles* (ten principles, at most two per
-component).
+Motion follows `DESIGN.md` → *Motion principles*: ten principles, at most two per
+component, and a minor sub-component does not count against them. The durations
+there are starting points — a component sets its own, and a motion skill
+(`transitions.dev`) may set them for it; the report says which skill did. Reduced
+motion is the one rule no skill may relax.
 
 If a skill from this list applies and you did not use it, say so in the report,
 one line each: **skill · not used · why** (`no network`, `not applicable`,

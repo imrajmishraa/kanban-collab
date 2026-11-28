@@ -555,3 +555,30 @@ body:has([aria-modal="true"]) .rail-handle {
     transform: scaleX(0);
   }
 }
+
+
+/* PANEL SURFACE */
+
+/*
+ * A pane that is on the page sits on a slightly different surface from one that is
+ * not, and the change is a colour transition rather than a movement.
+ *
+ * `DESIGN.md` → *Motion principles*: colour and hover start at 150ms. Nothing
+ * travels, nothing fades — the only thing that changes is the background, because a
+ * pane appearing is the layout's job and the library already does it.
+ *
+ * The shade is `color-mix`, not a second token: in the light theme the page is
+ * `rgb(250,250,250)` and this deepens it, and in the dark theme the page is
+ * `rgb(0,0,0)` — which cannot go darker — so the same mix lifts it instead. One
+ * rule, two themes, and no new token to document. The durations are inline for the
+ * same reason: every `--*` in `:root` is a token the contract has to document, and
+ * these two are one rule's business.
+ */
+.panel-surface {
+  background-color: var(--bg-root);
+  transition: background-color 150ms ease;
+}
+
+.panel-surface[data-open="true"] {
+  background-color: color-mix(in srgb, var(--bg-root) 92%, var(--text-primary));
+}
