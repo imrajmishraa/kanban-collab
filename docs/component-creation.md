@@ -28,6 +28,9 @@ Say so before the first edit.
    hook in `hooks/`; a presentational component does not fetch.
 5. **Tokens in Tailwind v4 form**: `bg-(--bg-card)`, `text-(--text-secondary)`.
    Not `bg-[var(--x)]`, not `hsl(var(--background))`.
+5a. **Type**: only `font-sans`, `font-display` (headings) and `font-mono`. No
+    inline `font-family`, no fourth face, no size outside the scale in
+    `DESIGN.md`.
 6. **Every state exists**: default, hover, `focus-visible`, active, disabled,
    loading, error, empty. Hover is never the only path; touch target ≥ 44×44
    (`h-11`); an icon-only control has `aria-label` **and** a tooltip with the
