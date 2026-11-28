@@ -18,6 +18,9 @@ This `docs/` folder is the documentation set. Start with **Getting Started** if 
 | [Deployment](deployment.md) | Docker Compose, Render, environment, ops | Operators |
 | [Contributing](contributing.md) | Workflow, code quality, tests, CI, conventions | Contributors |
 | [Agent documentation](agents/README.md) | Which skill applies, where each came from, and which one wins | AI agents, contributors |
+| [Comments](comments.md) | Threaded comments on cards: likes, dislikes, and how a thread is stored | Contributors |
+| [Splitting deploys](deploy-split.md) | Why the API is on Vercel and the web app on Render, and what a split costs | Operators |
+| [The toaster's API](toaster-axes.md) | Why `components/toaster/` looks the way it does, and what may change | Contributors |
 
 ## Conventions used here
 

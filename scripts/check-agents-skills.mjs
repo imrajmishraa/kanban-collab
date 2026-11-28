@@ -22,8 +22,8 @@
  *      node scripts/check-agents-skills.mjs --strict    exit 1 on findings
  * Wired as: the `agents` job in .github/workflows/ci-cd.yml
  */
-import { existsSync, readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
@@ -95,10 +95,16 @@ if (existsSync(REGISTRY)) {
     if (!row[0].startsWith("`")) continue;
 
     const name = skillName(row[0]);
+    const source = row[1] ?? "";
     const status = row[2];
     const guide = row[4] ?? "";
 
-    registrySkills.push({ name, status, guide });
+    registrySkills.push({ name, status, source, guide });
+
+    // A row that says Verified is a claim that a file was read. It has to name it.
+    if (status === "Verified" && (!source || /not inspected/i.test(source))) {
+      add("agents/source", `registry: ${name}`, "Verified, but the source column names nothing");
+    }
 
     if (!STATUSES.has(status)) {
       add("agents/status", `registry: ${name}`, `"${status}" is not one of ${[...STATUSES].join(", ")}`);
@@ -106,7 +112,7 @@ if (existsSync(REGISTRY)) {
 
     const link = guide.match(/\]\(([^)]+)\)/);
     if (link && !link[1].startsWith("http")) {
-      if (!existsSync(resolve(ROOT, link[1]))) {
+      if (!existsSync(resolve(ROOT, "docs/agents", link[1]))) {
         add("agents/link", `registry: ${name}`, `guide link does not resolve: ${link[1]}`);
       }
     }
@@ -142,6 +148,70 @@ for (const name of tableSet) {
 }
 for (const name of registrySet) {
   if (!tableSet.has(name)) add("agents/orphan", name, "in the registry, absent from AGENTS.md §7");
+}
+
+/* ── a guide must carry the sections the template promises ──────────── */
+
+const REQUIRED_SECTIONS = [
+  /^#+ .*when this applies/i,
+  /^#+ .*workflow/i,
+  /^#+ .*verification/i,
+];
+
+for (const row of registrySkills) {
+  const link = row.guide.match(/\]\(([^)]+)\)/);
+  if (!link || link[1].startsWith("http")) continue;
+  const path = resolve(ROOT, "docs/agents", link[1]);
+  if (!existsSync(path)) continue; // agents/link already reported it
+  const body = readFileSync(path, "utf8");
+  for (const section of REQUIRED_SECTIONS) {
+    if (!section.test(body)) {
+      add("agents/sections", link[1], `missing a section matching ${section}`);
+    }
+  }
+}
+
+/* ── a page may only name a skill the table lists ────────────────────── */
+
+const selectionFile = resolve(ROOT, "docs/agents/skill-selection.md");
+if (existsSync(selectionFile)) {
+  const body = readFileSync(selectionFile, "utf8");
+  for (const match of body.matchAll(/`([\w./-]+\.(?:md|ts|tsx|mjs|json))`/g)) {
+    // A bare `SKILL.md` is the name of a file that lives outside this repo, not a
+    // path into it. Only a path — or one of the two root documents — is checkable.
+    const isPath = match[1].includes("/") || /^(AGENTS|DESIGN)\.md$/.test(match[1]);
+    if (!isPath) continue;
+    if (!existsSync(resolve(ROOT, match[1]))) {
+      add("agents/precedence", "docs/agents/skill-selection.md", `names a file that does not exist: ${match[1]}`);
+    }
+  }
+}
+
+const pageDirs = ["docs/agents/patterns", "docs/agents/workflows"].filter((dir) =>
+  existsSync(resolve(ROOT, dir)),
+);
+for (const dir of pageDirs) {
+  for (const entry of readdirSync(resolve(ROOT, dir))) {
+    if (!entry.endsWith(".md")) continue;
+    const path = join(dir, entry);
+    const lines = readFileSync(resolve(ROOT, path), "utf8").split("\n");
+
+    let inSkillsTable = false;
+    for (const line of lines) {
+      if (/^#{2,3}\s/.test(line)) {
+        inSkillsTable = /where.*skill/i.test(line);
+        continue;
+      }
+      if (!inSkillsTable || !line.startsWith("|")) continue;
+      const first = (cells(line)[0] ?? "").trim();
+      if (!first.startsWith("`")) continue;
+      const name = skillName(first);
+      if (name === "Skill") continue;
+      if (!tableSet.has(name)) {
+        add("agents/skill-ref", path, `names \`${name}\`, which AGENTS.md §7 does not list`);
+      }
+    }
+  }
 }
 
 /* ── report ──────────────────────────────────────────────────────────── */

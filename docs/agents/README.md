@@ -45,9 +45,10 @@ documentation of it — sits below all three. See
 
 ## What is verified here, and what is not
 
-Eighteen of the forty-one listed skills have had their `SKILL.md` read; the rest
-are recorded as **Unverified**, which means: the row tells you what `AGENTS.md`
-claims, not what the skill says. Read the skill before trusting the row.
+Twenty-one of the forty-four listed skills have had their `SKILL.md` read; the
+rest are recorded as **Unverified**, which means: the row tells you what
+`AGENTS.md` claims, not what the skill says. Read the skill before trusting the
+row.
 
 This is deliberate. A registry that marks everything "verified" is a registry
 that has stopped being read.
@@ -81,17 +82,25 @@ already refuses it.
 `skill-guide-template.md` is the shape a `skills/<name>/` folder takes. Copy it,
 fill it, and add the two rows the gate checks.
 
-## The gate
+## The gates
 
 ```
 node scripts/check-agents-skills.mjs --strict
+node scripts/check-docs-links.mjs --strict
 ```
 
-Fails when `AGENTS.md` §7 and [`skill-registry.md`](skill-registry.md) disagree,
-when a skill is listed twice, when a placeholder id (`ln-*`, `<name>`, TODO)
-survives, or when a guide link points at a file that does not exist. It runs as
-the `agents` job in `.github/workflows/ci-cd.yml`.
+The first fails when `AGENTS.md` §7 and [`skill-registry.md`](skill-registry.md)
+disagree, when a skill is listed twice, when a placeholder id (`ln-*`, `<name>`,
+TODO) survives, when a `Verified` row names no source, when a guide is missing one
+of its required sections, when a page names a skill the table does not list, when
+`skill-selection.md` points at a file that does not exist, or when a guide link
+does not resolve.
+
+The second fails when a relative link in `docs/` or the root markdown points at
+nothing, and warns about a page no reader can reach from `docs/README.md`.
+
+Both run in the `agents` job of `.github/workflows/ci-cd.yml`.
 
 Adding a skill means three edits in one change: the row in `AGENTS.md` §7 (with
 the case it must not be used for), the row here (with what you read), and the
-gate passing.
+gates passing.
