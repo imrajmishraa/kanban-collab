@@ -28,10 +28,9 @@ documentation of it — sits below all three. See
 
 ## What is verified here, and what is not
 
-Nine of the forty listed skills had their `SKILL.md` read while this registry was
-written; the rest are recorded as **Unverified**, which means: the row tells you
-what `AGENTS.md` claims, not what the skill says. Read the skill before trusting
-the row.
+Eighteen of the forty-one listed skills have had their `SKILL.md` read; the rest
+are recorded as **Unverified**, which means: the row tells you what `AGENTS.md`
+claims, not what the skill says. Read the skill before trusting the row.
 
 This is deliberate. A registry that marks everything "verified" is a registry
 that has stopped being read.
@@ -56,6 +55,7 @@ what `AGENTS.md` §7 already is.
 | 4 | `patterns/realtime-collaboration.md`, `patterns/error-handling.md` | the yjs and socket skills, `docs/realtime-collaboration.md` | — |
 | 5 | `workflows/` — feature, bug, review, docs | nothing new; they compose the patterns | — |
 | 6 | `skills/<name>/` — one folder per skill, domain by domain | that skill's source | — |
+| — | registry rows → `Verified` as sources arrive | the skill's own `SKILL.md` | ongoing |
 
 Each is a class-B change on its own (`docs/change-rules.md` §2). Doing them in
 one pull request would be class C with no review path, and the budget gate

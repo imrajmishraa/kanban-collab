@@ -249,6 +249,7 @@ which one wins when two disagree is in
 | `api-and-interface-design` | the shape of a boundary: a REST contract, a module's public surface, the types either side of it | the client's error copy, and an endpoint's business rules |
 | `api-error-design` | the shape of an error the API returns: code, message, and what the client can act on | the copy in the client's error UI |
 | `error-handling-patterns` | where a failure is caught, retried or surfaced, on both sides | swallowing a failure — see §4 |
+| `code-review` | a review of a branch or PR since a fixed point, on two axes: this repo's documented standards, and what the spec asked for | a review of code you are still writing — that is the loop in §1, not a second agent |
 | `doc-coauthoring` | writing or restructuring a document in passes: outline, draft, critique | code comments; `docs/comments.md` decides those |
 | `ln-114-frontend-docs-creator` | a page about a component or a feature | API and deploy pages |
 | `ln-115-devops-docs-creator` | deploy, CI and environment pages | product pages |

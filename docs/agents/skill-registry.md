@@ -32,21 +32,22 @@ in the report which parts you relied on and that its source was not inspected.
 | `ui-sdk` | vercel-labs/ui `packages/core/skills/ui-sdk/SKILL.md` | Verified | unstyled behaviour components, and the ARIA they carry | — |
 | `prototype` | mattpocock/skills `skills/engineering/prototype/SKILL.md` | Verified | throwaway code that answers one design question | — |
 | `api-and-interface-design` | addyosmani/agent-skills `skills/api-and-interface-design/SKILL.md` | Verified | stable API and module boundaries: contracts, error shape, versioning | — |
-| `transitions.dev` | `agent/action.yml` read; the skill body was not | Unverified | picking a duration and a curve for a transition | — |
-| `better-typography` | not inspected | Unverified | spacing, tracking, measure and numerals of a text surface | — |
-| `web-typography` | not inspected | Unverified | the same, as a second reading | — |
-| `uizze-ui` | not inspected | Unverified | component structure ideas for a prototype | — |
-| `impeccable` (`typeset`) | not inspected | Unverified | a typography pass over an existing surface | — |
-| `hugeicons` | not inspected | Unverified | choosing, sizing and stroking an icon from the library already in use | — |
+| `code-review` | mattpocock/skills `skills/engineering/code-review/SKILL.md` | Verified | a review of a branch or PR since a fixed point, on two axes: the repo's documented standards, and what the spec asked for | — |
+| `hugeicons` | hugeicons/hugeicons `skills/hugeicons/SKILL.md` | Verified | choosing, sizing and stroking an icon from the library already in use | — |
+| `better-typography` | jakubkrehel/skills `skills/better-typography/SKILL.md` | Verified | how text renders: scale, spacing, features, wrapping, truncation, punctuation | — |
+| `web-typography` | wondelai/skills `web-typography/SKILL.md` | Verified | selecting, pairing and loading typefaces — **out of scope for this app**, where the three families are fixed | — |
+| `uizze-ui` | uizze/uizze `skills/uizze-ui/SKILL.md` | Verified | UI/UX patterns and real-app examples, in a prototype | — |
+| `transitions.dev` | Jakubantalik/transitions.dev `skills/transitions-dev/SKILL.md` | Verified | a transition's duration and curve — and its `transitions review` pass, which finds ad-hoc durations worth tokenising | — |
+| `vercel-react-best-practices` | vercel-labs/agent-skills `skills/react-best-practices/SKILL.md` | Verified | React structure and rendering performance | — |
+| `web-design-guidelines` | vercel-labs/agent-skills `skills/web-design-guidelines/SKILL.md` | Verified | a review of UI code against the Web Interface Guidelines | — |
+| `find-skills` | vercel-labs/skills `skills/find-skills/SKILL.md` | Verified | discovering whether a skill exists before writing the work by hand | — |
 | `icons-badges` | not inspected | Unverified | icon and badge patterns, and the motion that carries them | — |
 | `better-icons` | not inspected | Unverified | a second reading when an icon is ambiguous | — |
 | `pikaicons-skills` | not inspected | Unverified | icon motion only — not an icon set | — |
 | `doodle` | not inspected | Unverified | a sketch or hand-drawn accent inside a note | — |
 | `vercel-ui-skills` | not inspected | Unverified | component structure for a new surface | — |
+| `impeccable` (`typeset`) | not inspected | Unverified | a typography pass over an existing surface | — |
 | `writing-guidelines` | not inspected | Unverified | voice, tone and house style for `docs/` prose | — |
-| `find-skills` | not inspected | Unverified | finding out whether a skill exists before writing the work by hand | — |
-| `web-design-guidelines` | not inspected | Unverified | a design review against a published checklist | — |
-| `vercel-react-best-practices` | not inspected | Unverified | React structure: hooks, state, rendering | — |
 | `vercel-deploy` | not inspected | Unverified | Vercel-side deploy steps — the API project only | — |
 | `better-auth-best-practices` | not inspected | Unverified | a review of the sign-in flow's shape | — |
 | `zustand` | not inspected | Unverified | the shape of a new store | — |
@@ -66,17 +67,22 @@ in the report which parts you relied on and that its source was not inspected.
 | `platform-encryption-configure` | forcedotcom/sf-skills `skills/platform-encryption-configure/SKILL.md` | Rejected | Salesforce Platform Encryption — not applicable: this repository is Express and MongoDB, with no Salesforce surface | — |
 | `popups` | coreyhaines31/marketingskills `skills/popups/SKILL.md` (v2.0.4) | Rejected | popup, modal and banner conversion work — not applicable yet: no popups, no email capture, no CRO experiments in `client/`. Revisit if a waitlist or announcement surface is added | — |
 
-## Why so many are Unverified
+## What is still Unverified, and how to close it
 
-The sources live in the skills registry each agent installs for itself, not in
-this repository, and most of them were not reachable while this file was
-written. Nine were: the six Anthropic and Vercel skills already used by the
-motion layer, `stageshow`, and the two added in this change.
+Twenty-four rows are catalogued but not read. Their sources live in the skills
+registry each agent installs for itself, not in this repository.
 
-Recording them as Unverified is the point. A row that says "Verified" is a claim
-someone can check; a row that says "Unverified" tells the next agent to read the
-skill before trusting this table, which is exactly what `AGENTS.md` §7 already
-asks for.
+Three ways to close one, in order of trust:
+
+1. **The file your agent installed** — `~/.claude/skills/<name>/SKILL.md` (or
+   wherever `npx skills add` wrote it). That is the copy the agent actually
+   reads, so it beats anything on GitHub.
+2. **The vendor's own repository**, named in the row once confirmed.
+3. **A copy somewhere else** — readable, but a different document until someone
+   confirms the version. Mark it `Verified` only after that.
+
+`missing-skill-sources.md`, delivered with this change, lists what a GitHub code
+search turned up for each one.
 
 ## Adding a row
 
