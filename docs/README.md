@@ -17,6 +17,7 @@ This `docs/` folder is the documentation set. Start with **Getting Started** if 
 | [Real-time Collaboration](realtime-collaboration.md) | The WebSocket + Yjs layer and how it persists to Mongo | Contributors |
 | [Deployment](deployment.md) | Docker Compose, Render, environment, ops | Operators |
 | [Contributing](contributing.md) | Workflow, code quality, tests, CI, conventions | Contributors |
+| [Agent documentation](agents/README.md) | Which skill applies, where each came from, and which one wins | AI agents, contributors |
 
 ## Conventions used here
 
