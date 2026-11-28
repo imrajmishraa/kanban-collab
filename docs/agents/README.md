@@ -15,11 +15,25 @@ lives outside this repository and changes without this repository knowing.
 | [`AGENTS.md`](../../AGENTS.md) | the order of work, the evidence labels, the traps |
 | [`skill-registry.md`](skill-registry.md) | where each skill came from, and how much of it was actually read |
 | [`skill-selection.md`](skill-selection.md) | which skill wins when two disagree, and how to compose them |
+
+**Patterns** — how the work is done, by domain:
+
+| Document | Answers |
+|---|---|
 | [`patterns/ui-design.md`](patterns/ui-design.md) | what decides the look, and where a design skill may act |
 | [`patterns/component-development.md`](patterns/component-development.md) | one component, in the order that makes it reviewable |
 | [`patterns/state-management.md`](patterns/state-management.md) | where client state lives, and the shape of a store |
 | [`patterns/realtime-collaboration.md`](patterns/realtime-collaboration.md) | the line between the client's CRDT and the server's socket |
 | [`patterns/error-handling.md`](patterns/error-handling.md) | designing an error, and handling one |
+
+**Workflows** — the same, by task:
+
+| Document | Answers |
+|---|---|
+| [`workflows/feature-development.md`](workflows/feature-development.md) | start to report, with the commands |
+| [`workflows/bug-fixing.md`](workflows/bug-fixing.md) | from "something is wrong" to a proven cause |
+| [`workflows/code-review.md`](workflows/code-review.md) | the ten questions, and the command behind each |
+| [`workflows/documentation.md`](workflows/documentation.md) | where a page goes, and the passes to write it |
 
 ## The one rule
 
@@ -38,10 +52,10 @@ claims, not what the skill says. Read the skill before trusting the row.
 This is deliberate. A registry that marks everything "verified" is a registry
 that has stopped being read.
 
-The pattern pages are a different kind of claim: they document **this
-repository**, which was read in full, and name the skills where their boundary
-matters. They do not restate a skill's instructions — that is what a guide under
-`skills/<name>/` will do, and it is why those are still missing.
+The pattern and workflow pages are a different kind of claim: they document
+**this repository**, which was read in full, and name the skills where their
+boundary matters. They do not restate a skill's instructions — that is what a
+guide under `skills/<name>/` will do, and it is why those are still missing.
 
 ## How the rest of it lands
 
@@ -56,8 +70,8 @@ what `AGENTS.md` §7 already is.
 | 2 | `patterns/ui-design.md`, `patterns/component-development.md` | — (written from the repository) | landed |
 | 3 | `patterns/state-management.md` | the eleven stores read | landed |
 | 4 | `patterns/realtime-collaboration.md`, `patterns/error-handling.md` | `docs/realtime-collaboration.md`, the error factories | landed |
-| 5 | `workflows/` — feature, bug, review, docs | nothing new; they compose the patterns | next |
-| 6 | `skills/<name>/` — one folder per skill, domain by domain | that skill's source | — |
+| 5 | `workflows/` ×4 | nothing new; they compose the patterns | landed |
+| 6 | `skills/<name>/` — one folder per skill, domain by domain | that skill's source | next |
 | — | registry rows → `Verified` as sources arrive | the skill's own `SKILL.md` | ongoing |
 
 Each is a class-B change on its own (`docs/change-rules.md` §2). Doing them in
