@@ -2,7 +2,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { ListChecksIcon } from "@hugeicons/core-free-icons";
 import type { DragEvent } from "react";
 
-import { AvatarStack } from "@/components/board/BoardAvatar";
+import { AvatarStack } from "@/components/board/AvatarStack";
 
 import { formatDue, isOverdue, labelColor } from "@/features/boards";
 

@@ -13,7 +13,7 @@ import {
 
 import { useCreateComment } from "@/hooks/useComments";
 
-import { Avatar } from "@/components/board/BoardAvatar";
+import { Avatar } from "@/components/board/Avatar";
 import { Tooltip } from "@/components/Tooltips/ToolTip";
 
 import {

@@ -19,7 +19,7 @@ import {
 } from "@/features/boards";
 
 import { Tooltip } from "@/components/Tooltips/ToolTip";
-import { Avatar } from "@/components/board/BoardAvatar";
+import { Avatar } from "@/components/board/Avatar";
 import type { BoardCard } from "@/types/board";
 
 interface CardDetailModalProps {

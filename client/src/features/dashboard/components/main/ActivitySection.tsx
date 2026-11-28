@@ -9,7 +9,7 @@ import {
   RefreshIcon,
 } from "@hugeicons/core-free-icons";
 
-import { Avatar } from "@/components/board/BoardAvatar";
+import { Avatar } from "@/components/board/Avatar";
 
 import { avatarColor } from "@/features/boards";
 import { useActivityFeed } from "@/hooks/useActivityFeed";

@@ -1,6 +1,6 @@
 import { useBoardActivity } from "@/hooks/useBoardActivity";
 
-import { Avatar } from "@/components/board/BoardAvatar";
+import { Avatar } from "@/components/board/Avatar";
 
 import { avatarColor, formatRelative } from "@/features/boards";
 

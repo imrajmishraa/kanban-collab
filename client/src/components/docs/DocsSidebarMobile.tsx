@@ -4,7 +4,8 @@ import { Link } from "react-router-dom";
 import { cn } from "@/lib/cn";
 
 import DocsSearch from "./DocsSearch";
-import { DocsNavList, ThemeSwitch } from "./DocsSidebarLeft";
+import { DocsNavList } from "./DocsNavList";
+import { ThemeSwitch } from "./ThemeSwitch";
 
 interface DocsSidebarMobileProps {
   open: boolean;

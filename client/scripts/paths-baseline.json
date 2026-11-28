@@ -1,6 +1,4 @@
 [
-  "multi:components/board/BoardAvatar.tsx",
-  "multi:components/docs/DocsSidebarLeft.tsx",
   "multi:components/sidebar/DashboardSidebar.tsx",
   "multi:features/boards/components/BoardStates.tsx",
   "multi:features/dashboard/components/workspace/NavbarIcons.tsx",

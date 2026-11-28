@@ -11,7 +11,7 @@ import {
 
 import { BoardShell, avatarColor } from "@/features/boards";
 import BoardError from "@/components/board/BoardError";
-import { Avatar } from "@/components/board/BoardAvatar";
+import { Avatar } from "@/components/board/Avatar";
 
 import { useActivityFeed } from "@/hooks/useActivityFeed";
 import { useActiveWorkspace } from "@/stores/activeWorkspace";

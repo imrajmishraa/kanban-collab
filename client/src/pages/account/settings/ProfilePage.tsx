@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-import { Avatar } from "@/components/board/BoardAvatar";
+import { Avatar } from "@/components/board/Avatar";
 
 import { avatarColor, initials } from "@/features/boards";
 import { useAuth } from "@/hooks/useAuth";
