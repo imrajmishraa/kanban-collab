@@ -472,6 +472,13 @@ slower software, a larger one reads as a clearer answer.
 
 A component that cannot say which question its motion answers has none.
 
+The reference behind these ten is `Animation Principles - Deep Dive`
+(`dylantarre/animation-principles`), which carries all twelve of Disney's
+principles with their technical numbers. Two of them do not travel: *Solid
+Drawing* and *Appeal* are about drawn form, and a work surface has neither. The
+ten above are that reference translated into what this app may do — where the
+two disagree, this table is the answer.
+
 ## Layout
 
 A fixed rail on the left (256px, or 72px collapsed), a 56px navbar that blurs as content scrolls beneath it, and one scrolling content column. The rail is the page colour, separated by a hairline — it is not a panel. Below `md` the rail becomes a sheet and the navbar keeps the menu affordance; nothing else in the layout changes.

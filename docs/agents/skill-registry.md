@@ -38,6 +38,7 @@ in the report which parts you relied on and that its source was not inspected.
 | `web-typography` | wondelai/skills `web-typography/SKILL.md` | Verified | selecting, pairing and loading typefaces — **out of scope for this app**, where the three families are fixed | — |
 | `uizze-ui` | uizze/uizze `skills/uizze-ui/SKILL.md` | Verified | UI/UX patterns and real-app examples, in a prototype | — |
 | `transitions.dev` | Jakubantalik/transitions.dev `skills/transitions-dev/SKILL.md` | Verified | a transition's duration and curve — and its `transitions review` pass, which finds ad-hoc durations worth tokenising | — |
+| `Animation Principles - Deep Dive` | dylantarre/animation-principles `skills/04-by-skill-level/deep-dive/SKILL.md` | Verified | Disney's twelve principles with their technical numbers — volume-preserving squash, anticipation at 1:3 of the action, silhouette staging, settle and overshoot — as the **theory** behind a motion decision | — |
 | `vercel-react-best-practices` | vercel-labs/agent-skills `skills/react-best-practices/SKILL.md` | Verified | React structure and rendering performance | — |
 | `web-design-guidelines` | vercel-labs/agent-skills `skills/web-design-guidelines/SKILL.md` | Verified | a review of UI code against the Web Interface Guidelines | — |
 | `find-skills` | vercel-labs/skills `skills/find-skills/SKILL.md` | Verified | discovering whether a skill exists before writing the work by hand | — |
@@ -69,7 +70,7 @@ in the report which parts you relied on and that its source was not inspected.
 
 ## What is still Unverified, and how to close it
 
-Twenty-four rows are catalogued but not read. Their sources live in the skills
+Twenty-three rows are catalogued but not read. Their sources live in the skills
 registry each agent installs for itself, not in this repository.
 
 Three ways to close one, in order of trust:
@@ -81,8 +82,8 @@ Three ways to close one, in order of trust:
 3. **A copy somewhere else** — readable, but a different document until someone
    confirms the version. Mark it `Verified` only after that.
 
-`missing-skill-sources.md`, delivered with this change, lists what a GitHub code
-search turned up for each one.
+`missing-skill-sources.md`, delivered with an earlier change, lists what a GitHub
+code search turned up for each one.
 
 ## Adding a row
 

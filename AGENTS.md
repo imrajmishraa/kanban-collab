@@ -226,6 +226,7 @@ which one wins when two disagree is in
 | `better-typography` | checking spacing, tracking, line length and numerals of a text surface | choosing a new family: §Typography in `DESIGN.md` decides |
 | `web-typography` | the same, as a second reading when a type scale looks wrong | adding a fourth family |
 | `transitions.dev` | picking a duration and curve for a transition | anything outside `DESIGN.md` → *Motion principles* (300ms ceiling, reduced motion) |
+| `Animation Principles - Deep Dive` | a motion question that needs the principle behind a number — why a settle overshoots, what anticipation does to perceived weight | the numbers: `DESIGN.md` → *Motion principles* sets the 300ms ceiling and the two-per-component limit. Its 20–50% squash and 1:3 anticipation-frame ratios are character animation, not a work surface |
 | `uizze-ui` | ideas for component structure in a prototype | the app's tokens, radii and shadows (hairlines, no shadows) |
 | `impeccable` (`typeset` mode) | a typography pass over a surface: hierarchy, role scale, measure, weight — audit first, then edit | replacing the three families in `DESIGN.md`; the mode improves what is there |
 | `hugeicons` | choosing, sizing and stroking an icon from the library already in 144 files | a second icon library: this app has one |
